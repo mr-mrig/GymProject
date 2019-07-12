@@ -1,0 +1,3 @@
+﻿
+
+Scaffold-DbContext "Data Source=C:\Users\rigom\Documents\rigm\0. Gym App\Databases\MyGymApp.db;" Microsoft.EntityFrameworkCore.Sqlite -OutputDir Persistence/Model -ContextDir Persistence -Context GymContext

@@ -10,13 +10,13 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
     {
 
 
-        public Username Username { get; private set; }
+        public UsernameObject Username { get; private set; }
 
 
 
         private Moderator(string username)
         {
-            Username = Username.Register(username);
+            Username = UsernameObject.Register(username);
         }
 
 

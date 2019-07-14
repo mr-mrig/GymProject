@@ -5,21 +5,21 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
+namespace GymProject.Domain.SocialNetworkDomain.Common
 {
-    public class SharingPolicy : Enumeration
+    public class SharingPolicyEnum : Enumeration
     {
 
 
-        public static SharingPolicy Public = new SharingPolicy(1, "Public");
-        public static SharingPolicy Private = new SharingPolicy(2, "Private");
+        public static SharingPolicyEnum Public = new SharingPolicyEnum(1, "Public");
+        public static SharingPolicyEnum Private = new SharingPolicyEnum(2, "Private");
 
 
 
 
         #region Ctors
 
-        public SharingPolicy(int id, string name) : base(id, name)
+        public SharingPolicyEnum(int id, string name) : base(id, name)
         {
 
         }
@@ -31,7 +31,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Get the enumeration list
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
-        public static IEnumerable<SharingPolicy> List() =>
+        public static IEnumerable<SharingPolicyEnum> List() =>
             new[] { Public, Private };
 
 
@@ -40,9 +40,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="name">Enumeration name</param>
         /// <returns>The SharingPolicy object instance</returns>
-        public static SharingPolicy FromName(string name)
+        public static SharingPolicyEnum FromName(string name)
         {
-            SharingPolicy policy = List()
+            SharingPolicyEnum policy = List()
                 .SingleOrDefault(s => String.Equals(s.Name, name, StringComparison.CurrentCultureIgnoreCase));
 
             if (policy == null)
@@ -58,9 +58,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="name">Enumeration id</param>
         /// <returns>The SharingPolicy object instance</returns>
-        public static SharingPolicy From(int id)
+        public static SharingPolicyEnum From(int id)
         {
-            SharingPolicy policy = List().SingleOrDefault(s => s.Id == id);
+            SharingPolicyEnum policy = List().SingleOrDefault(s => s.Id == id);
 
             if (policy == null)
                 throw new SocialNetworkGenericException($"Possible values for SharingPolicy: {String.Join(",", List().Select(s => s.Name))}");

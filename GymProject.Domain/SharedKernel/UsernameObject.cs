@@ -5,21 +5,28 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class Username : ValueObject
+    public class UsernameObject : ValueObject
     {
 
         public string Name { get; private set; }
 
 
-        private Username(string username)
+        private UsernameObject(string username)
         {
             Name = username;
         }
 
 
-        public static Username Register(string username)
+        public static UsernameObject Register(string username)
         {
-            return new Username(username);
+            return new UsernameObject(username);
+        }
+
+
+
+        private bool Validate()
+        {
+            throw new NotImplementedException();
         }
 
 

@@ -5,29 +5,29 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class ProfileImage : ValueObject
+    public class UrlObject : ValueObject
     {
 
 
-        public string Url { get; private set; }
+        public string Address { get; }
 
 
-
-        private ProfileImage(string url)
+        private UrlObject(string url)
         {
-            Url = url;
+            Address = url;
         }
 
 
-        public static ProfileImage Link(string url)
+        public static UrlObject CreateLink(string url)
         {
-            return new ProfileImage(url);
+            return new UrlObject(url);
         }
 
 
         protected override IEnumerable<object> GetAtomicValues()
         {
-            yield return Url;
+            yield return Address;
         }
+
     }
 }

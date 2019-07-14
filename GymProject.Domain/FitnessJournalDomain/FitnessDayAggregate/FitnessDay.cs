@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using System;
 
 
@@ -11,7 +12,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
         #region Properties
         public DateTime DayDate { get; private set; }
-        public float? Rating { get; private set; }
+        public RatingObject Rating { get; private set; }
 
         // FK
         public long PostId { get; private set; }
@@ -50,10 +51,15 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
 
         #region Ctors
-        public FitnessDay()
+        private FitnessDay(DateTime dayDate) : this(dayDate, RatingObject.Rate())
+        {         
+
+        }
+
+        private FitnessDay(DateTime dayDate, RatingObject rating)
         {
-            
-            
+            DayDate = dayDate;
+            Rating = rating;
 
         }
         #endregion

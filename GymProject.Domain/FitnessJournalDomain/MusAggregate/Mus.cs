@@ -1,8 +1,8 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.FitnessJournalDomain.ModerationAggregate;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate;
 using System.Collections.Generic;
-
+using GymProject.Domain.FitnessJournalDomain.Exceptions;
 
 namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 {
@@ -10,24 +10,35 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
     {
 
 
-        private string _name = "";
-        public string Name
+        public string Name { get; private set; }
+
+        public string Description { get; private set; }
+
+
+        public EntryStatusTypeEnum EntryStatusType { get; private set; }
+
+
+
+        #region Ctors
+
+        private Mus(string name, string description = null)
         {
-            get => _name;
-            set => _name = value;
-        }
+            if (string.IsNullOrWhiteSpace(name))
+                throw new FitnessJournalDomainGenericException($"Trying to create a Mus with blank name");
 
-        public string _description;
-        public string Description
+            Name = name;
+            Description = description;
+        }
+        #endregion
+
+
+        #region Factories
+
+        public static Mus Diagnose(string name, string description = null)
         {
-            get => _description;
-            set => _description = value;
+            return new Mus(name, description);
         }
+        #endregion
 
-
-        public EntryStatusType EntryStatusType { get; set; }
-
-
-        public IReadOnlyCollection<FitnessDay> FitnessDayList { get; private set; }
     }
 }

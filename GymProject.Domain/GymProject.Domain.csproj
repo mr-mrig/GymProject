@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <Folder Include="DietPlan\" />
+    <Folder Include="FitnessJournalDomain\Common\" />
+    <Folder Include="FitnessJournalDomain\ModerationAggregate\" />
     <Folder Include="TrainingDomain\" />
     <Folder Include="UserAccountDomain\" />
     <Folder Include="FitnessJournalDomain\MeasureAggregate\" />

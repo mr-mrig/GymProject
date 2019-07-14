@@ -10,16 +10,16 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
     {
 
 
-        public Username Username { get; private set; }
+        public UsernameObject Username { get; private set; }
 
 
-        public ProfileImage ProfileImage { get; private set; }
+        public ProfilePictureObject ProfileImage { get; private set; }
 
 
         private Author(string username, string imageProfileUrl)
         {
-            Username = Username.Register(username);
-            ProfileImage = ProfileImage.Link(imageProfileUrl);
+            Username = UsernameObject.Register(username);
+            ProfileImage = ProfilePictureObject.Link(UrlObject.CreateLink(imageProfileUrl));
         }
 
 

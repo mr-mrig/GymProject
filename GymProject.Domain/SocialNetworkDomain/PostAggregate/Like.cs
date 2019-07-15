@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Like : ChangeTrackingEntity
+    public class Like : ChangeTrackingEntity<IdType>
     {
 
 

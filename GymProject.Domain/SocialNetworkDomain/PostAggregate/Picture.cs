@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Picture : Entity
+    public class Picture : Entity<IdType>
     {
 
 

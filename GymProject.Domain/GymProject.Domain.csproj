@@ -21,10 +21,4 @@
     <PackageReference Include="MediatR" Version="7.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="GymProject.Domain.Persistence">
-      <HintPath>..\GymProject.Domain.Persistence\bin\Debug\netstandard2.0\GymProject.Domain.Persistence.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

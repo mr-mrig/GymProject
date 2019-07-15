@@ -3,7 +3,7 @@
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class Moderator : Entity
+    public class Moderator : Entity<IdType>
     {
 
 

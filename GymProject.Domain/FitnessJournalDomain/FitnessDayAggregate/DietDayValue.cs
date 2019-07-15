@@ -1,9 +1,12 @@
 ﻿
 
 
+using System.Collections.Generic;
+using GymProject.Domain.Base;
+
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class DietDay
+    public class DietDayValue : ValueObject
     {
 
 
@@ -15,6 +18,19 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public bool? IsFreeMeal { get; set; }
 
         //public DietDayType DietDayType { get; set; } = null;
+
+
+
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            yield return CarbGrams;
+            yield return FatGrams;
+            yield return ProteinGrams;
+            yield return SaltGrams;
+            yield return WaterLiters;
+            yield return IsFreeMeal;
+        }
+
 
     }
 }

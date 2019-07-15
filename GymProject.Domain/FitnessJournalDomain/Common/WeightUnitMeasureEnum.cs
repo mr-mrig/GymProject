@@ -2,19 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
-
-namespace GymProject.Domain.SharedKernel
+namespace GymProject.Domain.FitnessJournalDomain.Common
 {
-    public class TemperatureMeasureUnitEnum : Enumeration
+    public class WeightUnitMeasureEnum : Enumeration
     {
 
-
-        public static TemperatureMeasureUnitEnum Celsius = new TemperatureMeasureUnitEnum(1, "Celsius", "°C");
-        public static TemperatureMeasureUnitEnum Fahrenheit = new TemperatureMeasureUnitEnum(2, "Fahrenheit", "°F");
+        public static WeightUnitMeasureEnum Kilograms = new WeightUnitMeasureEnum(1, "Kilograms", "Kg");
+        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(2, "Pounds", "lbs");
 
         /// <summary>
-        /// Meas unit abbreviation - °C / °F
+        /// Meas unit abbreviation - Kg / lbs
         /// </summary>
         public string Abbreviation { get; private set; }
 
@@ -26,17 +25,17 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        public TemperatureMeasureUnitEnum(int id, string name, string abbreviation) : base(id, name)
+        public WeightUnitMeasureEnum(int id, string name, string abbreviation) : base(id, name)
         {
             Abbreviation = abbreviation;
 
-            // Convert to °C
-            if (this.Equals(Celsius))
-                ApplyConversionFormula = FahrenheitToCelsius;
+            // Convert to Kg
+            if (this.Equals(Kilograms))
+                ApplyConversionFormula = PoundsToKilograms;
 
-            // Convert to °F
-            else if (this.Equals(Fahrenheit))
-                ApplyConversionFormula = CelsiusToFahrenheit;
+            // Convert to lbs
+            else if (this.Equals(Pounds))
+                ApplyConversionFormula = KilogramsToPounds;
         }
         #endregion
 
@@ -46,8 +45,8 @@ namespace GymProject.Domain.SharedKernel
         /// Get the enumeration list
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
-        public static IEnumerable<TemperatureMeasureUnitEnum> List() =>
-            new[] { Celsius, Fahrenheit };
+        public static IEnumerable<WeightUnitMeasureEnum> List() =>
+            new[] { Kilograms, Pounds };
 
 
         /// <summary>
@@ -55,9 +54,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="name">Enumeration name</param>
         /// <returns>The PictureType object instance</returns>
-        public static TemperatureMeasureUnitEnum FromName(string name)
+        public static WeightUnitMeasureEnum FromName(string name)
         {
-            TemperatureMeasureUnitEnum unit = List()
+            WeightUnitMeasureEnum unit = List()
                 .SingleOrDefault(s => String.Equals(s.Name, name, StringComparison.CurrentCultureIgnoreCase));
 
 
@@ -70,23 +69,27 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="name">Enumeration id</param>
         /// <returns>The PictureType object instance</returns>
-        public static TemperatureMeasureUnitEnum From(int id)
+        public static WeightUnitMeasureEnum From(int id)
         {
-            TemperatureMeasureUnitEnum unit = List().SingleOrDefault(s => s.Id == id);
+            WeightUnitMeasureEnum unit = List().SingleOrDefault(s => s.Id == id);
 
             return unit;
         }
 
 
-        private static float CelsiusToFahrenheit(float celsius)
+        #region Converters
+
+        private static float PoundsToKilograms(float pounds)
         {
-            return (celsius * 9 / 5) + 32;
+            return pounds / 2.20462f;
         }
 
 
-        private static float FahrenheitToCelsius(float fahrenheit)
+        private static float KilogramsToPounds(float kilos)
         {
-            return (fahrenheit - 32) * 5 / 9;
+            return kilos * 2.20462f;
         }
+        #endregion
+
     }
 }

@@ -8,7 +8,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Post : ChangeTrackingEntity, IAggregateRoot
+    public class Post : ChangeTrackingEntity<IdType>, IAggregateRoot
     {
 
 
@@ -153,7 +153,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="toBeModified">The comment to be modified</param>
         /// <param name="newCommentText">The comment text</param>
-        public void ModifyComment(long commentId, string newCommentText)
+        public void ModifyComment(IdType commentId, string newCommentText)
         {
             // Check for comment not found
             Comment srcComment = _comments.Where(x => x.Id == commentId).FirstOrDefault();
@@ -235,15 +235,6 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
 
             LastUpdate = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Get the likes
-        /// </summary>
-        /// <returns>The read only collection of the likes</returns>
-        public IReadOnlyCollection<Like> GetLikes()
-        {
-            return _likes.ToList().AsReadOnly();
         }
         #endregion
 

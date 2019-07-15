@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GymProject.Domain.Base
 {
-    public class ChangeTrackingEntity : Entity
+    public class ChangeTrackingEntity<TId> : Entity<TId>
     {
 
 

@@ -7,15 +7,15 @@ namespace GymProject.Domain.Base
 {
 
 
-    /// <summary>
-    ///     Business Entity abstract root class.
-    /// </summary>
-    public abstract class Entity
+
+    public abstract class Entity<TId> : IEquatable<Entity<TId>>
     {
+
+
         int? _requestedHashCode;
 
 
-        public virtual long Id { get; protected set; }
+        public virtual TId Id { get; protected set; }
 
 
 
@@ -57,27 +57,28 @@ namespace GymProject.Domain.Base
         #region Methods
         public bool IsTransient()
         {
-            return this.Id == default(Int32);
+            //return this.Id == default(TId);
+            return Equals(Id, default(TId));
         }
 
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is Entity))
+            if (obj == null || !(obj is Entity<TId>))
                 return false;
 
             if (Object.ReferenceEquals(this, obj))
                 return true;
 
-            if (this.GetType() != obj.GetType())
+            if (GetType() != obj.GetType())
                 return false;
 
-            Entity item = (Entity)obj;
+            Entity<TId> item = (Entity<TId>)obj;
 
-            if (item.IsTransient() || this.IsTransient())
+            if (item.IsTransient() || IsTransient())
                 return false;
             else
-                return item.Id == this.Id;
+                return Id.Equals(item.Id);
         }
 
 
@@ -93,12 +94,25 @@ namespace GymProject.Domain.Base
             else
                 return base.GetHashCode();
         }
+
+
+        public bool Equals(Entity<TId> other)
+        {
+            if (other == null)
+                return false;
+
+
+            if (other.IsTransient() && IsTransient())
+                return ReferenceEquals(other, this);
+
+            return other.Id.Equals(Id);
+        }
         #endregion
 
 
         #region Operators
 
-        public static bool operator ==(Entity left, Entity right)
+        public static bool operator ==(Entity<TId> left, Entity<TId> right)
         {
             if (Object.Equals(left, null))
                 return (Object.Equals(right, null));
@@ -107,11 +121,14 @@ namespace GymProject.Domain.Base
         }
 
 
-        public static bool operator !=(Entity left, Entity right)
+        public static bool operator !=(Entity<TId> left, Entity<TId> right)
         {
             return !(left == right);
         }
         #endregion
+
+
     }
+
 
 }

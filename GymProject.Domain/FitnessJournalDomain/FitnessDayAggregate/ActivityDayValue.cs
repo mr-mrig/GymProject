@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class ActivityDay
+    public class ActivityDayValue : ValueObject
     {
 
         public uint? Steps { get; set; }
@@ -17,5 +17,16 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public byte? HeartRateMax { get; set; }
 
 
+
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            yield return Steps;
+            yield return CaloriesOut;
+            yield return Stairs;
+            yield return SleepMinutes;
+            yield return SleepQuality;
+            yield return HeartRateRest;
+            yield return HeartRateMax;
+        }
     }
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class FitnessDay : Entity, IAggregateRoot
+    public class FitnessDay : Entity<IdType>, IAggregateRoot
     {
 
 
@@ -17,24 +17,24 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         // FK
         public long PostId { get; private set; }
 
-        private ActivityDay _activityDay = null;
-        public ActivityDay ActivityDay
+        private ActivityDayValue _activityDay = null;
+        public ActivityDayValue ActivityDay
         {
             get => _activityDay;
             set => _activityDay = value;
         }
 
 
-        private DietDay _dietDay = null;
-        public DietDay DietDay
+        private DietDayValue _dietDay = null;
+        public DietDayValue DietDay
         {
             get => _dietDay;
             set => _dietDay = value;
         }
 
 
-        private Weight _weight = null;
-        public Weight Weight
+        private WeightValue _weight = null;
+        public WeightValue Weight
         {
             get => _weight;
             set => _weight = value;
@@ -43,7 +43,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// Wellness Day information
         /// </summary>
-        private WellnessDay _wellnessDay = null;
+        public WellnessDayValue WellnessDay { get; private set; } = null;
         #endregion
 
 
@@ -80,38 +80,28 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
         #region Business Methods
 
-        public void TrackWellnessDay(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<Mus> musList = null)
+        /// <summary>
+        /// Attach the Wellness Day information
+        /// </summary>
+        /// <param name="temperature">The temperature to be tracked</param>
+        /// <param name="glycemia">The glycemia to be tracked</param>
+        /// <param name="musIdList">The Ids of the MUSes diagnosed</param>
+        public void TrackWellnessDay(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<IdType> musIdList = null)
         {
-            _wellnessDay = WellnessDay.TrackWellness();
-            _wellnessDay.TrackTemperature(temperature);
-            _wellnessDay.TrackGlycemia(glycemia);
+            WellnessDay = WellnessDayValue.TrackWellness(temperature, glycemia, musIdList);
         }
 
         /// <summary>
         /// Attach the selected MUS diagnosis to the Day
         /// </summary>
-        /// <param name="toAdd">The MUS to be diagnosed</param>
-        public void DiagnoseMus(Mus toAdd)
+        /// <param name="toAdd">The Id of the MUS to be diagnosed</param>
+        public void DiagnoseMus(IdType toAdd)
         {
-            if (_wellnessDay is null)
-                _wellnessDay = WellnessDay.TrackWellness();
-
-            _wellnessDay.DiagnoseMus(toAdd);
+            WellnessDay = WellnessDay.DiagnoseMus(toAdd);
         }
         #endregion
 
 
-        #region Getters
-
-        /// <summary>
-        /// Get the Wellness day
-        /// </summary>
-        /// <returns>The WellnessDay instance</returns>
-        public WellnessDay GetWellnessDay()
-        {
-            return _wellnessDay;
-        }
-        #endregion
 
     }
 }

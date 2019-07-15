@@ -10,14 +10,14 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
     {
 
 
-        public UrlObject PictureUrl { get; private set; }
+        public UrlValue PictureUrl { get; private set; }
 
 
 
         #region Ctors
 
 
-        private Picture(UrlObject url)
+        private Picture(UrlValue url)
         {
             PictureUrl = url;
         }
@@ -25,7 +25,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         private Picture(string url)
         {
-            PictureUrl = UrlObject.CreateLink(url);
+            PictureUrl = UrlValue.CreateLink(url);
         }
         #endregion
 
@@ -37,7 +37,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="url">The picture url</param>
         /// <returns>The Picture to be attached</returns>
-        public static Picture Attach(UrlObject url)
+        public static Picture Attach(UrlValue url)
         {
             return new Picture(url);
         }

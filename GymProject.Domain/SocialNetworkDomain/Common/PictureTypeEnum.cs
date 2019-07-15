@@ -42,14 +42,14 @@ namespace GymProject.Domain.SocialNetworkDomain.Common
         /// <returns>The PictureType object instance</returns>
         public static PictureTypeEnum FromName(string name)
         {
-            PictureTypeEnum policy = List()
+            PictureTypeEnum picType = List()
                 .SingleOrDefault(s => String.Equals(s.Name, name, StringComparison.CurrentCultureIgnoreCase));
 
-            if (policy == null)
+            if (picType == null)
                 throw new SocialNetworkGenericException($"Possible values for PictureType: {String.Join(",", List().Select(s => s.Name))}");
 
 
-            return policy;
+            return picType;
         }
 
 
@@ -60,13 +60,13 @@ namespace GymProject.Domain.SocialNetworkDomain.Common
         /// <returns>The PictureType object instance</returns>
         public static PictureTypeEnum From(int id)
         {
-            PictureTypeEnum policy = List().SingleOrDefault(s => s.Id == id);
+            PictureTypeEnum picType = List().SingleOrDefault(s => s.Id == id);
 
-            if (policy == null)
+            if (picType == null)
                 throw new SocialNetworkGenericException($"Possible values for PictureType: {String.Join(",", List().Select(s => s.Name))}");
 
 
-            return policy;
+            return picType;
         }
 
     }

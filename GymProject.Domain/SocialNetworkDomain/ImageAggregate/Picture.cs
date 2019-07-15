@@ -10,7 +10,7 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// <summary>
         /// Url to the image
         /// </summary>
-        public UrlObject ImageUrl { get; private set; }
+        public UrlValue ImageUrl { get; private set; }
 
         /// <summary>
         /// Type of the picture
@@ -26,7 +26,7 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
 
         #region Ctors
 
-        private Picture(UrlObject imageUrl, PictureTypeEnum pictureType, long postId)
+        private Picture(UrlValue imageUrl, PictureTypeEnum pictureType, long postId)
         {
             ImageUrl = imageUrl;
             PictureType = pictureType;
@@ -35,7 +35,7 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
 
         private Picture(string imageUrl, PictureTypeEnum pictureType, long postId)
         {
-            ImageUrl = UrlObject.CreateLink(imageUrl);
+            ImageUrl = UrlValue.CreateLink(imageUrl);
             PictureType = pictureType;
             PostId = postId;
         }
@@ -50,7 +50,7 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// <param name="url">Image url</param>
         /// <param name="picType">Picture type</param>
         /// <returns></returns>
-        public static Picture Attach(UrlObject url, PictureTypeEnum picType, long postId)
+        public static Picture Attach(UrlValue url, PictureTypeEnum picType, long postId)
         {
             return new Picture(url, picType, postId);
         }
@@ -82,7 +82,7 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// </summary>
         /// <param name="url">Image url</param>
         /// <returns></returns>
-        public static Picture AttachProgreesPicture(UrlObject url, long postId)
+        public static Picture AttachProgreesPicture(UrlValue url, long postId)
         {
             return new Picture(url, PictureTypeEnum.ProgressPic, postId);
         }

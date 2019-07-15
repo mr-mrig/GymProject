@@ -5,23 +5,23 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class ProfilePictureObject : ValueObject
+    public class ProfilePictureValue : ValueObject
     {
 
 
-        public UrlObject Url { get; private set; }
+        public UrlValue Url { get; private set; }
 
 
 
-        private ProfilePictureObject(UrlObject url)
+        private ProfilePictureValue(UrlValue url)
         {
             Url = url;
         }
 
 
-        public static ProfilePictureObject Link(UrlObject url)
+        public static ProfilePictureValue Link(UrlValue url)
         {
-            return new ProfilePictureObject(url);
+            return new ProfilePictureValue(url);
         }
 
 

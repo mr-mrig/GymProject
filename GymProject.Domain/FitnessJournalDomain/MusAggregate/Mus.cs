@@ -1,12 +1,11 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
-using GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate;
-using System.Collections.Generic;
 using GymProject.Domain.FitnessJournalDomain.Exceptions;
+
 
 namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 {
-    public class Mus : Entity, IAggregateRoot
+    public class Mus : StatusTrackingEntity, IAggregateRoot
     {
 
 
@@ -14,8 +13,6 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 
         public string Description { get; private set; }
 
-
-        public EntryStatusTypeEnum EntryStatusType { get; private set; }
 
 
 
@@ -34,10 +31,23 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 
         #region Factories
 
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <param name="name">MUS name - cannot be empty</param>
+        /// <param name="description">MUS description</param>
+        /// <returns>The new Mus object</returns>
         public static Mus Diagnose(string name, string description = null)
         {
             return new Mus(name, description);
         }
+        #endregion
+
+
+
+        #region Business Methods
+
+        // Inherited by StatusTrackingEntity
         #endregion
 
     }

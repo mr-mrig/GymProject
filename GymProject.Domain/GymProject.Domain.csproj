@@ -5,9 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="FitnessJournalDomain\ModerationAggregate\**" />
+    <EmbeddedResource Remove="FitnessJournalDomain\ModerationAggregate\**" />
+    <None Remove="FitnessJournalDomain\ModerationAggregate\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="DietPlan\" />
-    <Folder Include="FitnessJournalDomain\Common\" />
-    <Folder Include="FitnessJournalDomain\ModerationAggregate\" />
     <Folder Include="TrainingDomain\" />
     <Folder Include="UserAccountDomain\" />
     <Folder Include="FitnessJournalDomain\MeasureAggregate\" />

@@ -30,6 +30,12 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         #region Factory Method
 
+        /// <summary>
+        /// Factory
+        /// </summary>
+        /// <param name="author">The author of the comment</param>
+        /// <param name="comment">The body of the comment</param>
+        /// <returns>The nre Comment instance</returns>
         public static Comment Write(Author author, string comment)
         {
             return new Comment(author, comment);
@@ -44,7 +50,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Change the comment caption
         /// </summary>
         /// <param name="newComment">The new caption</param>
-        public void ModifyComment(string newComment)
+        internal void ModifyComment(string newComment)
         {
             Body = newComment;
             LastUpdate = DateTime.Now;

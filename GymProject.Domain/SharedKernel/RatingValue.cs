@@ -5,20 +5,10 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class RatingObject : ValueObject
+    public class RatingValue : ValueObject
     {
 
         #region Constants
-
-        /// <summary>
-        /// NULL value
-        /// </summary>
-        public const float NullValue = -1;
-
-        /// <summary>
-        /// Default value
-        /// </summary>
-        public const float DefaultValue = NullValue;
 
         /// <summary>
         /// Minimum value
@@ -41,10 +31,9 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        private RatingObject(float ratingValue = DefaultValue)
+        private RatingValue(float ratingValue)
         {
-            if (ratingValue != NullValue 
-                && (ratingValue < MinimumValue || ratingValue > MaximumValue))
+            if (ratingValue < MinimumValue || ratingValue > MaximumValue)
 
                 throw new ArgumentException($"Trying to create an invalid Rating object: {ratingValue.ToString()} is not between {MinimumValue.ToString()} and {MaximumValue.ToString()}");
 
@@ -61,18 +50,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="ratingValue">Rating value</param>
         /// <returns>The Rating object</returns>
-        public static RatingObject Rate(float ratingValue)
+        public static RatingValue Rate(float ratingValue)
         {
-            return new RatingObject(ratingValue);
-        }
-
-        /// <summary>
-        /// Create a new Rating object with the default value
-        /// </summary>
-        /// <returns>The Rating object</returns>
-        public static RatingObject Rate()
-        {
-            return new RatingObject();
+            return new RatingValue(ratingValue);
         }
         #endregion
 
@@ -84,28 +64,20 @@ namespace GymProject.Domain.SharedKernel
         /// Creates a new RatingObject by increasing the current one by one unit
         /// </summary>
         /// <returns>The RatingObject increased by one unity</returns>
-        public RatingObject Increase()
+        public RatingValue Increase()
         {
-            return new RatingObject(Value + 1);
+            return new RatingValue(Value + 1);
         }
 
         /// <summary>
         /// Creates a new RatingObject by decreasing the current one by one unit
         /// </summary>
         /// <returns>The RatingObject decreased by one unity</returns>
-        public RatingObject Decrease()
+        public RatingValue Decrease()
         {
-            return new RatingObject(Value - 1);
+            return new RatingValue(Value - 1);
         }
 
-        /// <summary>
-        /// Checks if the RatingObject is NULL
-        /// </summary>
-        /// <returns>True or false</returns>
-        public bool IsNull()
-        {
-            return Value == NullValue;
-        }
         #endregion
 
 

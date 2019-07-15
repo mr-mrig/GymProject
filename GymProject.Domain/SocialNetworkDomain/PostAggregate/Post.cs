@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using GymProject.Domain.SocialNetworkDomain.Exceptions;
 using System.Linq;
 using GymProject.Domain.SocialNetworkDomain.Common;
+using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
@@ -21,16 +22,26 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         public SharingPolicyEnum IsShared { get; private set; }
 
+
+        private ICollection<Comment> _comments;
+
         /// <summary>
         /// List of comments to the Post
         /// </summary>
-        private ICollection<Comment> _comments;
+        public IReadOnlyCollection<Comment> Comments
+        {
+            get => _comments.ToList().AsReadOnly();
+        }
+
+        private ICollection<Like> _likes;
 
         /// <summary>
         /// List of Likes to the Post
         /// </summary>
-        private ICollection<Like> _likes;
-
+        public IReadOnlyCollection<Like> Likes
+        {
+            get => _likes.ToList().AsReadOnly();
+        }
 
 
         #region External Bounded Context references
@@ -175,15 +186,6 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             DeleteComment(toBeRemoved);
 
             LastUpdate = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Get the comments
-        /// </summary>
-        /// <returns>The read only collection of the comments</returns>
-        public IReadOnlyCollection<Comment>GetComments()
-        {
-            return _comments.ToList().AsReadOnly();
         }
         #endregion
 

@@ -5,22 +5,22 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class UrlObject : ValueObject
+    public class UrlValue : ValueObject
     {
 
 
         public string Address { get; }
 
 
-        private UrlObject(string url)
+        private UrlValue(string url)
         {
             Address = url;
         }
 
 
-        public static UrlObject CreateLink(string url)
+        public static UrlValue CreateLink(string url)
         {
-            return new UrlObject(url);
+            return new UrlValue(url);
         }
 
 

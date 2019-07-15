@@ -4,11 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
+namespace GymProject.Domain.FitnessJournalDomain.Common
 {
     public class Author : Entity
     {
-
 
         public UsernameValue Username { get; private set; }
 
@@ -27,6 +26,5 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         {
             return new Author(username, imageprofile);
         }
-
     }
 }

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using GymProject.Domain.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using GymProject.Domain.Base;
+
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class MacronutirentWeightValue : ValueObject
+    public class MicronutirentWeightValue : ValueObject
     {
 
 
@@ -33,7 +34,7 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        private MacronutirentWeightValue(float measValue, WeightUnitMeasureEnum measUnit = null)
+        private MicronutirentWeightValue(float measValue, WeightUnitMeasureEnum measUnit = null)
         {
             if (!AllowedMeasUnits.Contains(measUnit))
                 throw new ArgumentException($"{measUnit} is not allowed for {GetType().Name}", "measUnit");
@@ -51,10 +52,10 @@ namespace GymProject.Domain.SharedKernel
         /// Factory for creating a new value [g]
         /// </summary>
         /// <param name="weight">The value</param>
-        /// <returns>The MacronutirentWeightValue instance</returns>
-        public static MacronutirentWeightValue MeasureGrams(float weight)
+        /// <returns>The MicronutirentWeightValue instance</returns>
+        public static MicronutirentWeightValue MeasureGrams(float weight)
         {
-            return new MacronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Grams));
+            return new MicronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Grams));
         }
 
         /// <summary>
@@ -62,9 +63,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="weight">The value</param>
         /// <returns>The MacronutirentWeightValue instance</returns>
-        public static MacronutirentWeightValue MeasureOunces(float weight)
+        public static MicronutirentWeightValue MeasureOunces(float weight)
         {
-            return new MacronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Ounces));
+            return new MicronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Ounces));
         }
 
         /// <summary>
@@ -72,10 +73,10 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="glycemia">The value</param>
         /// <param name="measUnit">The measure unit - [g] default</param>
-        /// /// <returns>The MacronutirentWeightValue instance</returns>
-        public static MacronutirentWeightValue Measure(float glycemia, WeightUnitMeasureEnum measUnit = null)
+        /// /// <returns>The MicronutirentWeightValue instance</returns>
+        public static MicronutirentWeightValue Measure(float glycemia, WeightUnitMeasureEnum measUnit = null)
         {
-            return new MacronutirentWeightValue(FormatWeight(glycemia, measUnit), measUnit);
+            return new MicronutirentWeightValue(FormatWeight(glycemia, measUnit), measUnit);
         }
         #endregion
 
@@ -83,11 +84,11 @@ namespace GymProject.Domain.SharedKernel
         #region Business Methods
 
         /// <summary>
-        /// Creates a new MacronutirentWeightValue which is the conversion of the current one to the selected measure unit
+        /// Creates a new MicronutirentWeightValue which is the conversion of the current one to the selected measure unit
         /// </summary>
         /// <param name="toUnit">The target measure unit</param>
-        /// <returns>The new MacronutirentWeightValue instance</returns>
-        public MacronutirentWeightValue Convert(WeightUnitMeasureEnum toUnit)
+        /// <returns>The new MicronutirentWeightValue instance</returns>
+        public MicronutirentWeightValue Convert(WeightUnitMeasureEnum toUnit)
         {
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }
@@ -105,8 +106,8 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>the converted value</returns>
         private static float FormatWeight(float value, WeightUnitMeasureEnum measUnit)
         {
-            // Don't keep decimals, unless Ounces
-            byte decimalPlaces = (byte)(measUnit == WeightUnitMeasureEnum.Ounces ? 1 : 0);
+            // One decimal place, unless Ounces
+            byte decimalPlaces = (byte)(measUnit == WeightUnitMeasureEnum.Ounces ? 2 : 1);
 
             // Weight rounded accorded to the meas unit
             return (float)Math.Round(value, decimalPlaces);

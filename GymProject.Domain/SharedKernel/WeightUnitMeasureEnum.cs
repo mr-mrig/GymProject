@@ -26,7 +26,7 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
-        /// Meas unit abbreviation - Kg / lbs
+        /// Meas unit abbreviation - Kg / g / lbs / oz
         /// </summary>
         public string Abbreviation { get; private set; }
 
@@ -68,7 +68,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<WeightUnitMeasureEnum> List() =>
-            new[] { Kilograms, Pounds };
+            new[] { Kilograms, Grams, Pounds, Ounces, };
 
 
         /// <summary>

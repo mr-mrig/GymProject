@@ -20,6 +20,10 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         public const float MaximumValue = 5;
 
+        /// <summary>
+        /// Number of default decimal places
+        /// </summary>
+        private const byte DecimalPlaces = 0;
         #endregion
 
 
@@ -50,10 +54,8 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="ratingValue">Rating value</param>
         /// <returns>The Rating object</returns>
-        public static RatingValue Rate(float ratingValue)
-        {
-            return new RatingValue(ratingValue);
-        }
+        public static RatingValue Rate(float ratingValue) => new RatingValue(FormatRating(ratingValue));
+
         #endregion
 
 
@@ -64,20 +66,30 @@ namespace GymProject.Domain.SharedKernel
         /// Creates a new RatingObject by increasing the current one by one unit
         /// </summary>
         /// <returns>The RatingObject increased by one unity</returns>
-        public RatingValue Increase()
-        {
-            return new RatingValue(Value + 1);
-        }
+        public RatingValue Increase() => Rate(Value + 1);
+
 
         /// <summary>
         /// Creates a new RatingObject by decreasing the current one by one unit
         /// </summary>
         /// <returns>The RatingObject decreased by one unity</returns>
-        public RatingValue Decrease()
-        {
-            return new RatingValue(Value - 1);
-        }
+        public RatingValue Decrease() => Rate(Value - 1);
 
+        #endregion
+
+
+        #region Private Methods
+        /// <summary>
+        /// Converts the number to a rating compliant value
+        /// </summary>
+        /// <param name="value">The input rating value</param>
+        /// <param name="measUnit">The measure unit</param>
+        /// <returns>The converted value</returns>
+        private static float FormatRating(float value)
+        {
+            // Volume rounded to 1 decimal place
+            return (float)Math.Round(value, (int)DecimalPlaces);
+        }
         #endregion
 
 

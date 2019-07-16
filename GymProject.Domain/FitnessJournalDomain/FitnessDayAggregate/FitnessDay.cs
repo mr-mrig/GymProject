@@ -12,10 +12,18 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
 
         #region Properties
+
+        /// <summary>
+        /// Fitness Journal date
+        /// </summary>
         public DateTime DayDate { get; private set; }
+
+        /// <summary>
+        /// Rating
+        /// </summary>
         public RatingValue Rating { get; private set; } = null;
 
-        // FK
+        // FK -> Don't fetch any other fields, as they might slow the process a lot
         public long PostId { get; private set; }
 
         /// <summary>
@@ -23,13 +31,10 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         public DailyActivityValue DailyActivity { get; private set; } = null;
 
-
-        private DailyDietValue _dietDay = null;
-        public DailyDietValue DietDay
-        {
-            get => _dietDay;
-            set => _dietDay = value;
-        }
+        /// <summary>
+        /// Diet Day tracked
+        /// </summary>
+        public DailyDietValue DailyDiet { get; private set; } = null;
 
         /// <summary>
         /// The daily Weight measure
@@ -72,7 +77,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
 
 
-        #region Aggregate Methods
+        #region Aggregate Root Methods
 
         /// <summary>
         /// Change the Rating of the entry
@@ -176,6 +181,32 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         {
             DailyActivity = DailyActivityValue.TrackActivity(steps, stairs, burnedKcal, sleepTime, sleepQuality, restHeartRate, maxHeartRate);
         }
+        #endregion
+
+
+        #region Diet Day Metohds
+
+        /// <summary>
+        /// Track the diet day
+        /// </summary>
+        /// <param name="steps">Number of steps tracked</param>
+        /// <param name="stairs">Number of stairs tracked</param>
+        /// <param name="burnedKcal">Burned calories estimated</param>
+        /// <param name="sleepTime">Sleep duration</param>
+        /// <param name="sleepQuality">Sleep rating</param>
+        /// <param name="restHeartRate">Rest heartrate tracked</param>
+        /// <param name="maxHeartRate">Heartrate after activity tracked</param>
+        public void TrackDiet(
+            MacronutirentWeightValue carbs = null,
+            MacronutirentWeightValue fats = null,
+            MacronutirentWeightValue proteins = null,
+            MicronutirentWeightValue salt = null,
+            VolumeValue water = null,
+            bool? isFreeMeal = null,
+            DietDayTypeEnum dayType = null)
+
+                => DailyDiet = DailyDietValue.TrackDiet(carbs, fats, proteins, salt, water, isFreeMeal, dayType);
+
         #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
@@ -8,24 +9,68 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
     public class DailyDietValue : ValueObject
     {
 
+        /// <summary>
+        /// Carbohidrates quantity
+        /// </summary>
+        public MacronutirentWeightValue Carbs { get; set; } = null;
 
-        public MacronutirentWeightValue CarbGrams { get; set; } = null;
-        public MacronutirentWeightValue FatGrams { get; set; } = null;
-        public MacronutirentWeightValue ProteinGrams { get; set; } = null;
-        public float? SaltGrams { get; set; }
-        public float? WaterLiters { get; set; }
+        /// <summary>
+        /// Fats quantity
+        /// </summary>
+        public MacronutirentWeightValue Fats { get; set; } = null;
+
+        /// <summary>
+        /// Proteins quantity
+        /// </summary>
+        public MacronutirentWeightValue Proteins { get; set; } = null;
+
+        /// <summary>
+        /// Salt quantity
+        /// </summary>
+        public MicronutirentWeightValue Salt { get; set; } = null;
+
+        /// <summary>
+        /// Water quantity
+        /// </summary>
+        public VolumeValue Water { get; set; } = null;
+
+        /// <summary>
+        /// Day with free meal
+        /// </summary>
         public bool? IsFreeMeal { get; set; } = null;
 
-        //public DietDayType DietDayType { get; set; } = null;
+        /// <summary>
+        /// Diet day type
+        /// </summary>
+        public DietDayTypeEnum DietDayType { get; set; } = null;
 
 
 
 
         #region Ctors
 
-        private DailyDietValue()
+        private DailyDietValue(
+            MacronutirentWeightValue carbs = null,
+            MacronutirentWeightValue fats = null,
+            MacronutirentWeightValue proteins = null,
+            MicronutirentWeightValue salt = null,
+            VolumeValue water = null,
+            bool? isFreeMeal = null,
+            DietDayTypeEnum dayType = null)
         {
+            Carbs = carbs;
+            Fats = fats;
+            Proteins = proteins;
+            Salt = salt;
+            Water = water;
+            IsFreeMeal = isFreeMeal;
+            DietDayType = dayType;
 
+            if (CheckNullState())
+                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
+
+            //// Here so it is excluded from the CheckNullState
+            //DietDayType = dayType;
         }
         #endregion
 
@@ -44,29 +89,17 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <param name="restHeartRate">Rest heartrate tracked</param>
         /// <param name="maxHeartRate">Heartrate after activity tracked</param>
         /// <returns>The DailyDietValue instance</returns>
-        public static DailyDietValue TrackActivity(
-            uint? steps = null,
-            uint? stairs = null,
-            CalorieValue burnedKcal = null,
-            SleepDurationValue sleepTime = null,
-            RatingValue sleepQuality = null,
-            HeartRateValue restHeartRate = null,
-            HeartRateValue maxHeartRate = null)
-        {
-            if (steps is null && stairs is null && burnedKcal is null && sleepTime is null && sleepQuality is null && restHeartRate is null && maxHeartRate is null)
-                throw new FitnessJournalDomainGenericException($"Cannot create a DailyDietValue with all NULL fields");
-
-            return new DailyDietValue()
-            {
-                Steps = steps,
-                Stairs = stairs,
-                BurnedCalories = burnedKcal,
-                SleepTime = sleepTime,
-                SleepQuality = sleepQuality,
-                HeartRateRest = restHeartRate,
-                HeartRateMax = maxHeartRate,
-            };
-        }
+        public static DailyDietValue TrackDiet(
+            MacronutirentWeightValue carbs = null,
+            MacronutirentWeightValue fats = null,
+            MacronutirentWeightValue proteins = null,
+            MicronutirentWeightValue salt = null,
+            VolumeValue water = null,
+            bool? isFreeMeal = null,
+            DietDayTypeEnum dayType = null)
+        
+            => new DailyDietValue(carbs, fats, proteins, salt, water, isFreeMeal, dayType);
+        
         #endregion
 
 
@@ -78,21 +111,20 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// Checks whether all the properties are null
         /// </summary>
         /// <returns>True if no there are no non-null properties</returns>
-        public bool CheckNullState()
-        {
-            return GetAtomicValues().All(x => x is null);
-        }
+        public bool CheckNullState() 
+            => GetAtomicValues().All(x => x is null);
+
         #endregion
 
 
 
         protected override IEnumerable<object> GetAtomicValues()
         {
-            yield return CarbGrams;
-            yield return FatGrams;
-            yield return ProteinGrams;
-            yield return SaltGrams;
-            yield return WaterLiters;
+            yield return Carbs;
+            yield return Fats;
+            yield return Proteins;
+            yield return Salt;
+            yield return Water;
             yield return IsFreeMeal;
         }
 

@@ -1,6 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace GymProject.Domain.SharedKernel
@@ -33,5 +34,29 @@ namespace GymProject.Domain.SharedKernel
         {
             Description = description;
         }
+
+
+        /// <summary>
+        /// Get the enumeration list
+        /// </summary>
+        /// <returns>The list storing the enumeration</returns>
+        public static IEnumerable<EntryStatusTypeEnum> List() =>
+            new[] { NotSet, Private, Pending, Approved, Banned, Native,};
+
+
+        /// <summary>
+        /// Creates a PictureType object with the selected name
+        /// </summary>
+        /// <param name="name">Enumeration name</param>
+        /// <returns>The PictureType object instance</returns>
+        public static EntryStatusTypeEnum FromName(string name)
+        {
+            EntryStatusTypeEnum unit = List()
+                .SingleOrDefault(s => String.Equals(s.Name, name, StringComparison.CurrentCultureIgnoreCase));
+
+
+            return unit;
+        }
+
     }
 }

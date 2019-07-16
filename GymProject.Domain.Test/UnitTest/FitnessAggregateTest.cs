@@ -17,15 +17,78 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         [Fact]
+        public void CheckValueObjects()
+        {
+            #region RatingValue
+            RatingValue rating = RatingValue.Rate(4.2f);
+            Assert.Equal(4, rating.Value);
+
+            RatingValue increased = rating.Increase();
+            Assert.Equal(5, increased.Value);
+
+            RatingValue decreased = rating.Increase();
+            Assert.Equal(3, decreased.Value);
+            #endregion
+
+
+            #region CalorieValue
+
+            #endregion
+
+
+            #region SleepDurationValue
+
+            #endregion
+
+
+            #region HeartRateValue
+
+            #endregion
+
+
+            #region MacronutirentWeightValue
+
+            #endregion
+
+
+            #region MicronutirentWeightValue
+
+            #endregion
+
+
+            #region VolumeValue
+
+            #endregion
+
+
+            #region BodyWeightValue
+
+            #endregion
+
+
+            #region TemperatureValue
+
+            #endregion
+
+
+            #region GlycemiaValue
+
+            #endregion
+        }
+
+
+
+        [Fact]
         public void CreateEmptyFitnessDayEntrySuccess()
         {
             string username = "user1";
             string profilePicUrl = "./Images/test.jpg";
             Author auth = Author.Register(username, profilePicUrl);
 
+            RatingValue rating = RatingValue.Rate(4.2f);
+            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today);
 
-
-            //Assert.NotNull(post);
+            Assert.NotNull(fd);
             //Assert.Equal(caption, post.Caption);
             //Assert.Equal(SharingPolicyEnum.Public, post.SharingPolicy);
             //Assert.Equal(UsernameValue.Register(username), post.PostAuthor.Username);

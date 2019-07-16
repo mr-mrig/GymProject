@@ -2,11 +2,11 @@
 using GymProject.Domain.FitnessJournalDomain.MusAggregate;
 using GymProject.Domain.Base;
 using System.Linq;
-
+using GymProject.Domain.FitnessJournalDomain.Exceptions;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class WellnessDayValue : ValueObject
+    public class DailyWellnessValue : ValueObject
     {
 
 
@@ -17,12 +17,12 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public GlycemiaValue Glycemia { get; private set; } = null;
 
 
-        private ICollection<IdType> _musList = new List<IdType>();
+        private ICollection<MusReference> _musList = new List<MusReference>();
 
         /// <summary>
         /// MUS list
         /// </summary>
-        public IReadOnlyCollection<IdType> MusList
+        public IReadOnlyCollection<MusReference> MusList
         {
             get => _musList.ToList().AsReadOnly();
         }
@@ -32,11 +32,11 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
         #region Ctors
 
-        private WellnessDayValue(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<IdType> musList = null)
+        private DailyWellnessValue(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<MusReference> musList = null)
         {
             Temperature = temperature;
             Glycemia = glycemia;
-            _musList = musList ?? new List<IdType>();
+            _musList = musList ?? new List<MusReference>();
         }
 
         #endregion
@@ -51,9 +51,12 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <param name="temperature">the temperature value</param>
         /// <param name="glycemia">The glycemia value</param>
         /// <returns>The new WellnessDay instance</returns>
-        public static WellnessDayValue TrackWellness(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<IdType> musList = null)
+        public static DailyWellnessValue TrackWellness(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<MusReference> musList = null)
         {
-            return new WellnessDayValue(temperature, glycemia, musList);
+            if (temperature is null && glycemia is null && (musList is null || musList.Count == 0))
+                throw new FitnessJournalDomainGenericException($"Cannot create a DailyWellnessValue with all NULL fields");
+
+            return new DailyWellnessValue(temperature, glycemia, musList);
         }
 
         #endregion
@@ -66,9 +69,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="temperature">The temperature to be trakced</param>v
         /// <returns>A new WellnessDay ObjectValue with changed Temerature</returns>
-        public WellnessDayValue ChangeTemperature(TemperatureValue temperature)
+        public DailyWellnessValue ChangeTemperature(TemperatureValue temperature)
         {
-            return WellnessDayValue.TrackWellness(temperature, Glycemia, _musList);
+            return DailyWellnessValue.TrackWellness(temperature, Glycemia, _musList);
         }
 
         /// <summary>
@@ -76,9 +79,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="glycemia">The glycemia to be trakced</param>
         /// <returns>A new WellnessDay ObjectValue with changed Glycemia</returns>
-        public WellnessDayValue ChangeGlycemia(GlycemiaValue glycemia)
+        public DailyWellnessValue ChangeGlycemia(GlycemiaValue glycemia)
         {
-            return WellnessDayValue.TrackWellness(Temperature, glycemia, _musList);
+            return DailyWellnessValue.TrackWellness(Temperature, glycemia, _musList);
         }
 
         /// <summary>
@@ -86,23 +89,34 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="musList">The must List to be diagnosed</param>
         /// <returns>A new WellnessDay ObjectValue with the selected MUSes</returns>
-        public WellnessDayValue SetMusList(ICollection<IdType> musList)
+        public DailyWellnessValue SetMusList(ICollection<MusReference> musList)
         {
-            return WellnessDayValue.TrackWellness(Temperature, Glycemia, musList);
+            return DailyWellnessValue.TrackWellness(Temperature, Glycemia, musList);
         }
 
 
         /// <summary>
         /// Add the selected MUS to the list of diagnosed MUSes
         /// </summary>
-        /// <param name="musId">The must Id to be diagnosed</param>
+        /// <param name="mus">The must to be diagnosed</param>
         /// <returns>A new WellnessDay ObjectValue with the added MUS</returns>
-        public WellnessDayValue DiagnoseMus(IdType musId)
+        public DailyWellnessValue DiagnoseMus(MusReference mus)
         {
-            _musList.Add(new IdType(1));
-            return WellnessDayValue.TrackWellness(Temperature, Glycemia, _musList);
+            _musList.Add(mus);
+            return DailyWellnessValue.TrackWellness(Temperature, Glycemia, _musList);
         }
         #endregion
+
+
+
+        /// <summary>
+        /// Checks whether all the properties are null
+        /// </summary>
+        /// <returns>True if no there are no non-null properties</returns>
+        public bool CheckNullState()
+        {
+            return GetAtomicValues().All(x => x is null);
+        }
 
 
         protected override IEnumerable<object> GetAtomicValues()

@@ -2,15 +2,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace GymProject.Domain.FitnessJournalDomain.Common
+
+namespace GymProject.Domain.SharedKernel
 {
     public class WeightUnitMeasureEnum : Enumeration
     {
 
+
+        #region Consts
+
+        private const float OuncesToGramsFactor = 28.35f;
+
+        private const float KilogramsToPoundsFactor = 2.20462f;
+        #endregion
+
+
         public static WeightUnitMeasureEnum Kilograms = new WeightUnitMeasureEnum(1, "Kilograms", "Kg");
-        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(2, "Pounds", "lbs");
+        public static WeightUnitMeasureEnum Grams = new WeightUnitMeasureEnum(2, "Grams", "g");
+        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(3, "Pounds", "lbs");
+        public static WeightUnitMeasureEnum Ounces = new WeightUnitMeasureEnum(4, "Ounces", "oz");
+
+
 
         /// <summary>
         /// Meas unit abbreviation - Kg / lbs
@@ -18,9 +31,10 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
         public string Abbreviation { get; private set; }
 
         /// <summary>
-        /// Formula to convert a value to the specific measure unit
+        /// Formula to convert a value to the specific measure system - Metric Vs  Imperial
         /// </summary>
         public Func<float, float> ApplyConversionFormula { get; private set; }
+
 
 
         #region Ctors
@@ -33,9 +47,17 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
             if (this.Equals(Kilograms))
                 ApplyConversionFormula = PoundsToKilograms;
 
+            // Convert to g
+            if (this.Equals(Grams))
+                ApplyConversionFormula = OuncesToGrams;
+
             // Convert to lbs
-            else if (this.Equals(Pounds))
+            else if (this.Equals(Pounds) || this.Equals(Ounces))
                 ApplyConversionFormula = KilogramsToPounds;
+
+            // Convert to oz
+            else if (this.Equals(Ounces))
+                ApplyConversionFormula = GramsToOunces;
         }
         #endregion
 
@@ -81,13 +103,22 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
 
         private static float PoundsToKilograms(float pounds)
         {
-            return pounds / 2.20462f;
+            return pounds / KilogramsToPoundsFactor;
         }
 
+        private static float OuncesToGrams(float ounces)
+        {
+            return ounces * OuncesToGramsFactor;
+        }
+
+        private static float GramsToOunces(float grams)
+        {
+            return grams / OuncesToGramsFactor;
+        }
 
         private static float KilogramsToPounds(float kilos)
         {
-            return kilos * 2.20462f;
+            return kilos * KilogramsToPoundsFactor;
         }
         #endregion
 

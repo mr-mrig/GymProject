@@ -20,7 +20,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <summary>
         /// Post sharing policy
         /// </summary>
-        public SharingPolicyEnum IsShared { get; private set; }
+        public SharingPolicyEnum SharingPolicy { get; private set; }
 
 
         private ICollection<Comment> _comments;
@@ -59,19 +59,23 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
 
 
+        #region Ctors
 
-        private Post(Author author, string caption, SharingPolicyEnum isShared)
+        private Post(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Post with no author");
 
             PostAuthor = author;
             Caption = caption;
-            IsShared = isShared;
+            SharingPolicy = isShared;
+            AttachedPicture = attachedPicture;
+
             CreatedOn = DateTime.Now;
 
             _comments = new List<Comment>();
             _likes = new List<Like>();
+
 
             // Add the OrderStarterDomainEvent to the domain events collection 
             // to be raised/dispatched when comitting changes into the Database [ After DbContext.SaveChanges() ]
@@ -82,13 +86,23 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             //AddDomainEvent(orderStartedDomainEvent);
         }
 
+        #endregion
+
 
 
         #region Factory Method
 
-        public static Post Write(Author author, string caption, SharingPolicyEnum isShared)
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <param name="author">Post author</param>
+        /// <param name="caption">Post caption</param>
+        /// <param name="isShared">Sharing policy</param>
+        /// <param name="attachedPicture">Picture to be attached - optional</param>
+        /// <returns>A new Post instance</returns>
+        public static Post Write(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null)
         {
-            return new Post(author, caption, isShared);
+            return new Post(author, caption, isShared, attachedPicture);
         }
 
         #endregion
@@ -110,7 +124,8 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         public void MakePrivate()
         {
-            IsShared = SharingPolicyEnum.Private;
+            SharingPolicy = SharingPolicyEnum.Private;
+            LastUpdate = DateTime.Now;
         }
 
         /// <summary>
@@ -118,7 +133,17 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         public void MakePublic()
         {
-            IsShared = SharingPolicyEnum.Public;
+            SharingPolicy = SharingPolicyEnum.Public;
+            LastUpdate = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Mark the Post as Public
+        /// </summary>
+        public void ChangeSharingPolicy(SharingPolicyEnum newSharingPolicy)
+        {
+            SharingPolicy = newSharingPolicy;
+            LastUpdate = DateTime.Now;
         }
 
         /// <summary>

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using GymProject.Domain.Base;
-using GymProject.Domain.FitnessJournalDomain.Common;
 
-namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
+
+
+namespace GymProject.Domain.SharedKernel
 {
 
-    public class WeightValue : ValueObject
+    public class BodyWeightValue : ValueObject
     {
 
 
@@ -30,7 +31,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
         #region Ctors
 
-        private WeightValue(float weight, WeightUnitMeasureEnum unit)
+        private BodyWeightValue(float weight, WeightUnitMeasureEnum unit)
         {
             Value = weight;
             Unit = unit;
@@ -47,9 +48,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="temperature">The weight</param>
         /// <returns>A new Weight object</returns>
-        public static WeightValue MeasureKilograms(float temperature)
+        public static BodyWeightValue MeasureKilograms(float temperature)
         {
-            return new WeightValue(FormatWeight(temperature), WeightUnitMeasureEnum.Kilograms);
+            return new BodyWeightValue(FormatWeight(temperature), WeightUnitMeasureEnum.Kilograms);
         }
 
 
@@ -58,9 +59,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="temperature">The weight</param>
         /// <returns>A new Weight object</returns>
-        public static WeightValue MeasurePouinds(float temperature)
+        public static BodyWeightValue MeasurePouinds(float temperature)
         {
-            return new WeightValue(FormatWeight(temperature), WeightUnitMeasureEnum.Pounds);
+            return new BodyWeightValue(FormatWeight(temperature), WeightUnitMeasureEnum.Pounds);
         }
 
 
@@ -69,9 +70,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="temperature">The temperature</param>
         /// <returns>The Weight object</returns>
-        public static WeightValue Measure(float temperature, WeightUnitMeasureEnum unit)
+        public static BodyWeightValue Measure(float temperature, WeightUnitMeasureEnum unit)
         {
-            return new WeightValue(FormatWeight(temperature), unit);
+            return new BodyWeightValue(FormatWeight(temperature), unit);
         }
         #endregion
 
@@ -83,7 +84,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="toUnit">The target measure unit</param>
         /// <returns>The new WeightValue instance</returns>
-        public WeightValue Convert(WeightUnitMeasureEnum toUnit)
+        public BodyWeightValue Convert(WeightUnitMeasureEnum toUnit)
         {
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }

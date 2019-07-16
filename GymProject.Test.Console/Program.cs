@@ -22,7 +22,7 @@ namespace GymProject.Test.Console
 
             fd.TrackWellnessDay(TemperatureValue.MeasureCelsius(37.56f), GlycemiaValue.MeasureMg(110.7f));
 
-            WellnessDay wd = fd.GetWellnessDay();
+            DailyWellnessValue wd = fd.DailyWellness;
 
             //wd.TrackTemperature(TemperatureValue.MeasureCelsius(11));
 

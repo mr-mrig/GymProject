@@ -100,6 +100,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// Converts the number to a glycemia compliant value
         /// </summary>
         /// <param name="value">The input temperature value</param>
+        /// <param name="measUnit">The measure unit</param>
         /// <returns>the converted value</returns>
         private static float FormatGlycemia(float value, GlycemiaMeasureUnitEnum measUnit)
         {
@@ -108,7 +109,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             //if (measUnit == GlycemiaMeasureUnitEnum.Millimols)
             //    decimalPlaces = 1;
 
-            // temperatures rounded to the first decimal
+            // Glycemia rounded to the first decimal
             return (float)Math.Round(value, decimalPlaces);
         }
 

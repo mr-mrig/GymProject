@@ -5,13 +5,13 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    class GenericPureNumberValue : ValueObject
+    public class GenericPureNumberValue : ValueObject
     {
 
 
         #region Consts
 
-        private const byte DefaultDecimalPlaces = 2;
+        public const byte DefaultDecimalPlaces = 2;
         #endregion
 
 

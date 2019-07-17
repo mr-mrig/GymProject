@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    class BodyCircumferenceValue : ValueObject
+    public class BodyCircumferenceValue : ValueObject
     {
 
 

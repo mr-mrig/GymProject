@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="DietPlan\" />
+    <Folder Include="MeasuresJournalDomain\BiaDevice\" />
     <Folder Include="TrainingDomain\" />
     <Folder Include="UserAccountDomain\" />
     <Folder Include="FitnessJournalDomain\MeasureAggregate\" />

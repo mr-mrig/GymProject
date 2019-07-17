@@ -2,15 +2,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class GlycemiaMeasureUnitEnum : Enumeration
+    public class PercentageMeasureUnitEnum : Enumeration
     {
 
-        public static GlycemiaMeasureUnitEnum Milligrams = new GlycemiaMeasureUnitEnum(1, "Milligrams", "mg/dL", MillimolesToMilligrams);
-        //public static GlycemiaMeasureUnitEnum Millimoles = new GlycemiaMeasureUnitEnum(2, "Millimoles", "mmol/L");
+
+        #region Consts
+
+        private const float RatioToPercentageMultiplierFactor = 100f;
+        #endregion
+
+
+
+        public static PercentageMeasureUnitEnum Percentage = new PercentageMeasureUnitEnum(1, "Percentage", "%", RatioToPercentage);
+        public static PercentageMeasureUnitEnum Ratio = new PercentageMeasureUnitEnum(2, "Ratio", "", PercentageToRatio);
+
+
 
         /// <summary>
         /// Meas unit abbreviation - mg/dL Vs mmol/L
@@ -25,7 +35,7 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        public GlycemiaMeasureUnitEnum(int id, string name, string abbreviation, Func<float, float> conversionFormula ) : base(id, name)
+        public PercentageMeasureUnitEnum(int id, string name, string abbreviation, Func<float, float>  conversionFormula) : base(id, name)
         {
             Abbreviation = abbreviation;
             ApplyConversionFormula = conversionFormula;
@@ -38,8 +48,8 @@ namespace GymProject.Domain.SharedKernel
         /// Get the enumeration list
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
-        public static IEnumerable<GlycemiaMeasureUnitEnum> List() =>
-            new[] { Milligrams };
+        public static IEnumerable<PercentageMeasureUnitEnum> List() =>
+            new[] { Percentage, Ratio };
 
 
         /// <summary>
@@ -47,7 +57,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="name">Enumeration name</param>
         /// <returns>The PictureType object instance</returns>
-        public static GlycemiaMeasureUnitEnum FromName(string name)
+        public static PercentageMeasureUnitEnum FromName(string name)
         {
             return List().SingleOrDefault(s => String.Equals(s.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }
@@ -58,21 +68,15 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="name">Enumeration id</param>
         /// <returns>The PictureType object instance</returns>
-        public static GlycemiaMeasureUnitEnum From(int id)
+        public static PercentageMeasureUnitEnum From(int id)
         {
             return List().SingleOrDefault(s => s.Id == id);
         }
 
 
-        private static float MillimolesToMilligrams(float mmols)
-        {
-            throw new NotImplementedException();
-        }
+        private static float RatioToPercentage(float ratio) => ratio * RatioToPercentageMultiplierFactor;
 
 
-        private static float MilligramsToMillimoles(float milligrams)
-        {
-            throw new NotImplementedException();
-        }
+        private static float PercentageToRatio(float percentage) =>  percentage / RatioToPercentageMultiplierFactor;
     }
 }

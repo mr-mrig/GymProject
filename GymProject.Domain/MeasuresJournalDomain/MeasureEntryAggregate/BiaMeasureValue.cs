@@ -7,7 +7,7 @@ using System.Text;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    class BiaMeasureValue : ValueObject
+    public class BiaMeasureValue : ValueObject
     {
 
 
@@ -24,12 +24,12 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Body Mass Index
         /// </summary>
-        public GenericPureNumberValue BMI { get; private set; } = null;
+        public PercentageValue BMI { get; private set; } = null;
 
         /// <summary>
         /// Body Fat
         /// </summary>
-        public GenericPureNumberValue BF { get; private set; } = null;
+        public BodyFatValue BF { get; private set; } = null;
 
         /// <summary>
         /// Free-Fat Mass
@@ -59,12 +59,12 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Extracellular Body Water Vs Total [%]
         /// </summary>
-        public GenericPureNumberValue ECWPerc { get; private set; } = null;
+        public PercentageValue ECWPerc { get; private set; } = null;
 
         /// <summary>
         /// Intracellular Body Water Vs Total [%]
         /// </summary>
-        public GenericPureNumberValue ICWPerc { get; private set; } = null;
+        public PercentageValue ICWPerc { get; private set; } = null;
 
         /// <summary>
         /// Body Cell Mass
@@ -79,7 +79,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Body Cell Mass Index - ECM / BCM
         /// </summary>
-        public GenericPureNumberValue BCMi { get; private set; } = null;
+        public PercentageValue BCMi { get; private set; } = null;
 
         /// <summary>
         /// Basal Metabolic Rate
@@ -89,14 +89,17 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// ExtraCellular Matrix [%]
         /// </summary>
-        public GenericPureNumberValue ECMatrix { get; private set; } = null;
+        public PercentageValue ECMatrix { get; private set; } = null;
 
         /// <summary>
         /// Phase Angle [PA°]
         /// </summary>
         public GenericPureNumberValue HPA { get; private set; } = null;
 
-
+        /// <summary>
+        /// FK to the BIA device
+        /// </summary>
+        public IdType BiaDeviceId { get; private set; } 
 
 
         #region Ctors
@@ -105,7 +108,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             BodyWeightValue Weight = null,
             BodyCircumferenceValue Height = null,
             float? BMI = null,
-            float? BF = null,
+            BodyFatValue BF = null,
             BodyWeightValue FFM = null,
             BodyWeightValue FM = null,
             VolumeValue TBW = null,
@@ -122,27 +125,24 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         {
             this.Weight = Weight;
             this.Height = Height;
-            this.BMI = BMI;
+            this.BMI = PercentageValue.MeasureRatio(BMI.Value, 1);
             this.BF = BF;
             this.FFM = FFM;
             this.FM = FM;
             this.TBW = TBW;
             this.ECW = ECW;
             this.ICW = ICW;
-            this.ECWPerc = ECWPerc;
-            this.ICWPerc = ICWPerc;
+            this.ECWPerc = PercentageValue.MeasurePercentage(ECWPerc.Value, 1);
+            this.ICWPerc = PercentageValue.MeasurePercentage(ICWPerc.Value, 1);
             this.BCM = BCM;
             this.ECM = ECM;
-            this.BCMi = BCMi;
+            this.BCMi = PercentageValue.MeasureRatio(BCMi.Value, 1);
             this.BMR = BMR;
-            this.ECMatrix = ECMatrix;
-            this.HPA = HPA;
+            this.ECMatrix = PercentageValue.MeasurePercentage(ECMatrix.Value, 1);
+            this.HPA = GenericPureNumberValue.Measure(HPA.Value, 1);
 
             if (CheckNullState())
                 throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
-
-            //// Here so it is excluded from the CheckNullState
-            //DietDayType = dayType;
         }
         #endregion
 
@@ -175,7 +175,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             BodyWeightValue weight = null,
             BodyCircumferenceValue height = null,
             float? bmi = null,
-            float? bf = null,
+            BodyFatValue bf = null,
             BodyWeightValue ffm = null,
             BodyWeightValue fm = null,
             VolumeValue tbw = null,
@@ -190,6 +190,22 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             float? ecmatrix = null,
             float? hpa = null)
         {
+            // Compute derived values when not provided, if possible
+            if(bmi == null && height != null && weight != null)
+                bmi = height.Value / weight.Value;
+
+            if(bf == null && weight != null && fm != null)
+                bf = BodyFatValue.MeasureBodyFat(weight.Value / fm.Value);
+
+            if(ecwPerc == null && ecw != null && tbw != null)
+                ecwPerc = ecw.Value / tbw.Value;
+
+            if(icwPerc == null && icw != null && tbw != null)
+                icwPerc = icw.Value / tbw.Value;
+
+            if(bcmi == null && ecm != null && bcm != null)
+                bcmi = ecm.Value / bcm.Value;
+
             return new BiaMeasureValue(weight, height, bmi, bf, ffm, fm, tbw, ecw, icw, ecwPerc, icwPerc, bcm, ecm, bcmi, bmr, ecmatrix, hpa);
         }
 
@@ -225,7 +241,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         float? hpa = null)
         {
             float? bmi = height.Value / weight.Value;
-            float? bf = weight.Value / fm.Value;
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(weight.Value / fm.Value);
             float? ecwPerc = ecw.Value / tbw.Value;
             float? icwPerc = icw.Value / tbw.Value;
             float? bcmi = ecm.Value / bcm.Value;

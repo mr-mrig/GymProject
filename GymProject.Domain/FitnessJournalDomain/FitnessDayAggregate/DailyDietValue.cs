@@ -12,37 +12,37 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// Carbohidrates quantity
         /// </summary>
-        public MacronutirentWeightValue Carbs { get; set; } = null;
+        public MacronutirentWeightValue Carbs { get; private set; } = null;
 
         /// <summary>
         /// Fats quantity
         /// </summary>
-        public MacronutirentWeightValue Fats { get; set; } = null;
+        public MacronutirentWeightValue Fats { get; private set; } = null;
 
         /// <summary>
         /// Proteins quantity
         /// </summary>
-        public MacronutirentWeightValue Proteins { get; set; } = null;
+        public MacronutirentWeightValue Proteins { get; private set; } = null;
 
         /// <summary>
         /// Salt quantity
         /// </summary>
-        public MicronutirentWeightValue Salt { get; set; } = null;
+        public MicronutirentWeightValue Salt { get; private set; } = null;
 
         /// <summary>
         /// Water quantity
         /// </summary>
-        public VolumeValue Water { get; set; } = null;
+        public VolumeValue Water { get; private set; } = null;
 
         /// <summary>
         /// Day with free meal
         /// </summary>
-        public bool? IsFreeMeal { get; set; } = null;
+        public bool? IsFreeMeal { get; private set; } = null;
 
         /// <summary>
         /// Diet day type
         /// </summary>
-        public DietDayTypeEnum DietDayType { get; set; } = null;
+        public DietDayTypeEnum DietDayType { get; private set; } = null;
 
 
 

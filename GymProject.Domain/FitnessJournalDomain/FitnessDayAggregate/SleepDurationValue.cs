@@ -41,18 +41,53 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         #region Factories
 
         /// <summary>
-        /// Factory for creating a new sleep duration value
+        /// Factory for creating a new sleep duration value - [h] default
         /// </summary>
-        /// <param name="sleepMinutes">The sleep duration</param>
+        /// <param name="sleepTime">The sleep duration</param>
         /// <param name="unit">The time unit meas - [h] default</param>
         /// <returns>The SleepDurationValue instance</returns>
-        public static SleepDurationValue Measure(float sleepMinutes, TimeMeasureUnitEnum unit = null)
+        public static SleepDurationValue Measure(float sleepTime, TimeMeasureUnitEnum unit = null)
         {
             TimeMeasureUnitEnum unitNotNull = unit ?? TimeMeasureUnitEnum.Hours;
 
-            return new SleepDurationValue(FormatHeartRate(sleepMinutes, unitNotNull), unitNotNull);
+            return new SleepDurationValue(FormatSleep(sleepTime, unitNotNull), unitNotNull);
         }
 
+        /// <summary>
+        /// Factory for creating a new sleep duration value - [h]
+        /// </summary>
+        /// <param name="sleepTime">The sleep duration</param>
+        /// <param name="unit">The time unit meas - [h]</param>
+        /// <returns>The SleepDurationValue instance</returns>
+        public static SleepDurationValue MeasureHours(float sleepTime)
+        {
+            return new SleepDurationValue(FormatSleep(sleepTime, TimeMeasureUnitEnum.Hours), TimeMeasureUnitEnum.Hours);
+        }
+
+        /// <summary>
+        /// Factory for creating a new sleep duration value - [m]
+        /// </summary>
+        /// <param name="sleepTime">The sleep duration</param>
+        /// <param name="unit">The time unit meas - [m]</param>
+        /// <returns>The SleepDurationValue instance</returns>
+        public static SleepDurationValue MeasureMinutes(float sleepTime)
+        {
+            return new SleepDurationValue(FormatSleep(sleepTime, TimeMeasureUnitEnum.Minutes), TimeMeasureUnitEnum.Minutes);
+        }
+
+        /// <summary>
+        /// Converts to minutes
+        /// </summary>
+        /// <param name="hours">The hours of sleep</param>
+        /// <returns>The SleepDurationValue converted to minutes</returns>
+        public static SleepDurationValue ToMinutes(float hours) => SleepDurationValue.MeasureMinutes(FormatSleep(hours * 60f, TimeMeasureUnitEnum.Minutes));
+
+        /// <summary>
+        /// Converts to hours
+        /// </summary>
+        /// <param name="minutes">The minutes of sleep</param>
+        /// <returns>The SleepDurationValue converted to hours</returns>
+        public static SleepDurationValue ToHours(float minutes) => SleepDurationValue.MeasureHours(FormatSleep(minutes / 60f, TimeMeasureUnitEnum.Hours));
         #endregion
 
 
@@ -63,7 +98,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="value">The input temperature value</param>
         /// <returns>the converted value</returns>
-        private static float FormatHeartRate(float value, TimeMeasureUnitEnum unit)
+        private static float FormatSleep(float value, TimeMeasureUnitEnum unit)
         {
             // Heartrate rounded to the nearest integer
             return (float)Math.Round(value, (int)GetDecimalPlaces(unit));

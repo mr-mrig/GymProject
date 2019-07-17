@@ -10,8 +10,8 @@ namespace GymProject.Domain.SharedKernel
     {
 
 
-        public static TemperatureMeasureUnitEnum Celsius = new TemperatureMeasureUnitEnum(1, "Celsius", "°C");
-        public static TemperatureMeasureUnitEnum Fahrenheit = new TemperatureMeasureUnitEnum(2, "Fahrenheit", "°F");
+        public static TemperatureMeasureUnitEnum Celsius = new TemperatureMeasureUnitEnum(1, "Celsius", "°C", FahrenheitToCelsius);
+        public static TemperatureMeasureUnitEnum Fahrenheit = new TemperatureMeasureUnitEnum(2, "Fahrenheit", "°F", CelsiusToFahrenheit);
 
         /// <summary>
         /// Meas unit abbreviation - °C / °F
@@ -26,17 +26,12 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        public TemperatureMeasureUnitEnum(int id, string name, string abbreviation) : base(id, name)
+
+
+        public TemperatureMeasureUnitEnum(int id, string name, string abbreviation, Func<float, float> conversionFormula) : base(id, name)
         {
             Abbreviation = abbreviation;
-
-            // Convert to °C
-            if (this.Equals(Celsius))
-                ApplyConversionFormula = FahrenheitToCelsius;
-
-            // Convert to °F
-            else if (this.Equals(Fahrenheit))
-                ApplyConversionFormula = CelsiusToFahrenheit;
+            ApplyConversionFormula = conversionFormula;
         }
         #endregion
 

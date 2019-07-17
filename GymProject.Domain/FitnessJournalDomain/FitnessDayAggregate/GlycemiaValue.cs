@@ -48,32 +48,33 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// Factory for creating a new mg/dL value
         /// </summary>
-        /// <param name="glycemia">The value</param>
+        /// <param name="milligrams">The value</param>
         /// <returns>The GlycemiaValue instance</returns>
-        public static GlycemiaValue MeasureMg(float glycemia)
+        public static GlycemiaValue MeasureMg(float milligrams)
         {
-            return new GlycemiaValue(FormatGlycemia(glycemia, GlycemiaMeasureUnitEnum.Milligrams));
+            return new GlycemiaValue(FormatGlycemia(milligrams, GlycemiaMeasureUnitEnum.Milligrams));
         }
 
         ///// <summary>
         ///// Factory for creating a new mmol/L value
         ///// </summary>
-        ///// <param name="glycemia"></param>
+        ///// <param name="mmols"></param>
         ///// <returns>The GlycemiaValue instance</returns>
-        //public static GlycemiaValue MeasureMmol(float glycemia, string measUnit)
+        //public static GlycemiaValue MeasureMmol(float mmols, string measUnit)
         //{
-        //    return new GlycemiaValue(glycemia, measUnit);
+        //    return new GlycemiaValue(mmols, measUnit);
         //}
 
         /// <summary>
-        /// Factory for creating a new value according to the measure unit
+        /// Factory for creating a new value according to the measure unit - mg/dl default
         /// </summary>
         /// <param name="glycemia">The value</param>
-        /// <param name="measUnit">The measure unit</param>
+        /// <param name="measUnit">The measure unit - mg/dl default</param>
         /// /// <returns>The GlycemiaValue instance</returns>
-        public static GlycemiaValue Measure(float glycemia, GlycemiaMeasureUnitEnum measUnit)
+        public static GlycemiaValue Measure(float glycemia, GlycemiaMeasureUnitEnum measUnit = null)
         {
-            return new GlycemiaValue(FormatGlycemia(glycemia, measUnit), measUnit);
+            GlycemiaMeasureUnitEnum unit = measUnit ?? GlycemiaMeasureUnitEnum.Milligrams;
+            return new GlycemiaValue(FormatGlycemia(glycemia, measUnit), unit);
         }
         #endregion
 

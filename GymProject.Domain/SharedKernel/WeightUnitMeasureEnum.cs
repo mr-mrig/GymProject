@@ -18,10 +18,10 @@ namespace GymProject.Domain.SharedKernel
         #endregion
 
 
-        public static WeightUnitMeasureEnum Kilograms = new WeightUnitMeasureEnum(1, "Kilograms", "Kg");
-        public static WeightUnitMeasureEnum Grams = new WeightUnitMeasureEnum(2, "Grams", "g");
-        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(3, "Pounds", "lbs");
-        public static WeightUnitMeasureEnum Ounces = new WeightUnitMeasureEnum(4, "Ounces", "oz");
+        public static WeightUnitMeasureEnum Kilograms = new WeightUnitMeasureEnum(1, "Kilograms", "Kg", PoundsToKilograms);
+        public static WeightUnitMeasureEnum Grams = new WeightUnitMeasureEnum(2, "Grams", "g", OuncesToGrams);
+        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(3, "Pounds", "lbs", KilogramsToPounds);
+        public static WeightUnitMeasureEnum Ounces = new WeightUnitMeasureEnum(4, "Ounces", "oz", GramsToOunces);
 
 
 
@@ -39,25 +39,10 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        public WeightUnitMeasureEnum(int id, string name, string abbreviation) : base(id, name)
+        public WeightUnitMeasureEnum(int id, string name, string abbreviation, Func<float, float> conversionFormula) : base(id, name)
         {
             Abbreviation = abbreviation;
-
-            // Convert to Kg
-            if (this.Equals(Kilograms))
-                ApplyConversionFormula = PoundsToKilograms;
-
-            // Convert to g
-            if (this.Equals(Grams))
-                ApplyConversionFormula = OuncesToGrams;
-
-            // Convert to lbs
-            else if (this.Equals(Pounds) || this.Equals(Ounces))
-                ApplyConversionFormula = KilogramsToPounds;
-
-            // Convert to oz
-            else if (this.Equals(Ounces))
-                ApplyConversionFormula = GramsToOunces;
+            ApplyConversionFormula = conversionFormula;
         }
         #endregion
 

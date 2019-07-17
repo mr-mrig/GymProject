@@ -35,11 +35,11 @@ namespace GymProject.Domain.SharedKernel
 
         private MacronutirentWeightValue(float measValue, WeightUnitMeasureEnum measUnit = null)
         {
-            if (!AllowedMeasUnits.Contains(measUnit))
-                throw new ArgumentException($"{measUnit} is not allowed for {GetType().Name}", "measUnit");
-
             Value = measValue;
             Unit = measUnit ?? WeightUnitMeasureEnum.Grams;
+
+            if (!AllowedMeasUnits.Contains(Unit))
+                throw new ArgumentException($"{Unit.Abbreviation} is not allowed for {GetType().Name}", "measUnit");
         }
         #endregion
 
@@ -50,32 +50,32 @@ namespace GymProject.Domain.SharedKernel
         /// <summary>
         /// Factory for creating a new value [g]
         /// </summary>
-        /// <param name="weight">The value</param>
+        /// <param name="grams">The value</param>
         /// <returns>The MacronutirentWeightValue instance</returns>
-        public static MacronutirentWeightValue MeasureGrams(float weight)
+        public static MacronutirentWeightValue MeasureGrams(float grams)
         {
-            return new MacronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Grams));
+            return new MacronutirentWeightValue(FormatWeight(grams, WeightUnitMeasureEnum.Grams));
         }
 
         /// <summary>
         /// Factory for creating a new value [oz]
         /// </summary>
-        /// <param name="weight">The value</param>
+        /// <param name="ounces">The value</param>
         /// <returns>The MacronutirentWeightValue instance</returns>
-        public static MacronutirentWeightValue MeasureOunces(float weight)
+        public static MacronutirentWeightValue MeasureOunces(float ounces)
         {
-            return new MacronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Ounces));
+            return new MacronutirentWeightValue(FormatWeight(ounces, WeightUnitMeasureEnum.Ounces), WeightUnitMeasureEnum.Ounces);
         }
 
         /// <summary>
         /// Factory for creating a new value according to the measure unit
         /// </summary>
-        /// <param name="glycemia">The value</param>
+        /// <param name="weight">The value</param>
         /// <param name="measUnit">The measure unit - [g] default</param>
         /// /// <returns>The MacronutirentWeightValue instance</returns>
-        public static MacronutirentWeightValue Measure(float glycemia, WeightUnitMeasureEnum measUnit = null)
+        public static MacronutirentWeightValue Measure(float weight, WeightUnitMeasureEnum measUnit = null)
         {
-            return new MacronutirentWeightValue(FormatWeight(glycemia, measUnit), measUnit);
+            return new MacronutirentWeightValue(FormatWeight(weight, measUnit), measUnit);
         }
         #endregion
 
@@ -89,6 +89,9 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The new MacronutirentWeightValue instance</returns>
         public MacronutirentWeightValue Convert(WeightUnitMeasureEnum toUnit)
         {
+            if (Unit.Equals(toUnit))
+                return this;
+
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }
         #endregion

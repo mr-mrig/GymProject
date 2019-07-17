@@ -44,22 +44,22 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// Factory method for Celsius temperatures
         /// </summary>
-        /// <param name="temperature">The temperature</param>
+        /// <param name="celsius">The temperature</param>
         /// <returns>The TemperatureValue object</returns>
-        public static TemperatureValue MeasureCelsius(float temperature)
+        public static TemperatureValue MeasureCelsius(float celsius)
         {
-            return new TemperatureValue(FormatTemperature(temperature), TemperatureMeasureUnitEnum.Celsius);
+            return new TemperatureValue(FormatTemperature(celsius), TemperatureMeasureUnitEnum.Celsius);
         }
 
 
         /// <summary>
         /// Factory method for Fahrenheit temperatures
         /// </summary>
-        /// <param name="temperature">The temperature</param>
+        /// <param name="fahrenheit">The temperature</param>
         /// <returns>The TemperatureValue object</returns>
-        public static TemperatureValue MeasureFahrenheit(float temperature)
+        public static TemperatureValue MeasureFahrenheit(float fahrenheit)
         {
-            return new TemperatureValue(FormatTemperature(temperature), TemperatureMeasureUnitEnum.Fahrenheit);
+            return new TemperatureValue(FormatTemperature(fahrenheit), TemperatureMeasureUnitEnum.Fahrenheit);
         }
 
 
@@ -68,9 +68,10 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="temperature">The temperature</param>
         /// <returns>The TemperatureValue object</returns>
-        public static TemperatureValue Measure(float temperature, TemperatureMeasureUnitEnum unit)
+        public static TemperatureValue Measure(float temperature, TemperatureMeasureUnitEnum unit = null)
         {
-            return new TemperatureValue(FormatTemperature(temperature), unit);
+            TemperatureMeasureUnitEnum notNullUnit = unit ?? TemperatureMeasureUnitEnum.Celsius;
+            return new TemperatureValue(FormatTemperature(temperature), notNullUnit);
         }
         #endregion
 
@@ -85,6 +86,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <returns>The new TemperatureValue instance</returns>
         public TemperatureValue Convert(TemperatureMeasureUnitEnum toUnit)
         {
+            if (Unit.Equals(toUnit))
+                return this;
+
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }
         #endregion

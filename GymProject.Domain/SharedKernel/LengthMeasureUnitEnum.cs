@@ -13,17 +13,20 @@ namespace GymProject.Domain.SharedKernel
 
         #region Consts
 
-        /// <summary>
-        /// Factor for converting between meas units
-        /// </summary>
-        public const float LinearConversionFactor = 10f;
+        private static readonly float InchesToMillimetersMultplierFactor = 25.4f;
+        private static readonly float MetersToYardsMultplierFactor = 1.094f;
+        private static readonly float MilesToKilometersMultplierFactor = 1.609f;
         #endregion
 
 
-        public static LengthMeasureUnitEnum Millimeters = new LengthMeasureUnitEnum(1, "Millimeters", "mm", false);
-        public static LengthMeasureUnitEnum Centimeters = new LengthMeasureUnitEnum(2, "Centimeters", "cm", true);
-        public static LengthMeasureUnitEnum Meters = new LengthMeasureUnitEnum(4, "Meters", "m", true);
-        public static LengthMeasureUnitEnum Kilometers = new LengthMeasureUnitEnum(7, "Kilometers", "Km", true);
+
+        public static LengthMeasureUnitEnum Millimeters = new LengthMeasureUnitEnum(1, "Millimeters", "mm", 0);
+        public static LengthMeasureUnitEnum Centimeters = new LengthMeasureUnitEnum(2, "Centimeters", "cm", 1);
+        public static LengthMeasureUnitEnum Meters = new LengthMeasureUnitEnum(3, "Meters", "m", 1);
+        public static LengthMeasureUnitEnum Kilometers = new LengthMeasureUnitEnum(4, "Kilometers", "Km", 1);
+        public static LengthMeasureUnitEnum Inches = new LengthMeasureUnitEnum(5, "Inches", "Inch", 2);
+        public static LengthMeasureUnitEnum Yards = new LengthMeasureUnitEnum(6, "Yard", "yd", 1);
+        public static LengthMeasureUnitEnum Miles = new LengthMeasureUnitEnum(7, "Miles", "m", 1);
 
 
 
@@ -37,16 +40,17 @@ namespace GymProject.Domain.SharedKernel
         /// Wether the unit allows decimal places or not.
         /// To be used when deciding how to display the measure
         /// </summary>
-        public bool HasDecimals { get; private set; }
+        public byte MinimumDecimals { get; private set; }
+
 
 
 
         #region Ctors
 
-        public LengthMeasureUnitEnum(int id, string name, string abbreviation, bool hasDecimals) : base(id, name)
+        public LengthMeasureUnitEnum(int id, string name, string abbreviation, byte minimumDecimals) : base(id, name)
         {
             Abbreviation = abbreviation;
-            HasDecimals = hasDecimals;
+            MinimumDecimals = minimumDecimals;
         }
         #endregion
 
@@ -57,7 +61,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<LengthMeasureUnitEnum> List() =>
-            new[] { Millimeters, Centimeters, Meters, Kilometers };
+            new[] { Millimeters, Centimeters, Meters, Kilometers, Inches, Yards, Miles, };
 
 
         /// <summary>
@@ -83,29 +87,89 @@ namespace GymProject.Domain.SharedKernel
 
 
 
-        /// <summary>
-        /// Convert the value from one measure unit to the other, assuming a linear conversion
-        /// </summary>
-        /// <param name="value">The value to be converteed</param>
-        /// <param name="fromUnit">The original measure unit</param>
-        /// <param name="toUnit">The target measure unit</param>
-        /// <returns>The converted value</returns>
-        public static float ConverToUnit(float value, LengthMeasureUnitEnum fromUnit, LengthMeasureUnitEnum toUnit)
-        {
-            int idDifference = fromUnit.Id - toUnit.Id;
+        #region Converters
 
-            // No conversion needed
-            if (idDifference == 0)
+        public static float ApplyConversionFormula(float value, LengthMeasureUnitEnum fromUnit, LengthMeasureUnitEnum toUnit)
+        {
+
+            // Check for non-meaningful conversion
+            if (toUnit.Equals(fromUnit))
                 return value;
 
-            // Convert backward
-            else if (idDifference > 0)
-                return value * LinearConversionFactor * idDifference;
+            switch (fromUnit)
+            {
 
-            // Convert forward
-            else
-                return value / LinearConversionFactor / idDifference;
+                case var _ when fromUnit.Equals(Millimeters):
 
+                    if (toUnit.Equals(Inches))
+                        return value / InchesToMillimetersMultplierFactor;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+
+                case var _ when fromUnit.Equals(Centimeters):
+
+                    if (toUnit.Equals(Inches))
+                        return value / InchesToMillimetersMultplierFactor * 10;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+
+                case var _ when fromUnit.Equals(Meters):
+                    
+                    if (toUnit.Equals(Yards))
+                        return value * MetersToYardsMultplierFactor;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+
+                case var _ when fromUnit.Equals(Kilometers):
+
+                    if (toUnit.Equals(Miles))
+                        return value / MilesToKilometersMultplierFactor;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+
+                case var _ when fromUnit.Equals(Inches):
+
+                    if (toUnit.Equals(Millimeters))
+                        return value * InchesToMillimetersMultplierFactor;
+
+                    else if (toUnit.Equals(Centimeters))
+                        return value * InchesToMillimetersMultplierFactor / 10;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+
+                case var _ when fromUnit.Equals(Meters):
+
+                    if (toUnit.Equals(Yards))
+                        return value / MetersToYardsMultplierFactor;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+
+                case var _ when fromUnit.Equals(Miles):
+
+                    if (toUnit.Equals(Kilometers))
+                        return value * MilesToKilometersMultplierFactor;
+
+                    else
+                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+
+                default:
+                    return value;
+            }
         }
+
+        #endregion
+
     }
 }

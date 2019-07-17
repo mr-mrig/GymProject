@@ -9,8 +9,8 @@ namespace GymProject.Domain.SharedKernel
     public class CaloriesMeasureUnitEnum : Enumeration
     {
 
-        public static CaloriesMeasureUnitEnum Kilocals = new CaloriesMeasureUnitEnum(1, "Kilocal", "kcal");
-        public static CaloriesMeasureUnitEnum KiloJoules = new CaloriesMeasureUnitEnum(2, "KiloJoules", "kJ");
+        public static CaloriesMeasureUnitEnum Kilocals = new CaloriesMeasureUnitEnum(1, "Kilocal", "kcal", JoulesToKilocals);
+        public static CaloriesMeasureUnitEnum KiloJoules = new CaloriesMeasureUnitEnum(2, "KiloJoules", "kJ", KilocalsToJoules);
 
 
 
@@ -28,17 +28,10 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        public CaloriesMeasureUnitEnum(int id, string name, string abbreviation) : base(id, name)
+        public CaloriesMeasureUnitEnum(int id, string name, string abbreviation, Func<float, float> conversionFormula) : base(id, name)
         {
             Abbreviation = abbreviation;
-
-            // Convert to kcal
-            if (this.Equals(Kilocals))
-                ApplyConversionFormula = JoulesToKilocals;
-
-            // Convert to J
-            else if (this.Equals(KiloJoules))
-                ApplyConversionFormula = KilocalsToJoules;
+            ApplyConversionFormula = conversionFormula;
         }
         #endregion
 

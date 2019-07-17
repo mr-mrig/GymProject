@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
 
-namespace GymProject.Domain.FitnessJournalDomain.Common
+namespace GymProject.Domain.SharedKernel
 {
     public class CalorieValue : ValueObject
     {
@@ -32,15 +32,15 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
 
         #region Ctors
 
-        private CalorieValue(float glycemia)
+        private CalorieValue(float calories)
         {
-            Value = glycemia;
+            Value = calories;
             Unit = CaloriesMeasureUnitEnum.Kilocals;
         }
 
-        private CalorieValue(float glycemia, CaloriesMeasureUnitEnum measUnit)
+        private CalorieValue(float calories, CaloriesMeasureUnitEnum measUnit)
         {
-            Value = glycemia;
+            Value = calories;
             Unit = measUnit;
         }
         #endregion
@@ -49,26 +49,39 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
 
         #region Factories
 
-        /// <summary>
-        /// Factory for creating a new kcal value
-        /// </summary>
-        /// <param name="glycemia">The value</param>
-        /// <returns>The CalorieValue instance</returns>
-        public static CalorieValue MeasureKcal(float glycemia)
-        {
-            return new CalorieValue(FormatCalories(glycemia));
-        }
-
 
         /// <summary>
         /// Factory for creating a new value according to the measure unit - [kcal] default
         /// </summary>
-        /// <param name="glycemia">The value</param>
+        /// <param name="calories">The value</param>
         /// <param name="measUnit">The measure unit - [kcal] default </param>
         /// /// <returns>The CalorieValue instance</returns>
-        public static CalorieValue Measure(float glycemia, CaloriesMeasureUnitEnum measUnit = null)
+        public static CalorieValue Measure(float calories, CaloriesMeasureUnitEnum measUnit = null)
         {
-            return new CalorieValue(FormatCalories(glycemia), measUnit);
+            CaloriesMeasureUnitEnum unit = measUnit ?? CaloriesMeasureUnitEnum.Kilocals;
+            return new CalorieValue(FormatCalories(calories), unit);
+        }
+
+
+        /// <summary>
+        /// Factory for creating a new value - [kcal]
+        /// </summary>
+        /// <param name="kcals">The value</param>
+        /// /// <returns>The CalorieValue instance</returns>
+        public static CalorieValue MeasureKcal(float kcals)
+        {
+            return new CalorieValue(FormatCalories(kcals), CaloriesMeasureUnitEnum.Kilocals);
+        }
+
+
+        /// <summary>
+        /// Factory for creating a new value - [kJ]
+        /// </summary>
+        /// <param name="kJoules">The value</param>
+        /// /// <returns>The CalorieValue instance</returns>
+        public static CalorieValue MeasureKJoules(float kJoules)
+        {
+            return new CalorieValue(FormatCalories(kJoules), CaloriesMeasureUnitEnum.KiloJoules);
         }
         #endregion
 

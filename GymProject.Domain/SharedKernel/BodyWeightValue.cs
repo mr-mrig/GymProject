@@ -46,33 +46,34 @@ namespace GymProject.Domain.SharedKernel
         /// <summary>
         /// Factory method for Kilograms
         /// </summary>
-        /// <param name="temperature">The weight</param>
+        /// <param name="kilograms">The weight</param>
         /// <returns>A new Weight object</returns>
-        public static BodyWeightValue MeasureKilograms(float temperature)
+        public static BodyWeightValue MeasureKilograms(float kilograms)
         {
-            return new BodyWeightValue(FormatWeight(temperature), WeightUnitMeasureEnum.Kilograms);
+            return new BodyWeightValue(FormatWeight(kilograms), WeightUnitMeasureEnum.Kilograms);
         }
 
 
         /// <summary>
         /// Factory method for Pounds
         /// </summary>
-        /// <param name="temperature">The weight</param>
+        /// <param name="pounds">The weight</param>
         /// <returns>A new Weight object</returns>
-        public static BodyWeightValue MeasurePouinds(float temperature)
+        public static BodyWeightValue MeasurePounds(float pounds)
         {
-            return new BodyWeightValue(FormatWeight(temperature), WeightUnitMeasureEnum.Pounds);
+            return new BodyWeightValue(FormatWeight(pounds), WeightUnitMeasureEnum.Pounds);
         }
 
 
         /// <summary>
         /// Factory method according to the unit specified
         /// </summary>
-        /// <param name="temperature">The temperature</param>
+        /// <param name="weight">The temperature</param>
         /// <returns>The Weight object</returns>
-        public static BodyWeightValue Measure(float temperature, WeightUnitMeasureEnum unit)
+        public static BodyWeightValue Measure(float weight, WeightUnitMeasureEnum unit = null)
         {
-            return new BodyWeightValue(FormatWeight(temperature), unit);
+            WeightUnitMeasureEnum notNullUnit = unit ?? WeightUnitMeasureEnum.Kilograms;
+            return new BodyWeightValue(FormatWeight(weight), notNullUnit);
         }
         #endregion
 
@@ -86,6 +87,9 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The new WeightValue instance</returns>
         public BodyWeightValue Convert(WeightUnitMeasureEnum toUnit)
         {
+            if (Unit.Equals(toUnit))
+                return this;
+
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }
         #endregion
@@ -121,7 +125,8 @@ namespace GymProject.Domain.SharedKernel
 
         protected override IEnumerable<object> GetAtomicValues()
         {
-            throw new System.NotImplementedException();
+            yield return Value;
+            yield return Unit;
         }
     }
 

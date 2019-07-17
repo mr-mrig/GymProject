@@ -71,7 +71,8 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
         protected override IEnumerable<object> GetAtomicValues()
         {
-            throw new System.NotImplementedException();
+            yield return Value;
+            yield return Unit;
         }
     }
 }

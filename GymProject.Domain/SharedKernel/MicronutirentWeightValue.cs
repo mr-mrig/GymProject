@@ -36,11 +36,11 @@ namespace GymProject.Domain.SharedKernel
 
         private MicronutirentWeightValue(float measValue, WeightUnitMeasureEnum measUnit = null)
         {
-            if (!AllowedMeasUnits.Contains(measUnit))
-                throw new ArgumentException($"{measUnit} is not allowed for {GetType().Name}", "measUnit");
-
             Value = measValue;
             Unit = measUnit ?? WeightUnitMeasureEnum.Grams;
+
+            if (!AllowedMeasUnits.Contains(Unit))
+                throw new ArgumentException($"{Unit.Abbreviation} is not allowed for {GetType().Name}", "measUnit");
         }
         #endregion
 
@@ -65,7 +65,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The MacronutirentWeightValue instance</returns>
         public static MicronutirentWeightValue MeasureOunces(float weight)
         {
-            return new MicronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Ounces));
+            return new MicronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Ounces), WeightUnitMeasureEnum.Ounces);
         }
 
         /// <summary>
@@ -76,7 +76,8 @@ namespace GymProject.Domain.SharedKernel
         /// /// <returns>The MicronutirentWeightValue instance</returns>
         public static MicronutirentWeightValue Measure(float glycemia, WeightUnitMeasureEnum measUnit = null)
         {
-            return new MicronutirentWeightValue(FormatWeight(glycemia, measUnit), measUnit);
+            WeightUnitMeasureEnum unit = measUnit ?? WeightUnitMeasureEnum.Grams;
+            return new MicronutirentWeightValue(FormatWeight(glycemia, measUnit), unit);
         }
         #endregion
 
@@ -90,6 +91,9 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The new MicronutirentWeightValue instance</returns>
         public MicronutirentWeightValue Convert(WeightUnitMeasureEnum toUnit)
         {
+            if (Unit.Equals(toUnit))
+                return this;
+
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }
         #endregion

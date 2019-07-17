@@ -42,11 +42,11 @@ namespace GymProject.Domain.SharedKernel
 
         private VolumeValue(float measValue, VolumeUnitMeasureEnum measUnit = null)
         {
-            if (!AllowedMeasUnits.Contains(measUnit))
-                throw new ArgumentException($"{measUnit} is not allowed for {GetType().Name}", "measUnit");
-
             Value = measValue;
             Unit = measUnit ?? VolumeUnitMeasureEnum.Liters;
+
+            if (!AllowedMeasUnits.Contains(Unit))
+                throw new ArgumentException($"{measUnit.Abbreviation} is not allowed for {GetType().Name}", "measUnit");
         }
         #endregion
 

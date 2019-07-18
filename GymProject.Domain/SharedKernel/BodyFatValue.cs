@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GymProject.Domain.Base;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class BodyFatValue : ValueObjec
+    public class BodyFatValue : ValueObject
     {
 
 
@@ -64,6 +65,11 @@ namespace GymProject.Domain.SharedKernel
         private static float FormatBodyFat(float value)
         {
             return (float)Math.Round(value, DecimalPlaces);
+        }
+
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            yield return Value;
         }
 
         #endregion

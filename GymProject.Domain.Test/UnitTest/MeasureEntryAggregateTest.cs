@@ -135,26 +135,140 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
+        [Fact]
+        public void CheckPercentageValue()
+        {
+            PercentageValue perc = PercentageValue.MeasurePercentage(70.26f);
+            PercentageValue perc2 = PercentageValue.MeasurePercentage(70.3f);
+            PercentageValue perc3 = PercentageValue.MeasurePercentage(70.26f, 2);
+            PercentageValue perc4 = PercentageValue.MeasurePercentage(50.1f, 0);
+
+            Assert.NotNull(perc);
+            Assert.Equal(perc, perc2);
+            Assert.NotEqual(perc, perc3);
+            Assert.Equal(70.3, perc.Value);
+            Assert.Equal(PercentageMeasureUnitEnum.Percentage, perc.Unit);
+            Assert.Equal(70.26f, perc3.Value);
+            Assert.Equal(50f, perc4.Value);
+
+            PercentageValue ratio = PercentageValue.MeasureRatio(perc.Value / 100);
+            PercentageValue ratio2 = PercentageValue.MeasureRatio(perc.Value / 100 + 0.001f);
+            PercentageValue ratio3 = PercentageValue.MeasureRatio(perc.Value / 100, 4);
+            PercentageValue ratio4 = PercentageValue.MeasureRatio(perc4.Value / 100, 4);
+
+            Assert.NotNull(perc);
+            Assert.Equal(ratio, ratio2);
+            Assert.NotEqual(ratio, ratio3);
+            Assert.Equal(Math.Round(70.3 / 100, 1), ratio.Value);
+            Assert.Equal(PercentageMeasureUnitEnum.Ratio, ratio.Unit);
+            Assert.Equal(Math.Round(70.26f / 100, 4), ratio3.Value);
+            Assert.Equal(Math.Round(50f/100, 4), ratio4.Value);
+
+            Assert.Equal(perc4.Value / 100f, ratio4.Value);
+
+            PercentageValue test = PercentageValue.MeasurePercentage(90f);
+            PercentageValue percToRatio = test.Convert(PercentageMeasureUnitEnum.Ratio);
+
+            Assert.Equal(test.Value, percToRatio.Convert(PercentageMeasureUnitEnum.Percentage).Value);
+        }
+
+
+        [Fact]
+        public void CheckBodyFat()
+        {
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(7.811f);
+            BodyFatValue bf2 = BodyFatValue.MeasureBodyFat(7.8f);
+
+            Assert.NotNull(bf);
+            Assert.Equal(bf, bf2);
+            Assert.Equal(7.81f, bf.Value);
+        }
+
+
+        [Fact]
+        public void PlicometryTrackMeasuresFail()
+        {
+            Assert.Throws<Exception>(() => PlicometryValue.TrackMeasures());  
+        }
+
 
         [Fact]
         public void PlicometryTrackMeasuresMetric()
         {
+            float bmiNum = 21.2f;
             BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
             BodyCircumferenceValue height = BodyCircumferenceValue.MeasureCentimeters(174f);
             CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
             CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
             CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(40f);
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(4.591f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(bmiNum);
 
-            PlicometryValue plico = PlicometryValue.TrackMeasures(weight,)
+            PlicometryValue plico = PlicometryValue.TrackMeasures(weight, height, chest: chest, abdomen: abdomen, thigh: thigh, ffm: ffm, bf: bf, bmi: bmiNum);
 
-            Assert.NotNull(cal);
-            Assert.Equal(cal, cal2);
-            Assert.Equal(cal, cal3);
-            Assert.Equal(2301f, cal.Value);
-            Assert.Equal(cal, calKj.Convert(CaloriesMeasureUnitEnum.Kilocals));
+            Assert.NotNull(plico);
+            Assert.Equal(PlicometryFormulaEnum.NotSet, plico.Formula);
+            Assert.Equal(weight, plico.Weight);
+            Assert.Equal(height, plico.Height);
+            Assert.Equal(chest, plico.Chest);
+            Assert.Equal(abdomen, plico.Abdomen);
+            Assert.Equal(thigh, plico.Thigh);
+            Assert.Equal(ffm, plico.FFM);
+            Assert.Equal(bf, plico.BF);
+            Assert.Equal(bmi, plico.BMI);
+
+            Assert.Null(plico.Subscapular);
+            Assert.Null(plico.Suprailiac);
+            Assert.Null(plico.Tricep);
+            Assert.Null(plico.Gender);
+            Assert.Null(plico.Armpit);
+            Assert.Null(plico.FM);
+            Assert.Equal(0, plico.Age);
+            Assert.Null(plico.Armpit);
         }
 
 
+
+        [Fact]
+        public void PlicometryTrackMeasuresMetricMale()
+        {
+            ushort age = 34;
+            GenderTypeEnum male = GenderTypeEnum.Male;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyCircumferenceValue height = BodyCircumferenceValue.MeasureCentimeters(174f);
+            CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
+            CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue subscapular = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue suprailiac = CaliperSkinfoldValue.MeasureMillimeters(9f);
+            CaliperSkinfoldValue tricep = CaliperSkinfoldValue.MeasureMillimeters(3.5f);
+            CaliperSkinfoldValue armpit = CaliperSkinfoldValue.MeasureMillimeters(4.46f);
+
+            PlicometryValue plico = PlicometryValue.ComputeJacksonPollock7(male, age, weight, height, chest: chest, abdomen: abdomen, thigh: thigh, tricep: tricep, 
+                armpit: armpit, suprailiac: suprailiac, subscapular: subscapular);
+
+            Assert.NotNull(plico);
+            Assert.Equal(PlicometryFormulaEnum.JacksonPollock7, plico.Formula);
+            AssemblyTraitAttribute.Equals(age, plico.Age);
+            Assert.Equal(weight, plico.Weight);
+            Assert.Equal(height, plico.Height);
+            Assert.Equal(chest, plico.Chest);
+            Assert.Equal(abdomen, plico.Abdomen);
+            Assert.Equal(thigh, plico.Thigh);
+            Assert.Equal(subscapular, plico.Subscapular);
+            Assert.Equal(suprailiac, plico.Suprailiac);
+            Assert.Equal(tricep, plico.Tricep);
+            Assert.Equal(male, plico.Gender);
+            Assert.Equal(ffm, plico.FFM);
+            Assert.Equal(bf, plico.BF);
+            Assert.Equal(bmi, plico.BMI);
+
+      
+            Assert.Null(plico.FM);
+            Assert.Equal(0, plico.Age);
+            Assert.Null(plico.Armpit);
+        }
 
 
 

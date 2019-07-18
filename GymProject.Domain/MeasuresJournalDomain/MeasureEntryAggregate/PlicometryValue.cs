@@ -25,7 +25,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// The age
         /// </summary>
-        public ushort Age { get; private set; }
+        public ushort Age { get; private set; } = 0;
 
         /// <summary>
         /// Body Weight
@@ -152,6 +152,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         (
             PlicometryFormulaEnum formulaType,
             GenderTypeEnum gender,
+            ushort age,
             BodyWeightValue weight,
             BodyCircumferenceValue height,
             CaliperSkinfoldValue tricep = null,
@@ -162,6 +163,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             CaliperSkinfoldValue abdomen = null,
             CaliperSkinfoldValue thigh = null)
         {
+            Age = age;
             Gender = gender;
             Weight = weight;
             Height = height;
@@ -322,7 +324,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <param name="abdomen">The abdomen skinfold</param>
         /// <param name="thigh">The thigh skinfold</param>
         /// <returns>A new PlicometryValue instance</returns>
-        public static PlicometryValue ComputeFromMeasures
+        public static PlicometryValue ComputeJacksonPollock7
         (
             GenderTypeEnum gender,
             BodyWeightValue weight,

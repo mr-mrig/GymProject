@@ -18,10 +18,12 @@ namespace GymProject.Domain.SharedKernel
         #endregion
 
 
-        public static WeightUnitMeasureEnum Kilograms = new WeightUnitMeasureEnum(1, "Kilograms", "Kg", PoundsToKilograms);
-        public static WeightUnitMeasureEnum Grams = new WeightUnitMeasureEnum(2, "Grams", "g", OuncesToGrams);
-        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(3, "Pounds", "lbs", KilogramsToPounds);
-        public static WeightUnitMeasureEnum Ounces = new WeightUnitMeasureEnum(4, "Ounces", "oz", GramsToOunces);
+
+        public static WeightUnitMeasureEnum Kilograms = new WeightUnitMeasureEnum(1, "Kilograms", "Kg", MeasurmentSystemEnum.Metric, PoundsToKilograms);
+        public static WeightUnitMeasureEnum Grams = new WeightUnitMeasureEnum(2, "Grams", "g", MeasurmentSystemEnum.Metric, OuncesToGrams);
+        public static WeightUnitMeasureEnum Pounds = new WeightUnitMeasureEnum(3, "Pounds", "lbs", MeasurmentSystemEnum.Imperial, KilogramsToPounds);
+        public static WeightUnitMeasureEnum Ounces = new WeightUnitMeasureEnum(4, "Ounces", "oz", MeasurmentSystemEnum.Imperial, GramsToOunces);
+
 
 
 
@@ -35,14 +37,23 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         public Func<float, float> ApplyConversionFormula { get; private set; }
 
+        /// <summary>
+        /// The measurment system: metric Vs imperial
+        /// To be used when deciding how to display the measure
+        /// </summary>
+        public MeasurmentSystemEnum MeasureSystemType { get; private set; }
+
+
+
 
 
         #region Ctors
 
-        public WeightUnitMeasureEnum(int id, string name, string abbreviation, Func<float, float> conversionFormula) : base(id, name)
+        public WeightUnitMeasureEnum(int id, string name, string abbreviation, MeasurmentSystemEnum measSystem, Func<float, float> conversionFormula) : base(id, name)
         {
             Abbreviation = abbreviation;
             ApplyConversionFormula = conversionFormula;
+            MeasureSystemType = measSystem;
         }
         #endregion
 

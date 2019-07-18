@@ -20,13 +20,13 @@ namespace GymProject.Domain.SharedKernel
 
 
 
-        public static LengthMeasureUnitEnum Millimeters = new LengthMeasureUnitEnum(1, "Millimeters", "mm", 0);
-        public static LengthMeasureUnitEnum Centimeters = new LengthMeasureUnitEnum(2, "Centimeters", "cm", 1);
-        public static LengthMeasureUnitEnum Meters = new LengthMeasureUnitEnum(3, "Meters", "m", 1);
-        public static LengthMeasureUnitEnum Kilometers = new LengthMeasureUnitEnum(4, "Kilometers", "Km", 1);
-        public static LengthMeasureUnitEnum Inches = new LengthMeasureUnitEnum(5, "Inches", "Inch", 2);
-        public static LengthMeasureUnitEnum Yards = new LengthMeasureUnitEnum(6, "Yard", "yd", 1);
-        public static LengthMeasureUnitEnum Miles = new LengthMeasureUnitEnum(7, "Miles", "m", 1);
+        public static LengthMeasureUnitEnum Millimeters = new LengthMeasureUnitEnum(1, "Millimeters", "mm", MeasurmentSystemEnum.Metric, 0);
+        public static LengthMeasureUnitEnum Centimeters = new LengthMeasureUnitEnum(2, "Centimeters", "cm", MeasurmentSystemEnum.Metric, 1);
+        public static LengthMeasureUnitEnum Meters = new LengthMeasureUnitEnum(3, "Meters", "m", MeasurmentSystemEnum.Metric, 1);
+        public static LengthMeasureUnitEnum Kilometers = new LengthMeasureUnitEnum(4, "Kilometers", "Km", MeasurmentSystemEnum.Metric, 1);
+        public static LengthMeasureUnitEnum Inches = new LengthMeasureUnitEnum(5, "Inches", "Inch", MeasurmentSystemEnum.Imperial, 2);
+        public static LengthMeasureUnitEnum Yards = new LengthMeasureUnitEnum(6, "Yard", "yd", MeasurmentSystemEnum.Imperial, 1);
+        public static LengthMeasureUnitEnum Miles = new LengthMeasureUnitEnum(7, "Miles", "m", MeasurmentSystemEnum.Imperial, 1);
 
 
 
@@ -42,15 +42,21 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         public byte MinimumDecimals { get; private set; }
 
+        /// <summary>
+        /// The measurment system: metric Vs imperial
+        /// To be used when deciding how to display the measure
+        /// </summary>
+        public MeasurmentSystemEnum MeasureSystemType { get; private set; }
 
 
 
         #region Ctors
 
-        public LengthMeasureUnitEnum(int id, string name, string abbreviation, byte minimumDecimals) : base(id, name)
+        public LengthMeasureUnitEnum(int id, string name, string abbreviation, MeasurmentSystemEnum measSytem, byte minimumDecimals) : base(id, name)
         {
             Abbreviation = abbreviation;
             MinimumDecimals = minimumDecimals;
+            MeasureSystemType = measSytem;
         }
         #endregion
 

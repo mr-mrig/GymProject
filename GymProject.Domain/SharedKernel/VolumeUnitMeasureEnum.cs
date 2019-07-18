@@ -17,7 +17,7 @@ namespace GymProject.Domain.SharedKernel
         #endregion
 
 
-        public static VolumeUnitMeasureEnum Liters = new VolumeUnitMeasureEnum(1, "Liters", "l");
+        public static VolumeUnitMeasureEnum Liters = new VolumeUnitMeasureEnum(1, "Liters", "l", MeasurmentSystemEnum.Metric);
 
 
 
@@ -31,17 +31,20 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         public Func<float, float> ApplyConversionFormula { get; private set; } = null;
 
+        /// <summary>
+        /// The measurment system: metric Vs imperial
+        /// To be used when deciding how to display the measure
+        /// </summary>
+        public MeasurmentSystemEnum MeasureSystemType { get; private set; }
+
 
 
         #region Ctors
 
-        public VolumeUnitMeasureEnum(int id, string name, string abbreviation) : base(id, name)
+        public VolumeUnitMeasureEnum(int id, string name, string abbreviation, MeasurmentSystemEnum measureSystemType) : base(id, name)
         {
             Abbreviation = abbreviation;
-
-            //// Convert to Kg
-            //if (this.Equals(Liters))
-            //    ApplyConversionFormula = PoundsToKilograms;
+            MeasureSystemType = measureSystemType;
 
         }
         #endregion

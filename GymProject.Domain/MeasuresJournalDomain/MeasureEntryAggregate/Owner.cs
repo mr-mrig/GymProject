@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    public class Author : Entity<IdType>
+    public class Owner : Entity<IdType>
     {
 
 
@@ -16,16 +16,16 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Author(string username, string imageProfileUrl)
+        private Owner(string username, string imageProfileUrl)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));
         }
 
 
-        public static Author Register(string username, string imageprofile)
+        public static Owner Register(string username, string imageprofile)
         {
-            return new Author(username, imageprofile);
+            return new Owner(username, imageprofile);
         }
 
     }

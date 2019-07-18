@@ -27,6 +27,20 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
+        /// Checks if the gender is Femal
+        /// </summary>
+        /// <returns>True if Female</returns>
+        public bool IsFemale() => Equals(Female);
+
+
+        /// <summary>
+        /// Checks if the gender is Male
+        /// </summary>
+        /// <returns>True if Male</returns>
+        public bool IsMale() => Equals(Female);
+
+
+        /// <summary>
         /// Get the enumeration list
         /// </summary>
         /// <returns>The list storing the enumeration</returns>

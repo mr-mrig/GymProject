@@ -37,7 +37,7 @@ namespace GymProject.Domain.SharedKernel
         /// Checks if the gender is Male
         /// </summary>
         /// <returns>True if Male</returns>
-        public bool IsMale() => Equals(Female);
+        public bool IsMale() => Equals(Male);
 
 
         /// <summary>

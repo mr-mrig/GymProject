@@ -5,11 +5,17 @@ using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
-    public class BodyCircumferenceValue : ValueObject
+    public class BodyMeasureValue : ValueObject
     {
 
 
         #region Consts
+
+        public readonly List<LengthMeasureUnitEnum> SupportedMeasureUnits = new List<LengthMeasureUnitEnum>()
+        {
+            LengthMeasureUnitEnum.Centimeters,
+            LengthMeasureUnitEnum.Inches,
+        };
         #endregion
 
 
@@ -27,8 +33,11 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        private BodyCircumferenceValue(float weight, LengthMeasureUnitEnum unit)
+        private BodyMeasureValue(float weight, LengthMeasureUnitEnum unit)
         {
+            if (!SupportedMeasureUnits.Contains(unit))
+                throw new UnsupportedMeasureException($"{GetType().Name} - Unsupported measure: {unit.Name}");
+
             Value = weight;
             Unit = unit;
         }
@@ -44,9 +53,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="centimeters">The measure [cm]</param>
         /// <returns>A new BodyCircumferenceValue object</returns>
-        public static BodyCircumferenceValue MeasureCentimeters(float centimeters)
+        public static BodyMeasureValue MeasureCentimeters(float centimeters)
         {
-            return new BodyCircumferenceValue(FormatMeasure(centimeters, LengthMeasureUnitEnum.Centimeters), LengthMeasureUnitEnum.Centimeters);
+            return new BodyMeasureValue(FormatMeasure(centimeters, LengthMeasureUnitEnum.Centimeters), LengthMeasureUnitEnum.Centimeters);
         }
 
 
@@ -55,9 +64,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="inches">The measure [inch]</param>
         /// <returns>A new BodyCircumferenceValue object</returns>
-        public static BodyCircumferenceValue MeasureInches(float inches)
+        public static BodyMeasureValue MeasureInches(float inches)
         {
-            return new BodyCircumferenceValue(FormatMeasure(inches, LengthMeasureUnitEnum.Inches), LengthMeasureUnitEnum.Inches);
+            return new BodyMeasureValue(FormatMeasure(inches, LengthMeasureUnitEnum.Inches), LengthMeasureUnitEnum.Inches);
         }
 
 
@@ -66,10 +75,10 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="measure">The measure</param>
         /// <returns>The BodyCircumferenceValue object</returns>
-        public static BodyCircumferenceValue Measure(float measure, LengthMeasureUnitEnum unit = null)
+        public static BodyMeasureValue Measure(float measure, LengthMeasureUnitEnum unit = null)
         {
             LengthMeasureUnitEnum notNullUnit = unit ?? LengthMeasureUnitEnum.Centimeters;
-            return new BodyCircumferenceValue(FormatMeasure(measure, notNullUnit), notNullUnit);
+            return new BodyMeasureValue(FormatMeasure(measure, notNullUnit), notNullUnit);
         }
         #endregion
 
@@ -77,16 +86,31 @@ namespace GymProject.Domain.SharedKernel
         #region Business Methods
 
         /// <summary>
-        /// Creates a new WeightValue which is the conversion of the current one to the selected measure unit
+        /// Creates a new BodyCircumferenceValue which is the conversion of the current one to the selected measure unit
         /// </summary>
         /// <param name="toUnit">The target measure unit</param>
-        /// <returns>The new WeightValue instance</returns>
-        public BodyCircumferenceValue Convert(LengthMeasureUnitEnum toUnit)
+        /// <returns>The new BodyCircumferenceValue instance</returns>
+        public BodyMeasureValue Convert(LengthMeasureUnitEnum toUnit)
         {
             if (Unit.Equals(toUnit))
                 return this;
 
             return Measure(LengthMeasureUnitEnum.ApplyConversionFormula(Value, Unit, toUnit), toUnit);
+        }
+
+
+        /// <summary>
+        /// Converts the selected value to the specified measure unit, without loosing precision.
+        /// To be used only in this assembly, when rounding might cause precision loss.
+        /// </summary>
+        /// <param name="toUnit">The target measure unit</param>
+        /// <returns>The exact result of the conversion, no rounding done</returns>
+        internal float ConvertExact(LengthMeasureUnitEnum toUnit)
+        {
+            if (Unit.Equals(toUnit))
+                return Value;
+
+            return LengthMeasureUnitEnum.ApplyConversionFormula(Value, Unit, toUnit);
         }
         #endregion
 

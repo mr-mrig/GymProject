@@ -95,6 +95,13 @@ namespace GymProject.Domain.SharedKernel
 
         #region Converters
 
+        /// <summary>
+        /// Metric Vs Imperial conversion.
+        /// </summary>
+        /// <param name="value">The value to be converted</param>
+        /// <param name="fromUnit">The orgiginal measure unit</param>
+        /// <param name="toUnit">The destination measure unit</param>
+        /// <returns>The converted value</returns>
         public static float ApplyConversionFormula(float value, LengthMeasureUnitEnum fromUnit, LengthMeasureUnitEnum toUnit)
         {
 
@@ -111,7 +118,7 @@ namespace GymProject.Domain.SharedKernel
                         return value / InchesToMillimetersMultplierFactor;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
 
                 case var _ when fromUnit.Equals(Centimeters):
@@ -120,7 +127,7 @@ namespace GymProject.Domain.SharedKernel
                         return value / InchesToMillimetersMultplierFactor * 10;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
 
                 case var _ when fromUnit.Equals(Meters):
@@ -129,7 +136,7 @@ namespace GymProject.Domain.SharedKernel
                         return value * MetersToYardsMultplierFactor;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
 
                 case var _ when fromUnit.Equals(Kilometers):
@@ -138,7 +145,7 @@ namespace GymProject.Domain.SharedKernel
                         return value / MilesToKilometersMultplierFactor;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
 
                 case var _ when fromUnit.Equals(Inches):
@@ -150,7 +157,7 @@ namespace GymProject.Domain.SharedKernel
                         return value * InchesToMillimetersMultplierFactor / 10;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
 
                 case var _ when fromUnit.Equals(Meters):
@@ -159,7 +166,7 @@ namespace GymProject.Domain.SharedKernel
                         return value / MetersToYardsMultplierFactor;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
 
                 case var _ when fromUnit.Equals(Miles):
@@ -168,7 +175,7 @@ namespace GymProject.Domain.SharedKernel
                         return value * MilesToKilometersMultplierFactor;
 
                     else
-                        throw new UnsupportedConversionException(fromUnit.Abbreviation, toUnit.Abbreviation);
+                        throw new UnsupportedMeasureException(fromUnit.Abbreviation, toUnit.Abbreviation);
 
                 default:
                     return value;

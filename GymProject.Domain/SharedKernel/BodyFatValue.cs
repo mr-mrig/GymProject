@@ -49,6 +49,14 @@ namespace GymProject.Domain.SharedKernel
 
 
         #region Business Methods
+
+        /// <summary>
+        /// Expresses the BF as a pure ratio number
+        /// </summary>
+        /// <returns>The ratio</returns>
+        public PercentageValue AsRatio()
+            => PercentageValue.MeasureRatio(Value / 100f, 2 * DecimalPlaces);       // Tune the decimal places not to loose precision
+
         #endregion
 
 

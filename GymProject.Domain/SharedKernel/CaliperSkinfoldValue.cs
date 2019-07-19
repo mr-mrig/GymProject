@@ -77,11 +77,27 @@ namespace GymProject.Domain.SharedKernel
         #region Business Methods
 
         /// <summary>
-        /// Creates a new WeightValue which is the conversion of the current one to the selected measure unit
+        /// Converts the selected value to the specified measure unit, without loosing precision.
+        /// Only Metric Vs Imperial conversions supported
+        /// To be used only in this assembly, when rounding might cause precision loss.
         /// </summary>
         /// <param name="toUnit">The target measure unit</param>
         /// <returns>The new WeightValue instance</returns>
-        public CaliperSkinfoldValue Convert(LengthMeasureUnitEnum toUnit)
+        internal float ConvertMetricVsImperialExact(LengthMeasureUnitEnum toUnit)
+        {
+            if (Unit.Equals(toUnit))
+                return Value;
+
+            return LengthMeasureUnitEnum.ApplyConversionFormula(Value, Unit, toUnit);
+        }
+
+        /// <summary>
+        /// Creates a new WeightValue which is the conversion of the current one to the selected measure unit
+        /// Only Metric Vs Imperial conversions supported
+        /// </summary>
+        /// <param name="toUnit">The target measure unit</param>
+        /// <returns>The new WeightValue instance</returns>
+        public CaliperSkinfoldValue ConvertMetricVsImperial(LengthMeasureUnitEnum toUnit)
         {
             if (Unit.Equals(toUnit))
                 return this;

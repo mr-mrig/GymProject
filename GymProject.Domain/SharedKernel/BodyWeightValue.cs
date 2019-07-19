@@ -13,6 +13,12 @@ namespace GymProject.Domain.SharedKernel
 
         #region Consts
 
+        public readonly List<WeightUnitMeasureEnum> SupportedMeasureUnits = new List<WeightUnitMeasureEnum>()
+        {
+            WeightUnitMeasureEnum.Kilograms,
+            WeightUnitMeasureEnum.Pounds,
+        };
+
         private const byte DecimalPlaces = 1;
         #endregion
 
@@ -33,6 +39,9 @@ namespace GymProject.Domain.SharedKernel
 
         private BodyWeightValue(float weight, WeightUnitMeasureEnum unit)
         {
+            if(!SupportedMeasureUnits.Contains(unit))
+                throw new UnsupportedMeasureException($"{GetType().Name} - Unsupported measure: {unit.Name}");
+
             Value = weight;
             Unit = unit;
         }

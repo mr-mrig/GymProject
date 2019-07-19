@@ -12,6 +12,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 
 
 
+
         /// <summary>
         /// The formula to be applied for the BF computation
         /// </summary>
@@ -35,7 +36,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Body Height
         /// </summary>
-        public BodyCircumferenceValue Height { get; private set; } = null;
+        public BodyMeasureValue Height { get; private set; } = null;
 
         /// <summary>
         /// Body Mass Index
@@ -70,7 +71,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Caliper Skinfold Measure
         /// </summary>
-        public CaliperSkinfoldValue Armpit { get; private set; } = null;
+        public CaliperSkinfoldValue Midaxillary { get; private set; } = null;
 
         /// <summary>
         /// Caliper Skinfold Measure
@@ -96,7 +97,6 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 
 
 
-
         #region Ctors
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         (
             GenderTypeEnum gender,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
+            BodyMeasureValue height,
             float? bmi,
             BodyFatValue bf,
             BodyWeightValue fm,
@@ -132,17 +132,17 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             FM = fm;
             Tricep = tricep;
             Chest = chest;
-            Armpit = armpit;
+            Midaxillary = armpit;
             Subscapular = subscapular;
             Suprailiac = suprailiac;
             Abdomen = abdomen;
             Thigh = thigh;
 
-            if (!HasValidMeasUnits())
-                throw new UnsupportedConversionException($"Incompatible meas units provided to {GetType().Name} Ctor");
+            if (GetValidSkinfoldValues().Count() == 0)
+                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL measures");
 
-            if (CheckNullState())
-                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
+            if (!HasValidMeasUnits())
+                throw new UnsupportedMeasureException($"Incompatible meas units provided to {GetType().Name} Ctor");
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             GenderTypeEnum gender,
             ushort age,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
+            BodyMeasureValue height,
             CaliperSkinfoldValue tricep = null,
             CaliperSkinfoldValue chest = null,
             CaliperSkinfoldValue armpit = null,
@@ -163,29 +163,30 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             CaliperSkinfoldValue abdomen = null,
             CaliperSkinfoldValue thigh = null)
         {
+            Formula = formulaType;
             Age = age;
             Gender = gender;
             Weight = weight;
             Height = height;
             Tricep = tricep;
             Chest = chest;
-            Armpit = armpit;
+            Midaxillary = armpit;
             Subscapular = subscapular;
             Suprailiac = suprailiac;
             Abdomen = abdomen;
             Thigh = thigh;
 
-            if (!HasValidMeasUnits())
-                throw new UnsupportedConversionException($"Incompatible meas units provided to {GetType().Name} Ctor");
+            if (GetValidSkinfoldValues().Count() == 0)
+                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL measures");
 
-            if (CheckNullState())
-                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
+            if (!HasValidMeasUnits())
+                throw new UnsupportedMeasureException($"Incompatible meas units provided to {GetType().Name} Ctor");
 
             // Compute derivable measures
-            BMI = ComputeBodyMassIndex();                                               // Null if invalid parameters
+            BMI = BodyMeasuresCalculator.ComputeBodyMassIndex(Height, Weight);          // Null if invalid parameters
             BF = formulaType.ApplyFormula(Gender, Age, GetValidSkinfoldValues());       // Null if invalid parameters
-            FM = ComputeFatMass();                                                      // Null if invalid parameters
-            FFM = ComputeFatFreeMass();                                                 // Null if invalid parameters
+            FM = BodyMeasuresCalculator.ComputeFatMass(Weight, BF);                     // Null if invalid parameters
+            FFM = BodyMeasuresCalculator.ComputeFatFreeMass(Weight, FM);                // Null if invalid parameters
         }
 
         #endregion
@@ -215,7 +216,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         public static PlicometryValue TrackMeasures
         (
             BodyWeightValue weight = null,
-            BodyCircumferenceValue height = null,
+            BodyMeasureValue height = null,
             float? bmi = null,
             BodyFatValue bf = null,
             BodyWeightValue fm = null,
@@ -238,6 +239,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Factory for applying the Jackson-Pollock 3-skinfolds formula for Males
         /// </summary>
+        /// <param name="age">The age</param>
         /// <param name="weight">The weight</param>
         /// <param name="height">The height</param>
         /// <param name="chest">The chest skinfold</param>
@@ -246,20 +248,22 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <returns>A new PlicometryValue instance</returns>
         public static PlicometryValue ComputeJacksonPollockMale3
         (
+            ushort age,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
+            BodyMeasureValue height,
             CaliperSkinfoldValue chest,
             CaliperSkinfoldValue abdomen,
             CaliperSkinfoldValue thigh
         )
 
-            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock3, GenderTypeEnum.Male, weight, height, null, chest, null, null, null, abdomen, thigh);
+            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock3, GenderTypeEnum.Male, age, weight, height, null, chest, null, null, null, abdomen, thigh);
 
 
 
         /// <summary>
         /// Factory for applying the Jackson-Pollock 3-skinfolds formula for Females
         /// </summary>
+        /// <param name="age">The age</param>
         /// <param name="weight">The weight</param>
         /// <param name="height">The height</param>
         /// <param name="tricep">The tricep skinfold</param>
@@ -268,14 +272,15 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <returns>A new PlicometryValue instance</returns>
         public static PlicometryValue ComputeJacksonPollockFemale3
         (
+            ushort age,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
+            BodyMeasureValue height,
             CaliperSkinfoldValue tricep,
             CaliperSkinfoldValue suprailiac,
             CaliperSkinfoldValue thigh
         )
 
-            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock3, GenderTypeEnum.Female, weight, height, tricep, null, null, null, suprailiac, null, thigh);
+            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock3, GenderTypeEnum.Female, age, weight, height, tricep, null, null, null, suprailiac, null, thigh);
 
 
 
@@ -283,7 +288,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Factory for applying the Jackson-Pollock 4-skinfolds formula
         /// </summary>
-        /// <param name="formulaType">The formula to be applied</param>
+        /// <param name="age">The age</param>
         /// <param name="gender">The gender</param>
         /// <param name="weight">The weight</param>
         /// <param name="height">The height</param>
@@ -297,16 +302,17 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <returns>A new PlicometryValue instance</returns>
         public static PlicometryValue ComputeJacksonPollock4
         (
+            ushort age,
             GenderTypeEnum gender,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
+            BodyMeasureValue height,
             CaliperSkinfoldValue tricep,
             CaliperSkinfoldValue suprailiac,
             CaliperSkinfoldValue abdomen,
             CaliperSkinfoldValue thigh
         )
 
-            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock4, gender, weight, height, tricep, null, null, null, suprailiac, abdomen, thigh);
+            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock4, gender, age, weight, height, tricep, null, null, null, suprailiac, abdomen, thigh);
 
 
 
@@ -314,6 +320,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// Factory for applying the Jackson-Pollock 7-skinfolds formula
         /// </summary>
         /// <param name="gender">The gender</param>
+        /// <param name="age">The age</param>
         /// <param name="weight">The weight</param>
         /// <param name="height">The height</param>
         /// <param name="tricep">The tricep skinfold</param>
@@ -327,8 +334,9 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         public static PlicometryValue ComputeJacksonPollock7
         (
             GenderTypeEnum gender,
+            ushort age,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
+            BodyMeasureValue height,
             CaliperSkinfoldValue tricep,
             CaliperSkinfoldValue chest,
             CaliperSkinfoldValue armpit,
@@ -338,56 +346,13 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             CaliperSkinfoldValue thigh 
         )
 
-            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock7, gender, weight, height, tricep, chest, armpit, subscapular, suprailiac, abdomen, thigh);
+            => new PlicometryValue(PlicometryFormulaEnum.JacksonPollock7, gender, age, weight, height, tricep, chest, armpit, subscapular, suprailiac, abdomen, thigh);
 
         #endregion
 
 
 
         #region Business Methods
-
-        /// <summary>
-        /// Compute the Fat Mass weight according to the BIA values
-        /// </summary>
-        /// <returns>The FM weight according to the Weight measure unit, or null if the parameters for the computation has not been provided</returns>
-        public BodyWeightValue ComputeFatMass()
-        {
-            if (Weight == null && BF == null)
-                return null;
-
-            return BodyWeightValue.Measure(Weight.Value * BF.Value, Weight.Unit);
-        }
-
-
-        /// <summary>
-        /// Compute the Fat-Free Mass weight according to the BIA values
-        /// </summary>
-        /// <returns>The FFM weight according to the Weight and Height measure units, or null if the parameters for the computation has not been provided</returns>
-        public BodyWeightValue ComputeFatFreeMass()
-        {
-            if (Weight == null && BF == null)
-                return null;
-
-            return BodyWeightValue.Measure(Weight.Value * (1 - BF.Value), Weight.Unit);
-        }
-
-
-        /// <summary>
-        /// Compute the BMI index according to the BIA values
-        /// </summary>
-        /// <returns>The BMI index [pure number], or null if invalid input properties</returns>
-        public PercentageValue ComputeBodyMassIndex()
-        {
-            // Input not provided
-            if (Weight == null && Height == null)
-                return null;
-
-            if (!Weight.Unit.MeasureSystemType.Equals(Height.Unit.MeasureSystemType))
-                return null;
-
-            return PercentageValue.MeasureRatio(Height.Value / Weight.Value);
-        }
-
 
         /// <summary>
         /// Checks whether all the properties are null
@@ -405,13 +370,18 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         {
 
             // Check if weight and height have non-coherent meas units
-            if (!Height.Unit.MeasureSystemType.Equals(Weight.Unit.MeasureSystemType))
+            if (Height?.Unit.MeasureSystemType.Equals(Weight?.Unit.MeasureSystemType) != null
+                && !(Height?.Unit.MeasureSystemType.Equals(Weight?.Unit.MeasureSystemType)).Value)
                 return false;
 
             // Check that all the skinfolds have coherent meas system, by comparing one of them with all the others
-            MeasurmentSystemEnum rhs = Tricep.Unit.MeasureSystemType;
+            MeasurmentSystemEnum rhs = GetValidSkinfoldValues().FirstOrDefault()?.Unit.MeasureSystemType ?? null;
 
-            return GetSkinfoldValues().Where(x => !x.Unit.MeasureSystemType.Equals(rhs)).Count() == 0;
+            if (rhs == null)
+                return false;
+
+            // Exclude RHS from the measures to be compared
+            return GetSkinfoldValues().Where(x => !x.Equals(rhs) && !x.Unit.MeasureSystemType.Equals(rhs)).Count() == 0;
         }
         #endregion
 
@@ -454,7 +424,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             yield return FM;
             yield return Tricep;
             yield return Chest;
-            yield return Armpit;
+            yield return Midaxillary;
             yield return Subscapular;
             yield return Suprailiac;
             yield return Abdomen;

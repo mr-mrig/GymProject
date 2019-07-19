@@ -20,7 +20,7 @@ namespace GymProject.Domain.SharedKernel
         /// <summary>
         /// Apply the formula 
         /// </summary>
-        public Func<GenderTypeEnum, IList<BodyCircumferenceValue>, BodyFatValue> ApplyFormula { get; private set; } = null;
+        public Func<GenderTypeEnum, IList<BodyMeasureValue>, BodyFatValue> ApplyFormula { get; private set; } = null;
 
 
 
@@ -28,7 +28,7 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        public CircumferenceFormulaEnum(int id, string name, Func<GenderTypeEnum, IList<BodyCircumferenceValue>, BodyFatValue> formula) : base(id, name)
+        public CircumferenceFormulaEnum(int id, string name, Func<GenderTypeEnum, IList<BodyMeasureValue>, BodyFatValue> formula) : base(id, name)
         {
             ApplyFormula = formula;
         }
@@ -69,13 +69,13 @@ namespace GymProject.Domain.SharedKernel
 
         #region Converters
 
-        private static BodyFatValue WrapDummyFormula(GenderTypeEnum gender, IList<BodyCircumferenceValue> measures)
+        private static BodyFatValue WrapDummyFormula(GenderTypeEnum gender, IList<BodyMeasureValue> measures)
         {
             return null;
         }
 
 
-        private static BodyFatValue WrapHodgonAndBeckettFormula(GenderTypeEnum gender, IList<BodyCircumferenceValue> measures)
+        private static BodyFatValue WrapHodgonAndBeckettFormula(GenderTypeEnum gender, IList<BodyMeasureValue> measures)
         {
             // Check for valid input
             if (!ValidParams(gender, measures))
@@ -84,26 +84,26 @@ namespace GymProject.Domain.SharedKernel
             // Switch between Metric Vs Imperial version
             if (measures[0].Unit.MeasureSystemType.IsMetric())
             {
-                IList<BodyCircumferenceValue> convertedMeasures = measures.Select(x => x.Convert(LengthMeasureUnitEnum.Inches)).ToList();
+                IList<float> convertedMeasures = measures.Select(x => x.ConvertExact(LengthMeasureUnitEnum.Inches)).ToList();
                 return ImperialUnitFormula(gender, convertedMeasures);
             }
             else
-                return ImperialUnitFormula(gender, measures);
+                return ImperialUnitFormula(gender, measures.Select(x => x.Value).ToList());
         }
 
 
 
-        private static BodyFatValue ImperialUnitFormula(GenderTypeEnum gender, IList<BodyCircumferenceValue> measures)
+        private static BodyFatValue ImperialUnitFormula(GenderTypeEnum gender, IList<float> measures)
         {
             if (gender.IsMale())
 
                 return BodyFatValue.MeasureBodyFat(
-                    (float)(86.010 * Math.Log10(measures[0].Value - measures[1].Value) - 70.041 * Math.Log10(measures[2].Value) + 36.76));
+                    (float)(86.010 * Math.Log10(measures[0] - measures[1]) - 70.041 * Math.Log10(measures[2]) + 36.76));
 
             else if (gender.IsFemale())
 
                 return BodyFatValue.MeasureBodyFat(
-                    (float)(163.205 * Math.Log10(measures[0].Value + measures[1].Value - measures[2].Value) - 97.684 * Math.Log10(measures[3].Value) - 78.387));
+                    (float)(163.205 * Math.Log10(measures[0] + measures[1] - measures[2]) - 97.684 * Math.Log10(measures[3]) - 78.387));
 
             else
                 return null;
@@ -111,7 +111,7 @@ namespace GymProject.Domain.SharedKernel
 
 
 
-        private static bool ValidParams(GenderTypeEnum gender, IList<BodyCircumferenceValue> measures)
+        private static bool ValidParams(GenderTypeEnum gender, IList<BodyMeasureValue> measures)
         {
             return measures.Where(x => !x.Unit.Equals(measures[0].Unit)).Count() == 0       // All meas with the same meas unit
                 && !gender.Equals(GenderTypeEnum.NotSet)                                    // Valid gender

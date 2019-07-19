@@ -19,7 +19,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Body Height
         /// </summary>
-        public BodyCircumferenceValue Height { get; private set; } = null;
+        public BodyMeasureValue Height { get; private set; } = null;
 
         /// <summary>
         /// Body Mass Index
@@ -106,7 +106,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 
         private BiaMeasureValue(
             BodyWeightValue Weight = null,
-            BodyCircumferenceValue Height = null,
+            BodyMeasureValue Height = null,
             float? BMI = null,
             BodyFatValue BF = null,
             BodyWeightValue FFM = null,
@@ -125,21 +125,21 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         {
             this.Weight = Weight;
             this.Height = Height;
-            this.BMI = PercentageValue.MeasureRatio(BMI.Value, 1);
+            this.BMI = BMI == null ? null : PercentageValue.MeasureRatio(BMI.Value, 1);
             this.BF = BF;
             this.FFM = FFM;
             this.FM = FM;
             this.TBW = TBW;
             this.ECW = ECW;
             this.ICW = ICW;
-            this.ECWPerc = PercentageValue.MeasurePercentage(ECWPerc.Value, 1);
-            this.ICWPerc = PercentageValue.MeasurePercentage(ICWPerc.Value, 1);
+            this.ECWPerc = ECWPerc == null ? null : PercentageValue.MeasurePercentage(ECWPerc.Value, 1);
+            this.ICWPerc = ICWPerc == null ? null : PercentageValue.MeasurePercentage(ICWPerc.Value, 1);
             this.BCM = BCM;
             this.ECM = ECM;
-            this.BCMi = PercentageValue.MeasureRatio(BCMi.Value, 1);
+            this.BCMi = BCMi == null ? null : PercentageValue.MeasureRatio(BCMi.Value, 1);
             this.BMR = BMR;
-            this.ECMatrix = PercentageValue.MeasurePercentage(ECMatrix.Value, 1);
-            this.HPA = GenericPureNumberValue.Measure(HPA.Value, 1);
+            this.ECMatrix = ECMatrix == null ? null : PercentageValue.MeasurePercentage(ECMatrix.Value, 1);
+            this.HPA = HPA == null ? null : GenericPureNumberValue.Measure(HPA.Value, 1);
 
             if (CheckNullState())
                 throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
@@ -171,9 +171,9 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <param name="ECMatrix"></param>
         /// <param name="HPA"></param>
         /// <returns></returns>
-        public static BiaMeasureValue Measure(
+        public static BiaMeasureValue Track(
             BodyWeightValue weight = null,
-            BodyCircumferenceValue height = null,
+            BodyMeasureValue height = null,
             float? bmi = null,
             BodyFatValue bf = null,
             BodyWeightValue ffm = null,
@@ -189,28 +189,12 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             CalorieValue bmr = null,
             float? ecmatrix = null,
             float? hpa = null)
-        {
-            // Compute derived values when not provided, if possible
-            if(bmi == null && height != null && weight != null)
-                bmi = height.Value / weight.Value;
 
-            if(bf == null && weight != null && fm != null)
-                bf = BodyFatValue.MeasureBodyFat(weight.Value / fm.Value);
+            => new BiaMeasureValue(weight, height, bmi, bf, ffm, fm, tbw, ecw, icw, ecwPerc, icwPerc, bcm, ecm, bcmi, bmr, ecmatrix, hpa);
 
-            if(ecwPerc == null && ecw != null && tbw != null)
-                ecwPerc = ecw.Value / tbw.Value;
-
-            if(icwPerc == null && icw != null && tbw != null)
-                icwPerc = icw.Value / tbw.Value;
-
-            if(bcmi == null && ecm != null && bcm != null)
-                bcmi = ecm.Value / bcm.Value;
-
-            return new BiaMeasureValue(weight, height, bmi, bf, ffm, fm, tbw, ecw, icw, ecwPerc, icwPerc, bcm, ecm, bcmi, bmr, ecmatrix, hpa);
-        }
 
         /// <summary>
-        /// Factory methods with the non-derivble values only
+        /// Factory methods with the non-derivable values only
         /// IE: BMI is derived from height / weight, BF from weight / FM etc.
         /// </summary>
         /// <param name="weight"></param>
@@ -226,9 +210,9 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <param name="ecmatrix"></param>
         /// <param name="hpa"></param>
         /// <returns></returns>
-        public static BiaMeasureValue Measure(
+        public static BiaMeasureValue Compute(
         BodyWeightValue weight = null,
-        BodyCircumferenceValue height = null,
+        BodyMeasureValue height = null,
         BodyWeightValue ffm = null,
         BodyWeightValue fm = null,
         VolumeValue tbw = null,
@@ -240,13 +224,51 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         float? ecmatrix = null,
         float? hpa = null)
         {
-            float? bmi = height.Value / weight.Value;
-            BodyFatValue bf = BodyFatValue.MeasureBodyFat(weight.Value / fm.Value);
-            float? ecwPerc = ecw.Value / tbw.Value;
-            float? icwPerc = icw.Value / tbw.Value;
-            float? bcmi = ecm.Value / bcm.Value;
 
-            return Measure(weight, height, bmi, bf, ffm, fm, tbw, ecw, icw, ecwPerc, icwPerc, bcm, ecm, bcmi, bmr, ecmatrix, hpa);
+            BodyFatValue bf;
+            float? ecwPerc = null;
+            float? icwPerc = null;
+            float? bmi = null;
+            float? bcmi = null;
+
+            if (fm == null)
+            {
+                bf = BodyMeasuresCalculator.ComputeBodyFatFFM(weight, ffm);
+                fm = BodyMeasuresCalculator.ComputeFatMass(weight, bf);
+            }
+            else
+            {
+                bf = BodyMeasuresCalculator.ComputeBodyFat(weight, fm);
+                ffm = ffm ?? BodyMeasuresCalculator.ComputeFatFreeMass(weight, fm);
+            }
+
+            if (tbw == null && icw != null && ecw != null)
+                tbw = VolumeValue.Measure(icw.Value + ecw.Value, icw.Unit);
+
+            if(tbw != null)
+            {
+                if (icw != null)
+                {
+                    ecw = ecw ?? VolumeValue.Measure(tbw.Value - icw.Value, tbw.Unit);
+                    icwPerc = icw.Value / tbw.Value * 100f;
+                    ecwPerc = ecw.Value / tbw.Value * 100f;
+                }
+                    
+                if(ecw != null)
+                {                    
+                    icw = icw ?? VolumeValue.Measure(tbw.Value - ecw.Value, tbw.Unit);
+                    icwPerc = icw.Value / tbw.Value * 100f;
+                    ecwPerc = ecw.Value / tbw.Value * 100f;
+                }
+            }
+
+            if(height != null && weight != null)
+                bmi = BodyMeasuresCalculator.ComputeBodyMassIndex(height, weight).Value;
+
+            if(ecm != null && bcm != null)
+                bcmi = ecm.Value / bcm.Value;
+
+            return Track(weight, height, bmi, bf, ffm, fm, tbw, ecw, icw, ecwPerc, icwPerc, bcm, ecm, bcmi, bmr, ecmatrix, hpa);
         }
 
         #endregion

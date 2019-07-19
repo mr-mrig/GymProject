@@ -65,7 +65,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The PercentageValue instance</returns>
         public static PercentageValue MeasureRatio(float ratio, byte decimalPlaces = DefaultDecimalPlaces)
         {
-            return new PercentageValue(FormatStatic(ratio, decimalPlaces));
+            return new PercentageValue(FormatStatic(ratio, decimalPlaces), measUnit: PercentageMeasureUnitEnum.Ratio);
         }
 
         /// <summary>

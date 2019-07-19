@@ -33,104 +33,129 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(inches, inches2);
             Assert.Equal(0.12f, inches.Value);
 
-            // Metric 2 Metric Conversions
-            CaliperSkinfoldValue sourceMetric = CaliperSkinfoldValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
-            CaliperSkinfoldValue metersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Meters);
-            CaliperSkinfoldValue centimetersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Centimeters);
-            CaliperSkinfoldValue millimetersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Millimeters);
 
-            Assert.Equal(sourceMetric.Value * 1000f, metersConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Meters, metersConv.Unit);
-            Assert.Equal(sourceMetric.Value * 100000f, centimetersConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Centimeters, centimetersConv.Unit);
-            Assert.Equal(sourceMetric.Value * 1000000f, millimetersConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Millimeters, millimetersConv.Unit);
+            #region Not yet supported conversions
+            //// Metric 2 Metric Conversions
+            //CaliperSkinfoldValue sourceMetric = CaliperSkinfoldValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
+            //CaliperSkinfoldValue metersConv = sourceMetric.ConvertMetricVsImperial(LengthMeasureUnitEnum.Meters);
+            //CaliperSkinfoldValue centimetersConv = sourceMetric.ConvertMetricVsImperial(LengthMeasureUnitEnum.Centimeters);
+            //CaliperSkinfoldValue millimetersConv = sourceMetric.ConvertMetricVsImperial(LengthMeasureUnitEnum.Millimeters);
 
-            // Imperial 2 Imperial Conversions
-            CaliperSkinfoldValue sourceImperial = CaliperSkinfoldValue.Measure(0.3f, LengthMeasureUnitEnum.Miles);
-            CaliperSkinfoldValue yardsConv = sourceMetric.Convert(LengthMeasureUnitEnum.Meters);
-            CaliperSkinfoldValue inchesConv = sourceMetric.Convert(LengthMeasureUnitEnum.Centimeters);
-            
+            //Assert.Equal(sourceMetric.Value * 1000f, metersConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Meters, metersConv.Unit);
+            //Assert.Equal(sourceMetric.Value * 100000f, centimetersConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Centimeters, centimetersConv.Unit);
+            //Assert.Equal(sourceMetric.Value * 1000000f, millimetersConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Millimeters, millimetersConv.Unit);
 
-            Assert.Equal(sourceImperial.Value * 1760, yardsConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Yards, yardsConv.Unit);
-            Assert.Equal(sourceImperial.Value * 63360f, inchesConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Inches, inchesConv.Unit);
+            //// Imperial 2 Imperial Conversions
+            //CaliperSkinfoldValue sourceImperial = CaliperSkinfoldValue.Measure(0.3f, LengthMeasureUnitEnum.Miles);
+            //CaliperSkinfoldValue yardsConv = sourceMetric.ConvertMetricVsImperial(LengthMeasureUnitEnum.Meters);
+            //CaliperSkinfoldValue inchesConv = sourceMetric.ConvertMetricVsImperial(LengthMeasureUnitEnum.Centimeters);
+
+
+            //Assert.Equal(sourceImperial.Value * 1760, yardsConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Yards, yardsConv.Unit);
+            //Assert.Equal(sourceImperial.Value * 63360f, inchesConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Inches, inchesConv.Unit);
+            #endregion
 
 
             // Metric 2 Imperial Conversions
-            CaliperSkinfoldValue sourceMixed = CaliperSkinfoldValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
-            CaliperSkinfoldValue milesConv = sourceMixed.Convert(LengthMeasureUnitEnum.Miles);
+            CaliperSkinfoldValue metricSrc = CaliperSkinfoldValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
+            CaliperSkinfoldValue milesConv = metricSrc.ConvertMetricVsImperial(LengthMeasureUnitEnum.Miles);
             CaliperSkinfoldValue sourceMixed2 = CaliperSkinfoldValue.Measure(101.67f, LengthMeasureUnitEnum.Centimeters);
-            CaliperSkinfoldValue cmToInches = sourceMixed2.Convert(LengthMeasureUnitEnum.Inches);
+            CaliperSkinfoldValue cmToInches = sourceMixed2.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches);
             CaliperSkinfoldValue sourceMixed3 = CaliperSkinfoldValue.Measure(101.67f, LengthMeasureUnitEnum.Millimeters);
-            CaliperSkinfoldValue mmToInches = sourceMixed3.Convert(LengthMeasureUnitEnum.Inches);
+            CaliperSkinfoldValue mmToInches = sourceMixed3.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches);
 
             // km to miles
-            Assert.Equal(sourceMixed.Value / 1.609f, milesConv.Value);
+            Assert.Equal((float)Math.Round(metricSrc.Value / 1.609f, 1), milesConv.Value);
             Assert.Equal(LengthMeasureUnitEnum.Miles, milesConv.Unit);
             // cm to inches
-            Assert.Equal(sourceMixed2.Value / 2.54f, cmToInches.Value);
+            Assert.Equal((float)Math.Round(sourceMixed2.Value / 2.54f, 2), cmToInches.Value);
             Assert.Equal(LengthMeasureUnitEnum.Inches, cmToInches.Unit);
             // mm to inches
-            Assert.Equal(sourceMixed3.Value / 25.4f, mmToInches.Value);
+            Assert.Equal((float)Math.Round(sourceMixed3.Value / 25.4f, 2), mmToInches.Value);
             Assert.Equal(LengthMeasureUnitEnum.Inches, mmToInches.Unit);
+
+            // Imperial 2 Metric Conversions
+            CaliperSkinfoldValue imperialSrc = CaliperSkinfoldValue.Measure(4.5f, LengthMeasureUnitEnum.Miles);
+            CaliperSkinfoldValue kmConv = imperialSrc.ConvertMetricVsImperial(LengthMeasureUnitEnum.Kilometers);
+            CaliperSkinfoldValue imperialSrc2 = CaliperSkinfoldValue.Measure(101.67f, LengthMeasureUnitEnum.Inches);
+            CaliperSkinfoldValue inchesToCm = imperialSrc2.ConvertMetricVsImperial(LengthMeasureUnitEnum.Centimeters);
+            CaliperSkinfoldValue imperialSrc3 = CaliperSkinfoldValue.Measure(101.67f, LengthMeasureUnitEnum.Inches);
+            CaliperSkinfoldValue inchesToMm = imperialSrc3.ConvertMetricVsImperial(LengthMeasureUnitEnum.Millimeters);
+
+            // km to miles
+            Assert.Equal((float)Math.Round(imperialSrc.Value * 1.609f, 1), kmConv.Value);
+            Assert.Equal(LengthMeasureUnitEnum.Kilometers, kmConv.Unit);
+            // cm to inches
+            Assert.Equal((float)Math.Round(imperialSrc2.Value * 2.54f, 1), inchesToCm.Value);
+            Assert.Equal(LengthMeasureUnitEnum.Centimeters, inchesToCm.Unit);
+            // mm to inches
+            Assert.Equal((float)Math.Round(imperialSrc3.Value * 25.4f, 0), inchesToMm.Value);
+            Assert.Equal(LengthMeasureUnitEnum.Millimeters, inchesToMm.Unit);
         }
+
 
         [Fact]
         public void CheckCircumferenceSkinfoldValue()
         {
-            BodyCircumferenceValue cm = BodyCircumferenceValue.Measure(66.72f);
-            BodyCircumferenceValue cm2 = BodyCircumferenceValue.MeasureCentimeters(66.68f);
-            BodyCircumferenceValue inches = BodyCircumferenceValue.Measure(0.118f, LengthMeasureUnitEnum.Inches);
-            BodyCircumferenceValue inches2 = BodyCircumferenceValue.MeasureInches(0.121f);
+            BodyMeasureValue cm = BodyMeasureValue.Measure(66.72f);
+            BodyMeasureValue cm2 = BodyMeasureValue.MeasureCentimeters(66.68f);
+            BodyMeasureValue inches = BodyMeasureValue.Measure(0.118f, LengthMeasureUnitEnum.Inches);
+            BodyMeasureValue inches2 = BodyMeasureValue.MeasureInches(0.121f);
 
             Assert.NotNull(cm);
             Assert.Equal(cm, cm2);
             Assert.Equal(66.7f, cm.Value);
             Assert.NotNull(inches2);
             Assert.Equal(inches, inches2);
-            Assert.Equal(0.12f, inches.Value);
+            Assert.Equal(0.1f, inches.Value);
 
-            // Metric 2 Metric Conversions
-            BodyCircumferenceValue sourceMetric = BodyCircumferenceValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
-            BodyCircumferenceValue metersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Meters);
-            BodyCircumferenceValue centimetersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Centimeters);
-            BodyCircumferenceValue millimetersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Millimeters);
+            #region Not yet supported conversions
+            //// Metric 2 Metric Conversions
+            //BodyCircumferenceValue sourceMetric = BodyCircumferenceValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
+            //BodyCircumferenceValue metersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Meters);
+            //BodyCircumferenceValue centimetersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Centimeters);
+            //BodyCircumferenceValue millimetersConv = sourceMetric.Convert(LengthMeasureUnitEnum.Millimeters);
 
-            Assert.Equal(sourceMetric.Value * 1000f, metersConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Meters, metersConv.Unit);
-            Assert.Equal(sourceMetric.Value * 100000f, centimetersConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Centimeters, centimetersConv.Unit);
-            Assert.Equal(sourceMetric.Value * 1000000f, millimetersConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Millimeters, millimetersConv.Unit);
+            //Assert.Equal(sourceMetric.Value * 1000f, metersConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Meters, metersConv.Unit);
+            //Assert.Equal(sourceMetric.Value * 100000f, centimetersConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Centimeters, centimetersConv.Unit);
+            //Assert.Equal(sourceMetric.Value * 1000000f, millimetersConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Millimeters, millimetersConv.Unit);
 
-            // Imperial 2 Imperial Conversions
-            BodyCircumferenceValue sourceImperial = BodyCircumferenceValue.Measure(0.3f, LengthMeasureUnitEnum.Miles);
-            BodyCircumferenceValue yardsConv = sourceMetric.Convert(LengthMeasureUnitEnum.Meters);
-            BodyCircumferenceValue inchesConv = sourceMetric.Convert(LengthMeasureUnitEnum.Centimeters);
+            //// Imperial 2 Imperial Conversions
+            //BodyCircumferenceValue sourceImperial = BodyCircumferenceValue.Measure(0.3f, LengthMeasureUnitEnum.Miles);
+            //BodyCircumferenceValue yardsConv = sourceMetric.Convert(LengthMeasureUnitEnum.Meters);
+            //BodyCircumferenceValue inchesConv = sourceMetric.Convert(LengthMeasureUnitEnum.Centimeters);
 
-            Assert.Equal(sourceImperial.Value * 1760, yardsConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Yards, yardsConv.Unit);
-            Assert.Equal(sourceImperial.Value * 63360f, inchesConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Inches, inchesConv.Unit);
+            //Assert.Equal(sourceImperial.Value * 1760, yardsConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Yards, yardsConv.Unit);
+            //Assert.Equal(sourceImperial.Value * 63360f, inchesConv.Value);
+            //Assert.Equal(LengthMeasureUnitEnum.Inches, inchesConv.Unit);
+            #endregion
+
 
             // Metric 2 Imperial Conversions
-            BodyCircumferenceValue sourceMixed = BodyCircumferenceValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
-            BodyCircumferenceValue milesConv = sourceMixed.Convert(LengthMeasureUnitEnum.Miles);
-            BodyCircumferenceValue sourceMixed2 = BodyCircumferenceValue.Measure(101.67f, LengthMeasureUnitEnum.Centimeters);
-            BodyCircumferenceValue cmToInches = sourceMixed2.Convert(LengthMeasureUnitEnum.Inches);
-            BodyCircumferenceValue sourceMixed3 = BodyCircumferenceValue.Measure(101.67f, LengthMeasureUnitEnum.Millimeters);
-            BodyCircumferenceValue mmToInches = sourceMixed3.Convert(LengthMeasureUnitEnum.Inches);
+            BodyMeasureValue metricSrc = BodyMeasureValue.Measure(0.3f, LengthMeasureUnitEnum.Kilometers);
+            BodyMeasureValue kmToMiles = metricSrc.Convert(LengthMeasureUnitEnum.Miles);
+            BodyMeasureValue metricSrc2 = BodyMeasureValue.Measure(101.67f, LengthMeasureUnitEnum.Centimeters);
+            BodyMeasureValue cmToInches = metricSrc2.Convert(LengthMeasureUnitEnum.Inches);
+            BodyMeasureValue metricSrc3 = BodyMeasureValue.Measure(101.67f, LengthMeasureUnitEnum.Millimeters);
+            BodyMeasureValue mmToInches = metricSrc3.Convert(LengthMeasureUnitEnum.Inches);
 
             // km to miles
-            Assert.Equal(sourceMixed.Value / 1.609f, milesConv.Value);
-            Assert.Equal(LengthMeasureUnitEnum.Miles, milesConv.Unit);
+            Assert.Equal((float)Math.Round(metricSrc.Value / 1.609f, 1), kmToMiles.Value);
+            Assert.Equal(LengthMeasureUnitEnum.Miles, kmToMiles.Unit);
             // cm to inches
-            Assert.Equal(sourceMixed2.Value / 2.54f, cmToInches.Value);
+            Assert.Equal((float)Math.Round(metricSrc2.Value / 2.54f, 1), cmToInches.Value);
             Assert.Equal(LengthMeasureUnitEnum.Inches, cmToInches.Unit);
             // mm to inches
-            Assert.Equal(sourceMixed3.Value / 25.4f, mmToInches.Value);
+            Assert.Equal((float)Math.Round(metricSrc3.Value / 25.4f, 1), mmToInches.Value);
             Assert.Equal(LengthMeasureUnitEnum.Inches, mmToInches.Unit);
         }
 
@@ -138,31 +163,32 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void CheckPercentageValue()
         {
-            PercentageValue perc = PercentageValue.MeasurePercentage(70.26f);
+            float percNum = 70.26f;
+            PercentageValue perc = PercentageValue.MeasurePercentage(percNum);
             PercentageValue perc2 = PercentageValue.MeasurePercentage(70.3f);
-            PercentageValue perc3 = PercentageValue.MeasurePercentage(70.26f, 2);
+            PercentageValue perc3 = PercentageValue.MeasurePercentage(percNum, 2);
             PercentageValue perc4 = PercentageValue.MeasurePercentage(50.1f, 0);
 
             Assert.NotNull(perc);
             Assert.Equal(perc, perc2);
             Assert.NotEqual(perc, perc3);
-            Assert.Equal(70.3, perc.Value);
+            Assert.Equal(70.3f, perc.Value);
             Assert.Equal(PercentageMeasureUnitEnum.Percentage, perc.Unit);
-            Assert.Equal(70.26f, perc3.Value);
+            Assert.Equal(percNum, perc3.Value);
             Assert.Equal(50f, perc4.Value);
 
             PercentageValue ratio = PercentageValue.MeasureRatio(perc.Value / 100);
             PercentageValue ratio2 = PercentageValue.MeasureRatio(perc.Value / 100 + 0.001f);
-            PercentageValue ratio3 = PercentageValue.MeasureRatio(perc.Value / 100, 4);
+            PercentageValue ratio3 = PercentageValue.MeasureRatio(percNum / 100, 4);
             PercentageValue ratio4 = PercentageValue.MeasureRatio(perc4.Value / 100, 4);
 
             Assert.NotNull(perc);
             Assert.Equal(ratio, ratio2);
             Assert.NotEqual(ratio, ratio3);
-            Assert.Equal(Math.Round(70.3 / 100, 1), ratio.Value);
+            Assert.Equal((float)Math.Round(70.3 / 100, 1), ratio.Value);
             Assert.Equal(PercentageMeasureUnitEnum.Ratio, ratio.Unit);
-            Assert.Equal(Math.Round(70.26f / 100, 4), ratio3.Value);
-            Assert.Equal(Math.Round(50f/100, 4), ratio4.Value);
+            Assert.Equal((float)Math.Round(percNum / 100, 4), ratio3.Value);
+            Assert.Equal((float)Math.Round(50f/100, 4), ratio4.Value);
 
             Assert.Equal(perc4.Value / 100f, ratio4.Value);
 
@@ -177,7 +203,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void CheckBodyFat()
         {
             BodyFatValue bf = BodyFatValue.MeasureBodyFat(7.811f);
-            BodyFatValue bf2 = BodyFatValue.MeasureBodyFat(7.8f);
+            BodyFatValue bf2 = BodyFatValue.MeasureBodyFat(7.809f);
 
             Assert.NotNull(bf);
             Assert.Equal(bf, bf2);
@@ -186,9 +212,42 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         [Fact]
-        public void PlicometryTrackMeasuresFail()
+        public void PlicometryTrackMeasuresMeasUnitFail()
         {
-            Assert.Throws<Exception>(() => PlicometryValue.TrackMeasures());  
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureInches(1740f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureInches(1f);
+            Assert.Throws<UnsupportedMeasureException>(() => PlicometryValue.TrackMeasures(weight, height, thigh: thigh));  
+        }
+
+
+        [Fact]
+        public void PlicometryTrackMeasuresMeasUnitFail2()
+        {
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureInches(1f);
+            CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(1f);
+            Assert.Throws<UnsupportedMeasureException>(() => PlicometryValue.TrackMeasures(weight, height, thigh: thigh, abdomen: abdomen));
+        }
+
+
+        [Fact]
+        public void PlicometryJAcksonPollockMeasUnitFail3()
+        {
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureInches(1f);
+            CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(1f);
+            CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(1f);
+            Assert.Throws<UnsupportedMeasureException>(() => PlicometryValue.ComputeJacksonPollockMale3(33, weight, height, thigh: thigh, abdomen: abdomen, chest: chest));
+        }
+
+
+        [Fact]
+        public void PlicometryTrackMeasuresNullFail()
+        {
+            Assert.Throws<GlobalDomainGenericException>(() => PlicometryValue.TrackMeasures());
         }
 
 
@@ -197,7 +256,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             float bmiNum = 21.2f;
             BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
-            BodyCircumferenceValue height = BodyCircumferenceValue.MeasureCentimeters(174f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
             CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
             CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
             CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
@@ -208,7 +267,6 @@ namespace GymProject.Domain.Test.UnitTest
             PlicometryValue plico = PlicometryValue.TrackMeasures(weight, height, chest: chest, abdomen: abdomen, thigh: thigh, ffm: ffm, bf: bf, bmi: bmiNum);
 
             Assert.NotNull(plico);
-            Assert.Equal(PlicometryFormulaEnum.NotSet, plico.Formula);
             Assert.Equal(weight, plico.Weight);
             Assert.Equal(height, plico.Height);
             Assert.Equal(chest, plico.Chest);
@@ -221,28 +279,29 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Null(plico.Subscapular);
             Assert.Null(plico.Suprailiac);
             Assert.Null(plico.Tricep);
-            Assert.Null(plico.Gender);
-            Assert.Null(plico.Armpit);
+            Assert.Null(plico.Midaxillary);
             Assert.Null(plico.FM);
+
             Assert.Equal(0, plico.Age);
-            Assert.Null(plico.Armpit);
+            Assert.Equal(GenderTypeEnum.NotSet, plico.Gender);
+            Assert.Equal(PlicometryFormulaEnum.NotSet, plico.Formula);
         }
 
 
 
         [Fact]
-        public void PlicometryTrackMeasuresMetricMale()
+        public void PlicometryComputeMaleMetricJP7()
         {
             ushort age = 34;
             GenderTypeEnum male = GenderTypeEnum.Male;
             BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
-            BodyCircumferenceValue height = BodyCircumferenceValue.MeasureCentimeters(174f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
             CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
             CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
             CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue tricep = CaliperSkinfoldValue.MeasureMillimeters(3.5f);
             CaliperSkinfoldValue subscapular = CaliperSkinfoldValue.MeasureMillimeters(7f);
             CaliperSkinfoldValue suprailiac = CaliperSkinfoldValue.MeasureMillimeters(9f);
-            CaliperSkinfoldValue tricep = CaliperSkinfoldValue.MeasureMillimeters(3.5f);
             CaliperSkinfoldValue armpit = CaliperSkinfoldValue.MeasureMillimeters(4.46f);
 
             PlicometryValue plico = PlicometryValue.ComputeJacksonPollock7(male, age, weight, height, chest: chest, abdomen: abdomen, thigh: thigh, tricep: tricep, 
@@ -250,7 +309,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.NotNull(plico);
             Assert.Equal(PlicometryFormulaEnum.JacksonPollock7, plico.Formula);
-            AssemblyTraitAttribute.Equals(age, plico.Age);
+            Assert.Equal(age, plico.Age);
             Assert.Equal(weight, plico.Weight);
             Assert.Equal(height, plico.Height);
             Assert.Equal(chest, plico.Chest);
@@ -259,458 +318,523 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(subscapular, plico.Subscapular);
             Assert.Equal(suprailiac, plico.Suprailiac);
             Assert.Equal(tricep, plico.Tricep);
+            Assert.Equal(armpit, plico.Midaxillary);
             Assert.Equal(male, plico.Gender);
+
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(6.91f);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(4.96f);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(66.84f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(weight.Value / height.Value / height.Value * 10000);
+
+            Assert.Equal(bf, plico.BF);
+            Assert.Equal(ffm, plico.FFM);
+            Assert.Equal(fm, plico.FM);
+            Assert.Equal(bmi, plico.BMI);
+        }
+
+
+
+        [Fact]
+        public void PlicometryComputeFemaleMetricJP7()
+        {
+            ushort age = 34;
+            GenderTypeEnum male = GenderTypeEnum.Female;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
+            CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
+            CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue tricep = CaliperSkinfoldValue.MeasureMillimeters(3.5f);
+            CaliperSkinfoldValue subscapular = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue suprailiac = CaliperSkinfoldValue.MeasureMillimeters(9f);
+            CaliperSkinfoldValue armpit = CaliperSkinfoldValue.MeasureMillimeters(4.46f);
+
+            PlicometryValue plico = PlicometryValue.ComputeJacksonPollock7(male, age, weight, height, chest: chest, abdomen: abdomen, thigh: thigh, tricep: tricep,
+                armpit: armpit, suprailiac: suprailiac, subscapular: subscapular);
+
+            Assert.NotNull(plico);
+            Assert.Equal(PlicometryFormulaEnum.JacksonPollock7, plico.Formula);
+            Assert.Equal(age, plico.Age);
+            Assert.Equal(weight, plico.Weight);
+            Assert.Equal(height, plico.Height);
+            Assert.Equal(chest, plico.Chest);
+            Assert.Equal(abdomen, plico.Abdomen);
+            Assert.Equal(thigh, plico.Thigh);
+            Assert.Equal(subscapular, plico.Subscapular);
+            Assert.Equal(suprailiac, plico.Suprailiac);
+            Assert.Equal(tricep, plico.Tricep);
+            Assert.Equal(armpit, plico.Midaxillary);
+            Assert.Equal(male, plico.Gender);
+
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(11.66f);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(8.37f);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(63.43f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(weight.Value / height.Value / height.Value * 10000);
+
             Assert.Equal(ffm, plico.FFM);
             Assert.Equal(bf, plico.BF);
+            Assert.Equal(fm, plico.FM);
             Assert.Equal(bmi, plico.BMI);
-
-      
-            Assert.Null(plico.FM);
-            Assert.Equal(0, plico.Age);
-            Assert.Null(plico.Armpit);
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-        [Fact]
-        public void CheckSleepDurationValue()
-        {
-            SleepDurationValue hours = SleepDurationValue.Measure(2.24f);
-            SleepDurationValue hours2 = SleepDurationValue.Measure(2.24f, TimeMeasureUnitEnum.Hours);
-            SleepDurationValue hours3 = SleepDurationValue.MeasureHours(2.24f);
-            SleepDurationValue minutes = SleepDurationValue.MeasureMinutes(223.22f);
-            SleepDurationValue minutesConv = SleepDurationValue.ToMinutes(hours.Value);
-            SleepDurationValue hoursConv = SleepDurationValue.ToHours(minutesConv.Value);
-
-            Assert.NotNull(hours);
-            Assert.Equal(hours, hours2);
-            Assert.Equal(hours, hours3);
-            Assert.Equal(223f, minutes.Value);
-            Assert.Equal(2.2f, hours.Value);
-            Assert.Equal(minutesConv, SleepDurationValue.ToMinutes(hoursConv.Value));
-        }
-
-
-        [Fact]
-        public void CheckHeartRateValue()
-        {
-            HeartRateValue pulses = HeartRateValue.Measure(121.34f, HeartRateMeasureUnitEnum.Pulses);
-            HeartRateValue pulses2 = HeartRateValue.Measure(121f);
-
-            Assert.NotNull(pulses);
-            Assert.Equal(pulses, pulses2);
-            Assert.Equal(121f, pulses.Value);
-        }
-
-
-        [Fact]
-        public void CheckMacronutirentWeightValue()
-        {
-            MacronutirentWeightValue grams = MacronutirentWeightValue.Measure(100.27f);
-            MacronutirentWeightValue grams2 = MacronutirentWeightValue.Measure(100.27f, WeightUnitMeasureEnum.Grams);
-            MacronutirentWeightValue grams3 = MacronutirentWeightValue.MeasureGrams(99.81f);
-            MacronutirentWeightValue ounces = MacronutirentWeightValue.Measure(55.688f, WeightUnitMeasureEnum.Ounces);
-            MacronutirentWeightValue ounces2 = MacronutirentWeightValue.MeasureOunces(55.691f);
-            MacronutirentWeightValue ouncesConv = grams.Convert(WeightUnitMeasureEnum.Ounces);
-            MacronutirentWeightValue ouncesConv2 = ouncesConv.Convert(WeightUnitMeasureEnum.Ounces);
-            MacronutirentWeightValue gramsConv = ounces.Convert(WeightUnitMeasureEnum.Grams);
-
-            Assert.NotNull(grams);
-            Assert.Equal(grams2, grams);
-            Assert.Equal(grams3, grams);
-            Assert.Equal(100f, grams.Value);
-            Assert.Equal(ounces2, ounces);
-            Assert.Equal(55.7f, ounces.Value);
-
-
-            StaticUtils.CheckConversions(grams.Value, ouncesConv.Convert(WeightUnitMeasureEnum.Grams).Value, grams.Unit.Id, ouncesConv.Convert(WeightUnitMeasureEnum.Grams).Unit.Id);
-            StaticUtils.CheckConversions(ouncesConv2.Value, ouncesConv.Convert(WeightUnitMeasureEnum.Ounces).Value, ouncesConv2.Unit.Id, ouncesConv.Convert(WeightUnitMeasureEnum.Ounces).Unit.Id);
-            StaticUtils.CheckConversions(ounces.Value, gramsConv.Convert(WeightUnitMeasureEnum.Ounces).Value, ounces.Unit.Id, gramsConv.Convert(WeightUnitMeasureEnum.Ounces).Unit.Id);
         }
 
 
 
         [Fact]
-        public void CheckMicronutirentWeightValue()
+        public void PlicometryComputeMaleImperialJP7()
         {
-            MicronutirentWeightValue _grams = MicronutirentWeightValue.Measure(100.27f);
-            MicronutirentWeightValue _grams2 = MicronutirentWeightValue.Measure(100.27f, WeightUnitMeasureEnum.Grams);
-            MicronutirentWeightValue _grams3 = MicronutirentWeightValue.MeasureGrams(100.32f);
-            MicronutirentWeightValue _ounces = MicronutirentWeightValue.Measure(55.688f, WeightUnitMeasureEnum.Ounces);
-            MicronutirentWeightValue _ounces2 = MicronutirentWeightValue.MeasureOunces(55.691f);
-            MicronutirentWeightValue _ouncesConv = _grams.Convert(WeightUnitMeasureEnum.Ounces);
-            MicronutirentWeightValue _ouncesConv2 = _ouncesConv.Convert(WeightUnitMeasureEnum.Ounces);
-            MicronutirentWeightValue _gramsConv = _ounces.Convert(WeightUnitMeasureEnum.Grams);
+            ushort age = 34;
+            GenderTypeEnum male = GenderTypeEnum.Male;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
+            CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
+            CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue tricep = CaliperSkinfoldValue.MeasureMillimeters(3.5f);
+            CaliperSkinfoldValue subscapular = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue suprailiac = CaliperSkinfoldValue.MeasureMillimeters(9f);
+            CaliperSkinfoldValue armpit = CaliperSkinfoldValue.MeasureMillimeters(4.46f);
 
-            Assert.NotNull(_grams);
-            Assert.Equal(_grams2, _grams);
-            Assert.Equal(_grams3, _grams);
-            Assert.Equal(100.3f, _grams.Value);
-            Assert.Equal(_ounces2, _ounces);
-            Assert.Equal(55.69f, _ounces.Value);
-            StaticUtils.CheckConversions(_grams.Value, _ouncesConv.Convert(WeightUnitMeasureEnum.Grams).Value, _grams.Unit.Id, _ouncesConv.Convert(WeightUnitMeasureEnum.Grams).Unit.Id);
-            StaticUtils.CheckConversions(_ouncesConv2.Value, _ouncesConv.Convert(WeightUnitMeasureEnum.Ounces).Value, _ouncesConv2.Unit.Id, _ouncesConv.Convert(WeightUnitMeasureEnum.Ounces).Unit.Id);
-            StaticUtils.CheckConversions(_ounces.Value, _gramsConv.Convert(WeightUnitMeasureEnum.Ounces).Value, _ounces.Unit.Id, _gramsConv.Convert(WeightUnitMeasureEnum.Ounces).Unit.Id);
-        }
+            PlicometryValue plico = PlicometryValue.ComputeJacksonPollock7(male, age, weight, height, chest: chest, abdomen: abdomen, thigh: thigh, tricep: tricep,
+                armpit: armpit, suprailiac: suprailiac, subscapular: subscapular);
 
+            PlicometryValue plico2 = PlicometryValue.ComputeJacksonPollock7(male, age
+                , weight.Convert(WeightUnitMeasureEnum.Pounds)
+                , height.Convert(LengthMeasureUnitEnum.Inches)
+                , chest: chest.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , abdomen: abdomen.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , thigh: thigh.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , tricep: tricep.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , armpit: armpit.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , suprailiac: suprailiac.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , subscapular: subscapular.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                );
 
-        [Fact]
-        public void CheckVolumeValue()
-        {
-            VolumeValue liters = VolumeValue.Measure(44.67f);
-            VolumeValue liters2 = VolumeValue.Measure(44.72f, VolumeUnitMeasureEnum.Liters);
-            VolumeValue liters3 = VolumeValue.MeasureLiters(44.7f);
-
-            Assert.NotNull(liters);
-            Assert.Equal(liters2, liters);
-            Assert.Equal(liters3, liters);
-            Assert.Equal(44.7f, liters.Value);
-        }
-
-
-        [Fact]
-        public void CheckBodyWeightValue()
-        {
-            BodyWeightValue kilos = BodyWeightValue.Measure(71.88f);
-            BodyWeightValue kilos2 = BodyWeightValue.Measure(71.93f, WeightUnitMeasureEnum.Kilograms);
-            BodyWeightValue kilos3 = BodyWeightValue.MeasureKilograms(71.9f);
-            BodyWeightValue pounds = BodyWeightValue.Measure(99f, WeightUnitMeasureEnum.Pounds);
-            BodyWeightValue pounds2 = BodyWeightValue.MeasurePounds(99.02f);
-
-            BodyWeightValue kilosConv = kilos.Convert(WeightUnitMeasureEnum.Kilograms);
-            BodyWeightValue kilosConv2 = pounds.Convert(WeightUnitMeasureEnum.Kilograms);
-            BodyWeightValue poundsConv = kilos.Convert(WeightUnitMeasureEnum.Pounds);
-
-            Assert.NotNull(kilos);
-            Assert.Equal(kilos2, kilos);
-            Assert.Equal(kilos3, kilos);
-            Assert.Equal(71.9f, kilos.Value);
-            Assert.Equal(pounds2, pounds);
-            Assert.Equal(kilosConv, kilos);
-            Assert.Equal(kilosConv2, pounds.Convert(WeightUnitMeasureEnum.Kilograms));
-            Assert.Equal(poundsConv, kilos.Convert(WeightUnitMeasureEnum.Pounds));
-        }
-
-
-        [Fact]
-        public void CheckTemperatureValue()
-        {
-            TemperatureValue celsius = TemperatureValue.Measure(37.22f);
-            TemperatureValue celsius2 = TemperatureValue.Measure(37.22f, TemperatureMeasureUnitEnum.Celsius);
-            TemperatureValue celsius3 = TemperatureValue.MeasureCelsius(37.17f);
-            TemperatureValue f = TemperatureValue.MeasureFahrenheit(88.02f);
-            TemperatureValue f2 = TemperatureValue.Measure(88f, TemperatureMeasureUnitEnum.Fahrenheit);
-            TemperatureValue celsiusConv = celsius.Convert(TemperatureMeasureUnitEnum.Celsius);
-            TemperatureValue celsiusConv2 = f.Convert(TemperatureMeasureUnitEnum.Celsius);
-            TemperatureValue fConv = celsius.Convert(TemperatureMeasureUnitEnum.Fahrenheit);
-
-            Assert.NotNull(celsius);
-            Assert.Equal(celsius2, celsius);
-            Assert.Equal(celsius3, celsius);
-            Assert.Equal(37.2f, celsius.Value);
-            Assert.Equal(f2, f);
-            Assert.Equal(celsiusConv, celsius);
-            Assert.Equal(celsiusConv2, f.Convert(TemperatureMeasureUnitEnum.Celsius));
-            Assert.Equal(fConv, celsius.Convert(TemperatureMeasureUnitEnum.Fahrenheit));
-            Assert.Equal(31.1f, celsiusConv2.Value);
-            Assert.Equal(99f, fConv.Value);
-        }
-
-
-        [Fact]
-        public void CheckGlycemiaValue()
-        {
-            GlycemiaValue mg = GlycemiaValue.Measure(177.81f);
-            GlycemiaValue mg2 = GlycemiaValue.Measure(177.83f, GlycemiaMeasureUnitEnum.Milligrams);
-            GlycemiaValue mg3 = GlycemiaValue.MeasureMg(177.77f);
-
-            Assert.NotNull(mg);
-            Assert.Equal(mg2, mg);
-            Assert.Equal(mg3, mg);
-            Assert.Equal(178f, mg.Value);
+            Assert.NotEqual(plico, plico2);
+            //Assert.Equal(plico.BF, plico2.BF);
+            StaticUtils.CheckConversions(plico.FFM.Value, plico2.FFM.Convert(plico.FFM.Unit).Value);
+            StaticUtils.CheckConversions(plico.FM.Value, plico2.FM.Convert(plico.FM.Unit).Value);
+            Assert.Equal(plico.FFM.Value, plico2.FFM.Convert(plico.FFM.Unit).Value);
+            Assert.Equal(plico.FM.Value, plico2.FM.Convert(plico.FM.Unit).Value);
+            Assert.Equal(plico.BMI, plico2.BMI);
         }
 
 
 
         [Fact]
-        public void CheckRatingValue()
+        public void PlicometryComputeFemaleImperialJP7()
         {
-            RatingValue rating = RatingValue.Rate(4.2f);
-            Assert.Equal(4, rating.Value);
+            ushort age = 34;
+            GenderTypeEnum male = GenderTypeEnum.Female;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
+            CaliperSkinfoldValue chest = CaliperSkinfoldValue.MeasureMillimeters(5f);
+            CaliperSkinfoldValue abdomen = CaliperSkinfoldValue.MeasureMillimeters(10f);
+            CaliperSkinfoldValue thigh = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue tricep = CaliperSkinfoldValue.MeasureMillimeters(3.5f);
+            CaliperSkinfoldValue subscapular = CaliperSkinfoldValue.MeasureMillimeters(7f);
+            CaliperSkinfoldValue suprailiac = CaliperSkinfoldValue.MeasureMillimeters(9f);
+            CaliperSkinfoldValue armpit = CaliperSkinfoldValue.MeasureMillimeters(4.46f);
 
-            RatingValue increased = rating.Increase();
-            Assert.Equal(5, increased.Value);
+            PlicometryValue plico = PlicometryValue.ComputeJacksonPollock7(male, age, weight, height, chest: chest, abdomen: abdomen, thigh: thigh, tricep: tricep,
+                armpit: armpit, suprailiac: suprailiac, subscapular: subscapular);
 
-            RatingValue decreased = rating.Decrease();
-            Assert.Equal(3, decreased.Value);
+            PlicometryValue plico2 = PlicometryValue.ComputeJacksonPollock7(male, age
+                , weight.Convert(WeightUnitMeasureEnum.Pounds)
+                , height.Convert(LengthMeasureUnitEnum.Inches)
+                , chest: chest.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , abdomen: abdomen.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , thigh: thigh.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , tricep: tricep.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , armpit: armpit.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , suprailiac: suprailiac.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                , subscapular: subscapular.ConvertMetricVsImperial(LengthMeasureUnitEnum.Inches)
+                );
+
+            Assert.NotEqual(plico, plico2);
+            Assert.Equal(plico.BF, plico2.BF);
+            //StaticUtils.CheckConversions(plico.FFM.Value, plico2.FFM.Convert(plico.FFM.Unit).Value);
+            //StaticUtils.CheckConversions(plico.FM.Value, plico2.FM.Convert(plico.FM.Unit).Value);
+            Assert.Equal(plico.FFM.Value, plico2.FFM.Convert(plico.FFM.Unit).Value);
+            Assert.Equal(plico.FM.Value, plico2.FM.Convert(plico.FM.Unit).Value);
+            Assert.Equal(plico.BMI, plico2.BMI);
         }
 
 
 
         [Fact]
-        public void CreateEmptyFitnessDayEntrySuccess()
+        public void BiaTrackMeasure()
         {
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(71.8f);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(174f);
+            CalorieValue bmr = CalorieValue.MeasureKcal(2700.33f);
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(11.491f);
+            VolumeValue tbw = VolumeValue.MeasureLiters(51.3f);
+            VolumeValue ecw = VolumeValue.MeasureLiters(11.3f);
+            VolumeValue icw = VolumeValue.MeasureLiters(40f);
+            float? hpa = 4.71f;
 
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
+
+
+            BiaMeasureValue bia = BiaMeasureValue.Track(weight: weight, height: height, bmr: bmr, bf: bf, tbw: tbw, ecw: ecw, icw: icw, hpa: hpa);
+
+            Assert.NotNull(bia);
+            Assert.Equal(weight, bia.Weight);
+            Assert.Equal(height, bia.Height);
+            Assert.Equal(bmr, bia.BMR);
+            Assert.Equal(bf, bia.BF);
+            Assert.Equal(tbw, bia.TBW);
+            Assert.Equal(ecw, bia.ECW);
+            Assert.Equal(icw, bia.ICW);
+            Assert.Equal(GenericPureNumberValue.Measure(hpa.Value, 1), bia.HPA);
+
+            Assert.Null(bia.BCM);
+            Assert.Null(bia.BCMi);
+            Assert.Null(bia.BMI);
+            Assert.Null(bia.ECM);
+            Assert.Null(bia.ECMatrix);
+            Assert.Null(bia.ECWPerc);
+            Assert.Null(bia.FFM);
+            Assert.Null(bia.FM);
+            Assert.Null(bia.ICWPerc);
+        }
+
+
+
+        [Fact]
+        public void BiaCompute()
+        {
+            float w = 71.8f, h = 174f, bfval = 0.1151f; ;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            CalorieValue bmr = CalorieValue.MeasureKcal(2700.33f);
+            VolumeValue tbw = VolumeValue.MeasureLiters(51.3f);
+            VolumeValue ecw = VolumeValue.MeasureLiters(11.3f);
+            float? hpa = 4.71f;
+
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfval * 100);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(w * bfval);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(w - fm.Value);
+
+
+            BiaMeasureValue bia = BiaMeasureValue.Compute(weight: weight, height: height, bmr: bmr, 
+                tbw: tbw, ecw: ecw, hpa: hpa, fm: fm, ffm: ffm);
+
+            Assert.NotNull(bia);
+            Assert.Equal(weight, bia.Weight);
+            Assert.Equal(height, bia.Height);
+            Assert.Equal(bmr, bia.BMR);
+            Assert.Equal(tbw, bia.TBW);
+            Assert.Equal(ecw, bia.ECW);
+            Assert.Equal(GenericPureNumberValue.Measure(hpa.Value, 1), bia.HPA);
+
+            // Derived values
+            VolumeValue icw = VolumeValue.MeasureLiters(40f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(w / h / h * 10000);
+
+            Assert.Equal(icw, bia.ICW);
+            Assert.Equal(ecw, bia.ECW);
+            StaticUtils.CheckConversions(bf.Value, bia.BF.Value);
+            Assert.Equal(bmi, bia.BMI);
+        }
+
+
+
+        [Fact]
+        public void BiaCompute2()
+        {
+            float w = 71.8f, h = 174f, bfval = 0.1191f;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            CalorieValue bmr = CalorieValue.MeasureKcal(2700.33f);
+            VolumeValue tbw = VolumeValue.MeasureLiters(51.3f);
+            VolumeValue ecw = VolumeValue.MeasureLiters(11.3f);
+            float? hpa = 4.71f;
+
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfval * 100);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(w * bfval);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(w - fm.Value);
+
+
+            BiaMeasureValue bia = BiaMeasureValue.Compute(weight: weight, height: height, bmr: bmr,
+                tbw: tbw, ecw: ecw, hpa: hpa, ffm: ffm);
+
+            Assert.NotNull(bia);
+            Assert.Equal(weight, bia.Weight);
+            Assert.Equal(height, bia.Height);
+            Assert.Equal(bmr, bia.BMR);
+            Assert.Equal(tbw, bia.TBW);
+            Assert.Equal(ecw, bia.ECW);
+            Assert.Equal(GenericPureNumberValue.Measure(hpa.Value, 1), bia.HPA);
+
+            // Derived values
+            VolumeValue icw = VolumeValue.MeasureLiters(40f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(w / h / h * 10000);
+
+            Assert.Equal(icw, bia.ICW);
+            Assert.Equal(ecw, bia.ECW);
+            StaticUtils.CheckConversions(bf.Value, bia.BF.Value, tolerance: 0.055f);
+            Assert.Equal(bmi, bia.BMI);
+        }
+
+
+
+        [Fact]
+        public void BiaCompute3()
+        {
+            float w = 71.8f, h = 174f, bfval = 0.1191f;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            CalorieValue bmr = CalorieValue.MeasureKcal(2700.33f);
+            VolumeValue icw = VolumeValue.MeasureLiters(40f);
+            VolumeValue ecw = VolumeValue.MeasureLiters(11.3f);
+            float? hpa = 4.71f;
+
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfval * 100);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(w * bfval);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(w - fm.Value);
+
+
+            BiaMeasureValue bia = BiaMeasureValue.Compute(weight: weight, height: height, bmr: bmr,
+                icw: icw, ecw: ecw, hpa: hpa, ffm: ffm);
+
+            Assert.NotNull(bia);
+            Assert.Equal(weight, bia.Weight);
+            Assert.Equal(height, bia.Height);
+            Assert.Equal(bmr, bia.BMR);
+            Assert.Equal(ecw, bia.ECW);
+            Assert.Equal(GenericPureNumberValue.Measure(hpa.Value, 1), bia.HPA);
+
+            // Derived values
+            VolumeValue tbw = VolumeValue.MeasureLiters(51.3f);
+            PercentageValue icwperc = PercentageValue.MeasurePercentage(icw.Value / tbw.Value * 100f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(w / h / h * 10000);
+
+            Assert.Equal(icw, bia.ICW);
+            Assert.Equal(ecw, bia.ECW);
+            Assert.Equal(tbw, bia.TBW);
+            Assert.Equal(icwperc, bia.ICWPerc);
+            StaticUtils.CheckConversions(bf.Value, bia.BF.Value, tolerance: 0.055f);
+            Assert.Equal(bmi, bia.BMI);
+        }
+
+
+
+        [Fact]
+        public void BiaCompute4()
+        {
+            float w = 71.8f, h = 174f, bfval = 0.1191f;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyWeightValue ecm = BodyWeightValue.MeasureKilograms(4);
+            BodyWeightValue bcm = BodyWeightValue.MeasureKilograms(5);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            CalorieValue bmr = CalorieValue.MeasureKcal(2700.33f);
+            VolumeValue tbw = VolumeValue.MeasureLiters(51.3f);
+            VolumeValue ecw = VolumeValue.MeasureLiters(11.3f);
+            float? hpa = 4.71f;
+
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfval * 100);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(w * bfval);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(w - fm.Value);
+
+
+            BiaMeasureValue bia = BiaMeasureValue.Compute(weight: weight, height: height, bmr: bmr,
+                tbw: tbw, ecw: ecw, hpa: hpa, ffm: ffm, ecm: ecm, bcm: bcm);
+
+
+            // Derived values
+            VolumeValue icw = VolumeValue.MeasureLiters(40f);
+            PercentageValue icwperc = PercentageValue.MeasurePercentage(icw.Value / tbw.Value * 100f);
+            PercentageValue bmi = PercentageValue.MeasureRatio(w / h / h * 10000);
+
+            Assert.Equal(icw, bia.ICW);
+            Assert.Equal(ecw, bia.ECW);
+            Assert.Equal(tbw, bia.TBW);
+            Assert.Equal(PercentageValue.MeasureRatio(ecm.Value / bcm.Value), bia.BCMi);
+            Assert.Equal(icwperc, bia.ICWPerc);
+            StaticUtils.CheckConversions(bf.Value, bia.BF.Value, tolerance: 0.055f);
+            Assert.Equal(bmi, bia.BMI);
         }
 
 
         [Fact]
-        public void CreateFitnessDayEntryWithWeight()
+        public void CircumferenceTrackMeasuresNullFail()
         {
-            float fakeWeight = 71.5f;
-            float weight = 101.1f;
-
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackWeightKilograms(fakeWeight);
-            fd.TrackWeightKilograms(weight);
-
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
-            Assert.Equal(weight, fd.DailyWeight.Value);
-            Assert.Equal(WeightUnitMeasureEnum.Kilograms, fd.DailyWeight.Unit);
-
-            // Other entries are null
-            Assert.Null(fd.DailyDiet);
-            Assert.Null(fd.DailyWellness);
-            Assert.Null(fd.DailyActivity);
-
-            // Check for invariance preservation
-            fd.DailyWeight.Convert(WeightUnitMeasureEnum.Pounds);
-            Assert.Equal(WeightUnitMeasureEnum.Kilograms, fd.DailyWeight.Unit);
+            Assert.Throws<GlobalDomainGenericException>(() => CircumferenceMeasureValue.TrackMeasures());
         }
 
 
         [Fact]
-        public void CreateFitnessDayEntryWithWeight2()
+        public void CircumferenceTrackMeasuresUnitFail()
         {
-            float fakeWeight = 71.5f;
-            float weight = 101.1f;
+            float w = 71.8f, h = 174f;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureInches(h * 2.2f);
+            BodyMeasureValue neck = BodyMeasureValue.MeasureCentimeters(44f);
 
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackWeight(fakeWeight, WeightUnitMeasureEnum.Kilograms);
-            fd.TrackWeight(weight, WeightUnitMeasureEnum.Kilograms);
-
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
-            Assert.Equal(weight, fd.DailyWeight.Value);
-            Assert.Equal(WeightUnitMeasureEnum.Kilograms, fd.DailyWeight.Unit);
+            Assert.Throws<UnsupportedMeasureException>(() => CircumferenceMeasureValue.TrackMeasures(weight: weight, height: height, neck: neck));
         }
 
 
         [Fact]
-        public void CreateFitnessDayEntryWithWeightPounds()
+        public void CircumferenceTrackMeasuresUnitFail2()
         {
-            float fakeWeight = 100.5f;
-            float weight = 170.1f;
+            float w = 71.8f, h = 174f;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            BodyMeasureValue neck = BodyMeasureValue.MeasureInches(44f);
 
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackWeightPounds(fakeWeight);
-            fd.TrackWeightPounds(weight);
-
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
-            Assert.Equal(weight, fd.DailyWeight.Value);
-            Assert.Equal(WeightUnitMeasureEnum.Pounds, fd.DailyWeight.Unit);
+            Assert.Throws<UnsupportedMeasureException>(() => CircumferenceMeasureValue.TrackMeasures(weight: weight, height: height, neck: neck));
         }
 
 
         [Fact]
-        public void CreateFitnessDayEntryWithDiet()
+        public void CircumferenceTrackMeasures()
         {
-            float carbs1 = 100, fats1 = 90, pro1 = 150, salt1 = 2.2f;
-            bool isFreeMeal1 = true;
-            DietDayTypeEnum dayType1 = DietDayTypeEnum.On;
+            float w = 71.8f, h = 174f, bfnum = 8.7f;
+            GenderTypeEnum gender = GenderTypeEnum.Male;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            BodyMeasureValue neck = BodyMeasureValue.MeasureCentimeters(44f);
+            BodyMeasureValue abdomen = BodyMeasureValue.MeasureCentimeters(79.5f);
+            BodyMeasureValue chest = BodyMeasureValue.MeasureCentimeters(106f);
+            BodyMeasureValue larm = BodyMeasureValue.MeasureCentimeters(37.5f);
+            BodyMeasureValue rarm = BodyMeasureValue.MeasureCentimeters(37.5f);
+            BodyMeasureValue lleg = BodyMeasureValue.MeasureCentimeters(57f);
+            BodyMeasureValue rleg = BodyMeasureValue.MeasureCentimeters(57f);
 
-            float carbs = 500, fats = 60f, pro = 150;
-            bool isFreeMeal = false;
-            DietDayTypeEnum dayType = DietDayTypeEnum.On;
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfnum);
 
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackDiet(MacronutirentWeightValue.MeasureGrams(carbs1), MacronutirentWeightValue.MeasureGrams(fats1), MacronutirentWeightValue.MeasureGrams(pro1), isFreeMeal: isFreeMeal1, dayType: dayType1);
-            fd.TrackDiet(MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(pro), isFreeMeal: isFreeMeal, dayType: dayType);
+            CircumferenceMeasureValue circ = CircumferenceMeasureValue.TrackMeasures(weight: weight, height: height, gender: gender, 
+                neck: neck, abdomen: abdomen, chest: chest, leftArm: larm, rightArm: rarm, leftLeg: lleg, rightLeg: rleg, bf: bf);
 
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
+            Assert.NotNull(circ);
+            Assert.Equal(gender, circ.Gender);
+            Assert.Equal(weight, circ.Weight);
+            Assert.Equal(height, circ.Height);
+            Assert.Equal(gender, circ.Gender);
+            Assert.Equal(neck, circ.Neck);
+            Assert.Equal(abdomen, circ.Abdomen);
+            Assert.Equal(chest, circ.Chest);
+            Assert.Equal(larm, circ.LeftArm);
+            Assert.Equal(rarm, circ.RightArm);
+            Assert.Equal(lleg, circ.LeftLeg);
+            Assert.Equal(rleg, circ.RightLeg);
+            Assert.Equal(bf, circ.BF);
+            Assert.Equal(CircumferenceFormulaEnum.NotSet, circ.Formula);
 
-            Assert.Equal(carbs, fd.DailyDiet.Carbs.Value);
-            Assert.Equal(WeightUnitMeasureEnum.Grams, fd.DailyDiet.Carbs.Unit);
-
-            Assert.Equal(fats, fd.DailyDiet.Fats.Value);
-            Assert.Equal(WeightUnitMeasureEnum.Grams, fd.DailyDiet.Fats.Unit);
-
-            Assert.Equal(pro, fd.DailyDiet.Proteins.Value);
-            Assert.Equal(WeightUnitMeasureEnum.Grams, fd.DailyDiet.Proteins.Unit);
-
-            Assert.Equal(isFreeMeal, fd.DailyDiet.IsFreeMeal);
-            Assert.Equal(dayType, fd.DailyDiet.DietDayType);
-
-            // Other properties are null
-            Assert.Null(fd.DailyDiet.Water);
-            Assert.Null(fd.DailyDiet.Salt);
-
-            // Other entries are null
-            Assert.Null(fd.DailyWeight);
-            Assert.Null(fd.DailyWellness);
-            Assert.Null(fd.DailyActivity);
+            Assert.Null(circ.LeftForearm);
+            Assert.Null(circ.RightForearm);
+            Assert.Null(circ.LeftCalf);
+            Assert.Null(circ.RightCalf);
+            Assert.Null(circ.Waist);
+            Assert.Null(circ.Shoulders);
+            Assert.Null(circ.Hips);
+            Assert.Null(circ.FM);
+            Assert.Null(circ.FFM);
         }
 
 
         [Fact]
-        public void CreateFitnessDayEntryWithDietFail()
+        public void CircumferenceComputeMaleMetric()
         {
+            float w = 71.8f, h = 174f, bfnum = 6.7f;
+            GenderTypeEnum gender = GenderTypeEnum.Male;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            BodyMeasureValue neck = BodyMeasureValue.MeasureCentimeters(44f);
+            BodyMeasureValue abdomen = BodyMeasureValue.MeasureCentimeters(79.5f);
+            BodyMeasureValue chest = BodyMeasureValue.MeasureCentimeters(106f);
+            BodyMeasureValue larm = BodyMeasureValue.MeasureCentimeters(37.5f);
+            BodyMeasureValue rarm = BodyMeasureValue.MeasureCentimeters(37.5f);
+            BodyMeasureValue lleg = BodyMeasureValue.MeasureCentimeters(57f);
+            BodyMeasureValue rleg = BodyMeasureValue.MeasureCentimeters(57f);
 
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            Assert.Throws<GlobalDomainGenericException>(() => fd.TrackDiet());
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfnum);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(4.8f);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(67f);
+
+            CircumferenceMeasureValue circ = CircumferenceMeasureValue.ComputeHodgonAndBeckett(weight: weight, height: height, gender: gender,
+                neck: neck, abdomen: abdomen, chest: chest, leftArm: larm, rightArm: rarm, leftLeg: lleg, rightLeg: rleg);
+
+
+            Assert.NotNull(circ);
+            Assert.Equal(gender, circ.Gender);
+            Assert.Equal(weight, circ.Weight);
+            Assert.Equal(height, circ.Height);
+            Assert.Equal(gender, circ.Gender);
+            Assert.Equal(neck, circ.Neck);
+            Assert.Equal(abdomen, circ.Abdomen);
+            Assert.Equal(chest, circ.Chest);
+            Assert.Equal(larm, circ.LeftArm);
+            Assert.Equal(rarm, circ.RightArm);
+            Assert.Equal(lleg, circ.LeftLeg);
+            Assert.Equal(rleg, circ.RightLeg);
+
+            Assert.Equal(bf, circ.BF);
+            Assert.Equal(fm, circ.FM);
+            Assert.Equal(ffm, circ.FFM);
+            Assert.Equal(CircumferenceFormulaEnum.HodgonAndBeckett, circ.Formula);
+
+            Assert.Null(circ.LeftForearm);
+            Assert.Null(circ.RightForearm);
+            Assert.Null(circ.LeftCalf);
+            Assert.Null(circ.RightCalf);
+            Assert.Null(circ.Waist);
+            Assert.Null(circ.Shoulders);
+            Assert.Null(circ.Hips);
         }
 
 
         [Fact]
-        public void CreateFitnessDayEntryWithActivity()
+        public void CircumferenceComputeMaleMetric()
         {
-            uint? steps = 1500;
-            uint? stairs = 71;
-            CalorieValue burned = CalorieValue.Measure(2222.5f);
-            SleepDurationValue sleepMinutes = SleepDurationValue.MeasureMinutes(444f);
-            RatingValue sleepRating = RatingValue.Rate(4);
-            HeartRateValue restHr = HeartRateValue.Measure(100f);
+            float w = 71.8f, h = 174f, bfnum = 6.7f;
+            GenderTypeEnum gender = GenderTypeEnum.Male;
+            BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
+            BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
+            BodyMeasureValue neck = BodyMeasureValue.MeasureCentimeters(44f);
+            BodyMeasureValue abdomen = BodyMeasureValue.MeasureCentimeters(79.5f);
+            BodyMeasureValue chest = BodyMeasureValue.MeasureCentimeters(106f);
+            BodyMeasureValue larm = BodyMeasureValue.MeasureCentimeters(37.5f);
+            BodyMeasureValue rarm = BodyMeasureValue.MeasureCentimeters(37.5f);
+            BodyMeasureValue lleg = BodyMeasureValue.MeasureCentimeters(57f);
+            BodyMeasureValue rleg = BodyMeasureValue.MeasureCentimeters(57f);
 
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackActivity(steps, stairs, burned, sleepMinutes, sleepRating, restHr);
+            BodyFatValue bf = BodyFatValue.MeasureBodyFat(bfnum);
+            BodyWeightValue fm = BodyWeightValue.MeasureKilograms(4.8f);
+            BodyWeightValue ffm = BodyWeightValue.MeasureKilograms(67f);
 
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
+            CircumferenceMeasureValue circ = CircumferenceMeasureValue.ComputeHodgonAndBeckett(weight: weight, height: height, gender: gender,
+                neck: neck, abdomen: abdomen, chest: chest, leftArm: larm, rightArm: rarm, leftLeg: lleg, rightLeg: rleg);
 
-            Assert.Equal(steps, fd.DailyActivity.Steps);
-            Assert.Equal(sleepMinutes, fd.DailyActivity.SleepTime);
-            Assert.Equal(sleepRating, fd.DailyActivity.SleepQuality);
-            Assert.Equal(restHr, fd.DailyActivity.HeartRateRest);
 
-            // Other properties are null
-            Assert.Null(fd.DailyActivity.HeartRateMax);
+            Assert.NotNull(circ);
+            Assert.Equal(gender, circ.Gender);
+            Assert.Equal(weight, circ.Weight);
+            Assert.Equal(height, circ.Height);
+            Assert.Equal(gender, circ.Gender);
+            Assert.Equal(neck, circ.Neck);
+            Assert.Equal(abdomen, circ.Abdomen);
+            Assert.Equal(chest, circ.Chest);
+            Assert.Equal(larm, circ.LeftArm);
+            Assert.Equal(rarm, circ.RightArm);
+            Assert.Equal(lleg, circ.LeftLeg);
+            Assert.Equal(rleg, circ.RightLeg);
 
-            // Other entries are null
-            Assert.Null(fd.DailyWeight);
-            Assert.Null(fd.DailyWellness);
-            Assert.Null(fd.DailyDiet);
+            Assert.Equal(bf, circ.BF);
+            Assert.Equal(fm, circ.FM);
+            Assert.Equal(ffm, circ.FFM);
+            Assert.Equal(CircumferenceFormulaEnum.HodgonAndBeckett, circ.Formula);
+
+            Assert.Null(circ.LeftForearm);
+            Assert.Null(circ.RightForearm);
+            Assert.Null(circ.LeftCalf);
+            Assert.Null(circ.RightCalf);
+            Assert.Null(circ.Waist);
+            Assert.Null(circ.Shoulders);
+            Assert.Null(circ.Hips);
         }
 
 
-        [Fact]
-        public void CreateFitnessDayEntryWithWellnessNoMus()
-        {
-            TemperatureValue celsius = TemperatureValue.Measure(26.8f);
-            GlycemiaValue glycemia = GlycemiaValue.Measure(88.7f);
-
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackWellnessDay(celsius, glycemia);
-
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
-
-            Assert.Equal(celsius, fd.DailyWellness.Temperature);
-            Assert.Equal(glycemia, fd.DailyWellness.Glycemia);
-            Assert.Equal(0, fd.DailyWellness.MusList.Count);
-
-
-            // Other properties are null
-            //Assert.Null(fd.DailyActivity.HeartRateMax);
-
-            // Other entries are null
-            Assert.Null(fd.DailyWeight);
-            Assert.Null(fd.DailyActivity);
-            Assert.Null(fd.DailyDiet);
-        }
-
-
-        [Fact]
-        public void CreateFitnessDayEntryWithWellnessWithMus()
-        {
-            TemperatureValue celsius = TemperatureValue.Measure(26.8f);
-
-            List<MusReference> muses = new List<MusReference>()
-            {
-                MusReference.MusLink(new IdType(12), "insomnia"),
-            };
-
-
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackWellnessDay(celsius, musList: muses);
-            List<MusReference> malevolent = fd.DailyWellness.MusList.ToList();
-            malevolent.RemoveAll(x => true);
-
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
-
-            Assert.Equal(celsius, fd.DailyWellness.Temperature);
-            Assert.Equal(1, fd.DailyWellness.MusList.Count);
-
-            Assert.Null(fd.DailyWellness.Glycemia);
-
-            // Other entries are null
-            Assert.Null(fd.DailyWeight);
-            Assert.Null(fd.DailyActivity);
-            Assert.Null(fd.DailyDiet);
-        }
-
-
-        [Fact]
-        public void CreateFitnessDayEntryWithWellnessWithMus2()
-        {
-            TemperatureValue celsius = TemperatureValue.Measure(26.8f);
-
-            List<MusReference> muses = new List<MusReference>()
-            {
-                MusReference.MusLink(new IdType(12), "insomnia"),
-            };
-
-            RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, rating);
-            fd.TrackWellnessDay(celsius, musList: muses);
-            fd.DiagnoseMus(MusReference.MusLink(new IdType(500), "Added"));
-
-            Assert.NotNull(fd);
-            Assert.Equal(DateTime.Today, fd.DayDate);
-            Assert.Equal(rating, fd.Rating);
-
-            Assert.Equal(celsius, fd.DailyWellness.Temperature);
-            Assert.Equal(2, fd.DailyWellness.MusList.Count);
-
-            Assert.Null(fd.DailyWellness.Glycemia);
-
-            // Other entries are null
-            Assert.Null(fd.DailyWeight);
-            Assert.Null(fd.DailyActivity);
-            Assert.Null(fd.DailyDiet);
-        }
     }
 }

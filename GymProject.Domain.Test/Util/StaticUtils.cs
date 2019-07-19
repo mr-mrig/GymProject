@@ -27,10 +27,12 @@ namespace GymProject.Domain.Test.Util
         /// <param name="srcUnitMeasId">The Meas Unit ID of the original value</param>
         /// <param name="convertedUnitMeasId">The Meas Unit ID of the converted  value</param>
         /// <param name="tolerance">The tolerance as a [0-1] float - default = 1.5% </param>
-        public static void CheckConversions(float srcValue, float convertedValue, int srcUnitMeasId, int convertedUnitMeasId, float tolerance = 0.15f)
+        public static void CheckConversions(float srcValue, float convertedValue, int srcUnitMeasId = -1, int convertedUnitMeasId = -1, float tolerance = 0.02f)
         {
             Assert.InRange(convertedValue, srcValue * (1 - tolerance), srcValue * (1 + tolerance));
-            Assert.Equal(srcUnitMeasId, convertedUnitMeasId);
+
+            if(srcUnitMeasId > 0 && convertedUnitMeasId > 0)
+                Assert.Equal(srcUnitMeasId, convertedUnitMeasId);
         }
     }
 }

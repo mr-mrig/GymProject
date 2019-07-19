@@ -28,7 +28,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Body Height
         /// </summary>
-        public BodyCircumferenceValue Height { get; private set; } = null;
+        public BodyMeasureValue Height { get; private set; } = null;
 
 
         /// <summary>
@@ -54,72 +54,72 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Left Forearm Circumference
         /// </summary>
-        public BodyCircumferenceValue LeftForearm { get; private set; } = null;
+        public BodyMeasureValue LeftForearm { get; private set; } = null;
 
         /// <summary>
         /// Right Forearm Circumference
         /// </summary>
-        public BodyCircumferenceValue RightForearm { get; private set; } = null;
+        public BodyMeasureValue RightForearm { get; private set; } = null;
 
         /// <summary>
         /// Left Arm Circumference
         /// </summary>
-        public BodyCircumferenceValue LeftArm { get; private set; } = null;
+        public BodyMeasureValue LeftArm { get; private set; } = null;
 
         /// <summary>
         /// Right Arm Circumference
         /// </summary>
-        public BodyCircumferenceValue RightArm { get; private set; } = null;
+        public BodyMeasureValue RightArm { get; private set; } = null;
 
         /// <summary>
         /// Neck Circumference
         /// </summary>
-        public BodyCircumferenceValue Neck { get; private set; } = null;
+        public BodyMeasureValue Neck { get; private set; } = null;
 
         /// <summary>
         /// Shoulders Circumference
         /// </summary>
-        public BodyCircumferenceValue Shoulders { get; private set; } = null;
+        public BodyMeasureValue Shoulders { get; private set; } = null;
 
         /// <summary>
         /// Chest Circumference
         /// </summary>
-        public BodyCircumferenceValue Chest { get; private set; } = null;
+        public BodyMeasureValue Chest { get; private set; } = null;
 
         /// <summary>
         /// Abdomen Circumference
         /// </summary>
-        public BodyCircumferenceValue Abdomen { get; private set; } = null;
+        public BodyMeasureValue Abdomen { get; private set; } = null;
 
         /// <summary>
         /// Waist Circumference
         /// </summary>
-        public BodyCircumferenceValue Waist { get; private set; } = null;
+        public BodyMeasureValue Waist { get; private set; } = null;
 
         /// <summary>
         /// Hips Circumference
         /// </summary>
-        public BodyCircumferenceValue Hips { get; private set; } = null;
+        public BodyMeasureValue Hips { get; private set; } = null;
 
         /// <summary>
         /// Left Leg Circumference
         /// </summary>
-        public BodyCircumferenceValue LeftLeg { get; private set; } = null;
+        public BodyMeasureValue LeftLeg { get; private set; } = null;
 
         /// <summary>
         /// Right Forearm Circumference
         /// </summary>
-        public BodyCircumferenceValue RightLeg { get; private set; } = null;
+        public BodyMeasureValue RightLeg { get; private set; } = null;
 
         /// <summary>
         /// Left Calf Circumference
         /// </summary>
-        public BodyCircumferenceValue LeftCalf { get; private set; } = null;
+        public BodyMeasureValue LeftCalf { get; private set; } = null;
 
         /// <summary>
         /// Right Calf Circumference
         /// </summary>
-        public BodyCircumferenceValue RightCalf { get; private set; } = null;
+        public BodyMeasureValue RightCalf { get; private set; } = null;
         #endregion
 
 
@@ -134,26 +134,26 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// </summary>
         private CircumferenceMeasureValue
         (
-            BodyCircumferenceValue height = null,
+            BodyMeasureValue height = null,
             BodyWeightValue weight = null,
             GenderTypeEnum gender = null,
             BodyFatValue bf = null,
             BodyWeightValue ffm = null,
             BodyWeightValue fm = null,
-            BodyCircumferenceValue leftForearm = null,
-            BodyCircumferenceValue rightForearm = null,
-            BodyCircumferenceValue leftArm = null,
-            BodyCircumferenceValue rightArm = null,
-            BodyCircumferenceValue neck = null,
-            BodyCircumferenceValue shoulders = null,
-            BodyCircumferenceValue chest = null,
-            BodyCircumferenceValue abdomen = null,
-            BodyCircumferenceValue waist = null,
-            BodyCircumferenceValue hips = null,
-            BodyCircumferenceValue leftLeg = null,
-            BodyCircumferenceValue rightLeg = null,
-            BodyCircumferenceValue leftCalf = null,
-            BodyCircumferenceValue rightCalf = null
+            BodyMeasureValue leftForearm = null,
+            BodyMeasureValue rightForearm = null,
+            BodyMeasureValue leftArm = null,
+            BodyMeasureValue rightArm = null,
+            BodyMeasureValue neck = null,
+            BodyMeasureValue shoulders = null,
+            BodyMeasureValue chest = null,
+            BodyMeasureValue abdomen = null,
+            BodyMeasureValue waist = null,
+            BodyMeasureValue hips = null,
+            BodyMeasureValue leftLeg = null,
+            BodyMeasureValue rightLeg = null,
+            BodyMeasureValue leftCalf = null,
+            BodyMeasureValue rightCalf = null
         )
         {
             Formula = CircumferenceFormulaEnum.NotSet;
@@ -179,11 +179,12 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             LeftCalf =  leftCalf;
             RightCalf = rightCalf;
 
-            if (!HasValidMeasUnits())
-                throw new UnsupportedConversionException($"Incompatible meas units provided to {GetType().Name} Ctor");
 
-            if (CheckNullState())
+            if (CheckNullMeasures())
                 throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
+
+            if (!HasValidMeasUnits())
+                throw new UnsupportedMeasureException($"Incompatible meas units provided to {GetType().Name} Ctor");
         }
 
         /// <summary>
@@ -194,21 +195,21 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             CircumferenceFormulaEnum formulaType,
             GenderTypeEnum gender = null,
             BodyWeightValue weight = null,
-            BodyCircumferenceValue height = null,
-            BodyCircumferenceValue leftForearm = null,
-            BodyCircumferenceValue rightForearm = null,
-            BodyCircumferenceValue leftArm = null,
-            BodyCircumferenceValue rightArm = null,
-            BodyCircumferenceValue neck = null,
-            BodyCircumferenceValue shoulders = null,
-            BodyCircumferenceValue chest = null,
-            BodyCircumferenceValue abdomen = null,
-            BodyCircumferenceValue waist = null,
-            BodyCircumferenceValue hips = null,
-            BodyCircumferenceValue leftLeg = null,
-            BodyCircumferenceValue rightLeg = null,
-            BodyCircumferenceValue leftCalf = null,
-            BodyCircumferenceValue rightCalf = null
+            BodyMeasureValue height = null,
+            BodyMeasureValue leftForearm = null,
+            BodyMeasureValue rightForearm = null,
+            BodyMeasureValue leftArm = null,
+            BodyMeasureValue rightArm = null,
+            BodyMeasureValue neck = null,
+            BodyMeasureValue shoulders = null,
+            BodyMeasureValue chest = null,
+            BodyMeasureValue abdomen = null,
+            BodyMeasureValue waist = null,
+            BodyMeasureValue hips = null,
+            BodyMeasureValue leftLeg = null,
+            BodyMeasureValue rightLeg = null,
+            BodyMeasureValue leftCalf = null,
+            BodyMeasureValue rightCalf = null
         )
         {
             Formula = formulaType;
@@ -231,16 +232,17 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             LeftCalf = leftCalf;
             RightCalf = rightCalf;
 
-            if (!HasValidMeasUnits())
-                throw new UnsupportedConversionException($"Incompatible meas units provided to {GetType().Name} Ctor");
 
-            if (CheckNullState())
+            if (CheckNullMeasures())
                 throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
 
+            if (!HasValidMeasUnits())
+                throw new UnsupportedMeasureException($"Incompatible meas units provided to {GetType().Name} Ctor");
+
             // Compute derivable measures
-            BF = formulaType.ApplyFormula(Gender, HodgonAndBeckettMeasures());            // Null if invalid parameters
-            FM = ComputeFatMass();                                                         // Null if invalid parameters
-            FFM = ComputeFatFreeMass();                                                    // Null if invalid parameters
+            BF = formulaType.ApplyFormula(Gender, HodgonAndBeckettMeasures());          // Null if invalid parameters
+            FM = BodyMeasuresCalculator.ComputeFatMass(Weight, BF);                     // Null if invalid parameters
+            FFM = BodyMeasuresCalculator.ComputeFatFreeMass(Weight, FM);                // Null if invalid parameters
         }
 
         #endregion
@@ -255,26 +257,26 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <returns>A new CircumferenceMeasureValue instance</returns>
         public static CircumferenceMeasureValue TrackMeasures
         (
-               BodyCircumferenceValue height = null,
+               BodyMeasureValue height = null,
                BodyWeightValue weight = null,
                GenderTypeEnum gender = null,
                BodyFatValue bf = null,
                BodyWeightValue ffm = null,
                BodyWeightValue fm = null,
-               BodyCircumferenceValue leftForearm = null,
-               BodyCircumferenceValue rightForearm = null,
-               BodyCircumferenceValue leftArm = null,
-               BodyCircumferenceValue rightArm = null,
-               BodyCircumferenceValue neck = null,
-               BodyCircumferenceValue shoulders = null,
-               BodyCircumferenceValue chest = null,
-               BodyCircumferenceValue abdomen = null,
-               BodyCircumferenceValue waist = null,
-               BodyCircumferenceValue hips = null,
-               BodyCircumferenceValue leftLeg = null,
-               BodyCircumferenceValue rightLeg = null,
-               BodyCircumferenceValue leftCalf = null,
-               BodyCircumferenceValue rightCalf = null
+               BodyMeasureValue leftForearm = null,
+               BodyMeasureValue rightForearm = null,
+               BodyMeasureValue leftArm = null,
+               BodyMeasureValue rightArm = null,
+               BodyMeasureValue neck = null,
+               BodyMeasureValue shoulders = null,
+               BodyMeasureValue chest = null,
+               BodyMeasureValue abdomen = null,
+               BodyMeasureValue waist = null,
+               BodyMeasureValue hips = null,
+               BodyMeasureValue leftLeg = null,
+               BodyMeasureValue rightLeg = null,
+               BodyMeasureValue leftCalf = null,
+               BodyMeasureValue rightCalf = null
         )
 
             => new CircumferenceMeasureValue(height, weight, gender, bf, ffm, fm, leftForearm, rightForearm, leftArm, rightArm, neck, shoulders, chest, abdomen, waist, hips, leftLeg, rightLeg, leftCalf, rightCalf);
@@ -289,27 +291,26 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <param name="height">The height</param>
         /// <param name="chest">The chest skinfold</param>
         /// <param name="abdomen">The abdomen skinfold</param>
-        /// <param name="thigh">The thigh skinfold</param>
         /// <returns>A new CircumferenceMeasureValue instance</returns>
         public static CircumferenceMeasureValue ComputeHodgonAndBeckett
         (
             GenderTypeEnum gender,
             BodyWeightValue weight,
-            BodyCircumferenceValue height,
-            BodyCircumferenceValue leftForearm = null,
-            BodyCircumferenceValue rightForearm = null,
-            BodyCircumferenceValue leftArm = null,
-            BodyCircumferenceValue rightArm = null,
-            BodyCircumferenceValue neck = null,
-            BodyCircumferenceValue shoulders = null,
-            BodyCircumferenceValue chest = null,
-            BodyCircumferenceValue abdomen = null,
-            BodyCircumferenceValue waist = null,
-            BodyCircumferenceValue hips = null,
-            BodyCircumferenceValue leftLeg = null,
-            BodyCircumferenceValue rightLeg = null,
-            BodyCircumferenceValue leftCalf = null,
-            BodyCircumferenceValue rightCalf = null
+            BodyMeasureValue height,
+            BodyMeasureValue leftForearm = null,
+            BodyMeasureValue rightForearm = null,
+            BodyMeasureValue leftArm = null,
+            BodyMeasureValue rightArm = null,
+            BodyMeasureValue neck = null,
+            BodyMeasureValue shoulders = null,
+            BodyMeasureValue chest = null,
+            BodyMeasureValue abdomen = null,
+            BodyMeasureValue waist = null,
+            BodyMeasureValue hips = null,
+            BodyMeasureValue leftLeg = null,
+            BodyMeasureValue rightLeg = null,
+            BodyMeasureValue leftCalf = null,
+            BodyMeasureValue rightCalf = null
         )
 
             => new CircumferenceMeasureValue(CircumferenceFormulaEnum.HodgonAndBeckett, gender, weight, height, leftForearm, rightForearm, leftArm, rightArm, neck, shoulders, chest, abdomen, waist, hips, leftLeg, rightLeg, leftCalf, rightCalf);
@@ -321,38 +322,19 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         #region Business Methods
 
         /// <summary>
-        /// Compute the Fat Mass weight according to the BIA values
-        /// </summary>
-        /// <returns>The FM weight according to the Weight measure unit, or null if the parameters for the computation has not been provided</returns>
-        public BodyWeightValue ComputeFatMass()
-        {
-            if (Weight == null && BF == null)
-                return null;
-
-            return BodyWeightValue.Measure(Weight.Value * BF.Value, Weight.Unit);
-        }
-
-
-        /// <summary>
-        /// Compute the Fat-Free Mass weight according to the BIA values
-        /// </summary>
-        /// <returns>The FFM weight according to the Weight and Height measure units, or null if the parameters for the computation has not been provided</returns>
-        public BodyWeightValue ComputeFatFreeMass()
-        {
-            if (Weight == null && BF == null)
-                return null;
-
-            return BodyWeightValue.Measure(Weight.Value * (1 - BF.Value), Weight.Unit);
-        }
-
-
-        /// <summary>
         /// Checks whether all the properties are null
         /// </summary>
         /// <returns>True if no there are no non-null properties</returns>
         public bool CheckNullState()
             => GetAtomicValues().All(x => x is null);
 
+
+        /// <summary>
+        /// Checks whether all the properties are null
+        /// </summary>
+        /// <returns>True if no there are no non-null properties</returns>
+        public bool CheckNullMeasures()
+            => GetAtomicValues().Where(x => x != null && x?.GetType() == typeof(BodyMeasureValue)).Count() == 0;
 
         /// <summary>
         /// Checks whether all the properties have coherent measure units
@@ -362,17 +344,19 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         {
 
             // Check if weight and height have non-coherent meas units
-            if (!Height.Unit.MeasureSystemType.Equals(Weight.Unit.MeasureSystemType))
+            if (Height?.Unit.MeasureSystemType.Equals(Weight?.Unit.MeasureSystemType) != null
+                && !(Height?.Unit.MeasureSystemType.Equals(Weight?.Unit.MeasureSystemType)).Value)
                 return false;
 
             // Check that all the skinfolds have coherent meas system, by comparing one of them with all the others
-            MeasurmentSystemEnum rhs = Neck.Unit.MeasureSystemType;
+            MeasurmentSystemEnum rhs = GetValidMeasures().FirstOrDefault()?.Unit.MeasureSystemType;
 
             return GetMeasures().Where(x => !x.Unit.MeasureSystemType.Equals(rhs)).Count() == 0;
         }
         #endregion
 
 
+        #region Private Methods
 
         /// <summary>
         /// Checks if Meas Units are invalid
@@ -380,32 +364,32 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <param name="left">LHS</param>
         /// <param name="right">RHS</param>
         /// <returns>Returns null if valid</returns>
-        private BodyCircumferenceValue CheckInvalidMeasUnit(BodyCircumferenceValue left, BodyCircumferenceValue right) => left.Unit.MeasureSystemType.Equals(right.Unit.MeasureSystemType) ? null : left;
+        private BodyMeasureValue CheckInvalidMeasUnit(BodyMeasureValue left, BodyMeasureValue right) => left.Unit.MeasureSystemType.Equals(right.Unit.MeasureSystemType) ? null : left;
 
         /// <summary>
         /// Get the measures Values list
         /// </summary>
         /// <returns>The Skinfold Values list</returns>
-        private IEnumerable<BodyCircumferenceValue> GetMeasures()
-            => GetAtomicValues().Where(x => x?.GetType() == typeof(BodyCircumferenceValue)).Select(x => (BodyCircumferenceValue)x);
+        private IEnumerable<BodyMeasureValue> GetMeasures()
+            => GetAtomicValues().Where(x => x?.GetType() == typeof(BodyMeasureValue)).Select(x => (BodyMeasureValue)x);
 
         /// <summary>
         /// Get the measures values which represent a valid measure
         /// </summary>
         /// <returns>The Skinfold Values list</returns>
-        private IEnumerable<BodyCircumferenceValue> GetValidMeasures()
-            => GetAtomicValues().Where(x => x != null && x?.GetType() == typeof(BodyCircumferenceValue)).Select(x => (BodyCircumferenceValue)x).Where(x => x.Value > 0);
+        private IEnumerable<BodyMeasureValue> GetValidMeasures()
+            => GetAtomicValues().Where(x => x != null && x?.GetType() == typeof(BodyMeasureValue)).Select(x => (BodyMeasureValue)x).Where(x => x.Value > 0);
 
 
         /// <summary>
         /// Get the measures needed by the Hodgon and Beckett formula, ordered as they must be used
         /// </summary>
         /// <returns>The measures to be provided to the formula</returns>
-        private IList<BodyCircumferenceValue> HodgonAndBeckettMeasures()
+        private IList<BodyMeasureValue> HodgonAndBeckettMeasures()
         {
             if (Gender.IsMale())
             {
-                return new List<BodyCircumferenceValue>()
+                return new List<BodyMeasureValue>()
                 {
                     Abdomen,
                     Neck,
@@ -414,7 +398,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             }
             else if (Gender.IsFemale())
             {
-                return new List<BodyCircumferenceValue>()
+                return new List<BodyMeasureValue>()
                 {
                     Waist,
                     Hips,
@@ -425,8 +409,6 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             else
                 return null;
         }
-
-
 
         protected override IEnumerable<object> GetAtomicValues()
         {
@@ -449,7 +431,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
             yield return LeftCalf;
             yield return RightCalf;
         }
-
+        #endregion
 
     }
 }

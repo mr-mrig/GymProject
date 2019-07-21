@@ -128,6 +128,25 @@ namespace GymProject.Domain.SharedKernel
         #endregion
 
 
+        #region Operators
+
+        public static MacronutirentWeightValue operator +(MacronutirentWeightValue left, MacronutirentWeightValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return Measure(left.Value + right.Value, left.Unit);
+        }
+
+        public static MacronutirentWeightValue operator -(MacronutirentWeightValue left, MacronutirentWeightValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return Measure(left.Value - right.Value, left.Unit);
+        }
+        #endregion
+
 
         protected override IEnumerable<object> GetAtomicValues()
         {

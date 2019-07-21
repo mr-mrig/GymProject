@@ -387,6 +387,9 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <returns>The measures to be provided to the formula</returns>
         private IList<BodyMeasureValue> HodgonAndBeckettMeasures()
         {
+            if (Gender == null)
+                return null;
+
             if (Gender.IsMale())
             {
                 return new List<BodyMeasureValue>()

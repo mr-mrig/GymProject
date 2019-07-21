@@ -113,10 +113,10 @@ namespace GymProject.Domain.SharedKernel
 
         private static bool ValidParams(GenderTypeEnum gender, IList<BodyMeasureValue> measures)
         {
-            return measures.Where(x => !x.Unit.Equals(measures[0].Unit)).Count() == 0       // All meas with the same meas unit
-                && !gender.Equals(GenderTypeEnum.NotSet)                                    // Valid gender
-                && measures.All(x => x != null && x?.Value > 0)                             // Valid measures
-                && gender.IsMale() ? measures.Count == 3 : measures.Count == 4;             // Correct number of measures
+            return (measures.Where(x => x != null && !x.Unit.Equals(measures[0].Unit)).Count() == 0)       // All meas with the same meas unit
+                && (gender != null && !gender.Equals(GenderTypeEnum.NotSet))                                    // Valid gender
+                && (measures.All(x => x != null && x?.Value > 0))                             // Valid measures
+                && (gender.IsMale() ? measures.Count == 3 : measures.Count == 4);             // Correct number of measures
         }
         #endregion
 

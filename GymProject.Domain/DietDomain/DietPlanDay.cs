@@ -1,13 +1,20 @@
-﻿using System;
+﻿using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using GymProject.Domain.Base;
-using GymProject.Domain.SharedKernel;
+using System.Text;
 
-namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
+namespace GymProject.Domain.DietDomain
 {
-    public class DailyDietValue : ValueObject
+    public class DietPlanDay : Entity<IdType>
     {
+
+
+        /// <summary>
+        /// The name
+        /// </summary>
+        public string Name { get; private set; } = string.Empty;
 
         /// <summary>
         /// Carbohidrates quantity
@@ -24,6 +31,13 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         public MacronutirentWeightValue Proteins { get; private set; } = null;
 
+
+        /// <summary>
+        /// Calories amount
+        /// </summary>
+        public CalorieValue Calories { get; private set; } = null;
+
+
         /// <summary>
         /// Salt quantity
         /// </summary>
@@ -35,9 +49,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public VolumeValue Water { get; private set; } = null;
 
         /// <summary>
-        /// Day with free meal
+        /// The specific weekday number, if specififed
         /// </summary>
-        public bool? IsFreeMeal { get; private set; } = null;
+        public WeekdayEnum SpecificWeekday { get; private set; } = null;
 
         /// <summary>
         /// Diet day type
@@ -46,31 +60,32 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
 
 
-
         #region Ctors
 
-        private DailyDietValue(
+        private DietPlanDay(
+            string name = null,
             MacronutirentWeightValue carbs = null,
             MacronutirentWeightValue fats = null,
             MacronutirentWeightValue proteins = null,
             MicronutirentWeightValue salt = null,
             VolumeValue water = null,
-            bool? isFreeMeal = null,
+            WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
         {
+            Name = name ?? string.Empty;
             Carbs = carbs;
             Fats = fats;
             Proteins = proteins;
             Salt = salt;
             Water = water;
-            IsFreeMeal = isFreeMeal;
+            SpecificWeekday = specificWeekday;
             DietDayType = dayType;
+
+            Calories = DietAmountsCalculator.ComputeCalories(Carbs, Fats, Proteins);
 
             if (CheckNullState())
                 throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
 
-            //// Here so it is excluded from the CheckNullState
-            //DietDayType = dayType;
         }
         #endregion
 
@@ -86,49 +101,98 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <param name="proteins">Proteins quantity</param>
         /// <param name="salt">Salt quantity</param>
         /// <param name="water">Water quantity</param>
-        /// <param name="isFreeMeal">Whether it has a free meal or not</param>
+        /// <param name="specificWeekday">The specific weekday number - or null</param>
         /// <param name="dayType">The day type</param>
-        /// <returns>The DailyDietValue instance</returns>
-        public static DailyDietValue TrackDiet(
+        /// <returns>The DietPlanDayValue instance</returns>
+        public static DietPlanDay AddDayToPlan(
+            string name = null,
             MacronutirentWeightValue carbs = null,
             MacronutirentWeightValue fats = null,
             MacronutirentWeightValue proteins = null,
             MicronutirentWeightValue salt = null,
             VolumeValue water = null,
-            bool? isFreeMeal = null,
+            WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
-        
-            => new DailyDietValue(carbs, fats, proteins, salt, water, isFreeMeal, dayType);
-        
+
+            => new DietPlanDay(name, carbs, fats, proteins, salt, water, specificWeekday, dayType);
+
         #endregion
 
 
 
         #region Business Methods
 
+        /// <summary>
+        /// Set the carbohidrates value
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void PlanCarbs(MacronutirentWeightValue newValue) => Carbs = newValue;
+
+
+        /// <summary>
+        /// Set the proteins value
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void PlanPros(MacronutirentWeightValue newValue) => Proteins = newValue;
+
+
+        /// <summary>
+        /// Set the fats value
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void PlanFats(MacronutirentWeightValue newValue) => Fats = newValue;
+
+
+        /// <summary>
+        /// Set the salt value
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void PlanSalt(MicronutirentWeightValue newValue) => Salt = newValue;
+
+
+        /// <summary>
+        /// Set the water value
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void PlanWater(VolumeValue newValue) => Water = newValue;
+
+
+        /// <summary>
+        /// Schedule this day
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void ScheduleToSpecificDay(WeekdayEnum newValue) => SpecificWeekday = newValue;
+
+
+        /// <summary>
+        /// Set the day type
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void SetDayType(DietDayTypeEnum newValue) => DietDayType = newValue;
+
 
         /// <summary>
         /// Checks whether all the properties are null
         /// </summary>
         /// <returns>True if no there are no non-null properties</returns>
-        public bool CheckNullState() 
+        public bool CheckNullState()
             => GetAtomicValues().All(x => x is null);
 
         #endregion
 
 
 
-        protected override IEnumerable<object> GetAtomicValues()
+        protected IEnumerable<object> GetAtomicValues()
         {
+            yield return Name;
             yield return Carbs;
             yield return Fats;
             yield return Proteins;
             yield return Salt;
             yield return Water;
-            yield return IsFreeMeal;
+            yield return SpecificWeekday;
             yield return DietDayType;
         }
-
 
     }
 }

@@ -101,6 +101,21 @@ namespace GymProject.Domain.SharedKernel
 
             return Measure(PerformConversion(Value, toUnit), toUnit);
         }
+
+
+        /// <summary>
+        /// Converts the selected value to the specified measure unit, without loosing precision.
+        /// To be used only in this assembly, when rounding might cause precision loss.
+        /// </summary>
+        /// <param name="toUnit">The target measure unit</param>
+        /// <returns>The exact result of the conversion, no rounding done</returns>
+        internal float ConvertExact(WeightUnitMeasureEnum toUnit)
+        {
+            if (Unit.Equals(toUnit))
+                return Value;
+
+            return PerformConversion(Value, toUnit);
+        }
         #endregion
 
 
@@ -130,6 +145,25 @@ namespace GymProject.Domain.SharedKernel
         }
         #endregion
 
+
+        #region Operators
+
+        public static BodyWeightValue operator +(BodyWeightValue left, BodyWeightValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return Measure(left.Value + right.Value, left.Unit);
+        }
+
+        public static BodyWeightValue operator -(BodyWeightValue left, BodyWeightValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return Measure(left.Value - right.Value, left.Unit);
+        }
+        #endregion
 
 
         protected override IEnumerable<object> GetAtomicValues()

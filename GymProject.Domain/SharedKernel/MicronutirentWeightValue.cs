@@ -62,7 +62,7 @@ namespace GymProject.Domain.SharedKernel
         /// Factory for creating a new value [oz]
         /// </summary>
         /// <param name="weight">The value</param>
-        /// <returns>The MacronutirentWeightValue instance</returns>
+        /// <returns>The MicronutirentWeightValue instance</returns>
         public static MicronutirentWeightValue MeasureOunces(float weight)
         {
             return new MicronutirentWeightValue(FormatWeight(weight, WeightUnitMeasureEnum.Ounces), WeightUnitMeasureEnum.Ounces);
@@ -129,6 +129,25 @@ namespace GymProject.Domain.SharedKernel
         }
         #endregion
 
+
+        #region Operators
+
+        public static MicronutirentWeightValue operator +(MicronutirentWeightValue left, MicronutirentWeightValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return Measure(left.Value + right.Value, left.Unit);
+        }
+
+        public static MicronutirentWeightValue operator -(MicronutirentWeightValue left, MicronutirentWeightValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return Measure(left.Value - right.Value, left.Unit);
+        }
+        #endregion
 
 
         protected override IEnumerable<object> GetAtomicValues()

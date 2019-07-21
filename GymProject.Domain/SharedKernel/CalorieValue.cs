@@ -128,6 +128,26 @@ namespace GymProject.Domain.SharedKernel
         #endregion
 
 
+        #region Operators
+
+        public static CalorieValue operator +(CalorieValue left, CalorieValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return CalorieValue.Measure(left.Value + right.Value, left.Unit);
+        }
+
+        public static CalorieValue operator -(CalorieValue left, CalorieValue right)
+        {
+            if (left.Unit != right.Unit)
+                throw new UnsupportedMeasureException($"When summing the operands must have the same measure unit");
+
+            return CalorieValue.Measure(left.Value - right.Value, left.Unit);
+        }
+        #endregion
+
+
 
         protected override IEnumerable<object> GetAtomicValues()
         {

@@ -19,7 +19,7 @@ namespace GymProject.Domain.SharedKernel
         public static BodyFatValue ComputeBodyFat(BodyWeightValue weight, BodyWeightValue fatMass)
         {
             // Input not provided
-            if (weight == null && fatMass == null)
+            if (weight == null || fatMass == null)
                 return null;
 
             if (!weight.Unit.Equals(fatMass.Unit))
@@ -38,7 +38,7 @@ namespace GymProject.Domain.SharedKernel
         public static BodyFatValue ComputeBodyFatFFM(BodyWeightValue weight, BodyWeightValue fatFreeMass)
         {
             // Input not provided
-            if (weight == null && fatFreeMass == null)
+            if (weight == null || fatFreeMass == null)
                 return null;
 
             if (!weight.Unit.Equals(fatFreeMass.Unit))
@@ -57,7 +57,7 @@ namespace GymProject.Domain.SharedKernel
         public static PercentageValue ComputeBodyMassIndex(BodyMeasureValue height, BodyWeightValue weight)
         {
             // Input not provided
-            if (weight == null && height == null)
+            if (weight == null || height == null)
                 return null;
 
             MeasurmentSystemEnum measSystem = height.Unit.MeasureSystemType;
@@ -83,7 +83,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The FM - the measure unit is fixed according to the weight - NULL if invalid input</returns>
         public static BodyWeightValue ComputeFatMass(BodyWeightValue weight, BodyFatValue bodyfat)
         {
-            if (weight == null && bodyfat == null)
+            if (weight == null || bodyfat == null)
                 return null;
 
             return BodyWeightValue.Measure(weight.Value * bodyfat.AsRatio().Value, weight.Unit);
@@ -98,7 +98,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The FFM - the measure unit is fixed according to the weight - NULL if invalid input</returns>
         public static BodyWeightValue ComputeFatFreeMass(BodyWeightValue weight, BodyFatValue bodyfat)
         {
-            if (weight == null && bodyfat == null)
+            if (weight == null || bodyfat == null)
                 return null;
 
             return BodyWeightValue.Measure(weight.Value * (1 - bodyfat.AsRatio().Value), weight.Unit);
@@ -113,7 +113,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The FFM - the measure unit is fixed according to the other ones - NULL if invalid input</returns>
         public static BodyWeightValue ComputeFatFreeMass(BodyWeightValue weight, BodyWeightValue fatMass)
         {
-            if (weight == null && fatMass == null)
+            if (weight == null || fatMass == null)
                 return null;
 
             if (!weight.Unit.Equals(fatMass.Unit))

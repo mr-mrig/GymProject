@@ -81,16 +81,19 @@ namespace GymProject.Domain.SharedKernel
         private static BodyFatValue WrapJacksonPollockFormula3(GenderTypeEnum gender, ushort age, IEnumerable<CaliperSkinfoldValue> caliperMeasures)
         {
             double density;
+            IEnumerable<float> pureMeasures;
 
             // Check for invalid parameters
             if (!ValidParams(gender, age, caliperMeasures))
                 return null;
 
             // Convert to [mm] if needed
-            if (!caliperMeasures.FirstOrDefault().Unit.MeasureSystemType.Equals(LengthMeasureUnitEnum.Millimeters))
-                caliperMeasures = caliperMeasures.Select(x => x.ConvertMetricVsImperial(LengthMeasureUnitEnum.Millimeters));
+            if (caliperMeasures.FirstOrDefault().Unit.MeasureSystemType.Equals(LengthMeasureUnitEnum.Millimeters))
+                pureMeasures = caliperMeasures.Select(x => x.Value);
+            else
+                pureMeasures = caliperMeasures.Select(x => x.ConvertMetricVsImperialExact(LengthMeasureUnitEnum.Millimeters));
 
-            float skinfoldsSum = caliperMeasures.Sum(x => x.Value);
+            float skinfoldsSum = pureMeasures.Sum(x => x);
 
             // Apply [mm] formula
             switch (gender)
@@ -118,17 +121,20 @@ namespace GymProject.Domain.SharedKernel
         private static BodyFatValue WrapJacksonPollockFormula4(GenderTypeEnum gender, ushort age, IEnumerable<CaliperSkinfoldValue> caliperMeasures)
         {
             double density;
+            IEnumerable<float> pureMeasures;
 
             // Check for invalid parameters
             if (!ValidParams(gender, age, caliperMeasures))
                 return null;
 
             // Convert to [mm] if needed
-            if (!caliperMeasures.FirstOrDefault().Unit.MeasureSystemType.Equals(LengthMeasureUnitEnum.Millimeters))
-                caliperMeasures = caliperMeasures.Select(x => x.ConvertMetricVsImperial(LengthMeasureUnitEnum.Millimeters));
+            if (caliperMeasures.FirstOrDefault().Unit.MeasureSystemType.Equals(LengthMeasureUnitEnum.Millimeters))
+                pureMeasures = caliperMeasures.Select(x => x.Value);
+            else
+                pureMeasures = caliperMeasures.Select(x => x.ConvertMetricVsImperialExact(LengthMeasureUnitEnum.Millimeters));
 
 
-            float skinfoldsSum = caliperMeasures.Sum(x => x.Value);
+            float skinfoldsSum = pureMeasures.Sum(x => x);
 
             // Apply [mm] formula
             switch (gender)
@@ -156,7 +162,7 @@ namespace GymProject.Domain.SharedKernel
         private static BodyFatValue WrapJacksonPollockFormula7(GenderTypeEnum gender, ushort age, IEnumerable<CaliperSkinfoldValue> caliperMeasures)
         {
             double density;
-            IEnumerable<float> highPrecisionMeasures;
+            IEnumerable<float> pureMeasures;
 
             // Check for invalid parameters
             if (!ValidParams(gender, age, caliperMeasures))
@@ -164,11 +170,11 @@ namespace GymProject.Domain.SharedKernel
 
             // Convert to [mm] if needed
             if (caliperMeasures.FirstOrDefault().Unit.Equals(LengthMeasureUnitEnum.Millimeters))
-                highPrecisionMeasures = caliperMeasures.Select(x => x.Value);
+                pureMeasures = caliperMeasures.Select(x => x.Value);
             else
-                highPrecisionMeasures = caliperMeasures.Select(x => x.ConvertMetricVsImperialExact(LengthMeasureUnitEnum.Millimeters));
+                pureMeasures = caliperMeasures.Select(x => x.ConvertMetricVsImperialExact(LengthMeasureUnitEnum.Millimeters));
 
-            float skinfoldsSum = highPrecisionMeasures.Sum(x => x);
+            float skinfoldsSum = pureMeasures.Sum(x => x);
 
             // Apply [mm] formula
             switch (gender)

@@ -37,6 +37,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             Temperature = temperature;
             Glycemia = glycemia;
             _musList = musList ?? new List<MusReference>();
+
+            if(Temperature == null && Glycemia == null && _musList.Count == 0)
+                    throw new FitnessJournalDomainInvariantViolationException($"Cannot add a {GetType().Name} with all null values");
         }
 
         #endregion
@@ -54,7 +57,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public static DailyWellnessValue TrackWellness(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<MusReference> musList = null)
         {
             if (temperature is null && glycemia is null && (musList is null || musList.Count == 0))
-                throw new FitnessJournalDomainGenericException($"Cannot create a DailyWellnessValue with all NULL fields");
+                throw new FitnessJournalDomainInvariantViolationException($"Cannot create a DailyWellnessValue with all NULL fields");
 
             return new DailyWellnessValue(temperature, glycemia, musList);
         }
@@ -71,6 +74,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <returns>A new WellnessDay ObjectValue with changed Temerature</returns>
         public DailyWellnessValue ChangeTemperature(TemperatureValue temperature)
         {
+            if (DayDate == null)
+                throw new FitnessJournalDomainInvariantViolationException($"{GetType().Name} must have a valid Date");
+
             return DailyWellnessValue.TrackWellness(temperature, Glycemia, _musList);
         }
 
@@ -139,10 +145,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// Checks whether all the properties are null
         /// </summary>
         /// <returns>True if no there are no non-null properties</returns>
-        public bool CheckNullState()
-        {
-            return GetAtomicValues().All(x => x is null);
-        }
+        public bool CheckNullState() => GetAtomicValues().All(x => x is null || (x as IEnumerable<MusReference>)?.Count() == 0);
 
 
         protected override IEnumerable<object> GetAtomicValues()

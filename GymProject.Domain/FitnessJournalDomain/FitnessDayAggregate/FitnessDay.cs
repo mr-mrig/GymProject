@@ -1,5 +1,6 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.FitnessJournalDomain.Common;
+using GymProject.Domain.FitnessJournalDomain.Exceptions;
 using GymProject.Domain.FitnessJournalDomain.MusAggregate;
 using GymProject.Domain.SharedKernel;
 using System;
@@ -56,6 +57,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         {
             DayDate = dayDate;
             Rating = rating;
+
+            if (DayDate == null)
+                throw new FitnessJournalDomainInvariantViolationException($"{GetType().Name} must have a valid Date");
         }
 
 
@@ -105,6 +109,11 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void ChangeDate(DateTime newDate)
         {
             DayDate = newDate;
+
+            if (DayDate == null)
+                throw new FitnessJournalDomainInvariantViolationException($"{GetType().Name} must have a valid Date");
+
+
             AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 

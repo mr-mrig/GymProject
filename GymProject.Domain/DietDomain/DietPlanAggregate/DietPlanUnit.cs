@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.DietDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using System;
 using System.Collections.Generic;
@@ -157,22 +158,33 @@ check
         private CalorieValue GetAvgWeeklyCalories(IEnumerable<DietPlanDay> days) => CalorieValue.MeasureKcal(days.Sum(x => x.Calories.Value * x.WeeklyOccurrances) / (float)WeekdayEnum.Max);
 
 
-
-        private bool CheckDietDays(IEnumerable<DietPlanDay> dietDays)
+        /// <summary>
+        /// Validates the diet days list with respect to the business rules
+        /// </summary>
+        /// <param name="dietDays">The diet days list to be verified</param>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when business rule is violated</exception>
+        /// <returns>True if </returns>
+        private void ValidateBusinessLogic(IEnumerable<DietPlanDay> dietDays)
         {
             // Days exceed the week days
             if (dietDays.Count() > WeekdayEnum.Max)
-                throw new ArgumentException($"The number of Diet Days provided exceeds the number of days in a week", nameof(DietDays));
+                throw new DietDomainIvariantViolationException($"The number of Diet Days provided exceeds the number of days in a week");
 
-            // Check no more days assigned to the same weekday
+            // Check for different days linked to the same weekday
             foreach (DietPlanDay day in dietDays
                 .Where(x => x?.SpecificWeekday != null && !x.SpecificWeekday.Equals(WeekdayEnum.Generic)))
             {
                 if (dietDays.Any(x => x.SpecificWeekday.Equals(day.SpecificWeekday)))
-                    throw new ArgumentException($"More Diet Days assigned to the same Weekday", nameof(DietDays));
+                    throw new DietDomainIvariantViolationException($"Multiple Diet Days assigned to the same Weekday");
             }
 
-            // Check no more diet days
+            // Check for different days with the same name
+            foreach (DietPlanDay day in dietDays
+                .Where(x => x?.Name != null && !string.IsNullOrWhiteSpace(x.Name)))
+            {
+                if (dietDays.Any(x => x.Name.Equals(day.Name)))
+                    throw new DietDomainIvariantViolationException($"Mutiple Diet Days with the same name");
+            }
         }
 
 

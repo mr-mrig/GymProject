@@ -21,7 +21,7 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
         private Mus(string name, string description = null)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new FitnessJournalDomainGenericException($"Trying to create a Mus with blank name");
+                throw new FitnessJournalDomainInvariantViolationException($"Trying to create a Mus with blank name");
 
             Name = name;
             Description = description;

@@ -82,7 +82,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             HeartRateValue maxHeartRate = null)
         {
             if (steps is null && stairs is null && burnedKcal is null && sleepTime is null && sleepQuality is null && restHeartRate is null && maxHeartRate is null)
-                throw new FitnessJournalDomainGenericException($"Cannot create a DailyActivityValue with all NULL fields");
+                throw new FitnessJournalDomainInvariantViolationException($"Cannot create a DailyActivityValue with all NULL fields");
 
             return new DailyActivityValue()
             {

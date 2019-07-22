@@ -24,7 +24,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public RatingValue Rating { get; private set; } = null;
 
         // FK -> Don't fetch any other fields, as they might slow the process a lot
-        public long PostId { get; private set; }
+        public IdType PostId { get; private set; }
 
         /// <summary>
         /// The daily Activity tracked
@@ -57,6 +57,14 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             DayDate = dayDate;
             Rating = rating;
         }
+
+
+        private FitnessDay(IdType postId, DateTime dayDate, RatingValue rating = null)
+        {
+            PostId = postId;
+            DayDate = dayDate;
+            Rating = rating;
+        }
         #endregion
 
 
@@ -69,7 +77,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <param name="dayDate">The date of the day to be tracked</param>
         /// <param name="rating">The rating</param>
         /// <returns>The new FitnessDay instance</returns>
-        public static FitnessDay TrackDay(DateTime dayDate, RatingValue rating = null)
+        public static FitnessDay StartTrackingDay(DateTime dayDate, RatingValue rating = null)
         {
             return new FitnessDay(dayDate, rating);
         }
@@ -86,6 +94,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void ChangeRating(RatingValue newRating)
         {
             Rating = newRating;
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
         /// <summary>
@@ -96,6 +105,17 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void ChangeDate(DateTime newDate)
         {
             DayDate = newDate;
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+        }
+
+
+        /// <summary>
+        /// Linke the entry to a Post
+        /// </summary>
+        /// <param name="postId">The ID of the post to be linked</param>
+        public void LinkToPost(IdType postId)
+        {
+            PostId = postId;
         }
         #endregion
 
@@ -111,7 +131,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWellnessDay(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<MusReference> musList = null)
         {
             DailyWellness = DailyWellnessValue.TrackWellness(temperature, glycemia, musList);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
+
 
         /// <summary>
         /// Attach the selected MUS diagnosis to the Day
@@ -120,8 +142,43 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void DiagnoseMus(MusReference toAdd)
         {
             DailyWellness = DailyWellness.DiagnoseMus(toAdd);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
+
+        /// <summary>
+        /// Remove the selected MUS
+        /// </summary>
+        /// <param name="toRemove">The Id of the MUS to be removed</param>
+        public void UndiagnoseMus(MusReference toRemove)
+        {
+            DailyWellness = DailyWellness.RemoveMus(toRemove);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+        }
+
+
+        /// <summary>
+        /// Remove the selected MUS
+        /// </summary>
+        /// <param name="toRemoveId">The Id of the MUS to be removed</param>
+        public void UndiagnoseMus(IdType toRemoveId)
+        {
+            DailyWellness = DailyWellness.RemoveMus(toRemoveId);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+        }
+
+
+        /// <summary>
+        /// Remove the Wellness entry from the parent
+        /// </summary>
+        public void UntrackWellness()
+        {
+            DailyWellness = null;
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
+            if (CheckNullEntries())
+                AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
+        }
         #endregion
 
 
@@ -135,6 +192,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWeight(float weight, WeightUnitMeasureEnum measUnit)
         {
             DailyWeight = BodyWeightValue.Measure(weight, measUnit);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
         /// <summary>
@@ -144,6 +202,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWeightKilograms(float weight)
         {
             DailyWeight = BodyWeightValue.Measure(weight, WeightUnitMeasureEnum.Kilograms);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
         /// <summary>
@@ -153,8 +212,20 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWeightPounds(float weight)
         {
             DailyWeight = BodyWeightValue.Measure(weight, WeightUnitMeasureEnum.Pounds);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
+        /// <summary>
+        /// Remove the Weight entry from the parent
+        /// </summary>
+        public void UntrackWeight()
+        {
+            DailyWeight = null;
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
+            if (CheckNullEntries())
+                AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
+        }
         #endregion
 
 
@@ -180,6 +251,19 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             HeartRateValue maxHeartRate = null)
         {
             DailyActivity = DailyActivityValue.TrackActivity(steps, stairs, burnedKcal, sleepTime, sleepQuality, restHeartRate, maxHeartRate);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+        }
+
+        /// <summary>
+        /// Remove the Activity entry from the parent
+        /// </summary>
+        public void UntrackActivity()
+        {
+            DailyActivity = null;
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
+            if (CheckNullEntries())
+                AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
         }
         #endregion
 
@@ -204,9 +288,31 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             VolumeValue water = null,
             bool? isFreeMeal = null,
             DietDayTypeEnum dayType = null)
+        {
+            DailyDiet = DailyDietValue.TrackDiet(carbs, fats, proteins, salt, water, isFreeMeal, dayType);
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+        }
 
-                => DailyDiet = DailyDietValue.TrackDiet(carbs, fats, proteins, salt, water, isFreeMeal, dayType);
 
+        /// <summary>
+        /// Remove the Diet entry from the parent
+        /// </summary>
+        public void UntrackDiet()
+        {
+            DailyDiet = null;
+            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
+            if (CheckNullEntries())
+                AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
+        }
         #endregion
+
+
+
+        /// <summary>
+        /// Checks wether all the fitness entries are null -> invalid state
+        /// </summary>
+        /// <returns>True if all fitness entries are null</returns>
+        private bool CheckNullEntries() => DailyActivity == null && DailyDiet == null && DailyWeight == null && DailyWellness == null;
     }
 }

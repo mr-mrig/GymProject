@@ -15,7 +15,8 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         private MusReference(IdType id, string name)
         {
             Id = id;
-            Name = name;
+            Name = string.IsNullOrWhiteSpace(name) ? throw new ArgumentException($"Cannot create a MUS object with an empty name","name")
+                : name;
         }
 
 

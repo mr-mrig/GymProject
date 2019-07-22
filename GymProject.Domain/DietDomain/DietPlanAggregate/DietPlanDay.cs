@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace GymProject.Domain.DietDomain
+namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
     public class DietPlanDay : Entity<IdType>
     {
@@ -54,6 +54,11 @@ namespace GymProject.Domain.DietDomain
         public WeekdayEnum SpecificWeekday { get; private set; } = null;
 
         /// <summary>
+        /// The number of times this day is repeated weekly
+        /// </summary>
+        public int WeeklyOccurrances { get; private set; } = 0;
+
+        /// <summary>
         /// Diet day type
         /// </summary>
         public DietDayTypeEnum DietDayType { get; private set; } = null;
@@ -64,6 +69,7 @@ namespace GymProject.Domain.DietDomain
 
         private DietPlanDay(
             string name = null,
+            int weeklyOccurrances = 0,
             MacronutirentWeightValue carbs = null,
             MacronutirentWeightValue fats = null,
             MacronutirentWeightValue proteins = null,
@@ -80,6 +86,7 @@ namespace GymProject.Domain.DietDomain
             Water = water;
             SpecificWeekday = specificWeekday;
             DietDayType = dayType;
+            WeeklyOccurrances = weeklyOccurrances;
 
             Calories = DietAmountsCalculator.ComputeCalories(Carbs, Fats, Proteins);
 
@@ -96,6 +103,7 @@ namespace GymProject.Domain.DietDomain
         /// <summary>
         /// Factory method
         /// </summary>
+        /// <param name="name">The name which dientifies the day</param>
         /// <param name="carbs">Carbohidrates quantity</param>
         /// <param name="fats">Fats quantity</param>
         /// <param name="proteins">Proteins quantity</param>
@@ -106,6 +114,7 @@ namespace GymProject.Domain.DietDomain
         /// <returns>The DietPlanDayValue instance</returns>
         public static DietPlanDay AddDayToPlan(
             string name = null,
+            int weeklyOccurrances = 0,
             MacronutirentWeightValue carbs = null,
             MacronutirentWeightValue fats = null,
             MacronutirentWeightValue proteins = null,
@@ -114,13 +123,19 @@ namespace GymProject.Domain.DietDomain
             WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
 
-            => new DietPlanDay(name, carbs, fats, proteins, salt, water, specificWeekday, dayType);
+            => new DietPlanDay(name, weeklyOccurrances, carbs, fats, proteins, salt, water, specificWeekday, dayType);
 
         #endregion
 
 
 
         #region Business Methods
+
+        /// <summary>
+        /// Change the name
+        /// </summary>
+        /// <param name="newName">The new name</param>
+        public void Rename(string newName) => Name = newName ?? string.Empty;
 
         /// <summary>
         /// Set the carbohidrates value
@@ -176,7 +191,7 @@ namespace GymProject.Domain.DietDomain
         /// </summary>
         /// <returns>True if no there are no non-null properties</returns>
         public bool CheckNullState()
-            => GetAtomicValues().All(x => x is null);
+            => GetAtomicValues().All(x => Nullable.GetUnderlyingType(x.GetType()) != null && x is null);
 
         #endregion
 
@@ -192,6 +207,7 @@ namespace GymProject.Domain.DietDomain
             yield return Water;
             yield return SpecificWeekday;
             yield return DietDayType;
+            yield return WeeklyOccurrances;
         }
 
     }

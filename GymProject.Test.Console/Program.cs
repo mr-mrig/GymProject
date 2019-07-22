@@ -18,7 +18,7 @@ namespace GymProject.Test.Console
         {
 
 
-            FitnessDay fd = FitnessDay.TrackDay(DateTime.Today, null);
+            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, null);
 
             fd.TrackWellnessDay(TemperatureValue.MeasureCelsius(37.56f), GlycemiaValue.MeasureMg(110.7f));
 

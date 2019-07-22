@@ -30,7 +30,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         public IReadOnlyCollection<Comment> Comments
         {
-            get => _comments.ToList().AsReadOnly();
+            get => _comments?.ToList().AsReadOnly();
         }
 
         private ICollection<Like> _likes;
@@ -40,7 +40,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         public IReadOnlyCollection<Like> Likes
         {
-            get => _likes.ToList().AsReadOnly();
+            get => _likes?.ToList().AsReadOnly();
         }
 
 
@@ -183,6 +183,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             // Check for comment not found
             Comment srcComment = _comments.Where(x => x.Id == commentId).FirstOrDefault();
 
+            if (srcComment == default(Comment))
+                throw new KeyNotFoundException($"No comment with Id {commentId.ToString()} in Post {Id.ToString()}");
+
             srcComment = EditComment(srcComment, newCommentText);
 
             LastUpdate = DateTime.Now;
@@ -258,6 +261,24 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             if (!_likes.Remove(srcLike))
                 throw new SocialNetworkGenericException($"The selected Like - Id={toBeRemoved.Id.ToString()} - could not be found in this Post - Id={Id.ToString()}");
 
+
+            LastUpdate = DateTime.Now;
+        }
+
+
+        /// <summary>
+        /// Remove the like with the slected Id
+        /// </summary>
+        /// <param name="likeId">The like to be removed</param>
+        public void Unlike(IdType likeId)
+        {
+            // Check for comment not found
+            Like toBeRemoved = _likes.Where(x => x.Id == likeId).FirstOrDefault();
+
+            if (toBeRemoved == default(Comment))
+                throw new KeyNotFoundException($"No Like with Id {toBeRemoved.ToString()} in Post {Id.ToString()}");
+
+            _likes.Remove(toBeRemoved);
 
             LastUpdate = DateTime.Now;
         }

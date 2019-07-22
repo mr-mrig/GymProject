@@ -24,7 +24,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         public IReadOnlyCollection<MusReference> MusList
         {
-            get => _musList.ToList().AsReadOnly();
+            get => _musList?.ToList().AsReadOnly();
         }
         #endregion
 
@@ -87,7 +87,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// Diagnose the MUSes in the specified list
         /// </summary>
-        /// <param name="musList">The must List to be diagnosed</param>
+        /// <param name="musList">The MUS List to be diagnosed</param>
         /// <returns>A new WellnessDay ObjectValue with the selected MUSes</returns>
         public DailyWellnessValue SetMusList(ICollection<MusReference> musList)
         {
@@ -98,11 +98,37 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// Add the selected MUS to the list of diagnosed MUSes
         /// </summary>
-        /// <param name="mus">The must to be diagnosed</param>
+        /// <param name="mus">The MUS to be diagnosed</param>
         /// <returns>A new WellnessDay ObjectValue with the added MUS</returns>
         public DailyWellnessValue DiagnoseMus(MusReference mus)
         {
             _musList.Add(mus);
+            return DailyWellnessValue.TrackWellness(Temperature, Glycemia, _musList);
+        }
+
+
+        /// <summary>
+        /// Remove the selected MUS to the list of diagnosed MUSes
+        /// </summary>
+        /// <param name="mus">The MUS to be diagnosed</param>
+        /// <returns>A new WellnessDay ObjectValue with the updated MUS list</returns>
+        public DailyWellnessValue RemoveMus(MusReference mus)
+        {
+            _musList.Remove(mus);
+            return DailyWellnessValue.TrackWellness(Temperature, Glycemia, _musList);
+        }
+
+
+        /// <summary>
+        /// Remove the selected MUS to the list of diagnosed MUSes
+        /// </summary>
+        /// <param name="musId">The ID of the MUS to be diagnosed</param>
+        /// <returns>A new WellnessDay ObjectValue with the updated MUS list</returns>
+        public DailyWellnessValue RemoveMus(IdType musId)
+        {
+            MusReference toBeRemoved = _musList.Where(x => x.Id == musId).FirstOrDefault();
+
+            _musList.Remove(toBeRemoved);
             return DailyWellnessValue.TrackWellness(Temperature, Glycemia, _musList);
         }
         #endregion

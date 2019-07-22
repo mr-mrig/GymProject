@@ -9,7 +9,10 @@ namespace GymProject.Domain.DietDomain
     public class WeekdayEnum : Enumeration
     {
 
-        #region enum
+
+        public const int Max = 7;
+
+        #region Enum
 
         public static WeekdayEnum Generic = new WeekdayEnum(0, "Generic", "NA");
         public static WeekdayEnum Monday = new WeekdayEnum(1, "Monday", "Mon");

@@ -1,9 +1,8 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
-using System;
+using GymProject.Domain.SharedKernel.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {

@@ -1,15 +1,11 @@
 ﻿using GymProject.Domain.SharedKernel;
-using GymProject.Domain.FitnessJournalDomain.Common;
-using GymProject.Domain.FitnessJournalDomain.Exceptions;
+using GymProject.Domain.SharedKernel.Exceptions;
 using GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate;
-using GymProject.Domain.Test.Util;
 using System;
-using System.Collections;
 using System.Linq;
 using Xunit;
 using System.Collections.Generic;
 using GymProject.Domain.Base;
-using System.Collections.ObjectModel;
 
 namespace GymProject.Domain.Test.UnitTest
 {

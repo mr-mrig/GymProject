@@ -78,7 +78,8 @@ namespace GymProject.Domain.SharedKernel
 
         protected override IEnumerable<object> GetAtomicValues()
         {
-            yield return ;
+            yield return Body;
         }
 
     }
+}

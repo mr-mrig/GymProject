@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
+using GymProject.Domain.SharedKernel.Exceptions;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {

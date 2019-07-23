@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.SharedKernel;
+using GymProject.Domain.SharedKernel.Exceptions;
 using GymProject.Domain.Test.Util;
 using System;
 using Xunit;

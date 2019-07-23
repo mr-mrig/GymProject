@@ -1,6 +1,4 @@
-﻿using GymProject.Domain.Base;
-using GymProject.Domain.DietDomain.DietPlanAggregate;
-using MediatR;
+﻿using MediatR;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
@@ -13,10 +11,6 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         public DietPlanUnit DietPlanUnit { get; private set; }
 
-        /// <summary>
-        ///  The destination of the event
-        /// </summary>
-        public IdType PostId { get; private set; }
 
 
 

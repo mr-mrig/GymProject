@@ -74,9 +74,6 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <returns>A new WellnessDay ObjectValue with changed Temerature</returns>
         public DailyWellnessValue ChangeTemperature(TemperatureValue temperature)
         {
-            if (DayDate == null)
-                throw new FitnessJournalDomainInvariantViolationException($"{GetType().Name} must have a valid Date");
-
             return DailyWellnessValue.TrackWellness(temperature, Glycemia, _musList);
         }
 

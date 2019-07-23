@@ -195,6 +195,13 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
+        /// Get the DateRange length [days, truncated]
+        /// </summary>
+        /// <returns>The days</returns>
+        public int GetLength() => (End - Start).Days;
+
+
+        /// <summary>
         /// Checks if all the properties are null
         /// </summary>
         /// <returns>True if invalid state</returns>
@@ -215,7 +222,11 @@ namespace GymProject.Domain.SharedKernel
         /// Check wether the date range is non-infinite, IE at least one of the two boundaries is finite
         /// </summary>
         /// <returns>True if the period is finite</returns>
-        private bool DateRangeNonInfinitePeriod() => End != default && Start != default;
+        private bool DateRangeNonInfinitePeriod()
+        {
+
+        }
+            =>  !(End == DateTime.MaxValue && Start == DateTime.MinValue);
         #endregion
 
 

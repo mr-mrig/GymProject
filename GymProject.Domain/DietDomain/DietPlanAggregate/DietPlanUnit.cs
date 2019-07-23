@@ -115,10 +115,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         public void AssignDietDays(ICollection<DietPlanDay> newDays)
         {
             _dietDays = newDays;
-            AvgDailyCalories = GetAvgDaylyCalories(_dietDays);
-
-            SetDietDaysNames(_dietDays);
-            TestDietDaysBusinessRules();        // Throws
+            FinalizeDietPlanDaysChanged();
         }
 
 
@@ -130,10 +127,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         public void ScheduleNewDay(DietPlanDay newDay)
         {
             _dietDays.Add(newDay);
-            AvgDailyCalories = GetAvgDaylyCalories(_dietDays);
-
-            SetDietDaysNames(_dietDays);
-            TestDietDaysBusinessRules();        // Throws
+            FinalizeDietPlanDaysChanged();
         }
 
 
@@ -159,6 +153,19 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
 
         #region Private Methods
+
+
+        /// <summary>
+        /// Finalization step for consolidating a change in the Diet Plan Day list 
+        /// </summary>
+        private void FinalizeDietPlanDaysChanged()
+        {
+            AvgDailyCalories = GetAvgDaylyCalories(_dietDays);
+
+            SetDietDaysNames(_dietDays);
+            TestDietDaysBusinessRules();        // Throws
+        }
+
 
         /// <summary>
         /// Get the average daily calories with respect to the diet days 

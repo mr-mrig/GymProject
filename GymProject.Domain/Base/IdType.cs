@@ -15,7 +15,10 @@
             Id = id;
         }
 
-
+        /// <summary>
+        /// Overridden method, prints the Id as a string
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return Id.ToString();

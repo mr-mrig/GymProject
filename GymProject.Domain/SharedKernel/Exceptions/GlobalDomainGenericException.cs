@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace GymProject.Domain.SharedKernel
+namespace GymProject.Domain.SharedKernel.Exceptions
 {
     public class GlobalDomainGenericException : Exception
     {

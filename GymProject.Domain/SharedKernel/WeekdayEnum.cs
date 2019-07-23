@@ -43,6 +43,14 @@ namespace GymProject.Domain.DietDomain
 
 
 
+        /// <summary>
+        /// Checks wether this weekday is generic - IE: not assigned to a specific weekday
+        /// </summary>
+        /// <returns>True if generic weekday</returns>
+        public bool IsGeneric() => Equals(Generic);
+
+
+
         public static bool operator ==(WeekdayEnum left, WeekdayEnum right)
         {
             if (left == null || right == null)

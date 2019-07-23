@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +12,12 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
-        /// The date range left boundary
+        /// The date range left boundary - might be not set, use IsLeftBounded()
         /// </summary>
         public DateTime Start { get; private set; }
 
         /// <summary>
-        /// The date range right boundary
+        /// The date range right boundary - might be not set, use IsRightBounded()
         /// </summary>
         public DateTime End { get; private set; }
 
@@ -25,10 +26,21 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
-        private DateRangeValue(DateTime? startDate = null, DateTime? endDate = null)
+        private DateRangeValue(DateTime startDate) : this((DateTime?)startDate, DateTime.MaxValue)
         {
-            Start = startDate.Value;
-            End = endDate.Value;
+        }
+
+
+        private DateRangeValue(DateTime? startDate, DateTime endDate)
+        {
+            Start = startDate == null ? DateTime.MinValue : startDate.Value;
+            End = endDate;
+
+            if (!DateRangeCronologicalOrderRespected())
+                throw new ValueObjectInvariantViolationException($"StartDate must happen prior to EndDate when creating a {GetType().Name} object");
+
+            if(!DateRangeNonInfinitePeriod())
+                throw new ValueObjectInvariantViolationException($"The Date Range must have at least one finite boundary in a {GetType().Name} object");
         }
         #endregion
 
@@ -39,8 +51,8 @@ namespace GymProject.Domain.SharedKernel
         /// <summary>
         /// Factory for creating a new date range 
         /// </summary>
-        /// <param name="startDate">The range starting date</param>
-        /// <param name="endDate">The range end date</param>
+        /// <param name="startDate">The range starting date - must precide endDate</param>
+        /// <param name="endDate">The range end date - must be after startDate</param>
         /// /// <returns>The DateRangeValue instance</returns>
         public static DateRangeValue RangeBetween(DateTime startDate, DateTime endDate)
             => new DateRangeValue(startDate, endDate);
@@ -50,16 +62,16 @@ namespace GymProject.Domain.SharedKernel
         /// <summary>
         /// Factory for creating a new date range with no end date
         /// </summary>
-        /// <param name="startDate">The range starting date</param>
+        /// <param name="startDate">The range starting date - must precide endDate</param>
         /// /// <returns>The DateRangeValue instance</returns>
         public static DateRangeValue RangeStartingFrom(DateTime startDate)
-            => new DateRangeValue(startDate, null);
+            => new DateRangeValue(startDate);
 
 
         /// <summary>
         /// Factory for creating a new date range with no starting date
         /// </summary>
-        /// <param name="endDate">The range end date</param>
+        /// <param name="endDate">The range end date - must be after startDate</param>
         /// /// <returns>The DateRangeValue instance</returns>
         public static DateRangeValue RangeUpTo(DateTime endDate)
             => new DateRangeValue(null, endDate);
@@ -71,13 +83,28 @@ namespace GymProject.Domain.SharedKernel
         #region Business Methods
 
         /// <summary>
+        /// Checks wheter the start date has been set
+        /// </summary>
+        /// <returns>True if valid Start Date</returns>
+        public bool IsLeftBounded() => Start != DateTime.MinValue;
+
+
+        /// <summary>
+        /// Checks wheter the end date has been set
+        /// </summary>
+        /// <returns>True if valid End Date</returns>
+        public bool IsRightBounded() => End != DateTime.MaxValue;
+
+
+        /// <summary>
         /// Reschedules the date range to the start date specified.
         /// </summary>
         /// <param name="newStartDate">The new start date - null if not to be changed</param>
+        /// <exception cref="ValueObjectInvariantViolationException">Thrown if invalid state</exception>
         /// <returns>The DateRangeValue object which is the extension of the current one</returns>
         public DateRangeValue RescheduleStart(DateTime newStartDate)
         {
-            return DateRangeValue.RangeBetween(newStartDate, End);
+            return RangeBetween(newStartDate, End);     // Throws
         }
 
 
@@ -85,6 +112,7 @@ namespace GymProject.Domain.SharedKernel
         /// Reschedules the date range to the end date specified.
         /// </summary>
         /// <param name="newEndDate">The new end date</param>
+        /// <exception cref="ValueObjectInvariantViolationException">Thrown if invalid state</exception>
         /// <returns>The DateRangeValue object which is the extension of the current one</returns>
         public DateRangeValue RescheduleEnd(DateTime newEndDate)
         {
@@ -174,6 +202,21 @@ namespace GymProject.Domain.SharedKernel
             => GetAtomicValues().All(x => x == null);
         #endregion
 
+
+        #region Business Rules Specificatrions
+
+        /// <summary>
+        /// Chect the the date range boundaries respect the chronological order, IE: right boundary happens after left boundary
+        /// </summary>
+        /// <returns>True if the chronological is respected</returns>
+        private bool DateRangeCronologicalOrderRespected() => End >= Start;
+
+        /// <summary>
+        /// Check wether the date range is non-infinite, IE at least one of the two boundaries is finite
+        /// </summary>
+        /// <returns>True if the period is finite</returns>
+        private bool DateRangeNonInfinitePeriod() => End != default && Start != default;
+        #endregion
 
 
         #region Private Methods

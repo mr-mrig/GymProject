@@ -1,6 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.DietDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
+using GymProject.Domain.SharedKernel.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,15 +47,13 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         {
             PeriodScheduled = unitPeriod;
 
-            if (dietDays != null)
-            {
-                check
+            if (dietDays == null || dietDays?.Count == 0)
                 _dietDays = new List<DietPlanDay>();
-                AvgDailyCalories = GetAvgWeeklyCalories(_dietDays);
-            }
-
-            if (CheckNullState())
-                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
+            else
+                AssignDietDays(dietDays);
+            
+            if (DietUnitPeriodIsNotNull())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no period associated.");
 
         }
         #endregion
@@ -89,33 +88,37 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// Reschedule the diet unit
         /// </summary>
         /// <param name="newValue">The new period</param>
+        /// <exception cref="ValueObjectInvariantViolationException">Thrown if period breaks business rules</exception>
         public void Reschedule(DateRangeValue newPeriod) => PeriodScheduled = newPeriod;
-
 
         /// <summary>
         /// Extend/shorten the period by changing the end date
         /// </summary>
         /// <param name="newEndDate">The new end date</param>
-        public void ChangeEndDate(DateTime newEndDate) => PeriodScheduled = PeriodScheduled.RescheduleEnd(newEndDate);
+        /// <exception cref="ValueObjectInvariantViolationException">Thrown if period breaks business rules</exception>
+        public void RescheduleEndDate(DateTime newEndDate) => PeriodScheduled = PeriodScheduled.RescheduleEnd(newEndDate);
 
 
         /// <summary>
         /// Extend/shorten the period by changing the start date
         /// </summary>
         /// <param name="newStartDate">The new start date</param>
-        public void ChangeStartDate(DateTime newStartDate) => PeriodScheduled = PeriodScheduled.RescheduleEnd(newStartDate);
+        /// <exception cref="ValueObjectInvariantViolationException">Thrown if period breaks business rules</exception>
+        public void RescheduleStartDate(DateTime newStartDate) => PeriodScheduled = PeriodScheduled.RescheduleEnd(newStartDate);
 
 
         /// <summary>
         /// Assigns the diet days
         /// </summary>
         /// <param name="newDays">The new end date</param>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
         public void AssignDietDays(ICollection<DietPlanDay> newDays)
         {
-check
-
             _dietDays = newDays;
-            AvgDailyCalories = GetAvgWeeklyCalories(_dietDays);
+            AvgDailyCalories = GetAvgDaylyCalories(_dietDays);
+
+            SetDietDaysNames(_dietDays);
+            TestDietDaysBusinessRules();        // Throws
         }
 
 
@@ -123,10 +126,14 @@ check
         /// Schedule a new diet day
         /// </summary>
         /// <param name="newDay">The day to be added</param>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
         public void ScheduleNewDay(DietPlanDay newDay)
         {
             _dietDays.Add(newDay);
-            //AvgDailyCalories
+            AvgDailyCalories = GetAvgDaylyCalories(_dietDays);
+
+            SetDietDaysNames(_dietDays);
+            TestDietDaysBusinessRules();        // Throws
         }
 
 
@@ -134,82 +141,162 @@ check
         /// Remove the selected diet day
         /// </summary>
         /// <param name="toRemove">The day to be added</param>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
         public void UnscheduleDay(DietPlanDay toRemove)
         {
-            _dietDays.Remove(toRemove);
-            //AvgDailyCalories
+            if(_dietDays.Remove(toRemove))
+            {
+                SetDietDaysNames(_dietDays);
+                GetAvgDaylyCalories(_dietDays);
+            }
+            
+            // If no more days then raise the event - No invariant check, the handler will decide what to do
+            if(_dietDays.Count == 0)
+                DomainEvents.Add(new DietPlanUnitHasBeenClearedDomainEvent(this));
         }
-
-        /// <summary>
-        /// Checks whether all the properties are null
-        /// </summary>
-        /// <returns>True if no there are no non-null properties</returns>
-        public bool CheckNullState()
-                => GetAtomicValues().All(x => x is null);
 
         #endregion
 
 
+        #region Private Methods
+
         /// <summary>
-        /// Get the average weekly calories with respect to the diet days 
+        /// Get the average daily calories with respect to the diet days 
         /// </summary>
         /// <param name="days">The diet days</param>
         /// <returns>The CalorieValue</returns>
-        private CalorieValue GetAvgWeeklyCalories(IEnumerable<DietPlanDay> days) => CalorieValue.MeasureKcal(days.Sum(x => x.Calories.Value * x.WeeklyOccurrances) / (float)WeekdayEnum.Max);
-
-
-        /// <summary>
-        /// Validates the diet days list with respect to the business rules
-        /// </summary>
-        /// <param name="dietDays">The diet days list to be verified</param>
-        /// <exception cref="DietDomainIvariantViolationException">Thrown when business rule is violated</exception>
-        /// <returns>True if </returns>
-        private void ValidateBusinessLogic(IEnumerable<DietPlanDay> dietDays)
+        private CalorieValue GetAvgDaylyCalories(IEnumerable<DietPlanDay> days)
         {
-            // Days exceed the week days
-            if (dietDays.Count() > WeekdayEnum.Max)
-                throw new DietDomainIvariantViolationException($"The number of Diet Days provided exceeds the number of days in a week");
+            CalorieValue calories = CalorieValue.MeasureKcal(days.Sum(x => x.Calories.Value * x.WeeklyOccurrances.Value) / (float)WeekdayEnum.Max);
 
-            // Check for different days linked to the same weekday
-            foreach (DietPlanDay day in dietDays
-                .Where(x => x?.SpecificWeekday != null && !x.SpecificWeekday.Equals(WeekdayEnum.Generic)))
-            {
-                if (dietDays.Any(x => x.SpecificWeekday.Equals(day.SpecificWeekday)))
-                    throw new DietDomainIvariantViolationException($"Multiple Diet Days assigned to the same Weekday");
-            }
+            //if (calories == null)
+            //    throw new DietDomainIvariantViolationException($"Invalid Diet Days linked to the Diet Unit {Id.ToString()}");yj5ye
 
-            // Check for different days with the same name
-            foreach (DietPlanDay day in dietDays
-                .Where(x => x?.Name != null && !string.IsNullOrWhiteSpace(x.Name)))
-            {
-                if (dietDays.Any(x => x.Name.Equals(day.Name)))
-                    throw new DietDomainIvariantViolationException($"Mutiple Diet Days with the same name");
-            }
+            return calories;
         }
 
 
         /// <summary>
-        /// Check the diet days name and if left null uses the default ones.
+        /// Check the diet days name and if left null assigne the default ones.
         /// IE: MON, TUE, ON, OFF, Refeed, etc.
         /// </summary>
-        /// <returns>The default name</returns>
+        /// <returns>The renamed Diet Days</returns>
         private IEnumerable<DietPlanDay> SetDietDaysNames(IEnumerable<DietPlanDay> dietDays)
         {
-            foreach(DietPlanDay day in dietDays)
-            {
-                if (day.SpecificWeekday != null && !day.SpecificWeekday.Equals(WeekdayEnum.Generic))
-                    day.Rename(day.SpecificWeekday.Abbreviation);
+            int genericNameCounter = 0;
 
-                if (day.DietDayType != null && !day.DietDayType.Name.Equals(DietDayTypeEnum.NotSet))
-                    return DietDayType.Name;
+
+            foreach (DietPlanDay day in dietDays)
+            {
+                if (string.IsNullOrWhiteSpace(day.Name))
+                {
+                    // Mon, Tue, etc.
+                    if (!day.SpecificWeekday.Equals(WeekdayEnum.Generic))
+                        day.Rename(day.SpecificWeekday.Abbreviation);
+
+                    else
+                    {
+                        // ON, OFF etc. - Duplicate names allowed here
+                        if (!day.DietDayType.Name.Equals(DietDayTypeEnum.NotSet))
+                            day.Rename(day.DietDayType.Name);
+
+                        // Day1, Day2, etc
+                        else
+                            day.Rename($"Day{(++genericNameCounter).ToString()}");
+
+                    }
+                }
             }
+            return dietDays;
         }
+
+        #endregion
+
+
+
+        #region Business Rules Specifications
+
+        /// <summary>
+        /// The Diet Plan Unit must have at least one Diet Day
+        /// </summary>
+        /// <returns>True if number of Diet Days is positive</returns>
+        private bool DietUnitDaysNotEmpty() => _dietDays.Count > 0;
+
+
+        /// <summary>
+        /// The Diet Days must be at most one per weekday
+        /// </summary>
+        /// <returns>True if number of Diet Days doesn't exceed the weekdays number</returns>
+        private bool DietUnitDaysNotExceedingWeekdays() => _dietDays.Count <= WeekdayEnum.Max;
+
+
+        /// <summary>
+        /// There cannot be multiple Diet Days associated to the same Weekday
+        /// </summary>
+        /// <returns>True if the rule is not violatedr</returns>
+        private bool DietUnitDaysNoDuplicateWeekdays()
+        {
+            foreach (DietPlanDay day in _dietDays
+                    .Where(x => x?.SpecificWeekday != null && !x.SpecificWeekday.Equals(WeekdayEnum.Generic)))
+            {
+                if (_dietDays.Any(x => x.SpecificWeekday.Equals(day.SpecificWeekday)))
+                    return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// Each Diet Day name must be unique among the other unit ones
+        /// </summary>
+        /// <returns>True if the rule is not violated</returns>
+        private bool DietUnitDaysNoDuplicateName()
+        {
+            foreach (DietPlanDay day in _dietDays
+                .Where(x => x?.Name != null && !string.IsNullOrWhiteSpace(x.Name)))
+            {
+                if (_dietDays.Any(x => x.Name.Equals(day.Name)))
+                    return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// The Diet Unit period is set
+        /// </summary>
+        /// <returns>True if the rule is not violated</returns>
+        private bool DietUnitPeriodIsNotNull() => PeriodScheduled != null;
+
+
+        /// <summary>
+        /// Checks the Diet Days for the business rules
+        /// </summary>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown if business rules are broken</exception>
+        private void TestDietDaysBusinessRules()
+        {
+
+            if (!DietUnitDaysNotEmpty())
+                throw new DietDomainIvariantViolationException($"The Diet Plan Unit must have at least one Diet Day");
+
+            //if (DietUnitDaysNoDuplicateName())
+            //    throw new DietDomainIvariantViolationException($"Each Diet Day name must be unique among the other Unit ones.");
+
+            if (!DietUnitDaysNoDuplicateWeekdays())
+                throw new DietDomainIvariantViolationException($"There cannot be multiple Diet Days associated to the same Weekday.");
+
+            if (!DietUnitDaysNotExceedingWeekdays())
+                throw new DietDomainIvariantViolationException($"The Diet Days must be at most one per weekday."); ;
+        }
+
+        #endregion
 
 
         protected IEnumerable<object> GetAtomicValues()
         {
             yield return PeriodScheduled;
             yield return DietDays;
+            yield return AvgDailyCalories;
         }
 
     }

@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.DietDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// The number of times this day is repeated weekly
         /// </summary>
-        public int WeeklyOccurrances { get; private set; } = 0;
+        public WeeklyOccuranceValue WeeklyOccurrances { get; private set; } = null;
 
         /// <summary>
         /// Diet day type
@@ -69,7 +70,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         private DietPlanDay(
             string name = null,
-            int weeklyOccurrances = 0,
+            WeeklyOccuranceValue weeklyOccurrances = null,
             MacronutirentWeightValue carbs = null,
             MacronutirentWeightValue fats = null,
             MacronutirentWeightValue proteins = null,
@@ -84,15 +85,17 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             Proteins = proteins;
             Salt = salt;
             Water = water;
-            SpecificWeekday = specificWeekday;
-            DietDayType = dayType;
-            WeeklyOccurrances = weeklyOccurrances;
 
-            Calories = DietAmountsCalculator.ComputeCalories(Carbs, Fats, Proteins);
+            DietDayType = dayType ?? DietDayTypeEnum.NotSet;
+            SpecificWeekday = specificWeekday ?? WeekdayEnum.Generic;
 
-            if (CheckNullState())
-                throw new GlobalDomainGenericException($"Cannot create a {GetType().Name} with all NULL fields");
+            if (SpecificWeekday != WeekdayEnum.Generic)
+                WeeklyOccurrances = WeeklyOccuranceValue.TrackOccurance(1);
+            else
+                WeeklyOccurrances = weeklyOccurrances;
 
+            TestBusinessRules();
+            Calories = GetDailyCalories();            
         }
         #endregion
 
@@ -114,7 +117,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <returns>The DietPlanDayValue instance</returns>
         public static DietPlanDay AddDayToPlan(
             string name = null,
-            int weeklyOccurrances = 0,
+            WeeklyOccuranceValue weeklyOccurrances = null,
             MacronutirentWeightValue carbs = null,
             MacronutirentWeightValue fats = null,
             MacronutirentWeightValue proteins = null,
@@ -140,22 +143,47 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// Set the carbohidrates value
         /// </summary>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when missing data</exception>
         /// <param name="newValue"></param>
-        public void PlanCarbs(MacronutirentWeightValue newValue) => Carbs = newValue;
+        public void PlanCarbs(MacronutirentWeightValue newValue)
+        {
+            Carbs = newValue;
 
+            if (!DietDayMacrosAreSet())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no macro defined");
+
+            Calories = GetDailyCalories();
+        }
 
         /// <summary>
         /// Set the proteins value
         /// </summary>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when missing data</exception>
         /// <param name="newValue"></param>
-        public void PlanPros(MacronutirentWeightValue newValue) => Proteins = newValue;
+        public void PlanPros(MacronutirentWeightValue newValue)
+        {
+            Proteins = newValue;
 
+            if (!DietDayMacrosAreSet())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no macro defined");
+            
+            Calories = GetDailyCalories();
+        }
 
         /// <summary>
         /// Set the fats value
         /// </summary>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when missing data</exception>
         /// <param name="newValue"></param>
-        public void PlanFats(MacronutirentWeightValue newValue) => Fats = newValue;
+        public void PlanFats(MacronutirentWeightValue newValue)
+        {
+            Fats = newValue;
+
+            if (!DietDayMacrosAreSet())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no macro defined");
+
+            Calories = GetDailyCalories();
+        }
 
 
         /// <summary>
@@ -176,8 +204,13 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// Schedule this day
         /// </summary>
         /// <param name="newValue"></param>
-        public void ScheduleToSpecificDay(WeekdayEnum newValue) => SpecificWeekday = newValue;
+        public void ScheduleToSpecificDay(WeekdayEnum newValue)
+        {
+            SpecificWeekday = newValue;
 
+            if (!SpecificWeekday.IsGeneric())
+                WeeklyOccurrances = WeeklyOccuranceValue.TrackOccurance(1);
+        }
 
         /// <summary>
         /// Set the day type
@@ -195,6 +228,50 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #endregion
 
+
+        #region Business Ruels Specifications
+
+        /// <summary>
+        /// The Diet Day must have a positive occurance
+        /// </summary>
+        /// <returns>True if the occurance is valid</returns>
+        private bool DietDayOccuranceIsSet() => WeeklyOccurrances.Value > 0;
+
+        /// <summary>
+        /// The Diet Day must have the macro amounts set as positive numbers
+        /// </summary>
+        /// <returns>True if the macro amounts are set</returns>
+        private bool DietDayMacrosAreSet() => Carbs?.Value > 0 && Proteins?.Value > 0 && Fats?.Value > 0;
+
+
+        /// <summary>
+        /// Tests that all the business rules are met and manages invalid states
+        /// </summary>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown if business rules violation</exception>
+        private void TestBusinessRules()
+        {
+            if (!DietDayMacrosAreSet())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no macro defined");
+
+            if (!DietDayOccuranceIsSet())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no occurrance");
+        }
+        #endregion
+
+
+        /// <summary>
+        /// Computes the daily calories according to the object state
+        /// </summary>
+        /// <returns>The total daily calories</returns>
+        private CalorieValue GetDailyCalories()
+        {
+            CalorieValue updatedCalories = DietAmountsCalculator.ComputeCalories(Carbs, Fats, Proteins);
+
+            //if (updatedCalories == null)
+            //    throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no macro defined");
+
+            return updatedCalories;
+        }
 
 
         protected IEnumerable<object> GetAtomicValues()

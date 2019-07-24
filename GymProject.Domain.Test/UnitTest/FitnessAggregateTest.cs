@@ -95,7 +95,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void CreateFitnessDayWithDiet()
         {
-            float carbs1 = 100, fats1 = 90, pro1 = 150, salt1 = 2.2f;
+            float carbs1 = 100, fats1 = 90, pro1 = 150;
             bool isFreeMeal1 = true;
             DietDayTypeEnum dayType1 = DietDayTypeEnum.On;
 

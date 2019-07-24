@@ -646,7 +646,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void CircumferenceComputeMaleImperial()
         {
-            float w = 71.8f, h = 174f, bfnum = 6.7f;
+            float w = 71.8f, h = 174f;
             GenderTypeEnum gender = GenderTypeEnum.Male;
             BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
             BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);
@@ -682,7 +682,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void CircumferenceComputeFemaleImperial()
         {
-            float w = 71.8f, h = 174f, bfnum = 6.7f;
+            float w = 71.8f, h = 174f;
             GenderTypeEnum gender = GenderTypeEnum.Female;
             BodyWeightValue weight = BodyWeightValue.MeasureKilograms(w);
             BodyMeasureValue height = BodyMeasureValue.MeasureCentimeters(h);

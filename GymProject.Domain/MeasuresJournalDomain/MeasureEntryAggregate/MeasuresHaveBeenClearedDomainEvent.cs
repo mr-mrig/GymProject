@@ -1,12 +1,9 @@
 ﻿using GymProject.Domain.Base;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using GymProject.Domain.Base.Mediator;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    public class MeasuresHaveBeenClearedDomainEvent : INotification
+    public class MeasuresHaveBeenClearedDomainEvent : IMediatorNotification
     {
 
 

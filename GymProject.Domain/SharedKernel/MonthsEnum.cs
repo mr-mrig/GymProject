@@ -62,6 +62,11 @@ namespace GymProject.Domain.DietDomain
         }
 
 
+        public override bool Equals(object obj) => obj is MonthsEnum right && right.Id == Id;
+
+        public override int GetHashCode() => base.GetHashCode();
+
+
 
         #region Enum methods
 

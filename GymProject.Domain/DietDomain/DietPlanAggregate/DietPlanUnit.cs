@@ -43,7 +43,13 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlanUnit(DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays = null)
+        private DietPlanUnit()
+        {
+
+        }
+
+
+        private DietPlanUnit(DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays)
         {
             PeriodScheduled = unitPeriod;
 
@@ -54,7 +60,6 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             
             if (DietUnitPeriodIsNotNull())
                 throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no period associated.");
-
         }
         #endregion
 
@@ -67,7 +72,9 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="period">The perdiod to be scheduled</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit ScheduleDietUnit(DateRangeValue period) => new DietPlanUnit(period);
+        public static DietPlanUnit ScheduleDietUnit(DateRangeValue period) 
+            
+            => ScheduleDietUnit(period, null);
 
 
         /// <summary>
@@ -76,7 +83,20 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="period">The perdiod to be scheduled</param>
         /// <param name="dietDays">The diet days linked to this unit</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit ScheduleDietUnit(DateRangeValue period, ICollection<DietPlanDay> dietDays) => new DietPlanUnit(period, dietDays);
+        public static DietPlanUnit ScheduleDietUnit(DateRangeValue period, ICollection<DietPlanDay> dietDays) 
+            
+            => new DietPlanUnit(period, dietDays);
+
+
+        /// <summary>
+        /// Factory method for creating drafts, IE: blank unit templates
+        /// </summary>
+        /// <param name="period">The perdiod to be scheduled</param>
+        /// <param name="dietDays">The diet days linked to this unit</param>
+        /// <returns>The DietPlanUnitValue instance</returns>
+        public static DietPlanUnit NewDraft()
+
+            => new DietPlanUnit();
 
         #endregion
 
@@ -120,13 +140,19 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
 
         /// <summary>
-        /// Schedule a new diet day
+        /// Adds the Diet Plan Day or modifies it if already planned
         /// </summary>
         /// <param name="newDay">The day to be added</param>
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void ScheduleNewDay(DietPlanDay newDay)
+        public void PlanDietDay(DietPlanDay newDay)
         {
-            _dietDays.Add(newDay);
+            DietPlanDay toBeChanged = _dietDays.Where(x => x == newDay).FirstOrDefault();
+
+            if (toBeChanged == default)
+                _dietDays.Add(newDay);
+            else
+                toBeChanged = newDay;
+
             FinalizeDietPlanDaysChanged();
         }
 
@@ -136,7 +162,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="toRemove">The day to be added</param>
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void UnscheduleDay(DietPlanDay toRemove)
+        public void UnplanDietDay(DietPlanDay toRemove)
         {
             if(_dietDays.Remove(toRemove))
             {
@@ -146,7 +172,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             
             // If no more days then raise the event - No invariant check, the handler will decide what to do
             if(_dietDays.Count == 0)
-                DomainEvents.Add(new DietPlanUnitHasBeenClearedDomainEvent(this));
+                AddDomainEvent(new DietPlanUnitHasBeenClearedDomainEvent(this));
         }
 
         #endregion

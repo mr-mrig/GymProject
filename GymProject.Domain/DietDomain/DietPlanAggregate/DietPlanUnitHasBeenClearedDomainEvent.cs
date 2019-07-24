@@ -1,8 +1,8 @@
-﻿using MediatR;
+﻿using GymProject.Domain.Base.Mediator;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanUnitHasBeenClearedDomainEvent : INotification
+    public class DietPlanUnitHasBeenClearedDomainEvent : IMediatorNotification
     {
 
 

@@ -1,9 +1,9 @@
 ﻿using GymProject.Domain.Base;
-using MediatR;
+using GymProject.Domain.Base.Mediator;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class FitnessDayChangedDomainEvent : INotification
+    public class FitnessDayChangedDomainEvent : IMediatorNotification
     {
 
 

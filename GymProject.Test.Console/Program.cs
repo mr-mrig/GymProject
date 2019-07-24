@@ -34,7 +34,7 @@ namespace GymProject.Test.Console
             p.AddComment(Author.Register("another", "picUrl2"), "very nice comment for you!");
 
             List<Comment> comments = p.Comments.ToList();
-            comments[0].ModifyComment("changed!");
+            //comments[0].ModifyComment("changed!");
 
             comments.Add(Comment.Write(Author.Register("example", "picUrl"), "ciao"));
 

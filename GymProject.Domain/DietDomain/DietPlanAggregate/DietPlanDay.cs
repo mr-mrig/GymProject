@@ -97,6 +97,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             TestBusinessRules();
             Calories = GetDailyCalories();            
         }
+
+
+        private DietPlanDay()
+        {
+            DietDayType = DietDayTypeEnum.NotSet;
+            SpecificWeekday = WeekdayEnum.Generic;
+            WeeklyOccurrances = WeeklyOccuranceValue.TrackOccurance(WeeklyOccuranceValue.MaximumTimes);
+        }
         #endregion
 
 
@@ -127,6 +135,15 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             DietDayTypeEnum dayType = null)
 
             => new DietPlanDay(name, weeklyOccurrances, carbs, fats, proteins, salt, water, specificWeekday, dayType);
+
+
+        ///// <summary>
+        ///// Factory method for creating drafts, IE: blank Day templates
+        ///// </summary>
+        ///// <returns>The DietPlanDayValue instance</returns>
+        //public static DietPlanDay NewDraft()
+
+        //    => new DietPlanDay();
 
         #endregion
 

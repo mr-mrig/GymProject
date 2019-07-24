@@ -5,13 +5,12 @@ using GymProject.Domain.SharedKernel.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlan : Entity<IdType>, INotificationHandler<DietPlanUnitHasBeenClearedDomainEvent>
+    public class DietPlan : Entity<IdType>
     {
 
 
@@ -72,14 +71,20 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
+        private DietPlan(ICollection<DietPlanUnit> dietUnits)
+        {
+            AssignDietUnits(dietUnits);
+        }
+
+
         private DietPlan
          (
             IdType postId,
             string name,
+            ICollection<DietPlanUnit> dietUnits,
             Owner owner = null,
             PersonalNoteValue ownerNote = null,
-            WeeklyOccuranceValue weeklyFreeMeals = null,
-            ICollection<DietPlanUnit> dietUnits = null)
+            WeeklyOccuranceValue weeklyFreeMeals = null)
         {
             Name = name;
             Owner = owner;
@@ -87,11 +92,11 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             WeeklyFreeMeals = weeklyFreeMeals;
             PostId = postId;
 
-            if (dietUnits == null || dietUnits.Count == 0)
-                _dietUnits = new List<DietPlanUnit>();
-            else
-                AssignDietUnits(dietUnits);     // Throws
+            //if (dietUnits == null || dietUnits.Count == 0)
+            //    _dietUnits = new List<DietPlanUnit>();
+            //else
 
+            AssignDietUnits(dietUnits);     // Throws
             TestBusinessRules();        // Throws
         }
         #endregion
@@ -100,20 +105,60 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Factories
 
+        ///// <summary>
+        ///// Factory method
+        ///// </summary>
+        ///// <param name="name">The name of the plan</param>
+        ///// <param name="owner">The author of the plan</param>
+        ///// <param name="ownerNote">The owner's note</param>
+        ///// <param name="postId">The parent Post Id</param>
+        ///// <param name="weeklyFreeMeals">The number of weekly free meals allowed</param>
+        ///// <returns>The DietPlanValue instance</returns>
+        //public static DietPlan ScheduleDietPlan
+        //(
+        //    IdType postId,
+        //    string name,
+        //    Owner owner = null,
+        //    PersonalNoteValue ownerNote = null,
+        //    WeeklyOccuranceValue weeklyFreeMeals = null
+        //)
+        //    => ScheduleDietPlan(postId, name, null, owner, ownerNote, weeklyFreeMeals);
+
+
         /// <summary>
         /// Factory method
         /// </summary>
-        /// <param name="period">The perdiod to be scheduled</param>
+        /// <param name="name">The name of the plan</param>
+        /// <param name="dietPlanUnits">The diet plan units linked to the plan</param>
+        /// <param name="owner">The author of the plan</param>
+        /// <param name="ownerNote">The owner's note</param>
+        /// <param name="postId">The parent Post Id</param>
+        /// <param name="weeklyFreeMeals">The number of weekly free meals allowed</param>
         /// <returns>The DietPlanValue instance</returns>
         public static DietPlan ScheduleDietPlan
         (
             IdType postId,
             string name,
+            ICollection<DietPlanUnit> dietPlanUnits,
             Owner owner = null,
             PersonalNoteValue ownerNote = null,
             WeeklyOccuranceValue weeklyFreeMeals = null
         )
-            => new DietPlan(postId, name, owner, ownerNote, weeklyFreeMeals);
+            => new DietPlan(postId, name, dietPlanUnits, owner, ownerNote, weeklyFreeMeals);
+
+
+
+        /// <summary>
+        /// Factory method for creating drafts, IE empty templates
+        /// </summary>
+        /// <returns>The DietPlanValue instance</returns>
+        public static DietPlan NewDraft()
+        {
+            DietPlanUnit draftUnit = DietPlanUnit.NewDraft();
+            List<DietPlanUnit> draftUnits = new List<DietPlanUnit>() { draftUnit, };
+
+            return new DietPlan(draftUnits);
+        }
 
         #endregion
 
@@ -122,14 +167,38 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         #region Business Methods
 
         /// <summary>
-        /// Assigns the diet plan units
+        /// Add the Diet Day to a Diet Plan Unit
         /// </summary>
-        /// <param name="dietUnits">The diet plan units</param>
-        /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void AssignDietUnits(ICollection<DietPlanUnit> dietUnits)
+        /// <param name="dietUnitId">The Diet Plan Unit id</param>
+        /// <param name="toAdd">The Day to be added</param>
+        /// <exception cref="ArgumentException">Thrown if the DietPlanUnit doesn't belong to the Plan </exception>
+        public void PlanDietDay(IdType dietUnitId, DietPlanDay toAdd)
         {
-            _dietUnits = dietUnits;
-            FinalizeDietPlanUnitsChanged();
+            DietPlanUnit toBeChanged = FindUnitById(dietUnitId);
+
+            if (toBeChanged == default)
+                throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan - Id={Id.ToString()} -");
+
+            toBeChanged.PlanDietDay(toAdd);
+        }
+
+
+        /// <summary>
+        /// Remove the Diet Day to a Diet Plan Unit
+        /// </summary>
+        /// <param name="dietUnitId">The Diet Plan Unit id</param>
+        /// <param name="toRemove">The Day to be added</param>
+        /// <exception cref="ArgumentException">Thrown if the DietPlanUnit doesn't belong to the Plan </exception>
+        public void UnplanDietDay(IdType dietUnitId, DietPlanDay toRemove)
+        {
+            DietPlanUnit toBeChanged = FindUnitById(dietUnitId);
+
+            if (toBeChanged == default)
+                throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan - Id={Id.ToString()} -");
+
+            toBeChanged.UnplanDietDay(toRemove);
+
+            domainevent
         }
 
 
@@ -157,29 +226,34 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
 
         /// <summary>
-        /// Schedule a new diet plan unit
+        /// Assigns a schedule to the specified DietPlanUnit
         /// </summary>
+        /// <param name="planUnitId">The ID of the Diet Plan Unit to be scheduled</param>
         /// <param name="startingFrom">The left boundary date</param>
         /// <param name="upTo">The right boundary date</param>
-        /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void ScheduleDietPlanUnit(DateTime startingFrom, DateTime upTo)
+        /// <exception cref="ArgumentException">If the ID specified is not between the Plan DietUnits</exception>
+        public void ScheduleDietPlanUnit(IdType planUnitId, DateTime startingFrom, DateTime upTo)
         {
-            _dietUnits.Add(
-                 DietPlanUnit.ScheduleDietUnit(DateRangeValue.RangeBetween(startingFrom, upTo))
-                 );
+            DietPlanUnit toBeScheduled = FindUnitById(planUnitId);
+            asdg
+            //_dietUnits.Add(
+            //     DietPlanUnit.ScheduleDietUnit(DateRangeValue.RangeBetween(startingFrom, upTo))
+            //     );
 
-            FinalizeDietPlanUnitsChanged();
+            //FinalizeDietPlanUnitsChanged();
         }
 
 
         /// <summary>
         /// Remove the selected diet plan unit
         /// </summary>
-        /// <param name="toRemove">The Diet Plan Unit to be removed</param>
+        /// <param name="toRemoveId">The Diet Plan Unit to be removed</param>
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void UnscheduleDietPlanUnit(DietPlanUnit toRemove)
+        public void UnscheduleDietPlanUnit(IdType toRemoveId)
         {
-            if (_dietUnits.Remove(toRemove))
+            DietPlanUnit toBeRemoved = FindUnitById(toRemoveId);
+
+            if (_dietUnits.Remove(toBeRemoved))
             {
                 AvgDailyCalories = GetAvgDailyCalories(_dietUnits);
                 PeriodScheduled = GetPlanPeriod(_dietUnits);
@@ -187,7 +261,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
             // If no more days then raise the event - No invariant check, the handler will decide what to do
             if (_dietUnits.Count == 0)
-                DomainEvents.Add(new DietPlanHasBeenClearedDomainEvent(this, PostId));
+                AddDomainEvent(new DietPlanHasBeenClearedDomainEvent(this, PostId));
         }
 
 
@@ -195,17 +269,31 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// Reschedule the Diet Plan Unit
         /// </summary>
         /// <param name="newPeriod">The new period</param>
-        /// <param name="toBeMoved">The unit to be moved</param>
+        /// <param name="toMoveId">The unit to be moved</param>
         /// <exception cref="ValueObjectInvariantViolationException">Thrown if period breaks business rules</exception>
         /// <exception cref="ArgumentException">If the Unit doesn't belong to the Diet Plan</exception>
-        public void MoveDietPlanUnit(DietPlanUnit toBeMoved, DateRangeValue newPeriod)
+        public void MoveDietPlanUnit(IdType toMoveId, DateRangeValue newPeriod)
         {
-            if (!_dietUnits.Contains(toBeMoved))
-                throw new ArgumentException($"The Diet Plan Unit - Id={toBeMoved.Id} - does not belong to the Diet Plan - Id={Id} -");
+            DietPlanUnit toBeMoved = FindUnitById(Id);
+
+            if (toBeMoved == default)
+                throw new ArgumentException($"The Diet Plan Unit - Id={toMoveId.ToString()} - does not belong to the Diet Plan - Id={Id.ToString()} -");
 
             toBeMoved.Reschedule(newPeriod);
 
             TestDietUnitsBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Assigns the diet plan units
+        /// </summary>
+        /// <param name="dietUnits">The diet plan units</param>
+        /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
+        public void AssignDietUnits(ICollection<DietPlanUnit> dietUnits)
+        {
+            _dietUnits = dietUnits;
+            FinalizeDietPlanUnitsChanged();
         }
         #endregion
 
@@ -221,6 +309,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             PeriodScheduled = GetPlanPeriod(_dietUnits);
 
             TestDietUnitsBusinessRules();        // Throws
+
+            AddDomainEvent(new DietPlanChangedDomainEvent(this, PostId));
         }
 
 
@@ -254,6 +344,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
 
         #region Business Rules Specifications
+
+        /// <summary>
+        /// Find the Diet Plan Unit with the ID specified
+        /// </summary>
+        /// <param name="id">The Id to be found</param>
+        /// <returns>The DietPlanUnit or DEFAULT if not found/returns>
+        private DietPlanUnit FindUnitById(IdType id) => _dietUnits.Where(x => x.Id == id).FirstOrDefault();
+
 
         /// <summary>
         /// The Diet Plan must be linked to a Post

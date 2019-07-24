@@ -36,7 +36,7 @@ namespace GymProject.Domain.SharedKernel
             Start = startDate == null ? DateTime.MinValue : startDate.Value;
             End = endDate;
 
-            if (!DateRangeCronologicalOrderRespected())
+            if (!DateRangeValidChronologicalOrder())
                 throw new ValueObjectInvariantViolationException($"StartDate must happen prior to EndDate when creating a {GetType().Name} object");
 
             if(!DateRangeNonInfinitePeriod())
@@ -143,7 +143,8 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
-        /// Checks wether two dateranges are overlapping
+        /// Checks wether two dateranges are overlapping.
+        /// If ranges share the same boundarie then they are considered as non-overlapping.
         /// </summary>
         /// <param name="toCheck">The date range to be checked</param>
         /// <returns>True if the DetaRange objects are overlapping</returns>
@@ -168,7 +169,8 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
-        /// Get the gap between two date ranges
+        /// Get the gap between two date ranges.
+        /// The new DateRange spans between the day before and the day after of the proper edges.
         /// </summary>
         /// <param name="another">The DateRange to be processed</param>
         /// <returns>A new DateRange instance between the two ranges - NULL if overlapping ranges</returns>
@@ -216,7 +218,7 @@ namespace GymProject.Domain.SharedKernel
         /// Chect the the date range boundaries respect the chronological order, IE: right boundary happens after left boundary
         /// </summary>
         /// <returns>True if the chronological is respected</returns>
-        private bool DateRangeCronologicalOrderRespected() => End >= Start;
+        private bool DateRangeValidChronologicalOrder() => End >= Start;
 
         /// <summary>
         /// Check wether the date range is non-infinite, IE at least one of the two boundaries is finite
@@ -224,9 +226,11 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>True if the period is finite</returns>
         private bool DateRangeNonInfinitePeriod()
         {
+            if(End == Start)
+                return End != DateTime.MinValue && End != DateTime.MaxValue;
 
+            return !(End == DateTime.MaxValue && Start == DateTime.MinValue);
         }
-            =>  !(End == DateTime.MaxValue && Start == DateTime.MinValue);
         #endregion
 
 

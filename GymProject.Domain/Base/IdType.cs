@@ -24,10 +24,15 @@
             return Id.ToString();
         }
 
+        public override bool Equals(object obj) => obj is IdType type && Id == type.Id;
 
-        public static bool operator ==(IdType left, IdType right) => left.Id == right.Id;
+        public override int GetHashCode() => base.GetHashCode();
 
-        public static bool operator !=(IdType left, IdType right) => !(left.Id == right.Id);
+
+
+        public static bool operator ==(IdType left, IdType right) => left?.Id == right?.Id;
+
+        public static bool operator !=(IdType left, IdType right) => !(left?.Id == right?.Id);
 
     }
 

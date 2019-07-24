@@ -33,6 +33,8 @@ namespace GymProject.Domain.SharedKernel
         private WeeklyOccuranceValue(int value)
         {
             Value = value;
+
+            TestBusinessRules();
         }
 
         #endregion

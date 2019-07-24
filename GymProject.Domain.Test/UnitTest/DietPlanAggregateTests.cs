@@ -14,11 +14,6 @@ namespace GymProject.Domain.Test.UnitTest
     {
 
 
-        [Fact]
-        public void DietPlanlMissingIdFail()
-        {
-            Assert.Throws<DietDomainIvariantViolationException>(() => DietPlan.ScheduleDietPlan(null, string.Empty));
-        }
 
         [Fact]
         public void DietPlanNullUnitsFail()
@@ -31,11 +26,10 @@ namespace GymProject.Domain.Test.UnitTest
             WeeklyOccuranceValue freeMeals = WeeklyOccuranceValue.TrackOccurance(2);
 
             Assert.Throws<DietDomainIvariantViolationException>(() => DietPlan.ScheduleDietPlan(id, name, null, owner, note, freeMeals));
-
         }
 
         [Fact]
-        public void DietPlanEmptyUnits()
+        public void DietPlanEmptyUnitsFail()
         {
             IdType id = new IdType(1);
             string name = "My Plan";
@@ -46,41 +40,32 @@ namespace GymProject.Domain.Test.UnitTest
 
             List<DietPlanUnit> units = new List<DietPlanUnit>();
 
-            DietPlan plan = DietPlan.ScheduleDietPlan(id, name, units, owner, note, freeMeals);
-
-            Assert.NotNull(plan);
-            Assert.Equal(id, plan.PostId);
-            Assert.Equal(name, plan.Name);
-            Assert.Equal(owner, plan.Owner);
-            Assert.Equal(note, plan.OwnerNote);
-            Assert.Equal(freeMeals, plan.WeeklyFreeMeals);
-            Assert.Empty(plan.DietUnits);
-            Assert.Null(plan.DomainEvents);
+            Assert.Throws<DietDomainIvariantViolationException>(() => DietPlan.ScheduleDietPlan(id, name, units, owner, note, freeMeals));
         }
 
-        //[Fact]
-        //public void DietPlanEmptyUnits()
-        //{
-        //    IdType id = new IdType(1);
-        //    string name = "My Plan";
+        [Fact]
+        public void DietPlanNewDraft()
+        {
+            Owner owner = Owner.Register("myUser", "imageUrl");
 
-        //    Owner owner = Owner.Register("myUser", "imageUrl");
-        //    PersonalNoteValue note = PersonalNoteValue.Write("my note.");
-        //    WeeklyOccuranceValue freeMeals = WeeklyOccuranceValue.TrackOccurance(2);
+            DietPlan plan = DietPlan.NewDraft(owner);
 
-        //    List<DietPlanUnit> units = new List<DietPlanUnit>();
+            Assert.NotNull(plan);
+            Assert.Equal(owner, plan.Owner);
+            Assert.Equal(string.Empty, plan.Name);
 
-        //    DietPlan plan = DietPlan.ScheduleDietPlan(id, name, units, owner, note, freeMeals);
+            Assert.Equal(1, plan.DietUnits.Count);
+            Assert.Empty(plan.DietUnits.FirstOrDefault().DietDays);
 
-        //    Assert.NotNull(plan);
-        //    Assert.Equal(id, plan.PostId);
-        //    Assert.Equal(name, plan.Name);
-        //    Assert.Equal(owner, plan.Owner);
-        //    Assert.Equal(note, plan.OwnerNote);
-        //    Assert.Equal(freeMeals, plan.WeeklyFreeMeals);
-        //    Assert.Empty(plan.DietUnits);
-        //    Assert.Null(plan.DomainEvents);
-        //}
+            Assert.Null(plan.OwnerNote);
+            Assert.Null(plan.PeriodScheduled);
+            Assert.Null(plan.PostId);
+            Assert.Null(plan.WeeklyFreeMeals);
+            Assert.Null(plan.AvgDailyCalories);
+
+
+        }
+
 
 
 
@@ -89,100 +74,100 @@ namespace GymProject.Domain.Test.UnitTest
         /// UI Vs Application Vs Domain example
         /// assuming the UI can access the Domain Model
         /// </summary>
-        private void Example()
-        {
+        //private void Example()
+        //{
 
-            /////////////////////////////////////////////
-            // UI Layer
-            /////////////////////////////////////////////
+        //    /////////////////////////////////////////////
+        //    // UI Layer
+        //    /////////////////////////////////////////////
 
-            DietPlan draft = DietPlan.NewDraft();
-
-
-            DietPlanDay day = DietPlanDay.NewDraft();
-            day.PlanCarbs(MacronutirentWeightValue.MeasureGrams(350));
-            day.PlanFats(MacronutirentWeightValue.MeasureGrams(40));
-            day.PlanPros(MacronutirentWeightValue.MeasureGrams(170));
-            day.SetOccurrance(WeeklyOccuranceValue.TrackOccurance(7));
-            day.SetDayType(DietDayTypeEnum.NotSet);
+        //    DietPlan draft = DietPlan.NewDraft();
 
 
-            DietPlanUnit unit = DietPlanUnit.ScheduleDietUnit(DateRangeValue.RangeStartingFrom(DateTime.Now)
-                , new List<DietPlanDay>()
-                {
-                    day,
-                });
-
-            draft.ScheduleDietPlanUnit(unit);
-            draft.SetName("test");
-
-            IdType postId = new IdType(1);
-            Owner owner = Owner.Register("owner", "pic");
-            PersonalNoteValue note = PersonalNoteValue.Write("my note.");
-
-            draft.AssignAsDietPlan(id, owner, note);        // Changes the status from "Draft" to "Planned"
+        //    DietPlanDay day = DietPlanDay.NewDraft();
+        //    day.PlanCarbs(MacronutirentWeightValue.MeasureGrams(350));
+        //    day.PlanFats(MacronutirentWeightValue.MeasureGrams(40));
+        //    day.PlanPros(MacronutirentWeightValue.MeasureGrams(170));
+        //    day.SetOccurrance(WeeklyOccuranceValue.TrackOccurance(7));
+        //    day.SetDayType(DietDayTypeEnum.NotSet);
 
 
+        //    DietPlanUnit unit = DietPlanUnit.ScheduleDietUnit(DateRangeValue.RangeStartingFrom(DateTime.Now)
+        //        , new List<DietPlanDay>()
+        //        {
+        //            day,
+        //        });
 
-            // -> User clicks on "Schedule"
-            ApplicationLayer.Schedule();
+        //    draft.ScheduleDietPlanUnit(unit);
+        //    draft.SetName("test");
+
+        //    IdType postId = new IdType(1);
+        //    Owner owner = Owner.Register("owner", "pic");
+        //    PersonalNoteValue note = PersonalNoteValue.Write("my note.");
+
+        //    draft.AssignAsDietPlan(id, owner, note);        // Changes the status from "Draft" to "Planned"
 
 
-            /////////////////////////////////////////////
-            // Application Layer
-            /////////////////////////////////////////////
 
-            DietPlan input;
-
-            DietPlan plan = input;
+        //    // -> User clicks on "Schedule"
+        //    ApplicationLayer.Schedule();
 
 
-            if (draft.Status == Draft)
-                throw new Exception("Draft cannot be ");
-            else
-                _repository.Add(plan);
+        //    /////////////////////////////////////////////
+        //    // Application Layer
+        //    /////////////////////////////////////////////
 
-            _context.Save();
-        }
+        //    DietPlan input;
+
+        //    DietPlan plan = input;
+
+
+        //    if (draft.Status == Draft)
+        //        throw new Exception("Draft cannot be ");
+        //    else
+        //        _repository.Add(plan);
+
+        //    _context.Save();
+        //}
     }
 
     /// <summary>
     /// UI Vs Application Vs Domain example
     /// assumingo only the Application layer can access the Domain Model
     /// </summary>
-    private void Example()
-    {
+    //private void Example()
+    //{
 
-        /////////////////////////////////////////////
-        // UI Layer
-        /////////////////////////////////////////////
+    //    /////////////////////////////////////////////
+    //    // UI Layer
+    //    /////////////////////////////////////////////
 
-        DietPlanVM vm;
+    //    DietPlanVM vm;
         
-        vm = ApplicationLayer.NewDraft(); 
-        vm = ApplicationLayer.AddDay();     // Return with updated Avg Calories
-        vm = ApplicationLayer.AddDay();
+    //    vm = ApplicationLayer.NewDraft(); 
+    //    vm = ApplicationLayer.AddDay();     // Return with updated Avg Calories
+    //    vm = ApplicationLayer.AddDay();
 
-        ApplicationLayer.AddUnit();
-        ApplicationLayer.AddDay();
-        ApplicationLayer.AddDay();
-
-
-        // -> User clicks on "Schedule"
-        ApplicationLayer.Schedule();
+    //    ApplicationLayer.AddUnit();
+    //    ApplicationLayer.AddDay();
+    //    ApplicationLayer.AddDay();
 
 
+    //    // -> User clicks on "Schedule"
+    //    ApplicationLayer.Schedule();
 
-        /////////////////////////////////////////////
-        // Application Layer
-        /////////////////////////////////////////////
 
-        DietPlan input;
 
-        DietPlan plan = input;
+    //    /////////////////////////////////////////////
+    //    // Application Layer
+    //    /////////////////////////////////////////////
 
-        _repository.Add(plan);
+    //    DietPlan input;
 
-        _context.Save();
-    }
+    //    DietPlan plan = input;
+
+    //    _repository.Add(plan);
+
+    //    _context.Save();
+    //}
 }

@@ -43,9 +43,10 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlanUnit()
+        private DietPlanUnit(DateRangeValue period = null)
         {
-
+            PeriodScheduled = period;
+            _dietDays = new List<DietPlanDay>();
         }
 
 
@@ -68,13 +69,23 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method
+        /// Factory method for creating drafts, IE: blank unit templates
+        /// </summary>
+        /// <param name="period">The perdiod to be scheduled</param>
+        /// <param name="dietDays">The diet days linked to this unit</param>
+        /// <returns>The DietPlanUnitValue instance</returns>
+        public static DietPlanUnit NewDraft()
+
+            => new DietPlanUnit();
+
+        /// <summary>
+        /// Factory method for creating drafts, IE: blank unit templates
         /// </summary>
         /// <param name="period">The perdiod to be scheduled</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit ScheduleDietUnit(DateRangeValue period) 
+        public static DietPlanUnit NewScheduledDraft(DateRangeValue period) 
             
-            => ScheduleDietUnit(period, null);
+            => NewScheduledDraft(period);
 
 
         /// <summary>
@@ -86,17 +97,6 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         public static DietPlanUnit ScheduleDietUnit(DateRangeValue period, ICollection<DietPlanDay> dietDays) 
             
             => new DietPlanUnit(period, dietDays);
-
-
-        /// <summary>
-        /// Factory method for creating drafts, IE: blank unit templates
-        /// </summary>
-        /// <param name="period">The perdiod to be scheduled</param>
-        /// <param name="dietDays">The diet days linked to this unit</param>
-        /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit NewDraft()
-
-            => new DietPlanUnit();
 
         #endregion
 

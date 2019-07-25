@@ -197,18 +197,38 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
+        /// Join two DateRanges, provided that they are contiguous - IE: there is no gap between the two
+        /// </summary>
+        /// <param name="another">The second DateRange to be joined</param>
+        /// <returns>The DateRange union - null if not contiguous</returns>
+        public DateRangeValue Join(DateRangeValue another)
+        {
+            DateRangeValue lower, higher;
+
+            if (CompareTo(another) < 0)
+            {
+                lower = this;
+                higher = another;
+            }
+            else
+            {
+                lower = another;
+                higher = this;
+            }
+
+            if (higher.Start > lower.End.AddDays(1))
+                return null;
+
+            return RangeBetween(lower.Start, higher.End);
+        }
+
+
+        /// <summary>
         /// Get the DateRange length [days, truncated]
         /// </summary>
         /// <returns>The days</returns>
         public int GetLength() => (End - Start).Days;
 
-
-        /// <summary>
-        /// Checks if all the properties are null
-        /// </summary>
-        /// <returns>True if invalid state</returns>
-        public bool CheckNullState()
-            => GetAtomicValues().All(x => x == null);
         #endregion
 
 

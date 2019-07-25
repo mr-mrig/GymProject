@@ -295,6 +295,57 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
         [Fact]
+        public void DateRangeJoinFail()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = right.AddDays(days + 2);
+            DateTime right2 = left2.AddDays(days + 2);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+
+            Assert.Null(range.Join(range2));
+        }
+
+        [Fact]
+        public void DateRangeJoin()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = right.AddDays(1);
+            DateTime right2 = left2.AddDays(days);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+
+            Assert.Equal(DateRangeValue.RangeBetween(left, right2), range.Join(range2));
+        }
+
+        [Fact]
+        public void DateRangeJoinOverlapping()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = right.AddDays(-1);
+            DateTime right2 = left2.AddDays(days);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+
+            Assert.Equal(DateRangeValue.RangeBetween(left, right2), range.Join(range2));
+        }
+
+        [Fact]
         public void PersonalNoteFail()
         {
             string body = "ciao ciao.";

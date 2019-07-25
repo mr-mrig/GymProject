@@ -69,6 +69,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         #region Ctors
 
         private DietPlanDay(
+            IdType id,
             string name = null,
             WeeklyOccuranceValue weeklyOccurrances = null,
             MacronutirentWeightValue carbs = null,
@@ -79,6 +80,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
         {
+            Id = id;
             Name = name ?? string.Empty;
             Carbs = carbs;
             Fats = fats;
@@ -92,7 +94,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             if (SpecificWeekday != WeekdayEnum.Generic)
                 WeeklyOccurrances = WeeklyOccuranceValue.TrackOccurance(1);
             else
-                WeeklyOccurrances = weeklyOccurrances;
+                WeeklyOccurrances = weeklyOccurrances ?? WeeklyOccuranceValue.TrackOccurance(WeekdayEnum.AllTheWeek);
 
             TestBusinessRules();
             Calories = GetDailyCalories();            
@@ -103,7 +105,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         {
             DietDayType = DietDayTypeEnum.NotSet;
             SpecificWeekday = WeekdayEnum.Generic;
-            WeeklyOccurrances = WeeklyOccuranceValue.TrackOccurance(WeeklyOccuranceValue.MaximumTimes);
+            WeeklyOccurrances = WeeklyOccuranceValue.TrackOccurance(0);
         }
         #endregion
 
@@ -114,7 +116,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// Factory method
         /// </summary>
-        /// <param name="name">The name which dientifies the day</param>
+        /// <param name="id">The Id of the Diet Day</param>
+        /// <param name="name">The name which identifies the day</param>
         /// <param name="carbs">Carbohidrates quantity</param>
         /// <param name="fats">Fats quantity</param>
         /// <param name="proteins">Proteins quantity</param>
@@ -122,8 +125,10 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="water">Water quantity</param>
         /// <param name="specificWeekday">The specific weekday number - or null</param>
         /// <param name="dayType">The day type</param>
+        /// <param name="weeklyOccurrances">How many times the day is repetead throghout the week</param>
         /// <returns>The DietPlanDayValue instance</returns>
         public static DietPlanDay AddDayToPlan(
+            IdType id,
             string name = null,
             WeeklyOccuranceValue weeklyOccurrances = null,
             MacronutirentWeightValue carbs = null,
@@ -134,16 +139,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
 
-            => new DietPlanDay(name, weeklyOccurrances, carbs, fats, proteins, salt, water, specificWeekday, dayType);
+            => new DietPlanDay(id, name, weeklyOccurrances, carbs, fats, proteins, salt, water, specificWeekday, dayType);
 
-
-        ///// <summary>
-        ///// Factory method for creating drafts, IE: blank Day templates
-        ///// </summary>
-        ///// <returns>The DietPlanDayValue instance</returns>
-        //public static DietPlanDay NewDraft()
-
-        //    => new DietPlanDay();
 
         #endregion
 
@@ -262,11 +259,21 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
 
         /// <summary>
+        /// The Diet Day must have a valid ID
+        /// </summary>
+        /// <returns>True if the rule is met</returns>
+        private bool DietDayIdIsValid() => Id != null;
+
+
+        /// <summary>
         /// Tests that all the business rules are met and manages invalid states
         /// </summary>
         /// <exception cref="DietDomainIvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
+            if (!DietDayIdIsValid())
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no ID");
+
             if (!DietDayMacrosAreSet())
                 throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no macro defined");
 

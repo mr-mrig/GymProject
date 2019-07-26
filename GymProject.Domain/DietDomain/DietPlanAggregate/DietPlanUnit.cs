@@ -63,13 +63,13 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 _dietDays = new List<DietPlanDay>();
             else
                 AssignDietDays(dietDays);
-            
 
-            if(!DietUnitIdNotNull())
+
+            if (!DietUnitIdNotNull())
                 throw new DietDomainIvariantViolationException($"The Diet Unit ID period must be valid.");
 
             if (DietUnitPeriodIsNotNull())
-                    throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no period associated.");
+                throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no period associated.");
         }
         #endregion
 

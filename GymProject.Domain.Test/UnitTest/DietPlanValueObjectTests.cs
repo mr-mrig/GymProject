@@ -96,7 +96,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.NotNull(range);
             Assert.Equal(left, range.Start);
             Assert.Equal(right, range.End);
-            Assert.Equal(days, range.GetLength());
+            Assert.Equal(days + 1, range.GetLength());
             Assert.True(range.IsLeftBounded());
             Assert.True(range.IsRightBounded());
         }
@@ -176,7 +176,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Equal(newStart, final.Start);
             Assert.Equal(newEnd, final.End);
-            Assert.Equal(newDays, final.GetLength());
+            Assert.Equal(newDays + 1, final.GetLength());
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Equal(newStart, final.Start);
             Assert.Equal(newEnd, final.End);
-            Assert.Equal(newDays, final.GetLength());
+            Assert.Equal(newDays + 1, final.GetLength());
         }
 
         [Fact]
@@ -229,7 +229,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Equal(newStart, final.Start);
             Assert.Equal(newEnd, final.End);
-            Assert.Equal(newDays, final.GetLength());
+            Assert.Equal(newDays + 1, final.GetLength());
         }
 
         [Fact]
@@ -252,7 +252,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             DateRangeValue range3 = DateRangeValue.RangeBetween(left3, right3);
 
-            Assert.False(range3.Overlaps(range));
+            Assert.True(range3.Overlaps(range));
         }
 
         [Fact]
@@ -291,7 +291,7 @@ namespace GymProject.Domain.Test.UnitTest
             DateRangeValue range = DateRangeValue.RangeBetween(left, right);
             DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
 
-            Assert.Equal(days - 2, range.GepBetween(range2).GetLength());   // days - edge days
+            Assert.Equal(days - 1, range.GepBetween(range2).GetLength());   // days - edge days
         }
 
         [Fact]

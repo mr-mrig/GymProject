@@ -127,7 +127,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>True if date inside DateRange boundaries</returns>
         public bool Includes(DateTime toCheck)
         {
-            return toCheck > Start && toCheck < End;
+            return toCheck >= Start && toCheck <= End;
         }
 
 
@@ -227,7 +227,7 @@ namespace GymProject.Domain.SharedKernel
         /// Get the DateRange length [days, truncated]
         /// </summary>
         /// <returns>The days</returns>
-        public int GetLength() => (End - Start).Days;
+        public int GetLength() => (End.AddDays(1) - Start).Days;    // Boundaries included -> need for the +1day
 
         #endregion
 

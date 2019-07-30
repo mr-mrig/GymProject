@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.Base
 {
-    public class StatusTrackingEntity : Entity<IdType>
+    public class StatusTrackingEntity<IdType> : Entity<IdType>
     {
 
 

@@ -13,7 +13,7 @@
   <ItemGroup>
     <Folder Include="MeasuresJournalDomain\BiaDevice\" />
     <Folder Include="SharedKernel\Specifications\" />
-    <Folder Include="TrainingDomain\" />
+    <Folder Include="TrainingDomain\TrainingPlanAggregate\" />
     <Folder Include="UserAccountDomain\" />
   </ItemGroup>
 

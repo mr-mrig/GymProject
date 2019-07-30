@@ -7,6 +7,9 @@
     public class IdType
     {
 
+
+
+
         public long Id { get; private set; }
 
 
@@ -14,6 +17,9 @@
         {
             Id = id;
         }
+
+
+
 
         /// <summary>
         /// Overridden method, prints the Id as a string

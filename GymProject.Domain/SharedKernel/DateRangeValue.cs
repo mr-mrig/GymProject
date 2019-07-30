@@ -127,7 +127,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>True if date inside DateRange boundaries</returns>
         public bool Includes(DateTime toCheck)
         {
-            return toCheck > Start && toCheck < End;
+            return toCheck >= Start && toCheck <= End;
         }
 
 
@@ -197,18 +197,38 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
-        /// Get the DateRange length [days, truncated]
+        /// Join two DateRanges, provided that they are contiguous - IE: there is no gap between the two
         /// </summary>
-        /// <returns>The days</returns>
-        public int GetLength() => (End - Start).Days;
+        /// <param name="another">The second DateRange to be joined</param>
+        /// <returns>The DateRange union - null if not contiguous</returns>
+        public DateRangeValue Join(DateRangeValue another)
+        {
+            DateRangeValue lower, higher;
+
+            if (CompareTo(another) < 0)
+            {
+                lower = this;
+                higher = another;
+            }
+            else
+            {
+                lower = another;
+                higher = this;
+            }
+
+            if (higher.Start > lower.End.AddDays(1))
+                return null;
+
+            return RangeBetween(lower.Start, higher.End);
+        }
 
 
         /// <summary>
-        /// Checks if all the properties are null
+        /// Get the DateRange length [days, truncated]
         /// </summary>
-        /// <returns>True if invalid state</returns>
-        public bool CheckNullState()
-            => GetAtomicValues().All(x => x == null);
+        /// <returns>The days</returns>
+        public int GetLength() => (End.AddDays(1) - Start).Days;    // Boundaries included -> need for the +1day
+
         #endregion
 
 

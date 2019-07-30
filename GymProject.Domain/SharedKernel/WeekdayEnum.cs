@@ -10,7 +10,7 @@ namespace GymProject.Domain.DietDomain
     {
 
 
-        public const int Max = 7;
+        public const int AllTheWeek = 7;
 
         #region Enum
 
@@ -54,7 +54,7 @@ namespace GymProject.Domain.DietDomain
 
         public static bool operator ==(WeekdayEnum left, WeekdayEnum right)
         {
-            if (left == null || right == null)
+            if (left is null || right is null)
                 return false;
 
             return left.Id == right.Id;
@@ -63,7 +63,7 @@ namespace GymProject.Domain.DietDomain
 
         public static bool operator !=(WeekdayEnum left, WeekdayEnum right)
         {
-            if (left == null || right == null)
+            if (left is null || right is null)
                 return false;
 
             return left.Id != right.Id;

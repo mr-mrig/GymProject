@@ -46,7 +46,6 @@ namespace GymProject.Domain.SharedKernel
         }
 
 
-
         /// <summary>
         /// Compute the macros amount with respect to the distribution ratio and calorie amount
         /// </summary>

@@ -1160,6 +1160,55 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         [Fact]
+        public void DietPlanCloseAppendUpTo()
+        {
+            IdType unitId = new IdType(1);
+            IdType dayId = new IdType(1);
+            Owner owner = Owner.Register("myUser", "imageUrl");
+            Trainee dest = Trainee.Register("trynee", "imageUrl");
+            DietPlan plan = DietPlan.NewDraft(owner, dest);
+
+            DateRangeValue range1 = DateRangeValue.RangeBetween(DateTime.Today, DateTime.Today.AddDays(10));
+
+            plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
+                weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
+
+            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+
+
+            unitId = unitId + 1;
+            plan.AppendDietPlanUnitDraft();
+
+            plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
+    weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
+
+            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(10));
+
+            Assert.Equal(range1.End.AddDays(10), plan.FindUnitById(unitId).PeriodScheduled.End);
+            Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(unitId).PeriodScheduled.Start);
+        }
+
+
+        [Fact]
+        public void DietPlanCloseInfiniteFail()
+        {
+            IdType unitId = new IdType(1);
+            IdType dayId = new IdType(1);
+            Owner owner = Owner.Register("myUser", "imageUrl");
+            Trainee dest = Trainee.Register("trynee", "imageUrl");
+            DietPlan plan = DietPlan.NewDraft(owner, dest);
+
+            DateRangeValue range1 = DateRangeValue.RangeBetween(DateTime.Today, DateTime.Today.AddDays(10));
+
+            plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
+                weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
+
+            Assert.Throws<DietDomainIvariantViolationException>(() => plan.CloseDietPlanUnit(unitId, range1.End));
+            Assert.Throws<ArgumentException>(() => plan.CloseDietPlanUnit(unitId + 10, range1.Start, range1.End));
+        }
+
+
+        [Fact]
         public void DietPlanAppendUnitNonContiguousFail()
         {
             IdType unitId = new IdType(1);

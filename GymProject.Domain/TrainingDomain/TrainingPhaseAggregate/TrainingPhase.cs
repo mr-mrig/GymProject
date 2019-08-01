@@ -1,24 +1,39 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.PhaseDomain.Exceptions;
+using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
-using GymProject.Domain.SharedKernel.Exceptions;
 
-namespace GymProject.Domain.PhaseDomain.TrainingPhaseAggregate
+namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 {
     public class TrainingPhase : StatusTrackingEntity<IdType>, IAggregateRoot
     {
 
 
+        #region Consts
+
+        /// <summary>
+        /// The minimum allowed legth of the Phase name
+        /// </summary>
+        public const int TagMinimumLength = 5;
+
+        /// <summary>
+        /// The maximum allowed length of the Phase name
+        /// </summary>
+        public const int TagMaximumLength = 30;
+        #endregion
+
+
+
         /// <summary>
         /// The Diet Plan name
         /// </summary>
-        public string Name { get; private set; } = string.Empty;
+        public string Name { get; private set; } = null;
 
 
         ///// <summary>
         ///// The author of the diet plan
         ///// </summary>
         //public Owner Owner { get; private set; } = null;
+
 
 
 
@@ -29,11 +44,12 @@ namespace GymProject.Domain.PhaseDomain.TrainingPhaseAggregate
             Name = name ?? string.Empty;
             EntryStatusType = entryStatus;
 
-            if (string.IsNullOrEmpty(Name))
-                throw new PhaseDomainInvariantViolationException($"Cannot create a TrainingPhase object with an invalid name");
 
-            if(EntryStatusType == null || EntryStatusType.Equals(EntryStatusTypeEnum.NotSet))
-                throw new PhaseDomainInvariantViolationException($"Cannot create a TrainingPhase object with an invalid entry status");
+            if(string.IsNullOrWhiteSpace(Name))
+                throw new TrainingDomainInvariantViolationException($"Training Phase must have a tag name.");
+
+            if (EntryStatusType == null || EntryStatusType.Equals(EntryStatusTypeEnum.NotSet))
+                throw new TrainingDomainInvariantViolationException($"Cannot create a TrainingPhase object with an invalid entry status");
         }
 
         #endregion
@@ -95,8 +111,19 @@ namespace GymProject.Domain.PhaseDomain.TrainingPhaseAggregate
         /// Set the Phase name
         /// </summary>
         /// <param name="newName">The new Phase name</param>
-        public void GiveName(string newName) => Name = newName;
+        public void Rename(string newName) => Name = newName ?? string.Empty;
 
+        #endregion
+
+
+        #region Private Methods
+
+        /// <summary>
+        /// Builds the DescriptiveNameValue from the name text
+        /// </summary>
+        /// <param name="nameText">The name text</param>
+        /// <returns>The DescriptiveNameValue object</returns>
+        private DescriptiveNameValue BuildName(string nameText) => DescriptiveNameValue.Write(nameText, TagMinimumLength, TagMaximumLength);
         #endregion
 
     }

@@ -407,7 +407,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             DietPlanUnit toBeScheduled = FindUnitById(planUnitId);
 
             if (toBeScheduled == default)
-                throw new ArgumentException($"The Diet Plan Unit - Id={planUnitId.ToString()} - does not belong to the Diet Plan - Id={Id.ToString()} -");
+                throw new ArgumentException($"The Diet Plan Unit - Id={planUnitId.ToString()} - does not belong to the Diet Plan");
 
             toBeScheduled.Reschedule(DateRangeValue.RangeBetween(startingFrom, upTo));
 
@@ -421,13 +421,35 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
 
         /// <summary>
-        /// Assigns a schedule to the specified DietPlanUnit - which must already be created
+        /// Schedule the start of the specified DietPlanUnit - which must already be created
         /// </summary>
         /// <param name="planUnitId">The ID of the Diet Plan Unit to be scheduled</param>
         /// <param name="startingFrom">The left boundary date</param>
         /// <exception cref="ArgumentException">If the ID specified is not between the Plan DietUnits</exception>
         /// <exception cref="DietDomainIvariantViolationException">If business ruels violated</exception>
-        public void CloseDietPlanUnit(IdType planUnitId, DateTime startingFrom) => CloseDietPlanUnit(planUnitId, startingFrom, DateTime.MaxValue);
+        public void CloseDietPlanUnitToInfinite(IdType planUnitId, DateTime startingFrom) => CloseDietPlanUnit(planUnitId, startingFrom, DateTime.MaxValue);
+
+
+        /// <summary>
+        /// Assigns a schedule to the specified DietPlanUnit - which must already be created
+        /// The function requires the start date to be already scheduled.
+        /// </summary>
+        /// <param name="planUnitId">The ID of the Diet Plan Unit to be scheduled</param>
+        /// <param name="startingFrom">The left boundary date</param>
+        /// <exception cref="ArgumentException">If the ID specified is not between the Plan DietUnits</exception>
+        /// <exception cref="DietDomainIvariantViolationException">If business ruels violated</exception>
+        public void CloseDietPlanUnit(IdType planUnitId, DateTime upTo)
+        {
+            DietPlanUnit toBeScheduled = FindUnitById(planUnitId);
+
+            if (FindUnitById(planUnitId) == default)
+                throw new ArgumentException($"The Diet Plan Unit - Id={planUnitId.ToString()} - does not belong to the Diet Plan");
+
+            if (toBeScheduled?.PeriodScheduled?.Start == null)
+                throw new DietDomainIvariantViolationException($"Cannot close a DietPlanUnit which has no start period.");
+
+            CloseDietPlanUnit(planUnitId, toBeScheduled.PeriodScheduled.Start, upTo);
+        } 
 
 
         /// <summary>

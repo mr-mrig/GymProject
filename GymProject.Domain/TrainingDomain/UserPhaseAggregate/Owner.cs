@@ -1,7 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
 
-namespace GymProject.Domain.PhaseDomain.UserPhaseAggregate
+namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 {
     public class Owner : Entity<IdType>
     {

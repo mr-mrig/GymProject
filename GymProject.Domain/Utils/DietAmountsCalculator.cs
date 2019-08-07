@@ -1,8 +1,7 @@
-﻿using System;
+﻿using GymProject.Domain.SharedKernel;
 using System.Collections.Generic;
-using System.Text;
 
-namespace GymProject.Domain.SharedKernel
+namespace GymProject.Domain.Utils
 {
     public static class DietAmountsCalculator
     {

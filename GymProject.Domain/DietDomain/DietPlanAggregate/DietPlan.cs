@@ -301,7 +301,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             DietPlanUnit toBeChanged = FindUnitById(dietUnitId);
 
             if (toBeChanged == default)
-                throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan - Id={Id.ToString()} -");
+                throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan");
 
             toBeChanged.UnplanDietDay(dietDayId);
         }
@@ -487,13 +487,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="ArgumentException">If the Unit doesn't belong to the Diet Plan</exception>
         public void MoveDietPlanUnit(IdType toMoveId, DateRangeValue newPeriod)
         {
-            DietPlanUnit toBeMoved = FindUnitById(Id);
+            DietPlanUnit toBeMoved = FindUnitById(toMoveId);
 
             if (toBeMoved == default)
-                throw new ArgumentException($"The Diet Plan Unit - Id={toMoveId.ToString()} - does not belong to the Diet Plan - Id={Id.ToString()} -");
+                throw new ArgumentException($"The Diet Plan Unit - Id={toMoveId.ToString()} - does not belong to the Diet Plan");
 
             toBeMoved.Reschedule(newPeriod);
 
+            _dietUnits = MakeUnitsContiguous(_dietUnits, toMoveId);
             TestDietUnitsBusinessRules();
         }
 
@@ -658,6 +659,42 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
             return units;
         }
+
+
+        /// <summary>
+        /// Modify all the the DietPlanUnits but the moved one so that each element is chronologically contiguous
+        /// The moved unit will not be modifed, as the user forced it,
+        /// </summary>where each element is chronologically contiguous
+        /// <param name="units">The units to be shuffled</param>
+        /// <param name="movedId">The DietPlanUnit Id which has been moved</param>
+        /// <returns>The shiuffled list</returns>
+        private ICollection<DietPlanUnit> MakeUnitsContiguous(ICollection<DietPlanUnit> units, IdType movedId)
+        {
+            IList<DietPlanUnit> sorted = GetSortedUnits(_dietUnits);
+
+            for (int i = 0; i < sorted.Count() - 1; i++) // Skip the last one
+            {
+                DietPlanUnit current = sorted[i];
+                DietPlanUnit nextOne = sorted[i + 1];
+
+                if(nextOne.Id == movedId)
+                {
+                    // Reschedule the current one according to the next one
+                    current.Reschedule(DateRangeValue.RangeBetween(
+                        current.PeriodScheduled.Start,
+                        nextOne.PeriodScheduled.Start.AddDays(-1)));
+                }
+                else
+                {
+                    // Reschedule the next one according to the current one
+                    nextOne.Reschedule(DateRangeValue.RangeBetween(
+                        current.PeriodScheduled.End.AddDays(1),
+                        current.PeriodScheduled.End.AddDays(nextOne.PeriodScheduled.GetLength())));
+                }
+            }
+
+            return units;
+        }
         #endregion
 
 
@@ -760,7 +797,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 throw new DietDomainIvariantViolationException($"he Diet Plan Units must not overlap each other.");
 
             if (!DietPlanUnitsAreContiguous())
-                throw new DietDomainIvariantViolationException($"The Diet Plan Units must be contiguous."); ;
+                throw new DietDomainIvariantViolationException($"The Diet Plan Units must be contiguous.");
 
             if (!DietPlanUnitsHaveAtLeastOneDay())
                 throw new DietDomainIvariantViolationException($"The Diet Plan Units must have at least one Diet Day.");

@@ -1,6 +1,7 @@
 ﻿using System;
+using GymProject.Domain.SharedKernel;
 
-namespace GymProject.Domain.SharedKernel
+namespace GymProject.Domain.Utils
 {
     public static class BodyMeasuresCalculator
     {

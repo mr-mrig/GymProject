@@ -150,7 +150,6 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void StartUserPhase()
         {
-            int days = 10;
             IdType phaseId = new IdType(1);
             DateTime startDate = DateTime.Today;
             Owner owner = Owner.Register("user", "mypic");

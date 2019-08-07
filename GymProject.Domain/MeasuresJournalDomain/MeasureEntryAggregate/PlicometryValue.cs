@@ -3,6 +3,7 @@ using GymProject.Domain.SharedKernel;
 using GymProject.Domain.SharedKernel.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
+using GymProject.Domain.Utils;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {

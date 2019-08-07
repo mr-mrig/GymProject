@@ -10,7 +10,7 @@ namespace GymProject.Domain.SharedKernel
     {
 
 
-        public static TimeMeasureUnitEnum Seconds = new TimeMeasureUnitEnum(1, "Seconds", "s", false);
+        public static TimeMeasureUnitEnum Seconds = new TimeMeasureUnitEnum(1, "Seconds", "''", false);
         public static TimeMeasureUnitEnum Minutes = new TimeMeasureUnitEnum(2, "Minutes", "min", false);
         public static TimeMeasureUnitEnum Hours = new TimeMeasureUnitEnum(3, "Hours", "h", true);
         public static TimeMeasureUnitEnum Days = new TimeMeasureUnitEnum(4, "Days", "day", true);

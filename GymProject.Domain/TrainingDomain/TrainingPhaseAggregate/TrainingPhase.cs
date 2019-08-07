@@ -9,16 +9,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
 
         #region Consts
-
-        /// <summary>
-        /// The minimum allowed legth of the Phase name
-        /// </summary>
-        public const int TagMinimumLength = 5;
-
-        /// <summary>
-        /// The maximum allowed length of the Phase name
-        /// </summary>
-        public const int TagMaximumLength = 30;
         #endregion
 
 
@@ -118,12 +108,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
         #region Private Methods
 
-        /// <summary>
-        /// Builds the DescriptiveNameValue from the name text
-        /// </summary>
-        /// <param name="nameText">The name text</param>
-        /// <returns>The DescriptiveNameValue object</returns>
-        private DescriptiveNameValue BuildName(string nameText) => DescriptiveNameValue.Write(nameText, TagMinimumLength, TagMaximumLength);
+        ///// <summary>
+        ///// Builds the DescriptiveNameValue from the name text
+        ///// </summary>
+        ///// <param name="nameText">The name text</param>
+        ///// <returns>The DescriptiveNameValue object</returns>
+        //private DescriptiveNameValue BuildName(string nameText) => DescriptiveNameValue.Write(nameText, TagMinimumLength, TagMaximumLength);
         #endregion
 
     }

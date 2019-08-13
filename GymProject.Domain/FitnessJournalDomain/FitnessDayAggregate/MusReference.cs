@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class MusReference : Entity<IdType>
+    public class MusReference : Entity<IdType>, ICloneable
     {
 
 
@@ -29,7 +29,16 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <param name="name">The MUS name</param>
         /// <returns>Return a new instance of MusReference</returns>
         public static MusReference MusLink(IdType id, string name) => new MusReference(id, name);
+
         #endregion
 
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => MusLink(Id, Name);
+
+        #endregion
     }
 }

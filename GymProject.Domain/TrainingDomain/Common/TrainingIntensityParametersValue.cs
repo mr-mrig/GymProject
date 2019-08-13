@@ -3,6 +3,7 @@ using GymProject.Domain.TrainingDomain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GymProject.Domain.Utils.Extensions;
 
 namespace GymProject.Domain.TrainingDomain.Common
 {
@@ -39,8 +40,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             _totalWorkingSets = workingSetsNumber;
             _intensitySumAccumulator = intensitySum;
 
-            AverageIntensity = TrainingEffortValue.TrackEffort((float)_intensitySumAccumulator / (float)_totalWorkingSets, effortType);
-
+            AverageIntensity = _totalWorkingSets == 0 ? null : TrainingEffortValue.TrackEffort((float)_intensitySumAccumulator / (float)_totalWorkingSets, effortType);
 
             //TestBusinessRules();
         }
@@ -73,11 +73,13 @@ namespace GymProject.Domain.TrainingDomain.Common
         {
             TrainingEffortTypeEnum toEffortType = effortType ?? DefaultEffortType;
 
-            if (workingSets?.Count() == 0)
+            List<IWorkingSet> wsCopy = workingSets.Clone().ToList() ?? new List<IWorkingSet>();
+
+            if (wsCopy.Count() == 0)
                 return new TrainingIntensityParametersValue(0, toEffortType, 0);
 
 
-            foreach (IWorkingSet ws in workingSets)
+            foreach (IWorkingSet ws in wsCopy)
             {
                 // Exception or exclude from computation?
                 if (ws == null)
@@ -88,7 +90,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             }
 
             return SetTrainingIntensity(
-                    workingSets.Sum(x => x?.Effort?.Value ?? TrainingEffortValue.DefaultEffort.Value), toEffortType, workingSets.Count());
+                    wsCopy.Sum(x => x?.Effort?.Value ?? TrainingEffortValue.DefaultEffort.Value), toEffortType, wsCopy.Count());
         }
 
         #endregion
@@ -109,29 +111,6 @@ namespace GymProject.Domain.TrainingDomain.Common
         #endregion
 
 
-
-        #region Private Methods
-
-        ///// <summary>
-        ///// Perform the incremental average when a new WS is added
-        ///// </summary>
-        ///// <param name="toAdd">The WS to add</param>
-        ///// <returns>The updated average effort value</returns>
-        //private float PerformIncrementalAverage(IWorkingSet toAdd)
-        //{
-        //    if (toAdd == null)
-        //        throw new ArgumentNullException($"Trying to add a NULL working set.");
-
-        //    // Convert if needed
-        //    if (toAdd.Effort.EffortType != DefaultEffortType)
-        //        toAdd.ToNewEffortType(DefaultEffortType);
-
-        //    // Incremental average
-        //    return (toAdd.Effort.Value - AverageIntensity?.Value ?? 0) / (_totalWorkingSets + 1) + toAdd.Effort.Value;
-        //}
-        #endregion
-
-
         #region Public Methods
 
         /// <summary>
@@ -141,11 +120,6 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <exception cref="ArgumentNullException">Thrown when input WS is null</exception>
         /// <returns>The new TrainingDensityValue instance</returns>
         public TrainingIntensityParametersValue AddWorkingSet(IWorkingSet toAdd)
-
-        //=> SetTrainingIntensity(
-        //       TrainingEffortValue.TrackEffort(PerformIncrementalAverage(toAdd), DefaultEffortType), 
-        //       _totalWorkingSets + 1);
-
         {
             if (toAdd == null)
                 throw new ArgumentNullException($"Trying to add a NULL working set.");

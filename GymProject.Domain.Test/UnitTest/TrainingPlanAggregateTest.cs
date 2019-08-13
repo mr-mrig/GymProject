@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using Xunit;
 using GymProject.Domain.Base;
 using GymProject.Domain.Test.Util;
+using GymProject.Domain.Utils;
+using System.Linq;
 
 namespace GymProject.Domain.Test.UnitTest
 {
@@ -17,6 +19,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void WorkingSetTemplateFail()
         {
+            IdType id = new IdType(1);
             uint pNum = 0;
             WSRepetitionValue reps1 = null;
             WSRepetitionValue reps2 = WSRepetitionValue.TrackNotSetRepetitions();
@@ -25,24 +28,25 @@ namespace GymProject.Domain.Test.UnitTest
             WSRepetitionValue timed0 = WSRepetitionValue.TrackTimedSerie(0);
             WSRepetitionValue validReps = WSRepetitionValue.TrackRepetitionSerie(10);
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, reps1));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, reps2));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, reps3));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, amrap));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, timed0));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, amrap, effort: TrainingEffortValue.AsRPE(10)));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, reps1));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, reps2));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, reps3));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, amrap));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, timed0));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, amrap, effort: TrainingEffortValue.AsRPE(10)));
 
             // Duplicate Intensity Techniques
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(10), new IdType(1) }));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(10), new IdType(1) }));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(1), new IdType(10) }));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(1) }));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(10), new IdType(1) }));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(10), new IdType(1) }));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(1), new IdType(10) }));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(1) }));
         }
 
 
         [Fact]
         public void WorkingSetTemplateIntensityEffortAdd()
         {
+            IdType id = new IdType(1);
             uint pNum = 0;
             uint restValue = 90, newRestValue = 60;
             uint repsVal10 = 10;
@@ -57,7 +61,7 @@ namespace GymProject.Domain.Test.UnitTest
             WSRepetitionValue reps10 = WSRepetitionValue.TrackRepetitionSerie(repsVal10);
 
             // WS
-            WorkingSetTemplate amrapSet = WorkingSetTemplate.AddWorkingSet(pNum, amrap, rest: rest, effort: effort1, tempo: tut);
+            WorkingSetTemplate amrapSet = WorkingSetTemplate.AddWorkingSet(id, pNum, amrap, rest: rest, effort: effort1, tempo: tut);
 
             Assert.Equal(pNum, amrapSet.ProgressiveNumber);
             Assert.Equal(rest, amrapSet.Rest);
@@ -92,7 +96,7 @@ namespace GymProject.Domain.Test.UnitTest
             // Change it
             amrapSet.ToNewEffortType(TrainingEffortTypeEnum.RPE);
 
-            Assert.Equal(5.5f, amrapSet.Effort.Value);     // 10 reps @ 67% -> 15RM
+            StaticUtils.CheckConversions(5.5f, amrapSet.Effort.Value);      // 10 reps @ 67% -> 15RM
 
             // Intensity Techniques
             IdType itId1 = new IdType(1);
@@ -114,6 +118,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void WorkingSetTemplateIntensityEffortTimedAdd()
         {
+            IdType id = new IdType(1);
             uint pNum = 0;
             float intPerc = 67f;
             uint restValue = 90, newRestValue = 60;
@@ -130,7 +135,7 @@ namespace GymProject.Domain.Test.UnitTest
             WSRepetitionValue timed2 = WSRepetitionValue.TrackTimedSerie(newTime100);
 
             // WS
-            WorkingSetTemplate timedSet = WorkingSetTemplate.AddWorkingSet(pNum, timed1, rest: rest, effort: effort1, 
+            WorkingSetTemplate timedSet = WorkingSetTemplate.AddWorkingSet(id, pNum, timed1, rest: rest, effort: effort1, 
                 intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(11) });
 
             Assert.Equal(pNum, timedSet.ProgressiveNumber);
@@ -180,6 +185,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void WorkingSetTemplateRMAdd()
         {
+            IdType id = new IdType(1);
             float rm = 10;
             uint pNum = 0;
             uint newRestValue = 60;
@@ -194,7 +200,7 @@ namespace GymProject.Domain.Test.UnitTest
             WSRepetitionValue reps10 = WSRepetitionValue.TrackRepetitionSerie(repsVal10);
 
             // WS
-            WorkingSetTemplate amrapSet = WorkingSetTemplate.AddWorkingSet(pNum, amrap, effort: effort1, tempo: tut,
+            WorkingSetTemplate amrapSet = WorkingSetTemplate.AddWorkingSet(id, pNum, amrap, effort: effort1, tempo: tut,
                 intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(100), });
 
             Assert.Equal(pNum, amrapSet.ProgressiveNumber);
@@ -253,13 +259,14 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void WorkingSetWithDefaultProperties()
         {
+            IdType id = new IdType(1);
             float rm = 10;
             uint pNum = 0;
             WSRepetitionValue reps10 = WSRepetitionValue.TrackRepetitionSerie((uint)rm);
             TrainingEffortValue expectedRm = TrainingEffortValue.AsRM(rm + (TrainingEffortTypeEnum.AMRAPAsRPE - TrainingEffortValue.DefaultEffort.Value));
 
             // WS with some fields missing -> Check defaults
-            WorkingSetTemplate reps = WorkingSetTemplate.AddWorkingSet(pNum, reps10);
+            WorkingSetTemplate reps = WorkingSetTemplate.AddWorkingSet(id, pNum, reps10);
 
             Assert.Equal(TrainingEffortValue.DefaultEffort, reps.Effort);
             Assert.Equal(RestPeriodValue.SetRestNotSpecified(), reps.Rest);
@@ -276,6 +283,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void WorkingSetTemplateRPEAdd()
         {
+            IdType id = new IdType(1);
             float rm = 10, rm7 = 7;
             float rpe = 9.5f;
             uint pNum = 0;
@@ -291,7 +299,7 @@ namespace GymProject.Domain.Test.UnitTest
             WSRepetitionValue reps7 = WSRepetitionValue.TrackRepetitionSerie((uint)rm7);
 
             // WS
-            WorkingSetTemplate reps = WorkingSetTemplate.AddWorkingSet(pNum, reps10, rest: rest, effort: effort1, tempo: tut,
+            WorkingSetTemplate reps = WorkingSetTemplate.AddWorkingSet(id, pNum, reps10, rest: rest, effort: effort1, tempo: tut,
                 intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(100), });
 
             Assert.Equal(pNum, reps.ProgressiveNumber);
@@ -354,70 +362,76 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void WorkUnitCreateFail()
         {
+            IdType wsId = new IdType(1);
+            IdType wuId = new IdType(1);
+
             List<WorkingSetTemplate> fake1 = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(2, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 2, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
             };
 
             List<WorkingSetTemplate> fake2 = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(4, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 4, WSRepetitionValue.TrackRepetitionSerie(10)),
             };
 
             List<WorkingSetTemplate> fake3 = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(2, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 2, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(10)),
             };
 
             List<WorkingSetTemplate> fake4 = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
             };
 
             List<WorkingSetTemplate> fake5 = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(2, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 2, WSRepetitionValue.TrackRepetitionSerie(10)),
             };
 
             List<WorkingSetTemplate> fake6 = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(2, WSRepetitionValue.TrackRepetitionSerie(10)),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 2, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(10)),
                 null,
             };
 
             List<WorkingSetTemplate> valid = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(10)),
             };
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), null));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), new List<WorkingSetTemplate>()));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), fake1));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), fake2));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), fake3));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), fake4));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), fake5));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(1), fake6));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(0, null, valid));
-            Assert.Throws<ArgumentException>(() => WorkUnitTemplate.PlanWorkUnit(0, new IdType(0), valid));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), null));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), new List<WorkingSetTemplate>()));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), fake1));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), fake2));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), fake3));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), fake4));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), fake5));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(1), fake6));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, null, valid));
+            Assert.Throws<ArgumentException>(() => WorkUnitTemplate.PlanWorkUnit(wuId, 0, new IdType(0), valid));
         }
 
 
         [Fact]
         public void WorkUnitCreate()
         {
+            IdType wsId = new IdType(1);
+            IdType wuId = new IdType(1);
+
             uint reps10 = 10, reps8 = 8, reps6 = 6;
             uint progn1 = 0, progn2 = 1;
 
@@ -433,29 +447,29 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             List<WorkingSetTemplate> wsFull = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(reps10),rest, effort, tut9),
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(reps10),rest, effort, tut9),
-                WorkingSetTemplate.AddWorkingSet(2, WSRepetitionValue.TrackRepetitionSerie(reps10), rest, effort, tut9),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(reps8), rest, effort, tut4),
-                WorkingSetTemplate.AddWorkingSet(4, WSRepetitionValue.TrackRepetitionSerie(reps8), rest, effort, tut4),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(reps10),rest, effort, tut9),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(reps10),rest, effort, tut9),
+                WorkingSetTemplate.AddWorkingSet(wsId, 2, WSRepetitionValue.TrackRepetitionSerie(reps10), rest, effort, tut9),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(reps8), rest, effort, tut4),
+                WorkingSetTemplate.AddWorkingSet(wsId, 4, WSRepetitionValue.TrackRepetitionSerie(reps8), rest, effort, tut4),
             };
 
             List<WorkingSetTemplate> wsShuffled = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(1, WSRepetitionValue.TrackRepetitionSerie(reps10), fullRest),
-                WorkingSetTemplate.AddWorkingSet(3, WSRepetitionValue.TrackRepetitionSerie(reps10), fullRest),
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(reps10), fullRest),
-                WorkingSetTemplate.AddWorkingSet(2, WSRepetitionValue.TrackRepetitionSerie(reps10)),
+                WorkingSetTemplate.AddWorkingSet(wsId, 1, WSRepetitionValue.TrackRepetitionSerie(reps10), fullRest),
+                WorkingSetTemplate.AddWorkingSet(wsId, 3, WSRepetitionValue.TrackRepetitionSerie(reps10), fullRest),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(reps10), fullRest),
+                WorkingSetTemplate.AddWorkingSet(wsId, 2, WSRepetitionValue.TrackRepetitionSerie(reps10)),
             };
 
             List<WorkingSetTemplate> oneWs = new List<WorkingSetTemplate>(){
-                WorkingSetTemplate.AddWorkingSet(0, WSRepetitionValue.TrackRepetitionSerie(reps6), effort: effort2),
+                WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(reps6), effort: effort2),
             };
 
-            PersonalNoteValue note = PersonalNoteValue.Write("My Note.");
+            IdType noteId = new IdType(11);
 
-            WorkUnitTemplate wu1 = WorkUnitTemplate.PlanWorkUnit(progn1, excerciseId, wsFull, note);
-            WorkUnitTemplate wu2 = WorkUnitTemplate.PlanWorkUnit(progn2, excerciseId2, wsShuffled);
-            WorkUnitTemplate wu3 = WorkUnitTemplate.PlanWorkUnit(progn1, excerciseId, oneWs);
+            WorkUnitTemplate wu1 = WorkUnitTemplate.PlanWorkUnit(wuId, progn1, excerciseId, wsFull, noteId);
+            WorkUnitTemplate wu2 = WorkUnitTemplate.PlanWorkUnit(wuId, progn2, excerciseId2, wsShuffled);
+            WorkUnitTemplate wu3 = WorkUnitTemplate.PlanWorkUnit(wuId, progn1, excerciseId, oneWs);
 
             Assert.Equal(excerciseId, wu1.ExcerciseId);
             Assert.Equal(excerciseId2, wu2.ExcerciseId);
@@ -469,9 +483,9 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(wsShuffled.Count, wu2.WorkingSets.Count);
             Assert.Equal(oneWs.Count, wu3.WorkingSets.Count);
 
-            Assert.Equal(note, wu1.OwnerNote);
-            Assert.Null(wu2.OwnerNote);
-            Assert.Null(wu3.OwnerNote);
+            Assert.Equal(noteId, wu1.OwnerNoteId);
+            Assert.Null(wu2.OwnerNoteId);
+            Assert.Null(wu3.OwnerNoteId);
 
             // Volume check
             TrainingVolumeParametersValue vol1 = TrainingVolumeParametersValue.SetTrainingVolume(3 * reps10 + 2 * reps8, (uint)wsFull.Count, null);
@@ -496,67 +510,528 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(dens2, wu2.TrainingDensity);
             Assert.Equal(dens3, wu3.TrainingDensity);
 
-            throw new NotImplementedException();
+            // Intensity Check [%]
+            TrainingEffortValue intEffort1 = TrainingEffortValue.AsIntensityPerc((71 + 71 + 71 + 71 + 71) / 5);
+            TrainingEffortValue intEffort2 = TrainingEffortValue.DefaultEffort.ToIntensityPercentage(
+                WSRepetitionValue.TrackRepetitionSerie((uint)wu2.TrainingVolume.GetAverageRepetitions()));
 
-            //// Intensity Check [%]
-            //TrainingEffortValue intEffort1 = TrainingEffortValue.AsIntensityPerc((71 + 71 + 71 + 71 + 71) / 5);
-            //TrainingEffortValue intEffort2 = TrainingEffortValue.DefaultEffort.ToIntensityPercentage(
-            //    WSRepetitionValue.TrackRepetitionSerie((uint)wu2.TrainingVolume.GetAverageRepetitions()));
+            TrainingEffortValue intEffort3 = TrainingEffortValue.AsIntensityPerc(79);
 
-            //TrainingEffortValue intEffort3 = TrainingEffortValue.AsIntensityPerc(79);
+            StaticUtils.CheckConversions(intEffort1.Value, wu1.TrainingIntensity.AverageIntensity.ToIntensityPercentage().Value);
+            StaticUtils.CheckConversions(intEffort3.Value, wu3.TrainingIntensity.AverageIntensity.ToIntensityPercentage().Value);
+            StaticUtils.CheckConversions(intEffort2.Value, wu2.TrainingIntensity.AverageIntensity
+                .ToIntensityPercentage(WSRepetitionValue.TrackRepetitionSerie((uint)wu2.TrainingVolume.GetAverageRepetitions())).Value);       // RPE
 
-            //TrainingIntensityParametersValue int1 = TrainingIntensityParametersValue.SetTrainingIntensity(intEffort1, wsFull.Count);
-            //TrainingIntensityParametersValue int2 = TrainingIntensityParametersValue.SetTrainingIntensity(intEffort2, wsShuffled.Count);
-            //TrainingIntensityParametersValue int3 = TrainingIntensityParametersValue.SetTrainingIntensity(intEffort3, oneWs.Count);
-
-            //StaticUtils.CheckConversions(int1.AverageIntensity.Value, wu1.TrainingIntensity.AverageIntensity.Value);
-            //StaticUtils.CheckConversions(int2.AverageIntensity.Value, wu2.TrainingIntensity.AverageIntensity.Value);
-            //StaticUtils.CheckConversions(int3.AverageIntensity.Value, wu3.TrainingIntensity.AverageIntensity.Value);
 
             //// Intensity Check [RM]
-            //TrainingEffortValue rmEffort1 = TrainingEffortValue.AsRM((5* effort.Value) / 5);
+            //TrainingEffortValue rmEffort1 = TrainingEffortValue.AsRM((5 * effort.Value) / 5);
             //TrainingEffortValue rmEffort2 = TrainingEffortValue.DefaultEffort.ToRm(
             //    WSRepetitionValue.TrackRepetitionSerie((uint)wu2.TrainingVolume.GetAverageRepetitions()));
             //TrainingEffortValue rmEffort3 = TrainingEffortValue.AsRM(effort2.Value);
 
-            //TrainingIntensityParametersValue rm1 = TrainingIntensityParametersValue.SetTrainingIntensity(rmEffort1, wsFull.Count);
-            //TrainingIntensityParametersValue rm2 = TrainingIntensityParametersValue.SetTrainingIntensity(rmEffort2, wsShuffled.Count);
-            //TrainingIntensityParametersValue rm3 = TrainingIntensityParametersValue.SetTrainingIntensity(rmEffort3, oneWs.Count);
 
-            //Assert.Equal(rm1.AverageIntensity, wu1.TrainingIntensity.AverageIntensity.ToRm());
-            //Assert.Equal(rm2.AverageIntensity, wu2.TrainingIntensity.AverageIntensity.ToRm());
-            //Assert.Equal(rm3.AverageIntensity, wu3.TrainingIntensity.AverageIntensity.ToRm());
+            //Assert.Equal(rmEffort1, wu1.TrainingIntensity.AverageIntensity);
+            //Assert.Equal(rmEffort2, wu2.TrainingIntensity.AverageIntensity);
+            //Assert.Equal(rmEffort3, wu3.TrainingIntensity.AverageIntensity);
 
             //// Intensity Check [RPE]
             //TrainingEffortValue rpeffort1 = TrainingEffortValue.AsRPE((8 + 8 + 8 + 6 + 6) / 5);
             //TrainingEffortValue rpeffort2 = TrainingEffortValue.DefaultEffort;
             //TrainingEffortValue rpeffort3 = TrainingEffortValue.AsRPE(8);
 
-            //TrainingIntensityParametersValue rpe1 = TrainingIntensityParametersValue.SetTrainingIntensity(rpeffort1, wsFull.Count);
-            //TrainingIntensityParametersValue rpe2 = TrainingIntensityParametersValue.SetTrainingIntensity(rpeffort2, wsShuffled.Count);
-            //TrainingIntensityParametersValue rpe3 = TrainingIntensityParametersValue.SetTrainingIntensity(rpeffort3, oneWs.Count);
-
-            //Assert.Equal(rpe1.AverageIntensity, wu1.TrainingIntensity.AverageIntensity.ToRPE(WSRepetitionValue.TrackRepetitionSerie((uint)wu1.TrainingVolume.GetAverageRepetitions())));
-            //Assert.Equal(rpe2.AverageIntensity, wu2.TrainingIntensity.AverageIntensity.ToRPE(WSRepetitionValue.TrackRepetitionSerie((uint)wu2.TrainingVolume.GetAverageRepetitions())));
-            //Assert.Equal(rpe3.AverageIntensity, wu3.TrainingIntensity.AverageIntensity.ToRPE(WSRepetitionValue.TrackRepetitionSerie((uint)wu3.TrainingVolume.GetAverageRepetitions())));
+            //Assert.Equal(rpeffort1, wu1.TrainingIntensity.AverageIntensity.ToRPE(WSRepetitionValue.TrackRepetitionSerie((uint)wu1.TrainingVolume.GetAverageRepetitions())));
+            //Assert.Equal(rpeffort2, wu2.TrainingIntensity.AverageIntensity.ToRPE(WSRepetitionValue.TrackRepetitionSerie((uint)wu2.TrainingVolume.GetAverageRepetitions())));
+            //Assert.Equal(rpeffort3, wu3.TrainingIntensity.AverageIntensity.ToRPE(WSRepetitionValue.TrackRepetitionSerie((uint)wu3.TrainingVolume.GetAverageRepetitions())));
         }
 
 
         [Fact]
-        public void WorkUnitChange()
+        public void WorkUnitRepetitionsFullTest()
         {
-            uint reps10 = 10, reps8 = 8;
+            int ntests = 1000;      // Number of tests
 
-            IdType excerciseId = new IdType(19);
-            RestPeriodValue rest = RestPeriodValue.SetRestSeconds(45);
-            TrainingEffortValue effort = TrainingEffortValue.AsRM(12);
-            TUTValue tut9 = TUTValue.PlanTUT("3030");
-            TUTValue tut4 = TUTValue.PlanTUT("1030");
+            int wsMin = 2;
+            int wsMax = 7;
+            int repsMax = 20;
+            int repsMin = 1;
+            int restMin = 11;
+            int restMax = 500;
+            int wsToRemoveNum = 2;
 
-            IdType excercise = new IdType(10);
-            IdType newExcercise = new IdType(1);
+            float intPercMin = 0.5f, intePercMax = 1f;
+            float rmMin = 1f, rmMax = 20f;
+            float rpeMin = 3f, rpeMax = 11f;
+            float effortMin, effortMax;
 
-            throw new NotImplementedException();
+            int noteMin = 10, noteMax = 10000;
+            int excerciseMin = 1, excerciseMax = 100;
+
+            float amrapProbability = 0.1f;   // Probability that an AMRAP set is created
+
+            // TUTs to choose from
+            List<TUTValue> tuts = new List<TUTValue>()
+            {
+                TUTValue.PlanTUT("1010"),
+                TUTValue.PlanTUT("3030"),
+                TUTValue.PlanTUT("5151"),
+                TUTValue.SetGenericTUT(),
+            };
+
+            IdType wuId = new IdType(1);
+            WorkUnitTemplate wu = null;
+            TrainingEffortTypeEnum effortType;
+
+            for (int itest = 0; itest < ntests; itest++)
+            {
+                TrainingEffortValue avgEffort;
+
+                // Generate random parameters
+                int iwsMax = RandomFieldGenerator.RandomInt(wsMin, wsMax);
+
+                IdType excercise = new IdType(RandomFieldGenerator.RandomInt(excerciseMin, excerciseMax));
+
+                if (itest % 2 == 0)
+                {
+                    effortType = TrainingEffortTypeEnum.IntensityPerc;
+                    effortMin = intPercMin;
+                    effortMax = intePercMax;
+                }
+
+                else if (itest % 3 == 0)
+                {
+                    effortType = TrainingEffortTypeEnum.RM;
+                    effortMin = rmMin;
+                    effortMax = rmMax;
+                }
+
+                else
+                {
+                    effortType = TrainingEffortTypeEnum.RPE;
+                    effortMin = rpeMin;
+                    effortMax = rpeMax;
+                }
+
+                if (effortType == TrainingEffortTypeEnum.RM)
+                    avgEffort = TrainingEffortValue.AsRM(1);
+
+                else if (effortType == TrainingEffortTypeEnum.RPE)
+                    avgEffort = TrainingEffortValue.AsRPE(1);
+
+                else
+                    avgEffort = TrainingEffortValue.AsIntensityPerc(1);
+
+                List<WorkingSetTemplate> ws = new List<WorkingSetTemplate>();
+                RestPeriodValue rest = RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax));
+                TUTValue tut = tuts[RandomFieldGenerator.RandomInt(0, tuts.Count - 1)];
+                IdType noteId = new IdType(RandomFieldGenerator.RandomInt(noteMin, noteMax));
+
+                int totalReps = 0;
+                int totalRest = 0;
+                int totalTempo = 0;
+
+                for (int iws = 0; iws < iwsMax; iws++)
+                {
+                    // New WS
+                    WorkingSetTemplate newWs = BuildRandomWs(iws + 1, iws, repsMin, repsMax, true, amrapProbability, restMin, restMax, effortType, effortMin, effortMax, tuts);
+                    ws.Add(newWs);
+
+                    // Build the WU
+                    if(iws == 0)
+                        wu = WorkUnitTemplate.PlanWorkUnit(wuId, 0, excercise, ws, noteId);
+
+                    else
+                        wu.AddWorkingSet(newWs.Repetitions, newWs.Rest, newWs.Effort, newWs.Tempo, new List<IdType>(newWs.IntensityTechniqueIds));
+
+
+                    totalReps += newWs.ToRepetitions();
+                    totalRest += newWs.Rest.Value;
+                    totalTempo += newWs.Tempo.ToSeconds() * newWs.ToRepetitions();
+
+                    CheckWorkUnitSets(wu, ws, effortType, totalReps, totalRest, totalTempo);  // Asserts
+                }
+
+                // Check WU 
+                Assert.Equal(iwsMax, wu.WorkingSets.Count);
+                Assert.Equal(noteId, wu.OwnerNoteId);
+                Assert.Equal(excercise, wu.ExcerciseId);
+
+                // Change the WU
+                excercise = new IdType(RandomFieldGenerator.RandomInt(excerciseMin, excerciseMax));
+                noteId = new IdType(RandomFieldGenerator.RandomInt(noteMin, noteMax));
+                wu.AssignNote(noteId);
+                wu.AssignExcercise(excercise);
+
+                // Check changes
+                Assert.Equal(noteId, wu.OwnerNoteId);
+                Assert.Equal(excercise, wu.ExcerciseId);
+                wu.RemoveNote();
+                Assert.Null(wu.OwnerNoteId);
+
+                // Remove WSs
+                IList<int> idsRemoved = new List<int>();
+                IEnumerable<WorkingSetTemplate> wsLeft = new List<WorkingSetTemplate>();
+
+                for (int iws = 0; iws < wsToRemoveNum; iws++)
+                {
+                    int idNum = RandomFieldGenerator.RandomIntValueExcluded(1, iwsMax, idsRemoved);
+                    idsRemoved.Add(idNum);
+
+                    WorkingSetTemplate removed = ws.Where(x => x.Id == idNum).FirstOrDefault();
+
+                    // No WS in the WU -> Business Rule violated
+                    if (idsRemoved.OrderBy(x => x).SequenceEqual(ws.Select(x => (int)x.Id.Id)))
+                        Assert.Throws<TrainingDomainInvariantViolationException>(() => wu.RemoveWorkingSet(new IdType(idNum)));
+                    else
+                    {
+                        wu.RemoveWorkingSet(new IdType(idNum));
+
+                        Assert.Equal(ws.Count - iws - 1, wu.WorkingSets.Count);
+                        Assert.DoesNotContain(removed, wu.WorkingSets);
+
+                        IEnumerable<WorkingSetTemplate> wsRemoved = ws.Where(x => idsRemoved.Contains((int)x.Id.Id));
+                        wsLeft = ws.Where(x => !idsRemoved.Contains((int)x.Id.Id));
+
+                        int repsLeft = totalReps - wsRemoved.Sum(x => x.ToRepetitions());
+                        int restLeft = totalRest - wsRemoved.Sum(x => x.Rest.Value);
+                        int tempoLeft = totalTempo - wsRemoved.Sum(x => x.Tempo.ToSeconds() * x.ToRepetitions());
+
+                        CheckWorkUnitSets(wu, wsLeft, effortType, repsLeft, restLeft, tempoLeft, false);  // Asserts
+                    }
+                }
+
+                // Update with the real values -> progressive numbers are different!
+                wsLeft = wu.WorkingSets;
+
+                // Change WSs
+                if(wsLeft.Count() > 0)
+                {
+                    foreach(WorkingSetTemplate toChange in wsLeft)
+                    {
+                        WSRepetitionValue newReps = WSRepetitionValue.TrackRepetitionSerie(
+                            (uint)RandomFieldGenerator.RandomIntValueExcluded(repsMin,  repsMax, toChange.Repetitions.Value));
+
+                        RestPeriodValue newRest = RestPeriodValue.SetRestSeconds
+                            ((uint)RandomFieldGenerator.RandomIntValueExcluded(restMin, restMax, toChange.Rest.Value));
+
+                        TUTValue newTempo = tuts[RandomFieldGenerator.RandomInt(0, tuts.Count - 1)];
+
+                        // Covnert to RM no matter what the original effort
+                        TrainingEffortValue newEffort = TrainingEffortValue.AsRM(toChange.Effort.ToRm(toChange.Repetitions).Value + 1);
+
+                        wu.ChangeWorkingSetRepetitions(toChange.Id, newReps);
+                        wu.ChangeWorkingSetRestPeriod(toChange.Id, newRest);
+                        wu.ChangeWorkingSetLiftingTempo(toChange.Id, newTempo);
+                        wu.ChangeWorkingSetEffort(toChange.Id, newEffort);
+
+                        Assert.Equal(newReps, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Repetitions);
+                        Assert.Equal(newRest, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Rest);
+                        Assert.Equal(newTempo, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Tempo);
+                        Assert.Equal(newEffort, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Effort);
+                    }
+                }
+            }
         }
+
+
+        [Fact]
+        public void WorkUnitTimedSerieFullTest()
+        {
+            int ntests = 1000;      // Number of tests
+
+            int wsMin = 2;
+            int wsMax = 7;
+            int repsMax = 20;
+            int repsMin = 1;
+            int restMin = 11;
+            int restMax = 500;
+            int wsToRemoveNum = 2;
+
+            float intPercMin = 0.5f, intePercMax = 1f;
+            float rmMin = 1f, rmMax = 20f;
+            float rpeMin = 3f, rpeMax = 11f;
+            float effortMin, effortMax;
+
+            int noteMin = 10, noteMax = 10000;
+            int excerciseMin = 1, excerciseMax = 100;
+
+            // TUTs to choose from
+            List<TUTValue> tuts = new List<TUTValue>()
+            {
+                TUTValue.PlanTUT("1010"),
+                TUTValue.PlanTUT("3030"),
+                TUTValue.PlanTUT("5151"),
+                TUTValue.SetGenericTUT(),
+            };
+
+            IdType wuId = new IdType(1);
+            WorkUnitTemplate wu = null;
+            TrainingEffortTypeEnum effortType;
+
+            for (int itest = 0; itest < ntests; itest++)
+            {
+                TrainingEffortValue avgEffort;
+
+                // Generate random parameters
+                int iwsMax = RandomFieldGenerator.RandomInt(wsMin, wsMax);
+
+                IdType excercise = new IdType(RandomFieldGenerator.RandomInt(excerciseMin, excerciseMax));
+
+                if (itest % 2 == 0)
+                {
+                    effortType = TrainingEffortTypeEnum.IntensityPerc;
+                    effortMin = intPercMin;
+                    effortMax = intePercMax;
+                }
+
+                else if (itest % 3 == 0)
+                {
+                    effortType = TrainingEffortTypeEnum.RM;
+                    effortMin = rmMin;
+                    effortMax = rmMax;
+                }
+
+                else
+                {
+                    effortType = TrainingEffortTypeEnum.RPE;
+                    effortMin = rpeMin;
+                    effortMax = rpeMax;
+                }
+
+                if (effortType == TrainingEffortTypeEnum.RM)
+                    avgEffort = TrainingEffortValue.AsRM(1);
+
+                else if (effortType == TrainingEffortTypeEnum.RPE)
+                    avgEffort = TrainingEffortValue.AsRPE(1);
+
+                else
+                    avgEffort = TrainingEffortValue.AsIntensityPerc(1);
+
+                List<WorkingSetTemplate> ws = new List<WorkingSetTemplate>();
+                RestPeriodValue rest = RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax));
+                TUTValue tut = tuts[RandomFieldGenerator.RandomInt(0, tuts.Count - 1)];
+                IdType noteId = new IdType(RandomFieldGenerator.RandomInt(noteMin, noteMax));
+
+                int totalReps = 0;
+                int totalRest = 0;
+                int totalTempo = 0;
+
+                for (int iws = 0; iws < iwsMax; iws++)
+                {
+                    // New WS
+                    WorkingSetTemplate newWs = BuildRandomWs(iws + 1, iws, repsMin, repsMax, false, 0f, restMin, restMax, effortType, effortMin, effortMax, tuts);
+                    ws.Add(newWs);
+
+                    // Build the WU
+                    if (iws == 0)
+                        wu = WorkUnitTemplate.PlanWorkUnit(wuId, 0, excercise, ws, noteId);
+
+                    else
+                        wu.AddWorkingSet(newWs.Repetitions, newWs.Rest, newWs.Effort, newWs.Tempo, new List<IdType>(newWs.IntensityTechniqueIds));
+
+
+                    totalReps += newWs.ToRepetitions();
+                    totalRest += newWs.Rest.Value;
+                    totalTempo += newWs.ToSecondsUnderTension();
+
+                    CheckWorkUnitSets(wu, ws, effortType, totalReps, totalRest, totalTempo);  // Asserts
+                }
+
+                // Check WU 
+                Assert.Equal(iwsMax, wu.WorkingSets.Count);
+                Assert.Equal(noteId, wu.OwnerNoteId);
+                Assert.Equal(excercise, wu.ExcerciseId);
+
+                // Change the WU
+                excercise = new IdType(RandomFieldGenerator.RandomInt(excerciseMin, excerciseMax));
+                noteId = noteId = new IdType(RandomFieldGenerator.RandomInt(noteMin, noteMax));
+
+                wu.AssignNote(noteId);
+                wu.AssignExcercise(excercise);
+
+                // Check changes
+                Assert.Equal(noteId, wu.OwnerNoteId);
+                Assert.Equal(excercise, wu.ExcerciseId);
+
+                // Remove WSs
+                IList<int> idsRemoved = new List<int>();
+                IEnumerable<WorkingSetTemplate> wsLeft = new List<WorkingSetTemplate>();
+
+                for (int iws = 0; iws < wsToRemoveNum; iws++)
+                {
+                    int idNum = RandomFieldGenerator.RandomIntValueExcluded(1, iwsMax, idsRemoved);
+                    idsRemoved.Add(idNum);
+
+                    WorkingSetTemplate removed = ws.Where(x => x.Id == idNum).FirstOrDefault();
+
+                    // No WS in the WU -> Business Rule violated
+                    if (idsRemoved.OrderBy(x => x).SequenceEqual(ws.Select(x => (int)x.Id.Id)))
+                        ;
+                    //Assert.Throws<TrainingDomainInvariantViolationException>(() => wu.RemoveWorkingSet(new IdType(idNum)));
+                    else
+                    {
+                        wu.RemoveWorkingSet(new IdType(idNum));
+
+                        Assert.Equal(ws.Count - iws - 1, wu.WorkingSets.Count);
+                        Assert.DoesNotContain(removed, wu.WorkingSets);
+
+                        IEnumerable<WorkingSetTemplate> wsRemoved = ws.Where(x => idsRemoved.Contains((int)x.Id.Id));
+                        wsLeft = ws.Where(x => !idsRemoved.Contains((int)x.Id.Id));
+
+                        int repsLeft = totalReps - wsRemoved.Sum(x => x.ToRepetitions());
+                        int restLeft = totalRest - wsRemoved.Sum(x => x.Rest.Value);
+                        int tempoLeft = totalTempo - wsRemoved.Sum(x => x.ToSecondsUnderTension());
+
+                        CheckWorkUnitSets(wu, wsLeft, effortType, repsLeft, restLeft, tempoLeft, false);  // Asserts
+                    }
+                }
+
+                // Update with the real values -> progressive numbers are different!
+                wsLeft = wu.WorkingSets;
+
+                // Change WSs
+                if (wsLeft.Count() > 0)
+                {
+                    foreach (WorkingSetTemplate toChange in wsLeft)
+                    {
+                        WSRepetitionValue newReps = WSRepetitionValue.TrackRepetitionSerie(
+                            (uint)RandomFieldGenerator.RandomIntValueExcluded(repsMin, repsMax, toChange.Repetitions.Value));
+
+                        RestPeriodValue newRest = RestPeriodValue.SetRestSeconds
+                            ((uint)RandomFieldGenerator.RandomIntValueExcluded(restMin, restMax, toChange.Rest.Value));
+
+                        TUTValue newTempo = tuts[RandomFieldGenerator.RandomInt(0, tuts.Count - 1)];
+
+                        // Covnert to RM no matter what the original effort
+                        TrainingEffortValue newEffort = TrainingEffortValue.AsRM(toChange.Effort.ToRm(toChange.Repetitions).Value + 1);
+
+                        wu.ChangeWorkingSetRepetitions(toChange.Id, newReps);
+                        wu.ChangeWorkingSetRestPeriod(toChange.Id, newRest);
+                        wu.ChangeWorkingSetLiftingTempo(toChange.Id, newTempo);
+                        wu.ChangeWorkingSetEffort(toChange.Id, newEffort);
+
+                        Assert.Equal(newReps, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Repetitions);
+                        Assert.Equal(newRest, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Rest);
+                        Assert.Equal(newTempo, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Tempo);
+                        Assert.Equal(newEffort, wu.FindWorkingSetByProgressiveNumber((int)toChange.ProgressiveNumber).Effort);
+                    }
+                }
+            }
         }
+
+
+
+
+
+
+        private static void CheckWorkUnitSets(WorkUnitTemplate wu, IEnumerable<WorkingSetTemplate> ws, TrainingEffortTypeEnum effortType,
+            int totalReps, int totalRest, int totalTempo, bool wsFullCheck = true)
+        {
+            TrainingEffortValue avgEffort;
+            int totalWs = ws.Count();
+
+            if (effortType == TrainingEffortTypeEnum.RM)
+                avgEffort = TrainingEffortValue.AsRM(ws.Average(x => x.Effort.Value));
+
+            else if (effortType == TrainingEffortTypeEnum.RPE)
+                avgEffort = TrainingEffortValue.AsRPE(ws.Average(x => x.Effort.Value));
+
+            else
+                avgEffort = TrainingEffortValue.AsIntensityPerc(ws.Average(x => x.Effort.Value));
+
+            // Generic Fields
+            foreach(WorkingSetTemplate wsCheck in ws)
+            {
+                Assert.Contains(wsCheck, wu.WorkingSets);
+
+                if(wsFullCheck)
+                {
+                    Assert.Equal(wsCheck.Repetitions, wu.FindWorkingSetByProgressiveNumber((int)wsCheck.ProgressiveNumber).Repetitions);
+                    Assert.Equal(wsCheck.Rest, wu.FindWorkingSetByProgressiveNumber((int)wsCheck.ProgressiveNumber).Rest);
+                    Assert.Equal(wsCheck.Tempo, wu.FindWorkingSetByProgressiveNumber((int)wsCheck.ProgressiveNumber).Tempo);
+                    Assert.Equal(wsCheck.Effort, wu.FindWorkingSetByProgressiveNumber((int)wsCheck.ProgressiveNumber).Effort);
+                    Assert.Equal(wsCheck.IntensityTechniqueIds, wu.FindWorkingSetByProgressiveNumber((int)wsCheck.ProgressiveNumber).IntensityTechniqueIds);
+
+                    Assert.Equal(wsCheck.Repetitions, wu.FindWorkingSetById(new IdType(wsCheck.Id.Id)).Repetitions);
+                    Assert.Equal(wsCheck.Rest, wu.FindWorkingSetById(new IdType(wsCheck.Id.Id)).Rest);
+                    Assert.Equal(wsCheck.Tempo, wu.FindWorkingSetById(new IdType(wsCheck.Id.Id)).Tempo);
+                    Assert.Equal(wsCheck.Effort, wu.FindWorkingSetById(new IdType(wsCheck.Id.Id)).Effort);
+                    Assert.Equal(wsCheck.IntensityTechniqueIds, wu.FindWorkingSetById(new IdType(wsCheck.Id.Id)).IntensityTechniqueIds);
+                }
+            }
+
+
+            // Check Volume
+            Assert.Equal(totalReps, wu.TrainingVolume.TotalReps);
+            Assert.Equal(totalWs, wu.TrainingVolume.TotalWorkingSets);
+            Assert.Equal(0, wu.TrainingVolume.TotalWorkload.Value);
+            Assert.Equal((float)totalReps / (float)totalWs, wu.TrainingVolume.GetAverageRepetitions(), 1);
+            Assert.Equal(0, wu.TrainingVolume.GetAverageWorkloadPerSet().Value);
+
+            // Check Density
+            Assert.Equal(totalRest, wu.TrainingDensity.TotalRest);
+            Assert.Equal(totalTempo, wu.TrainingDensity.TotalSecondsUnderTension);
+            Assert.Equal((float)totalRest / (float)totalWs, wu.TrainingDensity.GetAverageRest(), 1);
+            Assert.Equal((float)totalTempo / (float)totalWs, wu.TrainingDensity.GetAverageSecondsUnderTension(), 1);
+
+            // Check Intensity
+            if(ws.All(x => !x.IsAMRAP()) || !avgEffort.IsRPE())     // AMRAP with RPE effort, can't be managed!
+                StaticUtils.CheckConversions(avgEffort.Value, wu.TrainingIntensity.AverageIntensity.Value, tolerance: 0.03f);
+        }
+
+
+
+        private static WorkingSetTemplate BuildRandomWs(int id, int progn, int repsMin, int repsMax, bool repetitionsSerie, float amrapProbability, int restMin, int restMax, 
+            TrainingEffortTypeEnum effortType, float effortMin, float effortMax, IList<TUTValue> tutToChooseAmong = null, IList<IdType> techniquesId = null)
+        {
+            TrainingEffortValue effort;
+            WSRepetitionValue serie;
+
+            switch (effortType)
+            {
+                case var _ when effortType == TrainingEffortTypeEnum.IntensityPerc:
+
+                    effort = TrainingEffortValue.AsIntensityPerc(RandomFieldGenerator.RandomFloat(effortMin, effortMax));
+                    break;
+
+                case var _ when effortType == TrainingEffortTypeEnum.RM:
+
+                    effort = TrainingEffortValue.AsRM(RandomFieldGenerator.RandomFloat(effortMin, effortMax));
+                    break;
+
+                case var _ when effortType == TrainingEffortTypeEnum.RPE:
+
+                    effort = TrainingEffortValue.AsRPE((float)CommonUtilities.RoundToPointFive(RandomFieldGenerator.RandomFloat(effortMin, effortMax)));
+                    break;
+
+                default:
+
+                    effort = null;
+                    break;
+            }
+
+            if (repetitionsSerie)
+            {
+                if (RandomFieldGenerator.RandomDouble(0, 1) < amrapProbability)
+                {
+                    serie = WSRepetitionValue.TrackAMRAP();
+                    effort =  effortType == TrainingEffortTypeEnum.RPE ? TrainingEffortValue.AsRM(10) : effort; // Couldn't resolve this
+                    //effort = effortType == TrainingEffortTypeEnum.IntensityPerc ? effort.ToIntensityPercentage(serie) : effort.ToRm(serie);
+                }
+                else
+                    serie = WSRepetitionValue.TrackRepetitionSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
+            }
+            else
+                serie = WSRepetitionValue.TrackTimedSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
+
+            return WorkingSetTemplate.AddWorkingSet(
+                new IdType(id),
+                (uint)progn,
+                serie,
+                RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax)),
+                effort,
+                tutToChooseAmong[RandomFieldGenerator.RandomInt(0, tutToChooseAmong.Count - 1)],
+                techniquesId
+            );
+        }
+    }
 }

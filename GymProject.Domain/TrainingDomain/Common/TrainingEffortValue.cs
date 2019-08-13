@@ -172,7 +172,8 @@ namespace GymProject.Domain.TrainingDomain.Common
 
                 case var _ when effortType == TrainingEffortTypeEnum.RPE:
 
-                    return (float)CommonUtilities.RoundToPointFive(value);
+                    //return (float)CommonUtilities.RoundToPointFive(value);
+                    return (float)Math.Round(value, 1);
 
                 default:
 
@@ -230,12 +231,12 @@ namespace GymProject.Domain.TrainingDomain.Common
             // From Intenisty Percentage
             if (EffortType == TrainingEffortTypeEnum.IntensityPerc)
             {
-                float input = Math.Min(Value, TrainingEffortTypeEnum.OneRMIntensityPercentage);
+                float saturatedInput = Math.Min(Value, TrainingEffortTypeEnum.OneRMIntensityPercentage);   // Truncate to 100%
 
                 double estimatedVal = 
-                    (324.206809067032 - 18.0137586362208 * input + 0.722425494099458 * Math.Pow(input, 2) - 0.018674659779516 * Math.Pow(input, 3) 
-                    + 0.00025787003728422 * Math.Pow(input, 4) - 1.65095582844966E-06 * Math.Pow(input, 5) + 2.75225269851 * Math.Pow(10, -9) * Math.Pow(input, 6) 
-                    + 8.99097867 * Math.Pow(10, -12) * Math.Pow(input, 7));
+                    (324.206809067032 - 18.0137586362208 * saturatedInput + 0.722425494099458 * Math.Pow(saturatedInput, 2) - 0.018674659779516 * Math.Pow(saturatedInput, 3) 
+                    + 0.00025787003728422 * Math.Pow(saturatedInput, 4) - 1.65095582844966E-06 * Math.Pow(saturatedInput, 5) + 2.75225269851 * Math.Pow(10, -9) * Math.Pow(saturatedInput, 6) 
+                    + 8.99097867 * Math.Pow(10, -12) * Math.Pow(saturatedInput, 7));
 
                 return AsRM((int)Math.Round(estimatedVal));
             }
@@ -243,13 +244,20 @@ namespace GymProject.Domain.TrainingDomain.Common
             // From RPE
             if (EffortType == TrainingEffortTypeEnum.RPE)
             {
+                float saturatedInput;
+
+                if (targetReps.Value == 1)
+                    saturatedInput = Math.Min(Value, TrainingEffortTypeEnum.AMRAPAsRPE);   // Cannot do more than 1RM -> Truncate to 10RPE
+                else
+                    saturatedInput = Value;
+
                 if (targetReps == null || !targetReps.IsValueSpecified())
                     throw new ArgumentException($"Invalid repetions when converting from RPE.", nameof(targetReps));
 
                 if (targetReps.IsAMRAP())
                     throw new ArgumentException($"Cannot convert from RPE when the reps are AMRAP.", nameof(targetReps));
                 else
-                    return AsRM((int)(targetReps.Value + (TrainingEffortTypeEnum.AMRAPAsRPE - Value)));    // Truncate
+                    return AsRM((int)(targetReps.Value + (TrainingEffortTypeEnum.AMRAPAsRPE - saturatedInput)));    // Truncate
             }
 
             // From RM
@@ -274,6 +282,8 @@ namespace GymProject.Domain.TrainingDomain.Common
             // From RPE
             if (EffortType == TrainingEffortTypeEnum.RPE)
             {
+                //float saturatedInput = Math.Min(Value, TrainingEffortTypeEnum.AMRAPAsRPE);   // Truncate to 10RPE
+                float saturatedInput =  Value;
 
                 if (targetReps == null || !targetReps.IsValueSpecified())
                     throw new ArgumentException($"Invalid repetions when converting from RPE.", nameof(targetReps));
@@ -281,7 +291,7 @@ namespace GymProject.Domain.TrainingDomain.Common
                 if (targetReps.IsAMRAP())
                     throw new ArgumentException($"Cannot convert from RPE when the reps are AMRAP.", nameof(targetReps));
 
-                int rmValue = (int)(targetReps.Value + (TrainingEffortTypeEnum.AMRAPAsRPE - Value));
+                int rmValue = (int)(targetReps.Value + (TrainingEffortTypeEnum.AMRAPAsRPE - saturatedInput));
 
                 return AsIntensityPerc(((float)Math.Round(0.4167 * rmValue - 14.2831 * Math.Pow(rmValue, 0.5) + 115.6122, 1)));
             }

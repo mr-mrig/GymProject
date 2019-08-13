@@ -57,8 +57,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
-        private WorkingSetTemplate(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdType> intensityTechniqueIds = null)
+        private WorkingSetTemplate(IdType id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdType> intensityTechniqueIds = null)
         {
+            Id = id;
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
             Rest = rest ?? RestPeriodValue.SetRestNotSpecified();
@@ -77,21 +78,30 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Factory method
         /// </summary>
+        /// <param name="id">The ID of the WS</param>
+        /// <param name="effort">The effort of the WS</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <param name="repetitions">The target repetitions</param>
         /// <param name="rest">The rest period before the next WS</param>
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplate AddWorkingSet(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdType> intensityTechniqueIds = null)
+        public static WorkingSetTemplate AddWorkingSet(IdType id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdType> intensityTechniqueIds = null)
 
-            => new WorkingSetTemplate(progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
+            => new WorkingSetTemplate(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
         #endregion
 
 
 
         #region Public Methods
+
+        /// <summary>
+        /// Check whether the WS ia an AMRAP one
+        /// </summary>
+        /// <returns>True if AMRAP</returns>
+        public bool IsAMRAP() => Repetitions?.IsAMRAP() == true;
+
 
         /// <summary>
         /// Change the repetitions
@@ -410,8 +420,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!NoDuplicateIntensityTechniques())
                 throw new TrainingDomainInvariantViolationException($"No duplicate intensity techniques are allowed.");
         }
+
         #endregion
 
+
+
+        #region IClonable Implementation
+
+        public object Clone()
+            => AddWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, _intensityTechniqueIds);
+
+        #endregion
     }
 }
 

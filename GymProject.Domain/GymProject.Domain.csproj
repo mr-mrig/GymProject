@@ -15,6 +15,7 @@
     <Folder Include="MeasuresJournalDomain\BiaDevice\" />
     <Folder Include="SharedKernel\Specifications\" />
     <Folder Include="TrainingDomain\IntensityTechniqueAggregate\" />
+    <Folder Include="TrainingDomain\WorkUnitNoteAggregate\" />
     <Folder Include="UserAccountDomain\" />
   </ItemGroup>
 

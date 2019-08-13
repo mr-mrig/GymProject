@@ -2,13 +2,14 @@
 using GymProject.Domain.DietDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.SharedKernel.Exceptions;
+using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanUnit : Entity<IdType>
+    public class DietPlanUnit : Entity<IdType>, ICloneable
     {
 
         // <summary>
@@ -143,7 +144,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
         public void AssignDietDays(ICollection<DietPlanDay> newDays)
         {
-            _dietDays = newDays;
+            _dietDays = newDays.Clone().ToList();
             FinalizeDietPlanDaysChanged();
         }
 
@@ -492,6 +493,15 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             yield return DietDays;
             yield return AvgDailyCalories;
         }
+
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => ScheduleDietUnit(Id, PeriodScheduled, _dietDays);
+
+        #endregion
 
     }
 }

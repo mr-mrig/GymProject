@@ -1,5 +1,6 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.TrainingDomain.Exceptions;
+using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,19 +66,21 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The TrainingDensityValue instance</returns>
         public static TrainingDensityParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets)
         {
-            if (workingSets?.Count() == 0)
+            List<IWorkingSet> wsCopy = workingSets.Clone().ToList() ?? new List<IWorkingSet>();
+
+            if (wsCopy.Count() == 0)
                 return new TrainingDensityParametersValue(0, 0, 0);
 
 
             // Exception or exclude from computation?
-            if (workingSets.Any(x => x == null))
+            if (wsCopy.Any(x => x == null))
                 throw new ArgumentNullException($"Trying to compute the Training Density on null-containing WS list");
 
 
             return SetTrainingDensity(
-                workingSets.Sum(x => x.ToSecondsUnderTension()),
-                workingSets.Sum(x => x.Rest.Value),
-                workingSets.Count());
+                wsCopy.Sum(x => x.ToSecondsUnderTension()),
+                wsCopy.Sum(x => x.Rest.Value),
+                wsCopy.Count());
         }
 
         #endregion

@@ -8,7 +8,7 @@ using GymProject.Domain.Utils;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanDay : Entity<IdType>
+    public class DietPlanDay : Entity<IdType>, ICloneable
     {
 
 
@@ -311,5 +311,12 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             yield return WeeklyOccurrances;
         }
 
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => AddDayToPlan(Id, Name, WeeklyOccurrances, Carbs, Fats, Proteins, Salt, Water, SpecificWeekday, DietDayType);
+
+        #endregion
     }
 }

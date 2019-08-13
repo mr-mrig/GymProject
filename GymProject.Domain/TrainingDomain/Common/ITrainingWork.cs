@@ -1,6 +1,8 @@
-﻿namespace GymProject.Domain.TrainingDomain.Common
+﻿using System;
+
+namespace GymProject.Domain.TrainingDomain.Common
 {
-    public interface ITrainingWork
+    public interface ITrainingWork : ICloneable
     {
 
         /// <summary>

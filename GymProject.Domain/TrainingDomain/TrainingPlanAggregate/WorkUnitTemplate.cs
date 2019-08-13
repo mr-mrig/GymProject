@@ -2,26 +2,21 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
+using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class WorkUnitTemplate : Entity<IdType>
+    public class WorkUnitTemplate : Entity<IdType>, ICloneable
     {
 
 
         /// <summary>
-        /// The progressive number of the work unit
+        /// The progressive number of the work unit - Starts from 0
         /// </summary>
         public uint ProgressiveNumber { get; private set; } = 0;
-
-
-        /// <summary>
-        /// A note about the WU made by the owner
-        /// </summary>
-        public PersonalNoteValue OwnerNote { get; private set; } = null;
 
 
         /// <summary>
@@ -54,28 +49,45 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
-        /// FK to the Excercise Id
+        /// FK to the Work Unit Note
+        /// </summary>
+        public IdType OwnerNoteId { get; private set; } = null;
+
+
+        /// <summary>
+        /// FK to the Excercise Aggregate
         /// </summary>
         public IdType ExcerciseId { get; private set; } = null;
 
+
+        private IEnumerable<IdType> _intensityTechniquesIds = null;
+
+        /// <summary>
+        /// The list of the IDs of the WU-wise Intensity Techniques - Will be applied to all the WSs
+        /// </summary>
+        public IReadOnlyCollection<IdType> IntensityTechniquesIds
+        {
+            get => _intensityTechniquesIds?.ToList().AsReadOnly() ?? new List<IdType>()._AsReadOnly();
+        }
 
 
 
         #region Ctors
 
-        private WorkUnitTemplate(uint progressiveNumber, IdType excerciseId, IList<WorkingSetTemplate> workingSets, PersonalNoteValue ownerNote = null)
+        private WorkUnitTemplate(IdType id, uint progressiveNumber, IdType excerciseId, IList<WorkingSetTemplate> workingSets, IdType ownerNoteId = null)
         {
+            Id = id;
             ProgressiveNumber = progressiveNumber;
-            OwnerNote = ownerNote;
+            OwnerNoteId = ownerNoteId;
             ExcerciseId = excerciseId;
 
-            _workingSets = workingSets ?? new List<WorkingSetTemplate>();
+            _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplate>();
 
             TestBusinessRules();
 
             TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(workingSets);
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(workingSets, GetMainEffortType());
         }
         #endregion
 
@@ -86,13 +98,15 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Factory method
         /// </summary>
+        /// <param name="id">The ID of the WU</param>
+        /// <param name="excerciseId">The ID of the excercise which the WU consists of</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
-        /// <param name="ownerNote">The owner note</param>
+        /// <param name="ownerNoteId">The ID of the Work Unit Owner's note</param>
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkUnitTemplate PlanWorkUnit(uint progressiveNumber, IdType excerciseId, IList<WorkingSetTemplate> workingSets, PersonalNoteValue ownerNote = null)
+        public static WorkUnitTemplate PlanWorkUnit(IdType id, uint progressiveNumber, IdType excerciseId, IList<WorkingSetTemplate> workingSets, IdType ownerNoteId = null)
 
-            => new WorkUnitTemplate(progressiveNumber, excerciseId, workingSets, ownerNote);
+            => new WorkUnitTemplate(id, progressiveNumber, excerciseId, workingSets, ownerNoteId);
 
         #endregion
 
@@ -103,11 +117,21 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Attach a note to the WU, or repleace it if already present
         /// </summary>
-        /// <param name="newNote">The note to be attached</param>
-        public void WriteNote(PersonalNoteValue newNote)
+        /// <param name="newNoteId">The ID of the note to be attached</param>
+        public void AssignNote(IdType newNoteId)
         {
-            OwnerNote = newNote;
+            OwnerNoteId = newNoteId;
         }
+
+
+        /// <summary>
+        /// Remove the Owner's note
+        /// </summary>
+        public void RemoveNote()
+        {
+            OwnerNoteId = null;
+        }
+
 
         /// <summary>
         /// Assign an excercise to the Work Unit
@@ -131,6 +155,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         {
             _workingSets.Add(
                 WorkingSetTemplate.AddWorkingSet(
+                    BuildWorkingSetId(),
                     BuildWorkingSetProgressiveNumber(),
                     repetitions,
                     rest,
@@ -138,6 +163,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                     tempo,
                     intensityTechniqueIds
                 ));
+
+            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
+            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
 
             TestBusinessRules();
         }
@@ -147,11 +176,37 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Remove the Working Set from the Work Unit
         /// </summary>
         /// <param name="toRemoveId">The Id of the WS to be removed</param>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         public void RemoveWorkingSet(IdType toRemoveId)
         {
             WorkingSetTemplate toBeRemoved = FindWorkingSetById(toRemoveId);
 
             _workingSets.Remove(toBeRemoved);
+
+            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
+            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
+
+            ForceConsecutiveWorkingSetsProgressiveNumbers();
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Remove the Working Set from the Work Unit
+        /// </summary>
+        /// <param name="progressiveNumber">The progressive number of the WS to be removed</param>
+        public void RemoveWorkingSet(int progressiveNumber)
+        {
+            WorkingSetTemplate toBeRemoved = FindWorkingSetByProgressiveNumber(progressiveNumber);
+
+            _workingSets.Remove(toBeRemoved);
+
+            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
+            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
+
             ForceConsecutiveWorkingSetsProgressiveNumbers();
             TestBusinessRules();
         }
@@ -161,17 +216,18 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Find the Working Set with the ID specified
         /// </summary>
         /// <param name="id">The Id to be found</param>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The WokringSetTemplate object/returns>
         public WorkingSetTemplate FindWorkingSetById(IdType id)
         {
-            if (Id == null)
-                throw new ArgumentException($"Cannot find a WS with NULL id");
+            if (id == null)
+                throw new ArgumentNullException($"Cannot find a WS with NULL id");
 
             WorkingSetTemplate ws = _workingSets.Where(x => x.Id == id).FirstOrDefault();
 
             if (ws == default)
-                throw new ArgumentException($"Working Set with Id {id} could not be found");
+                throw new ArgumentException($"Working Set with Id {id.ToString()} could not be found");
 
             return ws;
         }
@@ -180,8 +236,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Find the Working Set with the progressive number specified
         /// </summary>
         /// <param name="pNum">The progressive number to be found</param>
+        /// <exception cref="ArgumentException">If Progressive Number could not be found</exception>
         /// <returns>The WokringSetTemplate object or DEFAULT if not found/returns>
-        public WorkingSetTemplate FindWorkingSetByProgressiveNumber(uint pNum) => _workingSets.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();
+        public WorkingSetTemplate FindWorkingSetByProgressiveNumber(int pNum)
+        {
+            WorkingSetTemplate result  = _workingSets.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();
+
+            if (result == default)
+                throw new ArgumentException($"Working Set with Progressive Number {pNum.ToString()} could not be found");
+
+            return result;
+        }
 
         #endregion
 
@@ -322,6 +387,20 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             }
         }
 
+        /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WU 
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        private TrainingEffortTypeEnum GetMainEffortType()
+
+            => _workingSets.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc 
+                : _workingSets.GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
+
         #endregion
 
 
@@ -394,8 +473,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!WorkingSetsWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Working Sets of the same Work Unit must have consecutive progressive numbers.");
         }
+
         #endregion
 
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), OwnerNoteId);
+
+        #endregion
     }
 }
 

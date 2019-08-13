@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using GymProject.Domain.FitnessJournalDomain.MusAggregate;
 using GymProject.Domain.Base;
 using System.Linq;
 using GymProject.Domain.FitnessJournalDomain.Exceptions;
+using GymProject.Domain.Utils.Extensions;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
@@ -36,7 +36,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         {
             Temperature = temperature;
             Glycemia = glycemia;
-            _musList = musList ?? new List<MusReference>();
+            _musList = musList?.Clone().ToList() ?? new List<MusReference>();
 
             if(Temperature == null && Glycemia == null && _musList.Count == 0)
                     throw new FitnessJournalDomainInvariantViolationException($"Cannot add a {GetType().Name} with all null values");

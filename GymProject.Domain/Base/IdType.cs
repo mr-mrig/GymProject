@@ -39,8 +39,6 @@ namespace GymProject.Domain.Base
 
         public override int GetHashCode() => base.GetHashCode();
 
-
-
         #region IdType Vs IdType Operators
 
 

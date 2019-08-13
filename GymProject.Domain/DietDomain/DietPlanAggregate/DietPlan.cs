@@ -3,6 +3,7 @@ using GymProject.Domain.Base;
 using GymProject.Domain.DietDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.SharedKernel.Exceptions;
+using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,7 +98,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         {
             Trainer = author;
             Trainee = trainee;
-            _dietUnits = dietUnits ?? new List<DietPlanUnit>();
+            _dietUnits = dietUnits.Clone().ToList() ?? new List<DietPlanUnit>();
         }
 
 
@@ -506,7 +507,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
         public void AssignDietUnits(ICollection<DietPlanUnit> dietUnits)
         {
-            _dietUnits = dietUnits;
+            _dietUnits = dietUnits.Clone().ToList();
             FinalizeDietPlanUnitsAdded();
         }
 

@@ -1,10 +1,9 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.SharedKernel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GymProject.Domain.DietDomain
+namespace GymProject.Domain.SharedKernel
 {
     public class WeekdayEnum : Enumeration
     {

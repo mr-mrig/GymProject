@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using GymProject.Domain.Utils;
 using System.Linq;
+using GymProject.Domain.Utils.Extensions;
 
 namespace GymProject.Domain.TrainingDomain.Common
 {
@@ -66,18 +67,20 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The TrainingVolumeValue instance</returns>
         public static TrainingVolumeParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets)
         {
-            if (workingSets?.Count() == 0)
+            List<IWorkingSet> wsCopy = workingSets.Clone().ToList() ?? new List<IWorkingSet>();
+
+            if (wsCopy.Count() == 0)
                 return SetTrainingVolume(0, 0, WeightPlatesValue.MeasureKilograms(0));
 
             // Exception or exclude from computation?
-            if (workingSets.Any(x => x == null))
+            if (wsCopy.Any(x => x == null))
                 throw new ArgumentNullException($"Trying to compute the Training Volume on null-containing WS list");
 
 
             return SetTrainingVolume(
-                (uint)workingSets.Sum(x => x.ToRepetitions()),
-                (uint)workingSets.Count(),
-                WeightPlatesValue.Measure(workingSets.Sum(x => x.ToWorkload().Value), workingSets.FirstOrDefault().ToWorkload().Unit));
+                (uint)wsCopy.Sum(x => x.ToRepetitions()),
+                (uint)wsCopy.Count(),
+                WeightPlatesValue.Measure(wsCopy.Sum(x => x.ToWorkload().Value), wsCopy.FirstOrDefault().ToWorkload().Unit));
         }
 
         #endregion
@@ -137,10 +140,17 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         /// <summary>
-        /// Get the average repetitions
+        /// Get the average repetitions number - the result is exact IE: has decimal values
         /// </summary>
         /// <returns>The average repetitions over the WSs</returns>
         public float GetAverageRepetitions() => (float)TotalReps / (float)TotalWorkingSets;
+
+
+        ///// <summary>
+        ///// Get the average repetitions object . the result is truncated IE: no decimal places
+        ///// </summary>
+        ///// <returns>The average repetitions over the WSs</returns>
+        //public WSRepetitionValue GetAverageRepetitions() => WSRepetitionValue.TrackRepetitionSerie((uint)(TotalReps / TotalWorkingSets));
 
 
         /// <summary>

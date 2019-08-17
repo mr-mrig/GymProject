@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Comment : ChangeTrackingEntity<IdType>
+    public class Comment : ChangeTrackingEntity<IdType>, ICloneable
     {
 
 
@@ -15,16 +15,21 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
 
 
-        protected Comment(Author author, string body)
+        #region Ctors
+
+        protected Comment(IdType id, Author author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Comment with no author");
 
-
+            Id = id;
             CommentAuthor = author;
             Body = body;
-            CreatedOn = DateTime.Now;
+            CreatedOn = createdOn ?? DateTime.Now;
+            LastUpdate = lastUpdate;
         }
+
+        #endregion
 
 
 
@@ -35,10 +40,26 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="author">The author of the comment</param>
         /// <param name="comment">The body of the comment</param>
-        /// <returns>The nre Comment instance</returns>
-        public static Comment Write(Author author, string comment)
+        /// <param name="id">The Id of the Comment</param>
+        /// <returns>The Comment instance</returns>
+        public static Comment Write(IdType id, Author author, string comment)
         {
-            return new Comment(author, comment);
+            return new Comment(id, author, comment);
+        }
+
+
+        /// <summary>
+        /// Factory
+        /// </summary>
+        /// <param name="author">The author of the comment</param>
+        /// <param name="comment">The body of the comment</param>
+        /// <param name="id">The Id of the Comment</param>
+        /// <param name="createdOn">The date which the comment has been created on</param>
+        /// <param name="lastUpdate">The date which the comment has been lastly updated on</param>
+        /// <returns>The Comment instance</returns>
+        public static Comment Copy(IdType id, Author author, string comment, DateTime createdOn, DateTime lastUpdate)
+        {
+            return new Comment(id, author, comment, (DateTime?)createdOn, (DateTime?)lastUpdate);
         }
 
         #endregion
@@ -55,7 +76,16 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             Body = newComment;
             LastUpdate = DateTime.Now;
         }
+
         #endregion
 
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => Copy(Id, CommentAuthor, Body, CreatedOn, LastUpdate.Value);
+
+        #endregion
     }
 }

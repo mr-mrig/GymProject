@@ -45,7 +45,7 @@
 //        /// </summary>
 //        public IReadOnlyCollection<WorkoutTemplate> Workouts
 //        {
-//            get => _workouts?.ToList().AsReadOnly() ?? new List<WorkoutTemplate>().AsReadOnly();
+//            get => _workouts?.Clone().ToList().AsReadOnly() ?? new List<WorkoutTemplate>().AsReadOnly();
 //        }
 
 

@@ -6,7 +6,7 @@ namespace GymProject.Domain.Base
     /// <summary>
     /// To be used to globally define the type of the Ids
     /// </summary>
-    public class IdType
+    public class IdType : ICloneable
     {
 
 
@@ -38,6 +38,7 @@ namespace GymProject.Domain.Base
         public override bool Equals(object obj) => obj is IdType type && Id == type.Id;
 
         public override int GetHashCode() => base.GetHashCode();
+
 
         #region IdType Vs IdType Operators
 
@@ -85,6 +86,15 @@ namespace GymProject.Domain.Base
         public static bool operator >=(IdType left, long right) => left?.Id >= right;
 
         public static bool operator <=(IdType left, long right) => left?.Id <= right;
+        #endregion
+
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => new IdType(Id);
+
         #endregion
 
     }

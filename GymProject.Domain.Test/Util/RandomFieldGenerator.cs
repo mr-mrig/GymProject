@@ -87,7 +87,6 @@ namespace GymProject.Domain.Test.Util
         /// <returns>A pseudo-generated random int</returns>
         public static int RandomIntValueExcluded(int from, int to, int valueExcluded)
         {
-            int val = -1;
             List<int> excludeList = new List<int>() { valueExcluded };
 
             return RandomIntValueExcluded(from, to, excludeList);
@@ -139,14 +138,27 @@ namespace GymProject.Domain.Test.Util
         /// </summary>
         /// <param name="possibleChoices">The items list which to choose from</param>
         /// <returns>One of the possible items.</returns>
-        public static T? ChooseAmong<T>(List<T?> possibleChoices, float prob = 0) where T : struct
+        public static T? ChooseAmongNullable<T>(IList<T?> possibleChoices, float prob = 0) where T : struct
         {
             if (RandomDouble(0, 1) < prob)
                 return null;
 
-            return possibleChoices[RandomInt(0, possibleChoices.Count)];
+            return possibleChoices[RandomInt(0, possibleChoices.Count() - 1)];
         }
 
+
+        /// <summary>
+        /// Randomly choose an element among the choices provided.
+        /// </summary>
+        /// <param name="possibleChoices">The items list which to choose from</param>
+        /// <returns>One of the possible items.</returns>
+        public static T ChooseAmong<T>(IList<T> possibleChoices)
+        {
+            if (possibleChoices == null || possibleChoices.Count == 0)
+                return default;
+
+            return possibleChoices[RandomInt(0, possibleChoices.Count() - 1)];
+        }
 
 
         /// <summary>
@@ -155,12 +167,12 @@ namespace GymProject.Domain.Test.Util
         /// <param name="possibleChoices">The list of string which to choose from</param>
         /// <param name="prob">Probability of null being returned</param>
         /// <returns>One of the specified strings.</returns>
-        public static string ChooseText(List<string> possibleChoices, float prob = 0)
+        public static string ChooseText(IList<string> possibleChoices, float prob = 0)
         {
             if (RandomDouble(0, 1) < prob)
                 return null;
 
-            return possibleChoices[RandomInt(0, possibleChoices.Count)];
+            return possibleChoices[RandomInt(0, possibleChoices.Count - 1)];
         }
 
 

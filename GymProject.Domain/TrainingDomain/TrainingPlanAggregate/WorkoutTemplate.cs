@@ -54,10 +54,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         /// <summary>
         /// The WUs belonging to the WorkOut
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<WorkUnitTemplate> Workouts
+        public IReadOnlyCollection<WorkUnitTemplate> WorkUnits
         {
-            get => _workUnits?.ToList().AsReadOnly() ?? new List<WorkUnitTemplate>().AsReadOnly();
+            get => _workUnits?.Clone().ToList().AsReadOnly() ?? new List<WorkUnitTemplate>().AsReadOnly();
         }
 
 
@@ -106,6 +107,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Public Methods
 
         /// <summary>
+        /// Assign a new progressive number to the WO
+        /// </summary>
+        /// <param name="newPnum">The new progressive number - PNums must be consecutive</param>
+        public void MoveToNewProgressiveNumber(uint newPnum)
+        {
+            ProgressiveNumber = newPnum;
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
         /// Change the name of the WO
         /// </summary>
         /// <param name="newName">The new name</param>
@@ -126,6 +138,15 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
+        /// Mark the WO as 'not scheduled to specific day'
+        /// </summary>
+        public void UnscheduleSpecificDay()
+        {
+            ScheduleToSpecificDay(WeekdayEnum.Generic);
+        }
+
+
+        /// <summary>
         /// Find the WorkUnit with the ID specified
         /// </summary>
         /// <param name="id">The Id to be found</param>
@@ -140,7 +161,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             WorkUnitTemplate ws = _workUnits.Where(x => x.Id == id).FirstOrDefault();
 
             if (ws == default)
-                throw new ArgumentException($"Working Set with Id {id.ToString()} could not be found");
+                throw new ArgumentException($"Work Unit with Id {id.ToString()} could not be found");
 
             return ws;
         }
@@ -170,7 +191,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <returns>The WorkUnitTemplate object/returns>
-        public WorkUnitTemplate FindWorkingUnitByWorkingSetId(IdType wsId)
+        public WorkUnitTemplate FindWorkUnitByWorkingSetId(IdType wsId)
         {
             if (wsId == null)
                 throw new ArgumentNullException($"Cannot find a WS with NULL id");
@@ -228,13 +249,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="excerciseId">The ID of the excercise of the WU</param>
         /// <param name="ownerNoteId">The ID of the WU Owner's note</param>
         /// <param name="workingSets">The WS which the WU is made up of</param>
-        public void AddWorkUnit(IdType excerciseId, IList<WorkingSetTemplate> workingSets, IdType ownerNoteId = null)
+        public void AddWorkUnit(IdType excerciseId, IList<WorkingSetTemplate> workingSets, ICollection<IdType> workUnitIntensityTechniquesIds = null, IdType ownerNoteId = null)
         {
             WorkUnitTemplate toAdd = WorkUnitTemplate.PlanWorkUnit(
                 BuildWorkUnitId(),
                 BuildWorkUnitProgressiveNumber(),
                 excerciseId,
                 workingSets,
+                workUnitIntensityTechniquesIds,
                 ownerNoteId);
 
             _workUnits.Add(toAdd);
@@ -263,7 +285,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets(), GetMainEffortType());
 
-            ForceConsecutiveWorkUnitsProgressiveNumbers();
+            ForceConsecutiveWorkUnitProgressiveNumbers();
             TestBusinessRules();
         }
 
@@ -272,6 +294,37 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Work Unit Methods
 
+
+        /// <summary>
+        /// Add the intensity technique to the selected Work Unit and all its WSs
+        /// </summary>
+        /// <param name="workUnitId">The ID of the Work Unit to be modified</param>
+        /// <param name="intensityTechniqueId">The ID of the intensity technique</param>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        public void AddWorkUnitIntensityTechnique(IdType workUnitId, IdType intensityTechniqueId)
+        {
+            WorkUnitTemplate toBeModified = FindWorkUnitById(workUnitId);
+
+            toBeModified.AddWorkUnitIntensityTechnique(intensityTechniqueId);
+        }
+
+
+        /// <summary>
+        /// Remove the intensity technique from the selected Work Unit and all its WSs
+        /// </summary>
+        /// <param name="workUnitId">The ID of the Work Unit to be modified</param>
+        /// <param name="intensityTechniqueId">The ID of the intensity technique</param>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        public void RemoveWorkUnitIntensityTechnique(IdType workUnitId, IdType intensityTechniqueId)
+        {
+            WorkUnitTemplate toBeModified = FindWorkUnitById(workUnitId);
+
+            toBeModified.RemoveWorkUnitIntensityTechnique(intensityTechniqueId);
+        }
+
+
         /// <summary>
         /// Attach a note to the WU, or repleace it if already present
         /// </summary>
@@ -279,7 +332,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="newNoteId">The ID of the note to be attached</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        public void AssignNote(IdType workUnitId, IdType newNoteId)
+        public void AssignWorkUnitNote(IdType workUnitId, IdType newNoteId)
 
             => FindWorkUnitById(workUnitId).AssignNote(newNoteId);
 
@@ -288,9 +341,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Remove the note of the WU, or repleace it if already present
         /// </summary>
         /// <param name="workUnitId">The ID of the Work Unit to be changed</param>
-        public void RemoveNote(IdType workUnitId)
+        public void RemoveWorkUnitNote(IdType workUnitId)
 
-            => AssignNote(workUnitId, null);
+            => AssignWorkUnitNote(workUnitId, null);
 
 
         /// <summary>
@@ -300,9 +353,27 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="newExcerciseId">The ID of the excercise to be attached</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        public void AssignExcercise(IdType workUnitId, IdType newExcerciseId)
+        public void AssignWorkUnitExcercise(IdType workUnitId, IdType newExcerciseId)
 
             => FindWorkUnitById(workUnitId).AssignExcercise(newExcerciseId);
+
+
+        /// <summary>
+        /// Assign a new progressive number to the WS
+        /// </summary>
+        /// <param name="newPnum">The new progressive number - PNums must be consecutive</param>
+        /// <param name="wuId">The ID of the WS to be moved</param>
+        public void MoveWorkUnitToNewProgressiveNumber(IdType wuId, uint newPnum)
+        {
+            uint oldPnum = FindWorkUnitById(wuId).ProgressiveNumber;
+
+            // Switch sets
+            FindWorkUnitByProgressiveNumber((int)newPnum).MoveToNewProgressiveNumber(oldPnum);
+            FindWorkUnitById(wuId).MoveToNewProgressiveNumber(newPnum);
+
+            ForceConsecutiveWorkUnitProgressiveNumbers();
+            TestBusinessRules();
+        }
 
 
         /// <summary>
@@ -340,15 +411,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         public void RemoveWorkingSet(IdType toRemoveId)
         {
-            WorkUnitTemplate toBeRemoved = FindWorkingUnitByWorkingSetId(toRemoveId);
+            WorkUnitTemplate toBeRemoved = FindWorkUnitByWorkingSetId(toRemoveId);
 
             toBeRemoved.RemoveWorkingSet(toRemoveId);
 
             TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(GetAllWorkingSets());
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets(), GetMainEffortType());
-
-            ForceConsecutiveWorkUnitProgressiveNumbers();
         }
 
 
@@ -497,16 +566,28 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
+        /// Sort the Work Unit list wrt the WU progressive numbers
+        /// </summary>
+        /// <param name="wsIn">The input WU list</param>
+        /// <returns>The sorted list</returns>
+        private IEnumerable<WorkUnitTemplate> SortWorkUnitByProgressiveNumber(IEnumerable<WorkUnitTemplate> wsIn)
+
+            => wsIn.OrderBy(x => x.ProgressiveNumber);
+
+
+        /// <summary>
         /// Force the WSs to have consecutive progressive numbers
         /// It works by assuming that the WSs are added in a sorted fashion.
         /// </summary>
         private void ForceConsecutiveWorkUnitProgressiveNumbers()
         {
+            _workUnits = SortWorkUnitByProgressiveNumber(_workUnits).ToList();
+
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < _workUnits.Count(); iws++)
             {
-                WorkingSetTemplate ws = _workUnits[iws];
-                ws.ChangeProgressiveNumber((uint)iws);
+                WorkUnitTemplate ws = _workUnits[iws];
+                ws.MoveToNewProgressiveNumber((uint)iws);
             }
         }
 
@@ -517,7 +598,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The training effort type</returns>
         private TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workUnits.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc 
+            => _workUnits.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
                 : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {
@@ -540,27 +621,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// The Training Week must have no NULL workouts.
+        /// The Workout must have no NULL Work Units.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool NoNullWorkouts() => _workUnits.All(x => x != null);
+        private bool NoNullWorkunits() => _workUnits.All(x => x != null);
 
 
         /// <summary>
-        /// Cannot create a Training Week without any Workout.
+        /// Work Units of the same Workout must have consecutive progressive numbers.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool AtLeastOneWorkout() => _workUnits?.Count > 0;
-
-
-        /// <summary>
-        /// Workouts of the same Training Week must have consecutive progressive numbers.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool WorkoutWithConsecutiveProgressiveNumber()
+        private bool WorkUnitsWithConsecutiveProgressiveNumber()
         {
+            if (_workUnits.Count == 0)
+                return true;
+
             // Check the first element: the sequence must start from 0
-            if (_workUnits?.Count() <= 1)
+            if (_workUnits?.Count() == 1)
             {
                 if (_workUnits.FirstOrDefault()?.ProgressiveNumber == 0)
                     return true;
@@ -587,14 +664,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NoNullWorkouts())
-                throw new TrainingDomainInvariantViolationException($"The Training Week must have no NULL workouts.");
+            if (!NoNullWorkunits())
+                throw new TrainingDomainInvariantViolationException($"The Workout must have no NULL Work Units.");
 
-            if (!AtLeastOneWorkout())
-                throw new TrainingDomainInvariantViolationException($"Cannot create a Training Week without any Workout.");
-
-            if (!WorkoutWithConsecutiveProgressiveNumber())
-                throw new TrainingDomainInvariantViolationException($"Workouts of the same Training Week must have consecutive progressive numbers.");
+            if (!WorkUnitsWithConsecutiveProgressiveNumber())
+                throw new TrainingDomainInvariantViolationException($"Work Units of the same Workout must have consecutive progressive numbers.");
         }
         #endregion
 

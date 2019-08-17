@@ -1,6 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
+using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,10 +46,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         /// <summary>
         /// FK to the Intensity Techniques - Optional
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<IdType> IntensityTechniqueIds
         {
-            get => _intensityTechniqueIds?.ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _intensityTechniqueIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
         }
 
 
@@ -64,7 +66,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             Repetitions = repetitions;
             Rest = rest ?? RestPeriodValue.SetRestNotSpecified();
             Tempo = tempo ?? TUTValue.SetGenericTUT();
-            _intensityTechniqueIds = intensityTechniqueIds ?? new List<IdType>();
+            _intensityTechniqueIds = intensityTechniqueIds?.Clone().ToList() ?? new List<IdType>();
             Effort = effort?? TrainingEffortValue.DefaultEffort;
 
             TestBusinessRules();
@@ -195,8 +197,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Change the progressive number
         /// </summary>
-        /// <param name="newNumber">The new value</param>
-        public void ChangeProgressiveNumber(uint newNumber)
+        /// <param name="newNumber">The new value - PNums must be consecutive</param>
+        public void MoveToNewProgressiveNumber(uint newNumber)
         {
             ProgressiveNumber = newNumber;
         }

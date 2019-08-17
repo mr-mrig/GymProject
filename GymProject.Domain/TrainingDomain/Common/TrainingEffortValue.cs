@@ -282,8 +282,12 @@ namespace GymProject.Domain.TrainingDomain.Common
             // From RPE
             if (EffortType == TrainingEffortTypeEnum.RPE)
             {
-                //float saturatedInput = Math.Min(Value, TrainingEffortTypeEnum.AMRAPAsRPE);   // Truncate to 10RPE
-                float saturatedInput =  Value;
+                float saturatedInput;
+
+                if (targetReps.Value == 1)
+                    saturatedInput = Math.Min(Value, TrainingEffortTypeEnum.AMRAPAsRPE);     // Cannot do more than 1RM -> Truncate to 10RPE
+                else
+                    saturatedInput = Value;
 
                 if (targetReps == null || !targetReps.IsValueSpecified())
                     throw new ArgumentException($"Invalid repetions when converting from RPE.", nameof(targetReps));

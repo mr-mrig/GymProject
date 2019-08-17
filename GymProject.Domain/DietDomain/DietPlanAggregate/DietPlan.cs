@@ -1,5 +1,4 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.Base;
 using GymProject.Domain.DietDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.SharedKernel.Exceptions;
@@ -75,18 +74,19 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         public IReadOnlyCollection<IdType> HashtagIds
         {
-            get => _hashtagIds?.ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _hashtagIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
         }
 
 
         private ICollection<DietPlanUnit> _dietUnits;
 
         /// <summary>
-        /// The diet days planned
+        /// The diet days planned.
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<DietPlanUnit> DietUnits
         {
-            get => _dietUnits?.ToList().AsReadOnly() ?? new List<DietPlanUnit>().AsReadOnly();
+            get => _dietUnits?.Clone().ToList().AsReadOnly() ?? new List<DietPlanUnit>().AsReadOnly();
         }
 
 

@@ -36,7 +36,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         public IReadOnlyCollection<DietPlanDay> DietDays
         {
-            get => _dietDays?.ToList().AsReadOnly();
+            get => _dietDays?.Clone().ToList().AsReadOnly();
         }
 
 
@@ -69,7 +69,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             if (!DietUnitIdNotNull())
                 throw new DietDomainIvariantViolationException($"The Diet Unit ID period must be valid.");
 
-            if (DietUnitPeriodIsNotNull())
+            if (!DietUnitPeriodIsNotNull())
                 throw new DietDomainIvariantViolationException($"Cannot create a {GetType().Name} with no period associated.");
         }
         #endregion
@@ -498,8 +498,12 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         #region IClonable Implementation
 
         public object Clone()
-
-            => ScheduleDietUnit(Id, PeriodScheduled, _dietDays);
+        {
+            if (PeriodScheduled == null)
+                return NewDraft(Id);
+            else
+                return ScheduleDietUnit(Id, PeriodScheduled, _dietDays);
+        }
 
         #endregion
 

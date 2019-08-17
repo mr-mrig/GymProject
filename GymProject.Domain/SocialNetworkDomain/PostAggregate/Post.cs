@@ -5,10 +5,11 @@ using GymProject.Domain.SocialNetworkDomain.Exceptions;
 using System.Linq;
 using GymProject.Domain.SocialNetworkDomain.Common;
 using GymProject.Domain.SharedKernel;
+using GymProject.Domain.Utils.Extensions;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Post : ChangeTrackingEntity<IdType>, IAggregateRoot
+    public class Post : ChangeTrackingEntity<IdType>, IAggregateRoot, ICloneable
     {
 
 
@@ -27,24 +28,26 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         /// <summary>
         /// List of comments to the Post
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<Comment> Comments
         {
-            get => _comments?.ToList().AsReadOnly();
+            get => _comments?.Clone().ToList().AsReadOnly() ?? new List<Comment>().AsReadOnly();
+            //get => _comments?.ToList().AsReadOnly();
         }
 
         private ICollection<Like> _likes;
 
         /// <summary>
         /// List of Likes to the Post
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<Like> Likes
         {
-            get => _likes?.ToList().AsReadOnly();
+            get => _likes?.Clone().ToList().AsReadOnly() ?? new List<Like>().AsReadOnly();
+            //get => _likes?.ToList().AsReadOnly();
         }
 
-
-        #region External Bounded Context references
 
         /// <summary>
         /// Author of the Post
@@ -55,13 +58,13 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Attached Picture
         /// </summary>
         public Picture AttachedPicture { get; private set; }
-        #endregion
+
 
 
 
         #region Ctors
 
-        private Post(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null)
+        private Post(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null, DateTime? createdOn = null, DateTime? lastUpdate = null)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Post with no author");
@@ -71,7 +74,8 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             SharingPolicy = isShared;
             AttachedPicture = attachedPicture;
 
-            CreatedOn = DateTime.Now;
+            CreatedOn = createdOn ?? DateTime.Now;
+            LastUpdate = lastUpdate;
 
             _comments = new List<Comment>();
             _likes = new List<Like>();
@@ -103,6 +107,20 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         public static Post Write(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null)
         {
             return new Post(author, caption, isShared, attachedPicture);
+        }
+
+
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <param name="author">Post author</param>
+        /// <param name="caption">Post caption</param>
+        /// <param name="isShared">Sharing policy</param>
+        /// <param name="attachedPicture">Picture to be attached - optional</param>
+        /// <returns>A new Post instance</returns>
+        public static Post Copy(Author author, string caption, SharingPolicyEnum isShared, DateTime createdOn, DateTime? lastUpdate, Picture attachedPicture = null)
+        {
+            return new Post(author, caption, isShared, attachedPicture, createdOn, lastUpdate);
         }
 
         #endregion
@@ -153,40 +171,42 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="commentText">The comment</param>
         public void AddComment(Author author, string commentText)
         {
-            _comments.Add(Comment.Write(author, commentText));
+            _comments.Add(Comment.Write(BuildCommentId(), author, commentText));
 
             LastUpdate = DateTime.Now;
         }
 
-        /// <summary>
-        /// Modify the comment belonging to the Post - Author.
-        /// </summary>
-        /// <param name="toBeModified">The comment to be modified</param>
-        /// <param name="newCommentText">The comment text</param>
-        public void ModifyComment(Comment toBeModified, string newCommentText)
-        {
-            // Check for comment not found
-            Comment srcComment = _comments.Where(x => x.Equals(toBeModified)).FirstOrDefault();
+        ///// <summary>
+        ///// Modify the comment belonging to the Post - Author.
+        ///// </summary>
+        ///// <param name="toBeModified">The comment to be modified</param>
+        ///// <param name="newCommentText">The comment text</param>
+        //public void ModifyComment(Comment toBeModified, string newCommentText)
+        //{
+        //    // Check for comment not found
+        //    Comment srcComment = _comments.Where(x => x.Equals(toBeModified)).FirstOrDefault();
 
-            srcComment = EditComment(srcComment, newCommentText);
+        //    srcComment = EditComment(srcComment, newCommentText);
 
-            LastUpdate = DateTime.Now;
-        }
+        //    LastUpdate = DateTime.Now;
+        //}
 
         /// <summary>
         /// Modify the comment belonging to the Post - Author
         /// </summary>
-        /// <param name="toBeModified">The comment to be modified</param>
+        /// <param name="commentId">The ID of the comment to be modified</param>
         /// <param name="newCommentText">The comment text</param>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
         public void ModifyComment(IdType commentId, string newCommentText)
         {
             // Check for comment not found
-            Comment srcComment = _comments.Where(x => x.Id == commentId).FirstOrDefault();
+            Comment srcComment = FindCommentById(commentId);
 
-            if (srcComment == default(Comment))
+            if (srcComment == default)
                 throw new KeyNotFoundException($"No comment with Id {commentId.ToString()} in Post {Id.ToString()}");
 
-            srcComment = EditComment(srcComment, newCommentText);
+            EditComment(srcComment, newCommentText);
 
             LastUpdate = DateTime.Now;
         }
@@ -205,15 +225,80 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <summary>
         /// Remove the comment belonging to the Post - Author
         /// </summary>
-        /// <param name="comment">The comment to be moderated</param>
-        public void RemoveComment(Comment toBeRemoved)
+        /// <param name="id">The ID of the comment to be moderated</param>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        public void RemoveComment(IdType id)
         {
             // Check for Comment not found
-            Comment srcComment = _comments.Where(x => x.Equals(toBeRemoved)).FirstOrDefault();
+            Comment toBeRemoved = FindCommentById(id);
 
             DeleteComment(toBeRemoved);
 
             LastUpdate = DateTime.Now;
+        }
+
+
+        /// <summary>
+        /// Find the Like with the ID specified
+        /// </summary>
+        /// <param name="id">The Id to be found</param>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <returns>The Like object/returns>
+        public Like FindLikeById(IdType id)
+        {
+            if (id == null)
+                throw new ArgumentNullException($"Cannot find a Like with NULL id");
+
+            Like result = _likes.Where(x => x.Id == id).FirstOrDefault();
+
+            if (result == default)
+                throw new ArgumentException($"The Like with Id {id.ToString()} could not be found");
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Find the Like assigned to the selected user
+        /// </summary>
+        /// <param name="author">The author to be found</param>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <returns>The Like object/returns>
+        public Like FindLikeByAuthor(Author author)
+        {
+            if (author == null)
+                throw new ArgumentNullException($"Cannot find a Like with NULL author");
+
+            Like result = _likes.Where(x => x.LikeAuthor == author).FirstOrDefault();
+
+            if (result == default)
+                throw new ArgumentException($"The Like with AuthorId {author.Id.ToString()} could not be found");
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Find the Comment with the ID specified
+        /// </summary>
+        /// <param name="id">The Id to be found</param>
+        /// <exception cref="ArgumentNullException">If ID is NULL</exception>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <returns>The Comment object/returns>
+        public Comment FindCommentById(IdType id)
+        {
+            if (id == null)
+                throw new ArgumentNullException($"Cannot find a Comment with NULL id");
+
+            Comment result = _comments.Where(x => x.Id == id).FirstOrDefault();
+
+            if (result == default)
+                throw new ArgumentException($"The Comment with Id {id.ToString()} could not be found");
+
+            return result;
         }
         #endregion
 
@@ -226,7 +311,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="author">The author of the like</param>
         public void AddLike(Author author)
         {
-            _likes.Add(Like.Give(author));
+            _likes.Add(Like.Give(BuildLikeId(), author));
 
             LastUpdate = DateTime.Now;
         }
@@ -238,7 +323,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="author">The author of the like to be removed</param>
         public void Unlike(Author author)
         {
-            Like toBeRemoved = _likes.Where(x => x.LikeAuthor.Equals(author)).FirstOrDefault();
+            Like toBeRemoved = FindLikeByAuthor(author);
 
             // Check for Like not found
             if (!_likes.Remove(toBeRemoved))
@@ -253,40 +338,51 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Unlike the Post
         /// </summary>
         /// <param name="likeId">The Id of the like to be removed</param>
-        public void Unlike(Like toBeRemoved)
+        public void Unlike(IdType likeId)
         {
-            Like srcLike = _likes.Where(x => x.Equals(toBeRemoved) ).FirstOrDefault();
+            Like srcLike = FindLikeById(likeId);
 
             // Check for Like not found
             if (!_likes.Remove(srcLike))
-                throw new SocialNetworkGenericException($"The selected Like - Id={toBeRemoved.Id.ToString()} - could not be found in this Post - Id={Id.ToString()}");
+                throw new SocialNetworkGenericException($"The selected Like - Id={likeId.ToString()} - could not be found in this Post - Id={Id.ToString()}");
 
 
             LastUpdate = DateTime.Now;
         }
 
-
-        /// <summary>
-        /// Remove the like with the slected Id
-        /// </summary>
-        /// <param name="likeId">The like to be removed</param>
-        public void Unlike(IdType likeId)
-        {
-            // Check for comment not found
-            Like toBeRemoved = _likes.Where(x => x.Id == likeId).FirstOrDefault();
-
-            if (toBeRemoved == default(Comment))
-                throw new KeyNotFoundException($"No Like with Id {toBeRemoved.ToString()} in Post {Id.ToString()}");
-
-            _likes.Remove(toBeRemoved);
-
-            LastUpdate = DateTime.Now;
-        }
         #endregion
 
 
 
         #region Private Methods
+
+        /// <summary>
+        /// Build the next valid id
+        /// </summary>
+        /// <returns>The WS Id</returns>
+        private IdType BuildLikeId()
+        {
+            if (_likes.Count == 0)
+                return new IdType(1);
+
+            else
+                return _likes.Last().Id + 1;
+        }
+
+
+        /// <summary>
+        /// Build the next valid id
+        /// </summary>
+        /// <returns>The WS Id</returns>
+        private IdType BuildCommentId()
+        {
+            if (_comments.Count == 0)
+                return new IdType(1);
+
+            else
+                return _comments.Last().Id + 1;
+        }
+
 
         /// <summary>
         /// Modifies the Comment body
@@ -295,15 +391,15 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="commentText"></param>
         ///<exception cref="SocialNetworkGenericException">If comment not found among the Post ones</exception>
         /// <returns></returns>
-        private Comment EditComment(Comment srcComment, string commentText)
+        private void EditComment(Comment srcComment, string commentText)
         {
-            if (srcComment == default(Comment))
+            if (srcComment == default)
                 throw new SocialNetworkGenericException($"The selected Comment - Id={srcComment.Id.ToString()} - could not be found in this Post - Id={Id.ToString()}");
 
             else
                 srcComment.ModifyComment(commentText);
 
-            return srcComment;
+            //return srcComment;
         }
 
 
@@ -318,7 +414,17 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             if(!_comments.Remove(toBeRemoved))
                 throw new SocialNetworkGenericException($"The selected Comment - Id={toBeRemoved.Id.ToString()} - could not be found in this Post - Id={Id.ToString()}");
         }
+
         #endregion
 
+
+        #region IClonable Implementation
+
+
+        public object Clone()
+
+            => Copy(PostAuthor, Caption, SharingPolicy, CreatedOn, LastUpdate, AttachedPicture);
+
+        #endregion
     }
 }

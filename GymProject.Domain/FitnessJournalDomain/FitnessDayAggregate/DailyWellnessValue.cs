@@ -24,7 +24,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         public IReadOnlyCollection<MusReference> MusList
         {
-            get => _musList?.ToList().AsReadOnly();
+            get => _musList?.Clone().ToList().AsReadOnly();
         }
         #endregion
 

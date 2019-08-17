@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GymProject.Domain.DietDomain
+namespace GymProject.Domain.SharedKernel
 {
     public class MonthsEnum : Enumeration
     {

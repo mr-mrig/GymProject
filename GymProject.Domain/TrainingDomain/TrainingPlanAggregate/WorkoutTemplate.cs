@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class WorkoutTemplate : Entity<IdType>
+    public class WorkoutTemplate : Entity<IdType>, ICloneable
     {
 
 
@@ -79,7 +79,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(GetAllWorkingSets());
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets());
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets());
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(GetAllWorkingSets(), GetMainEffortType());
         }
         #endregion
 
@@ -288,6 +288,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             ForceConsecutiveWorkUnitProgressiveNumbers();
             TestBusinessRules();
         }
+
+
+        /// <summary>
+        /// Get the WSs of all the Work Units belonging to the Workout
+        /// </summary>
+        /// <returns>The list of the Working Sets</returns>
+        public IEnumerable<WorkingSetTemplate> GetAllWorkingSets()
+
+             => _workUnits.SelectMany(x => x.WorkingSets);
+
 
         #endregion
 
@@ -546,14 +556,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Build the next valid id
         /// </summary>
-        /// <returns>The WS Id</returns>
+        /// <returns>The WU Id</returns>
         private IdType BuildWorkUnitId()
         {
             if (_workUnits.Count == 0)
                 return new IdType(1);
 
             else
-                return _workUnits.Last().Id + 1;
+                return new IdType(_workUnits.Max(x => x.Id.Id) + 1);
         }
 
 
@@ -606,14 +616,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                          EffortType = x.Key
                      }).OrderByDescending(x => x.Counter).First().EffortType;
 
-
-        /// <summary>
-        /// Get the WSs of all the Work Units belonging to the Workout
-        /// </summary>
-        /// <returns>The list of the Working Sets</returns>
-        private IEnumerable<WorkingSetTemplate> GetAllWorkingSets()
-
-             => _workUnits.SelectMany(x => x.WorkingSets);
 
         #endregion
 
@@ -670,7 +672,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!WorkUnitsWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Work Units of the same Workout must have consecutive progressive numbers.");
         }
+
         #endregion
 
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => PlanWorkout(Id, ProgressiveNumber, _workUnits, Name, SpecificWeekday);
+
+        #endregion
     }
 }

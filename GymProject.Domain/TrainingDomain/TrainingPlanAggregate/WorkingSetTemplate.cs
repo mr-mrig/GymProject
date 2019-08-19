@@ -224,7 +224,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             switch (Effort)
             {
 
-                case var _ when Effort.IsIntenistyPercentage():
+                case var _ when Effort.IsIntensityPercentage():
 
                     TrainingEffortValue rmConverted = Effort.ToRm(Repetitions);   // Get maximum repetitions with that intensity
                     return ToRepetitions() <= rmConverted.Value;
@@ -300,7 +300,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if(Repetitions.IsAMRAP())
             {
                 if (Effort != null && 
-                    (Effort.IsIntenistyPercentage() || Effort.IsRM()))
+                    (Effort.IsIntensityPercentage() || Effort.IsRM()))
 
                     return Tempo.ToSeconds() * (int)Effort.ToRm(Repetitions).Value;
                 else
@@ -342,7 +342,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             // If Max reps, convert to RM to find the repetitions, then compute the time
             if (Repetitions.IsAMRAP())
             {
-                if (Effort != null && (Effort.IsIntenistyPercentage() || Effort.IsRM()))
+                if (Effort != null && (Effort.IsIntensityPercentage() || Effort.IsRM()))
                     return (int)Effort.ToRm(Repetitions).Value;
                 else
                     return 0;
@@ -385,7 +385,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             => !Repetitions.IsAMRAP() ||
                 (Effort != null && 
-                    (Effort.IsRM() || Effort.IsIntenistyPercentage()));
+                    (Effort.IsRM() || Effort.IsIntensityPercentage()));
 
 
         /// <summary>

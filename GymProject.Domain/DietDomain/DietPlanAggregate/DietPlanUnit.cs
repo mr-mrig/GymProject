@@ -387,7 +387,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 return new IdType(1);
 
             else
-                return _dietDays.Last().Id + 1;
+                return new IdType(_dietDays.Max(x => x.Id.Id) + 1);
         }
         #endregion
 

@@ -106,6 +106,7 @@ namespace GymProject.Domain.Base
 
             return other.Id.Equals(Id);
         }
+
         #endregion
 
 
@@ -125,7 +126,6 @@ namespace GymProject.Domain.Base
             return !(left == right);
         }
         #endregion
-
 
     }
 

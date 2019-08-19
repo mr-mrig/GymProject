@@ -37,8 +37,8 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         public static TrainingEffortTypeEnum NotSet = new TrainingEffortTypeEnum(0, "NotSet", "Generic", "Effort not specified", (x) => true);
         public static TrainingEffortTypeEnum IntensityPerc = new TrainingEffortTypeEnum(1, "Intensity", "%", "Percentage of 1RM", CheckIntensityPercentageConstraints);
-        public static TrainingEffortTypeEnum RM = new TrainingEffortTypeEnum(1, "RM", "RM", "The most weight you can lift for a defined number of exercise movements", CheckRMConstraints);
-        public static TrainingEffortTypeEnum RPE = new TrainingEffortTypeEnum(1, "RPE", "RPE", "Self-assessed measure of the difficulty of a training set", CheckRPEConstraints);
+        public static TrainingEffortTypeEnum RM = new TrainingEffortTypeEnum(2, "RM", "RM", "The most weight you can lift for a defined number of exercise movements", CheckRMConstraints);
+        public static TrainingEffortTypeEnum RPE = new TrainingEffortTypeEnum(3, "RPE", "RPE", "Self-assessed measure of the difficulty of a training set", CheckRPEConstraints);
 
 
 

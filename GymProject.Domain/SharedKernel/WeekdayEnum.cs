@@ -46,7 +46,7 @@ namespace GymProject.Domain.SharedKernel
         /// Checks wether this weekday is generic - IE: not assigned to a specific weekday
         /// </summary>
         /// <returns>True if generic weekday</returns>
-        public bool IsGeneric() => Equals(Generic);
+        public bool IsGeneric() => this == Generic;
 
 
         #region Object Override

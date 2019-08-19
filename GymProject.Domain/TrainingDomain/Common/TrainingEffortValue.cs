@@ -103,7 +103,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Check whether the effort is expressed as Intensity Percentage
         /// </summary>
         /// <returns>True if Intensity Percentage</returns>
-        public bool IsIntenistyPercentage() => EffortType == TrainingEffortTypeEnum.IntensityPerc;
+        public bool IsIntensityPercentage() => EffortType == TrainingEffortTypeEnum.IntensityPerc;
 
 
         /// <summary>

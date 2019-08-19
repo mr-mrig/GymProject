@@ -2,7 +2,6 @@
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
-using GymProject.Domain.Utils;
 using System;
 using Xunit;
 using GymProject.Domain.Test.Util;
@@ -11,7 +10,7 @@ using GymProject.Domain.Base;
 
 namespace GymProject.Domain.Test.UnitTest
 {
-    public class TrainingPlanAggregateValueObjectsTest
+    public class WorkoutTemplateAggregateValueObjectsTest
     {
 
         [Fact]
@@ -238,11 +237,11 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityP2.EffortType);
             Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityP3.EffortType);
 
-            Assert.True(intensityR1.IsIntenistyPercentage());
-            Assert.True(intensityR2.IsIntenistyPercentage());
-            Assert.True(intensityP1.IsIntenistyPercentage());
-            Assert.True(intensityP2.IsIntenistyPercentage());
-            Assert.True(intensityP3.IsIntenistyPercentage());
+            Assert.True(intensityR1.IsIntensityPercentage());
+            Assert.True(intensityR2.IsIntensityPercentage());
+            Assert.True(intensityP1.IsIntensityPercentage());
+            Assert.True(intensityP2.IsIntensityPercentage());
+            Assert.True(intensityP3.IsIntensityPercentage());
 
             Assert.False(intensityR1.IsRM());
             Assert.False(intensityR2.IsRM());
@@ -275,9 +274,9 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(TrainingEffortTypeEnum.RM, rm2.EffortType);
             Assert.Equal(TrainingEffortTypeEnum.RM, rm3.EffortType);
 
-            Assert.False(rm1.IsIntenistyPercentage());
-            Assert.False(rm2.IsIntenistyPercentage());
-            Assert.False(rm3.IsIntenistyPercentage());
+            Assert.False(rm1.IsIntensityPercentage());
+            Assert.False(rm2.IsIntensityPercentage());
+            Assert.False(rm3.IsIntensityPercentage());
 
             Assert.True(rm1.IsRM());
             Assert.True(rm2.IsRM());
@@ -311,9 +310,9 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(TrainingEffortTypeEnum.RPE, rpe2.EffortType);
             Assert.Equal(TrainingEffortTypeEnum.RPE, rpe3.EffortType);
 
-            Assert.False(rpe1.IsIntenistyPercentage());
-            Assert.False(rpe2.IsIntenistyPercentage());
-            Assert.False(rpe3.IsIntenistyPercentage());
+            Assert.False(rpe1.IsIntensityPercentage());
+            Assert.False(rpe2.IsIntensityPercentage());
+            Assert.False(rpe3.IsIntensityPercentage());
 
             Assert.False(rpe1.IsRM());
             Assert.False(rpe2.IsRM());

@@ -1,5 +1,4 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.Utils.Extensions;
@@ -202,7 +201,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="intensityTechniqueIds">The ids of the WS intensity techniques</param>
         public void AddWorkingSet(WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdType> intensityTechniqueIds = null)
         {
-            List<IdType> localIntensityTechniqueIds = intensityTechniqueIds.Clone().ToList() ?? new List<IdType>();
+            List<IdType> localIntensityTechniqueIds = intensityTechniqueIds?.Clone()?.ToList() ?? new List<IdType>();
 
             // Apply the WU-wise intensity techniques - if any - to the added WS
             if (_intensityTechniquesIds.Count > 0)
@@ -426,7 +425,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 return new IdType(1);
 
             else
-                return _workingSets.Last().Id + 1;
+                return new IdType(_workingSets.Max(x => x.Id.Id) + 1);
         }
 
 

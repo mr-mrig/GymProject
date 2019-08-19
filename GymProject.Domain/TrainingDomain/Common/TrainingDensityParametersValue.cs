@@ -143,7 +143,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Get the average rest between sets
         /// </summary>
         /// <returns>The average rest over the WSs</returns>
-        public float GetAverageRest() => (float)TotalRest / (float)_totalWorkingSets;
+        public float GetAverageRest() => _totalWorkingSets == 0 ? 0 : (float)TotalRest / (float)_totalWorkingSets;
 
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The average time under tension [s]</returns>
         public float GetAverageSecondsUnderTension()
 
-            => (float)TotalSecondsUnderTension / (float)_totalWorkingSets;
+            => _totalWorkingSets == 0 ? 0 :(float)TotalSecondsUnderTension / (float)_totalWorkingSets;
 
         #endregion
 

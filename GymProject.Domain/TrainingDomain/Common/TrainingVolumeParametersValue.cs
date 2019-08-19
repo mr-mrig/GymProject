@@ -143,7 +143,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Get the average repetitions number - the result is exact IE: has decimal values
         /// </summary>
         /// <returns>The average repetitions over the WSs</returns>
-        public float GetAverageRepetitions() => (float)TotalReps / (float)TotalWorkingSets;
+        public float GetAverageRepetitions() => TotalWorkingSets == 0 ? 0 : (float)TotalReps / (float)TotalWorkingSets;
 
 
         ///// <summary>
@@ -159,7 +159,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The average repetitions over the WSs</returns>
         public WeightPlatesValue GetAverageWorkloadPerSet() 
             
-            => WeightPlatesValue.Measure((float)TotalWorkload.Value / (float)TotalWorkingSets, TotalWorkload.Unit);
+            => WeightPlatesValue.Measure(TotalWorkingSets == 0 ? 0 : (float)TotalWorkload.Value / (float)TotalWorkingSets, TotalWorkload.Unit);
 
         #endregion
 

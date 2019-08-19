@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingWeekTemplate : Entity<IdType>, ICloneable
+    public class TrainingPlan : Entity<IdType>, ICloneable
     {
 
 
@@ -50,16 +50,21 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
-        /// The type of the training week
+        /// FK to the author of the Training Plan
         /// </summary>
-        public TrainingWeekTypeEnum TrainingWeekType { get; private set; } = null;
+        public IdType OwnerId { get; private set; } = null;
 
+
+        /// <summary>
+        /// FK to the Training Schedule
+        /// </summary>
+        public ICollection<IdType> TrainingScheduleId { get; private set; } = null;
 
 
 
         #region Ctors
 
-        private TrainingWeekTemplate(IdType id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
+        private TrainingPlan(IdType id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
         {
             Id = id;
             ProgressiveNumber = progressiveNumber;
@@ -86,10 +91,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workouts">The Workouts belonging to the Training Week</param>
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
-        /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate AddTrainingWeekToPlan(IdType id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
+        /// <returns>The TrainingPlan instance</returns>
+        public static TrainingPlan AddTrainingWeekToPlan(IdType id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
 
-            => new TrainingWeekTemplate(id, progressiveNumber, workouts, weekType);
+            => new TrainingPlan(id, progressiveNumber, workouts, weekType);
 
         #endregion
 

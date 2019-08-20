@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.Utils;
@@ -123,6 +124,49 @@ namespace GymProject.Domain.Test.Util
 
 
 
+
+        public static WorkoutTemplate BuildRandomWorkout(long id, int progn, int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
+        {
+            // Work Units
+            List<WorkUnitTemplate> workUnits = new List<WorkUnitTemplate>();
+
+            int? nWorkUnits = RandomFieldGenerator.RandomIntNullable(nWorkUnitsMin, nWorkUnitsMax, emptyWorkoutProb);
+
+            if (nWorkUnits == null)
+                nWorkUnits = 0;
+
+
+            for (int iwu = 0; iwu < nWorkUnits; iwu++)
+            {
+                //long strongId = ((id - 1) * wuIdOffset + iwu);      // Easiest to read
+                long strongId = ((id - 1) * nWorkUnitsMax + iwu);      // Smallest possible
+
+                workUnits.Add(BuildRandomWorkUnit(strongId, iwu));
+            }
+
+            // Specific Day
+            if(specificDay == null)
+            {
+                int? weekDayId = RandomFieldGenerator.RandomIntNullable(WeekdayEnum.Monday.Id, WeekdayEnum.AllTheWeek, 0.1f);
+
+                if (weekDayId == null)
+                    specificDay = WeekdayEnum.Generic;
+                else
+                    specificDay = WeekdayEnum.From(weekDayId.Value);
+            }
+
+
+            return WorkoutTemplate.PlanWorkout(
+                id: new IdType(id),
+                progressiveNumber: (uint)progn,
+                workUnits: workUnits,
+                workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
+                weekday: specificDay
+                );
+        }
+
+
+
         public static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
             int ownerNoteIdMin = 10, int ownerNoteIdMax = 500)
         {
@@ -136,6 +180,8 @@ namespace GymProject.Domain.Test.Util
             float rmMin = 1f, rmMax = 20f;
             float rpeMin = 3f, rpeMax = 11f;
             float effortMin, effortMax;
+
+            //int wsIdOffset = 100;       // Used to ensure no ID collisions among WSs of different WUs
 
             // Build randomic Effort
             if (id % 2 == 0)
@@ -179,7 +225,12 @@ namespace GymProject.Domain.Test.Util
             int iwsMax = RandomFieldGenerator.RandomInt(wsNumMin, wsNumMax);
 
             for (int iws = 0; iws < iwsMax; iws++)
-                workingSets.Add(BuildRandomWorkingSet(id * 1000 + iws, iws, effortType, effortMin, effortMax, tutToChooseAmong: tuts));
+            {
+                //long strongId = ((id - 1) * wsIdOffset + iws);      // Easiest to read
+                long strongId = ((id - 1) * wsNumMax + iws);      // Smallest possible
+
+                workingSets.Add(BuildRandomWorkingSet(strongId, iws, effortType, effortMin, effortMax, tutToChooseAmong: tuts));
+            }
 
             return WorkUnitTemplate.PlanWorkUnit(
                 id: new IdType(id),

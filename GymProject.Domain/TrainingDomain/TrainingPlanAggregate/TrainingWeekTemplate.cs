@@ -371,8 +371,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!FullRestWeekHasNoWorkouts())
                 throw new TrainingDomainInvariantViolationException($"Full Rest week must have no scheduled Workouts.");
 
-            if (!WorkoutWithNonOverlappingSpecificDays())
-                throw new TrainingDomainInvariantViolationException($"Workouts of the same Training Week must not be planned on overlapping days.");
+            //if (!WorkoutWithNonOverlappingSpecificDays())
+            //    throw new TrainingDomainInvariantViolationException($"Workouts of the same Training Week must not be planned on overlapping days.");
 
             if (!WorkoutWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Workouts of the same Training Week must have consecutive progressive numbers.");

@@ -1505,5 +1505,23 @@ namespace GymProject.Domain.Test.UnitTest
 
 
 
+        [Fact]
+        public void TrainingWeekFail()
+        {
+            int ntests = 20;
+            int nwoMin = 1, nwoMax = 7;
+
+            IdType weekId = new IdType(11);
+
+            for(int itest = 0; itest < ntests; itest++)
+            {
+                List<WorkoutTemplate> workouts = new List<WorkoutTemplate>();
+
+                int iwoMax = RandomFieldGenerator.RandomInt(nwoMin, nwoMax);
+
+                for(int iwo = 0; iwo < iwoMax; iwo++)
+                    workouts.Add()
+            }
+        }
     }
 }

@@ -66,8 +66,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             Repetitions = repetitions;
             Rest = rest ?? RestPeriodValue.SetRestNotSpecified();
             Tempo = tempo ?? TUTValue.SetGenericTUT();
-            _intensityTechniqueIds = intensityTechniqueIds?.Clone().ToList() ?? new List<IdType>();
             Effort = effort?? TrainingEffortValue.DefaultEffort;
+
+            _intensityTechniqueIds = intensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
 
             TestBusinessRules();
         }
@@ -170,8 +171,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="toAddId">The id to be added</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        /// <exception cref="ArgumentNullException">If the ID is null</exception>
         public void AddIntensityTechnique(IdType toAddId)
         {
+            if (toAddId == null)
+                throw new ArgumentNullException($"Intensity Technique ID must be valid when adding a technique to the Working Set", nameof(toAddId));
+
             if (_intensityTechniqueIds.Contains(toAddId))
                 return;
 
@@ -187,10 +192,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         public bool RemoveIntensityTechnique(IdType toRemoveId)
         {
-            bool ok = _intensityTechniqueIds.Remove(toRemoveId);
+            bool removed = _intensityTechniqueIds.Remove(toRemoveId);
             TestBusinessRules();
 
-            return ok;
+            return removed;
         }
 
 
@@ -371,6 +376,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Business Rules Validation
 
         /// <summary>
+        /// Working Set Intensity Techniques must be non NULL.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool NoNullIntensityTechniques() => _intensityTechniqueIds.All(x => x != null);
+
+
+        /// <summary>
         /// The Target Repetitions must be specified.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -413,6 +425,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
+            if (!NoNullIntensityTechniques())
+                throw new TrainingDomainInvariantViolationException($"Working Set Intensity Techniques must be non NULL.");
+
             if (!ValidRepetitionNumber())
                 throw new TrainingDomainInvariantViolationException($"The Target Repetitions must be specified.");
 

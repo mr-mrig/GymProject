@@ -113,7 +113,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public void MoveToNewProgressiveNumber(uint newPnum)
         {
             ProgressiveNumber = newPnum;
-            TestBusinessRules();
+            //TestBusinessRules();
         }
 
 
@@ -171,14 +171,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Find the Working Unit with the progressive number specified
         /// </summary>
         /// <param name="pNum">The progressive number to be found</param>
-        /// <exception cref="ArgumentException">If Progressive Number could not be found</exception>
-        /// <returns>The WokringSetTemplate object or DEFAULT if not found/returns>
+        /// <exception cref="ArgumentNullException">If Progressive Number could not be found</exception>
+        /// <returns>The WokringSetTemplate object/returns>
         public WorkUnitTemplate FindWorkUnitByProgressiveNumber(int pNum)
         {
             WorkUnitTemplate result = _workUnits.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();
 
             if (result == default)
-                throw new ArgumentException($"Work Unit with Progressive Number {pNum.ToString()} could not be found");
+                throw new ArgumentNullException($"Work Unit with Progressive Number {pNum.ToString()} could not be found");
 
             return result;
         }
@@ -298,6 +298,20 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
              => _workUnits.SelectMany(x => x.WorkingSets);
 
+
+        /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WU 
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        public TrainingEffortTypeEnum GetMainEffortType()
+
+            => _workUnits.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
+                : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
 
         #endregion
 
@@ -600,22 +614,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
         }
-
-
-        /// <summary>
-        /// Get the main effort type as the effort of most of the WSs of the WU 
-        /// </summary>
-        /// <returns>The training effort type</returns>
-        private TrainingEffortTypeEnum GetMainEffortType()
-
-            => _workUnits.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
-                : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
-
 
         #endregion
 

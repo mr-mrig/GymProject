@@ -42,10 +42,19 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, amrap, effort: TrainingEffortValue.AsRPE(10)));
 
             // Duplicate Intensity Techniques
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(10), new IdType(1) }));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(10), new IdType(1) }));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(1), new IdType(10) }));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(1) }));
+            //Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(10), new IdType(1) }));
+            //Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(10), new IdType(1) }));
+            //Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(1), new IdType(10) }));
+            //Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(1) }));
+
+            WorkingSetTemplate ws = WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(10), new IdType(1) });
+            Assert.Equal(2, ws.IntensityTechniqueIds.Count);
+            ws = WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(10), new IdType(1) });
+            Assert.Equal(2, ws.IntensityTechniqueIds.Count);
+            ws = WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(10), new IdType(1), new IdType(10) });
+            Assert.Equal(2, ws.IntensityTechniqueIds.Count);
+            ws = WorkingSetTemplate.AddWorkingSet(id, pNum, validReps, intensityTechniqueIds: new List<IdType>() { new IdType(1), new IdType(1) });
+            Assert.Equal(1, ws.IntensityTechniqueIds.Count);
         }
 
 
@@ -470,7 +479,7 @@ namespace GymProject.Domain.Test.UnitTest
                 WorkingSetTemplate.AddWorkingSet(wsId, 0, WSRepetitionValue.TrackRepetitionSerie(reps6), effort: effort2),
             };
 
-            List<IdType> wuIntId1 = new List<IdType>() { null };
+            List<IdType> wuIntId1 = new List<IdType>() { new IdType(1888) };
             List<IdType> wuIntId2 = new List<IdType>() { new IdType(1), new IdType(88), };
 
             IdType noteId = new IdType(11);

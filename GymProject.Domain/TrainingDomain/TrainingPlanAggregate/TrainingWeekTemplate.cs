@@ -42,6 +42,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         /// <summary>
         /// The Workouts belonging to the TW
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<WorkoutTemplate> Workouts
         {
@@ -164,7 +165,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
-        /// Find the Working Set with the ID specified
+        /// Find the Workout with the ID specified
         /// </summary>
         /// <param name="id">The Id to be found</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
@@ -172,24 +173,30 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public WorkoutTemplate FindWorkoutById(IdType id)
         {
             if (id == null)
-                throw new ArgumentException($"Cannot find a WS with NULL id");
+                throw new ArgumentException($"Cannot find a WO with NULL id");
 
             WorkoutTemplate ws = _workouts.Where(x => x.Id == id).FirstOrDefault();
 
             if (ws == default)
-                throw new ArgumentException($"Working Set with Id {id} could not be found");
+                throw new ArgumentException($"Workout with Id {id.ToString()} could not be found");
 
             return ws;
         }
 
         /// <summary>
-        /// Find the Working Set with the progressive number specified
+        /// Find the Workout with the progressive number specified
         /// </summary>
         /// <param name="pNum">The progressive number to be found</param>
-        /// <returns>The WokringSetTemplate object or DEFAULT if not found/returns>
+        /// <returns>The WokringSetTemplate objectd/returns>
         public WorkoutTemplate FindWorkoutByProgressiveNumber(int pNum)
+        {
+            WorkoutTemplate wo = _workouts.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();
 
-            => _workouts.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();
+            if (wo == default)
+                throw new ArgumentException($"Workout with Id {pNum.ToString()} could not be found");
+
+            return wo;
+        }
 
 
         /// <summary>
@@ -208,6 +215,21 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public IEnumerable<WorkingSetTemplate> GetAllWorkingSets()
 
              => _workouts.SelectMany(x => x.GetAllWorkingSets());
+
+
+        /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WU 
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        public TrainingEffortTypeEnum GetMainEffortType()
+
+            => _workouts.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
+                : GetAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
 
         #endregion
 
@@ -245,27 +267,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _workouts = SortWorkoutsByProgressiveNumber(_workouts).ToList();
 
             // Just overwrite all the progressive numbers
-            for (int iws = 0; iws < _workouts.Count(); iws++)
+            for (int iwo = 0; iwo < _workouts.Count(); iwo++)
             {
-                WorkoutTemplate ws = _workouts[iws];
-                ws.MoveToNewProgressiveNumber((uint)iws);
+                WorkoutTemplate ws = _workouts[iwo];
+                ws.MoveToNewProgressiveNumber((uint)iwo);
             }
         }
-
-
-        /// <summary>
-        /// Get the main effort type as the effort of most of the WSs of the WU 
-        /// </summary>
-        /// <returns>The training effort type</returns>
-        private TrainingEffortTypeEnum GetMainEffortType()
-
-            => _workouts.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
-                : GetAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
 
         #endregion
 
@@ -324,8 +331,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>True if business rule is met</returns>
         private bool WorkoutWithConsecutiveProgressiveNumber()
         {
+            if (_workouts.Count == 0)
+                return true;
+
             // Check the first element: the sequence must start from 0
-            if (_workouts?.Count() <= 1)
+            if (_workouts?.Count() == 1)
             {
                 if (_workouts.FirstOrDefault()?.ProgressiveNumber == 0)
                     return true;

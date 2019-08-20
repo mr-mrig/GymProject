@@ -61,6 +61,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         /// <summary>
         /// The list of the IDs of the WU-wise Intensity Techniques - Will be applied to all the WSs
+        /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<IdType> IntensityTechniquesIds
         {
@@ -79,9 +80,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             ExcerciseId = excerciseId;
 
             _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplate>();
-            _intensityTechniquesIds = workUnitIntensityTechniqueIds?.Clone().ToList() ?? new List<IdType>();
 
-            // Check for duplicate intensity techniques or let the WS raise the exception?
+            //No duplicate intensity techniques
+            _intensityTechniquesIds = workUnitIntensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
+
 
             foreach (WorkingSetTemplate ws in _workingSets)
                 foreach (IdType intTechniqueId in _intensityTechniquesIds)
@@ -126,7 +128,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public void MoveToNewProgressiveNumber(uint newPnum)
         {
             ProgressiveNumber = newPnum;
-            TestBusinessRules();
+            //TestBusinessRules();
         }
 
 
@@ -134,8 +136,15 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Add the intensity technique to the Work Unit and all its WSs
         /// </summary>
         /// <param name="intensityTechniqueId">The ID of the intensity technique</param>
+        /// <exception cref="ArgumentNullException">If the ID is null</exception>
         public void AddWorkUnitIntensityTechnique(IdType intensityTechniqueId)
         {
+            if (intensityTechniqueId == null)
+                throw new ArgumentNullException($"Intensity Technique ID must be valid when adding a technique to the Work Unit", nameof(intensityTechniqueId));
+
+            if (_intensityTechniquesIds.Contains(intensityTechniqueId))
+                return;
+
             _intensityTechniquesIds.Add(intensityTechniqueId);
 
             foreach (WorkingSetTemplate ws in _workingSets)
@@ -157,8 +166,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             {
                 foreach (WorkingSetTemplate ws in _workingSets)
                     RemoveWorkingSetIntensityTechnique(ws.Id, intensityTechniqueId);
+
+                TestBusinessRules();
             }
-            TestBusinessRules();
         }
 
 
@@ -291,7 +301,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="pNum">The progressive number to be found</param>
         /// <exception cref="ArgumentException">If Progressive Number could not be found</exception>
-        /// <returns>The WokringSetTemplate object or DEFAULT if not found/returns>
+        /// <returns>The WokringSetTemplate object/returns>
         public WorkingSetTemplate FindWorkingSetByProgressiveNumber(int pNum)
         {
             WorkingSetTemplate result  = _workingSets.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();
@@ -301,6 +311,21 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             return result;
         }
+
+
+        /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WU 
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        public TrainingEffortTypeEnum GetMainEffortType()
+
+            => _workingSets.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
+                : _workingSets.GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
 
         #endregion
 
@@ -462,20 +487,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             }
         }
 
-        /// <summary>
-        /// Get the main effort type as the effort of most of the WSs of the WU 
-        /// </summary>
-        /// <returns>The training effort type</returns>
-        private TrainingEffortTypeEnum GetMainEffortType()
-
-            => _workingSets.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc 
-                : _workingSets.GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
-
         #endregion
 
 
@@ -486,6 +497,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <returns>True if business rule is met</returns>
         private bool NoNullWorkingSets() => _workingSets.All(x => x != null);
+
+
+        /// <summary>
+        /// Work Unit Intensity Techniques must be non NULL.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool NoNullIntensityTechniques() => _intensityTechniquesIds.All(x => x != null);
 
 
         /// <summary>
@@ -541,9 +559,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (_intensityTechniquesIds.Count == 0)
                 return true;
 
-            foreach(IdType itId in _intensityTechniquesIds)
+            foreach(IdType techniqueId in _intensityTechniquesIds)
             {
-                if (_workingSets.Any(x => !x.IntensityTechniqueIds.Contains(itId)))
+                if (_workingSets.Any(x => !x.IntensityTechniqueIds.Contains(techniqueId)))
                     return false;
             }
             return true;
@@ -557,7 +575,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private void TestBusinessRules()
         {
             if (!NoNullWorkingSets())
-                throw new TrainingDomainInvariantViolationException($"The Work Unit musthave no NULL working sets.");
+                throw new TrainingDomainInvariantViolationException($"The Work Unit must have no NULL working sets.");
+
+            if (!NoNullIntensityTechniques())
+                throw new TrainingDomainInvariantViolationException($"Work Unit Intensity Techniques must be non NULL.");
 
             if (!ExcerciseSpecified())
                 throw new TrainingDomainInvariantViolationException($"The Work Unit must be linked to an excercise.");

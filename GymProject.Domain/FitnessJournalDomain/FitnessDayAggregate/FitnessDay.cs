@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class FitnessDay : Entity<IdType>, IAggregateRoot
+    public class FitnessDay : Entity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -25,7 +25,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public RatingValue Rating { get; private set; } = null;
 
         // FK -> Don't fetch any other fields, as they might slow the process a lot
-        public IdType PostId { get; private set; }
+        public IdTypeValue PostId { get; private set; }
 
         /// <summary>
         /// The daily Activity tracked
@@ -63,7 +63,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         }
 
 
-        private FitnessDay(IdType postId, DateTime dayDate, RatingValue rating = null)
+        private FitnessDay(IdTypeValue postId, DateTime dayDate, RatingValue rating = null)
         {
             PostId = postId;
             DayDate = dayDate;
@@ -122,7 +122,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// Linke the entry to a Post
         /// </summary>
         /// <param name="postId">The ID of the post to be linked</param>
-        public void LinkToPost(IdType postId)
+        public void LinkToPost(IdTypeValue postId)
         {
             PostId = postId;
         }
@@ -170,7 +170,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// Remove the selected MUS
         /// </summary>
         /// <param name="toRemoveId">The Id of the MUS to be removed</param>
-        public void UndiagnoseMus(IdType toRemoveId)
+        public void UndiagnoseMus(IdTypeValue toRemoveId)
         {
             DailyWellness = DailyWellness.RemoveMus(toRemoveId);
             AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));

@@ -73,7 +73,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         {
             TrainingEffortTypeEnum toEffortType = effortType ?? DefaultEffortType;
 
-            List<IWorkingSet> wsCopy = workingSets.Clone().ToList() ?? new List<IWorkingSet>();
+            List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
 
             if (wsCopy.Count() == 0)
                 return new TrainingIntensityParametersValue(0, toEffortType, 0);

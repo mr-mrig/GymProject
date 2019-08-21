@@ -19,7 +19,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void GetFirstUnit()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -45,7 +45,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void GetFirstUnitWithUnbounded()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -71,7 +71,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void GetFirstUnitWithOnlyOneUnit()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -90,7 +90,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void GetLastUnit()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -116,7 +116,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void GetLastUnitWithUnbounded()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -142,7 +142,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void GetLastUnitWithOnlyOneUnit()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -160,7 +160,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanNullUnitsFail()
         {
-            IdType id = new IdType(1);
+            IdTypeValue id = new IdTypeValue(1);
             string name = "My Plan";
 
             Owner owner = Owner.Register("myUser", "imageUrl");
@@ -175,7 +175,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanEmptyUnitsFail()
         {
-            IdType id = new IdType(1);
+            IdTypeValue id = new IdTypeValue(1);
             string name = "My Plan";
 
             Owner owner = Owner.Register("myUser", "imageUrl");
@@ -216,7 +216,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanChangeDraft()
         {
-            IdType postId = new IdType(11);
+            IdTypeValue postId = new IdTypeValue(11);
             PersonalNoteValue note = PersonalNoteValue.Write("note.");
             PersonalNoteValue note2 = PersonalNoteValue.Write("Final note.");
             WeeklyOccuranceValue fmeals = WeeklyOccuranceValue.TrackOccurance(1);
@@ -256,8 +256,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanChangeDayNotFoundFail()
         {
-            IdType dayId = new IdType(1);
-            IdType unitId = new IdType(1);
+            IdTypeValue dayId = new IdTypeValue(1);
+            IdTypeValue unitId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -278,8 +278,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanChangeUnitNotFoundFail()
         {
-            IdType dayId = new IdType(1);
-            IdType unitId = new IdType(1);
+            IdTypeValue dayId = new IdTypeValue(1);
+            IdTypeValue unitId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -300,8 +300,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanChangeInvalidDayFail()
         {
-            IdType dayId = new IdType(1);
-            IdType unitId = new IdType(1);
+            IdTypeValue dayId = new IdTypeValue(1);
+            IdTypeValue unitId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -323,8 +323,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanChangeDay()
         {
-            IdType dayId = new IdType(1);
-            IdType unitId = new IdType(1);
+            IdTypeValue dayId = new IdTypeValue(1);
+            IdTypeValue unitId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -365,7 +365,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanDraftNoWeeklyOccurrancesDayUseDefault()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -380,7 +380,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanDraftExceedingOccurrancesDayFail()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -395,7 +395,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanDraftMissingMacrosDayFail()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -410,7 +410,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanDraftNullMacrosDayFail()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -424,8 +424,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanConsolidateConsolidateOneDay()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -433,7 +433,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: null, dayType: DietDayTypeEnum.NotSet);
 
-            plan.FinalizePlan(new IdType(1));    // Doesn't throw
+            plan.FinalizePlan(new IdTypeValue(1));    // Doesn't throw
 
             Assert.Equal(WeeklyOccuranceValue.MaximumTimes, plan.FindUnitById(unitId).FindDayById(dayId).WeeklyOccurrances.Value);
         }
@@ -442,8 +442,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanAddDaysExceedingWeekdaysFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -464,8 +464,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanAddDayToWrongUnitFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -482,13 +482,13 @@ namespace GymProject.Domain.Test.UnitTest
         {
             int dayId, carbs, proteins, fats, salt, water;
             DietDayTypeEnum dayType;
-            IdType unitId;
+            IdTypeValue unitId;
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
 
-            unitId = new IdType(1);
+            unitId = new IdTypeValue(1);
 
             List<DietPlanUnit> units = plan.DietUnits.ToList();
             DietPlanUnit unit = plan.FindUnitById(unitId);
@@ -501,13 +501,13 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.On;
 
             DietPlanDay day1 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: DietDayTypeEnum.On);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins), 
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(2), dayType: dayType);
 
-            Assert.Equal(day1, unit.FindDayById(new IdType(dayId)));
+            Assert.Equal(day1, unit.FindDayById(new IdTypeValue(dayId)));
 
 
             // Day 2
@@ -518,13 +518,13 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.Off;
 
             DietPlanDay day2 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: DietDayTypeEnum.On);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(2), dayType: dayType);
 
-            Assert.Equal(day2, unit.FindDayById(new IdType(dayId)));
+            Assert.Equal(day2, unit.FindDayById(new IdTypeValue(dayId)));
 
 
             // Day 3
@@ -537,13 +537,13 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = null;
 
             DietPlanDay day3 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(3), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(3), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: DietDayTypeEnum.On);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
                 dayType: dayType, weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(3), salt: MicronutirentWeightValue.MeasureGrams(salt), water: VolumeValue.MeasureLiters(water));
 
-            Assert.Equal(day3, unit.FindDayById(new IdType(dayId)));
+            Assert.Equal(day3, unit.FindDayById(new IdTypeValue(dayId)));
 
 
             // Schedule Unit and reschedule it
@@ -573,7 +573,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Equal(targetCal, plan.AvgDailyCalories);
 
-            plan.FinalizePlan(new IdType(1));
+            plan.FinalizePlan(new IdTypeValue(1));
         }
 
 
@@ -591,7 +591,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanConsolidateInvalidUnitsFail()
         {
-            IdType postId = new IdType(11);
+            IdTypeValue postId = new IdTypeValue(11);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -607,10 +607,10 @@ namespace GymProject.Domain.Test.UnitTest
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
 
-            plan.PlanDietDay(new IdType(1), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
+            plan.PlanDietDay(new IdTypeValue(1), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(2), dayType: null);
 
-            Assert.Throws<DietDomainIvariantViolationException>(() => plan.FinalizePlan(new IdType(1)));
+            Assert.Throws<DietDomainIvariantViolationException>(() => plan.FinalizePlan(new IdTypeValue(1)));
         }
 
 
@@ -621,10 +621,10 @@ namespace GymProject.Domain.Test.UnitTest
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
 
-            plan.PlanDietDay(new IdType(1), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
+            plan.PlanDietDay(new IdTypeValue(1), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(2), dayType: DietDayTypeEnum.NotSet);
 
-            Assert.Throws<DietDomainIvariantViolationException>(() => plan.FinalizePlan(new IdType(1)));
+            Assert.Throws<DietDomainIvariantViolationException>(() => plan.FinalizePlan(new IdTypeValue(1)));
         }
 
 
@@ -633,13 +633,13 @@ namespace GymProject.Domain.Test.UnitTest
         {
             int dayId, carbs, proteins, fats, salt, water;
             DietDayTypeEnum dayType;
-            IdType unitId;
+            IdTypeValue unitId;
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
 
-            unitId = new IdType(1);
+            unitId = new IdTypeValue(1);
 
 
             // Day 1
@@ -650,7 +650,7 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.On;
 
             DietPlanDay day1 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: dayType);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -665,7 +665,7 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.Off;
 
             DietPlanDay day2 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: dayType);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -682,7 +682,7 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.On;
 
             DietPlanDay day3 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(3), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(3), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: dayType);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -715,7 +715,7 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.On;
 
             DietPlanDay day4 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(7), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(7), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: dayType);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -745,7 +745,7 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.Refeed;
 
             DietPlanDay day5 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(5), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(5), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: dayType);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -761,7 +761,7 @@ namespace GymProject.Domain.Test.UnitTest
             dayType = DietDayTypeEnum.Refeed;
 
             DietPlanDay day6 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins), dayType: dayType);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -792,12 +792,12 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(1, unit2.DietDays.Count);
             Assert.Equal(2, unit3.DietDays.Count);
 
-            Assert.Equal(day1, unit1.FindDayById(new IdType(1)));
-            Assert.Equal(day2, unit1.FindDayById(new IdType(2)));
-            Assert.Equal(day3, unit1.FindDayById(new IdType(3)));
-            Assert.Equal(day4, unit2.FindDayById(new IdType(1)));
-            Assert.Equal(day5, unit3.FindDayById(new IdType(1)));
-            Assert.Equal(day6, unit3.FindDayById(new IdType(2)));
+            Assert.Equal(day1, unit1.FindDayById(new IdTypeValue(1)));
+            Assert.Equal(day2, unit1.FindDayById(new IdTypeValue(2)));
+            Assert.Equal(day3, unit1.FindDayById(new IdTypeValue(3)));
+            Assert.Equal(day4, unit2.FindDayById(new IdTypeValue(1)));
+            Assert.Equal(day5, unit3.FindDayById(new IdTypeValue(1)));
+            Assert.Equal(day6, unit3.FindDayById(new IdTypeValue(2)));
 
 
             // Period check
@@ -818,7 +818,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void UnscheduleUnitNotFoundFail()
         {
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
@@ -846,7 +846,7 @@ namespace GymProject.Domain.Test.UnitTest
             DietPlan plan = DietPlan.NewDraft(owner, dest);
 
             // Unit1
-            IdType unitId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
@@ -909,13 +909,13 @@ namespace GymProject.Domain.Test.UnitTest
         public void UnscheduleUnitThenSchedule()
         {
             int dayId, carbs, proteins, fats;
-            IdType unitId;
+            IdTypeValue unitId;
 
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
 
-            unitId = new IdType(1);
+            unitId = new IdTypeValue(1);
 
 
             // Day 1
@@ -925,7 +925,7 @@ namespace GymProject.Domain.Test.UnitTest
             proteins = 170;
 
             DietPlanDay day1 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(5), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(5), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins));
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -939,7 +939,7 @@ namespace GymProject.Domain.Test.UnitTest
             proteins = 170;
 
             DietPlanDay day2 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins));
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -967,7 +967,7 @@ namespace GymProject.Domain.Test.UnitTest
             proteins = 170;
 
             DietPlanDay day3 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(7), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(7), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins));
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -990,7 +990,7 @@ namespace GymProject.Domain.Test.UnitTest
             proteins = 170;
 
             DietPlanDay day4 = DietPlanDay.AddDayToPlan(
-                new IdType(dayId), "", WeeklyOccuranceValue.TrackOccurance(7), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
+                new IdTypeValue(dayId), "", WeeklyOccuranceValue.TrackOccurance(7), MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats),
                 MacronutirentWeightValue.MeasureGrams(proteins));
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(proteins),
@@ -1006,21 +1006,21 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             // Unschedule unit 2
-            plan.UnscheduleDietPlanUnit(new IdType(2));
+            plan.UnscheduleDietPlanUnit(new IdTypeValue(2));
 
 
             // Units check
             List<DietPlanUnit> units = plan.DietUnits.ToList();
-            DietPlanUnit unit1 = plan.FindUnitById(new IdType(1));
-            DietPlanUnit unit3 = plan.FindUnitById(new IdType(3));
+            DietPlanUnit unit1 = plan.FindUnitById(new IdTypeValue(1));
+            DietPlanUnit unit3 = plan.FindUnitById(new IdTypeValue(3));
 
             Assert.Equal(2, units.Count);
             Assert.Equal(2, unit1.DietDays.Count);
             Assert.Equal(1, unit3.DietDays.Count);
 
-            Assert.Equal(day1, unit1.FindDayById(new IdType(1)));
-            Assert.Equal(day2, unit1.FindDayById(new IdType(2)));
-            Assert.Equal(day4, unit3.FindDayById(new IdType(1)));
+            Assert.Equal(day1, unit1.FindDayById(new IdTypeValue(1)));
+            Assert.Equal(day2, unit1.FindDayById(new IdTypeValue(2)));
+            Assert.Equal(day4, unit3.FindDayById(new IdTypeValue(1)));
 
 
             // Period check
@@ -1059,21 +1059,21 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Units check
             units = plan.DietUnits.ToList();
-            unit1 = plan.FindUnitById(new IdType(1));
-            unit3 = plan.FindUnitById(new IdType(3));
-            DietPlanUnit unit2 = plan.FindUnitById(new IdType(4));
+            unit1 = plan.FindUnitById(new IdTypeValue(1));
+            unit3 = plan.FindUnitById(new IdTypeValue(3));
+            DietPlanUnit unit2 = plan.FindUnitById(new IdTypeValue(4));
 
-            Assert.Null(plan.FindUnitById(new IdType(2)));
+            Assert.Null(plan.FindUnitById(new IdTypeValue(2)));
 
             Assert.Equal(3, units.Count);
             Assert.Equal(2, unit1.DietDays.Count);
             Assert.Equal(1, unit3.DietDays.Count);
             Assert.Equal(1, unit2.DietDays.Count);
 
-            Assert.Equal(day1, unit1.FindDayById(new IdType(1)));
-            Assert.Equal(day2, unit1.FindDayById(new IdType(2)));
-            Assert.Equal(day4, unit3.FindDayById(new IdType(1)));
-            Assert.Equal(day3, unit2.FindDayById(new IdType(1)));
+            Assert.Equal(day1, unit1.FindDayById(new IdTypeValue(1)));
+            Assert.Equal(day2, unit1.FindDayById(new IdTypeValue(2)));
+            Assert.Equal(day4, unit3.FindDayById(new IdTypeValue(1)));
+            Assert.Equal(day3, unit2.FindDayById(new IdTypeValue(1)));
 
 
             // Period check
@@ -1093,8 +1093,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanAppendUnitBeforeSchedulingPreviousFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1107,8 +1107,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanAppendUnitToNotBoundedFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1125,8 +1125,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanAppendUnitOverlappingFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1162,8 +1162,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanCloseAppendUpTo()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1192,8 +1192,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanCloseInfiniteFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1211,8 +1211,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void DietPlanAppendUnitNonContiguousFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1248,8 +1248,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void CloseDietPlan()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1288,8 +1288,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void ShuffleDietPlanUnits()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1326,27 +1326,27 @@ namespace GymProject.Domain.Test.UnitTest
             plan.CloseDietPlanUnit(unitId, fakeEnd3);
 
             // Check the units schedule is as expected
-            IdType testUnitId = new IdType(2);
+            IdTypeValue testUnitId = new IdTypeValue(2);
             Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
             Assert.Equal(fakeEnd2, plan.FindUnitById(testUnitId).PeriodScheduled.End);
-            testUnitId = new IdType(3);
+            testUnitId = new IdTypeValue(3);
             Assert.Equal(fakeEnd2.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
             Assert.Equal(fakeEnd3, plan.FindUnitById(testUnitId).PeriodScheduled.End);
 
             // Extend the Unit2 to end2
-            unitId = new IdType(2);
+            unitId = new IdTypeValue(2);
             plan.MoveDietPlanUnit(unitId, DateRangeValue.RangeBetween(plan.FindUnitById(unitId).PeriodScheduled.Start, end2));
 
             // Check the units schedule is as expected
-            testUnitId = new IdType(2);
+            testUnitId = new IdTypeValue(2);
             Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
             Assert.Equal(end2, plan.FindUnitById(testUnitId).PeriodScheduled.End);
-            testUnitId = new IdType(3);
+            testUnitId = new IdTypeValue(3);
             Assert.Equal(end2.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
             Assert.Equal(end3, plan.FindUnitById(testUnitId).PeriodScheduled.End);
 
             // Move Unit2 to a non-contiguous period
-            unitId = new IdType(2);
+            unitId = new IdTypeValue(2);
             DateRangeValue newPeriod = DateRangeValue.RangeBetween(end3.AddDays(100), end3.AddDays(120));
             plan.MoveDietPlanUnit(unitId, newPeriod);
 
@@ -1354,9 +1354,9 @@ namespace GymProject.Domain.Test.UnitTest
             //testUnitId = new IdType(1);
             //Assert.Equal(range1.Start, plan.FindUnitById(testUnitId).PeriodScheduled.Start);
             //Assert.Equal(newPeriod.Start.AddDays(-1), plan.FindUnitById(testUnitId).PeriodScheduled.End);
-            testUnitId = new IdType(2);
+            testUnitId = new IdTypeValue(2);
             Assert.Equal(newPeriod, plan.FindUnitById(testUnitId).PeriodScheduled);
-            testUnitId = new IdType(3);
+            testUnitId = new IdTypeValue(3);
             Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
             Assert.Equal(newPeriod.Start.AddDays(-1), plan.FindUnitById(testUnitId).PeriodScheduled.End);
         }
@@ -1365,8 +1365,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void RemoveDietPlanDayWeekCoverageFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1411,8 +1411,8 @@ namespace GymProject.Domain.Test.UnitTest
 
             plan.CloseDietPlanUnit(unitId, range1.End.AddDays(100));
 
-            IdType removeUnitId = new IdType(1);
-            IdType removeDayId = new IdType(1);
+            IdTypeValue removeUnitId = new IdTypeValue(1);
+            IdTypeValue removeDayId = new IdTypeValue(1);
             plan.UnplanDietDay(removeUnitId, removeDayId);
 
             Assert.Throws<DietDomainIvariantViolationException>(() => plan.CloseDietPlanUnit(removeUnitId, range1.Start, range1.End));
@@ -1422,8 +1422,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void RemoveDietPlanDayWrongDayFail()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1469,13 +1469,13 @@ namespace GymProject.Domain.Test.UnitTest
             plan.CloseDietPlanUnit(unitId, range1.End.AddDays(100));
 
             // Non existing day
-            IdType removeUnitId = new IdType(1);
-            IdType removeDayId = new IdType(11);
+            IdTypeValue removeUnitId = new IdTypeValue(1);
+            IdTypeValue removeDayId = new IdTypeValue(11);
             Assert.Throws<ArgumentException>(() => plan.UnplanDietDay(removeUnitId, removeDayId));
 
             // Non existing unit
-            IdType removeUnitId2 = new IdType(11);
-            IdType removeDayId2 = new IdType(1);
+            IdTypeValue removeUnitId2 = new IdTypeValue(11);
+            IdTypeValue removeDayId2 = new IdTypeValue(1);
             Assert.Throws<ArgumentException>(() => plan.UnplanDietDay(removeUnitId2, removeDayId2));
         }
 
@@ -1483,8 +1483,8 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void RemoveDietPlanDay()
         {
-            IdType unitId = new IdType(1);
-            IdType dayId = new IdType(1);
+            IdTypeValue unitId = new IdTypeValue(1);
+            IdTypeValue dayId = new IdTypeValue(1);
             Owner owner = Owner.Register("myUser", "imageUrl");
             Trainee dest = Trainee.Register("trynee", "imageUrl");
             DietPlan plan = DietPlan.NewDraft(owner, dest);
@@ -1514,7 +1514,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.AppendDietPlanUnitDraft();
             unitId = unitId + 1;
 
-            dayId = new IdType(1);
+            dayId = new IdTypeValue(1);
             DietPlanDay day3 = DietPlanDay.AddDayToPlan(
                 dayId, "", WeeklyOccuranceValue.TrackOccurance(2), MacronutirentWeightValue.MeasureGrams(500), MacronutirentWeightValue.MeasureGrams(100),
                      MacronutirentWeightValue.MeasureGrams(100));
@@ -1532,12 +1532,12 @@ namespace GymProject.Domain.Test.UnitTest
 
             plan.CloseDietPlanUnit(unitId, range1.End.AddDays(100));
 
-            IdType removeUnitId = new IdType(1);
-            IdType removeDayId = new IdType(1);
+            IdTypeValue removeUnitId = new IdTypeValue(1);
+            IdTypeValue removeDayId = new IdTypeValue(1);
             plan.UnplanDietDay(removeUnitId, removeDayId);
 
             // Change the other day to avoid the excepetion because of week not fully covered
-            plan.ChangeDietDay(removeUnitId, new IdType(2), MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
+            plan.ChangeDietDay(removeUnitId, new IdTypeValue(2), MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
             plan.CloseDietPlanUnit(removeUnitId, range1.Start, range1.End);
@@ -1547,9 +1547,9 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.DoesNotContain(day1, plan.FindUnitById(removeUnitId).DietDays);
             Assert.Contains(day2, plan.FindUnitById(removeUnitId).DietDays);
 
-            Assert.Equal(2, plan.FindUnitById(new IdType(2)).DietDays.Count);
-            Assert.Contains(day3, plan.FindUnitById(new IdType(2)).DietDays);
-            Assert.Contains(day4, plan.FindUnitById(new IdType(2)).DietDays);
+            Assert.Equal(2, plan.FindUnitById(new IdTypeValue(2)).DietDays.Count);
+            Assert.Contains(day3, plan.FindUnitById(new IdTypeValue(2)).DietDays);
+            Assert.Contains(day4, plan.FindUnitById(new IdTypeValue(2)).DietDays);
         }
 
 

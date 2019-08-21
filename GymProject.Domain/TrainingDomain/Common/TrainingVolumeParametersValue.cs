@@ -67,7 +67,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The TrainingVolumeValue instance</returns>
         public static TrainingVolumeParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets)
         {
-            List<IWorkingSet> wsCopy = workingSets.Clone().ToList() ?? new List<IWorkingSet>();
+            List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
 
             if (wsCopy.Count() == 0)
                 return SetTrainingVolume(0, 0, WeightPlatesValue.MeasureKilograms(0));

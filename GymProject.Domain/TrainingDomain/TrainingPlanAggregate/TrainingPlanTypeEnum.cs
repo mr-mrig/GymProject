@@ -55,5 +55,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             return unit;
         }
 
+
+        /// <summary>
+        /// Creates a PictureType object with the selected id
+        /// </summary>
+        /// <param name="name">Enumeration id</param>
+        /// <returns>The PictureType object instance</returns>
+        public static TrainingPlanTypeEnum From(int id)
+        {
+            return List().SingleOrDefault(s => s.Id == id);
+        }
+
     }
 }

@@ -3,7 +3,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class Trainee : Entity<IdType>
+    public class Trainee : Entity<IdTypeValue>
     {
 
 

@@ -9,7 +9,7 @@ using GymProject.Domain.Utils.Extensions;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Post : ChangeTrackingEntity<IdType>, IAggregateRoot, ICloneable
+    public class Post : ChangeTrackingEntity<IdTypeValue>, IAggregateRoot, ICloneable
     {
 
 
@@ -198,7 +198,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="newCommentText">The comment text</param>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
-        public void ModifyComment(IdType commentId, string newCommentText)
+        public void ModifyComment(IdTypeValue commentId, string newCommentText)
         {
             // Check for comment not found
             Comment srcComment = FindCommentById(commentId);
@@ -228,7 +228,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="id">The ID of the comment to be moderated</param>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
-        public void RemoveComment(IdType id)
+        public void RemoveComment(IdTypeValue id)
         {
             // Check for Comment not found
             Comment toBeRemoved = FindCommentById(id);
@@ -246,7 +246,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The Like object/returns>
-        public Like FindLikeById(IdType id)
+        public Like FindLikeById(IdTypeValue id)
         {
             if (id == null)
                 throw new ArgumentNullException($"Cannot find a Like with NULL id");
@@ -288,7 +288,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The Comment object/returns>
-        public Comment FindCommentById(IdType id)
+        public Comment FindCommentById(IdTypeValue id)
         {
             if (id == null)
                 throw new ArgumentNullException($"Cannot find a Comment with NULL id");
@@ -338,7 +338,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Unlike the Post
         /// </summary>
         /// <param name="likeId">The Id of the like to be removed</param>
-        public void Unlike(IdType likeId)
+        public void Unlike(IdTypeValue likeId)
         {
             Like srcLike = FindLikeById(likeId);
 
@@ -360,10 +360,10 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Build the next valid id
         /// </summary>
         /// <returns>The WS Id</returns>
-        private IdType BuildLikeId()
+        private IdTypeValue BuildLikeId()
         {
             if (_likes.Count == 0)
-                return new IdType(1);
+                return new IdTypeValue(1);
 
             else
                 return _likes.Last().Id + 1;
@@ -374,10 +374,10 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Build the next valid id
         /// </summary>
         /// <returns>The WS Id</returns>
-        private IdType BuildCommentId()
+        private IdTypeValue BuildCommentId()
         {
             if (_comments.Count == 0)
-                return new IdType(1);
+                return new IdTypeValue(1);
 
             else
                 return _comments.Last().Id + 1;

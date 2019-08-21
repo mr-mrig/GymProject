@@ -127,7 +127,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="musId">The ID of the MUS to be diagnosed</param>
         /// <returns>A new WellnessDay ObjectValue with the updated MUS list</returns>
-        public DailyWellnessValue RemoveMus(IdType musId)
+        public DailyWellnessValue RemoveMus(IdTypeValue musId)
         {
             MusReference toBeRemoved = _musList.Where(x => x.Id == musId).FirstOrDefault();
 

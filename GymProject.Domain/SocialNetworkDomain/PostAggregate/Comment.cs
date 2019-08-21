@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Comment : ChangeTrackingEntity<IdType>, ICloneable
+    public class Comment : ChangeTrackingEntity<IdTypeValue>, ICloneable
     {
 
 
@@ -17,7 +17,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         #region Ctors
 
-        protected Comment(IdType id, Author author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null)
+        protected Comment(IdTypeValue id, Author author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Comment with no author");
@@ -42,7 +42,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="comment">The body of the comment</param>
         /// <param name="id">The Id of the Comment</param>
         /// <returns>The Comment instance</returns>
-        public static Comment Write(IdType id, Author author, string comment)
+        public static Comment Write(IdTypeValue id, Author author, string comment)
         {
             return new Comment(id, author, comment);
         }
@@ -57,7 +57,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="createdOn">The date which the comment has been created on</param>
         /// <param name="lastUpdate">The date which the comment has been lastly updated on</param>
         /// <returns>The Comment instance</returns>
-        public static Comment Copy(IdType id, Author author, string comment, DateTime createdOn, DateTime lastUpdate)
+        public static Comment Copy(IdTypeValue id, Author author, string comment, DateTime createdOn, DateTime lastUpdate)
         {
             return new Comment(id, author, comment, (DateTime?)createdOn, (DateTime?)lastUpdate);
         }

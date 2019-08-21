@@ -4,7 +4,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 {
-    public class TrainingPhase : StatusTrackingEntity<IdType>, IAggregateRoot
+    public class TrainingPhase : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
     {
 
 

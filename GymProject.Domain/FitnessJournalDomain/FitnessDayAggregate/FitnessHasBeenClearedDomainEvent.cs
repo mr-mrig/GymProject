@@ -15,7 +15,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         ///  The destination of the event
         /// </summary>
-        public IdType PostId { get; private set; }
+        public IdTypeValue PostId { get; private set; }
 
 
 
@@ -24,7 +24,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="measuresEntry">The fitness day entry</param>
         /// <param name="postId">The parent Post Id</param>
-        public FitnessHasBeenClearedDomainEvent(FitnessDay fitnessDay, IdType postId)
+        public FitnessHasBeenClearedDomainEvent(FitnessDay fitnessDay, IdTypeValue postId)
         {
             FitnessDay = fitnessDay;
             PostId = postId;

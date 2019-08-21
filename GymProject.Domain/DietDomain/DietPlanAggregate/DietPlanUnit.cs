@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanUnit : Entity<IdType>, ICloneable
+    public class DietPlanUnit : Entity<IdTypeValue>, ICloneable
     {
 
         // <summary>
@@ -44,7 +44,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlanUnit(IdType id, DateRangeValue period = null)
+        private DietPlanUnit(IdTypeValue id, DateRangeValue period = null)
         {
             Id = id;
             PeriodScheduled = period;
@@ -55,7 +55,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         }
 
 
-        private DietPlanUnit(IdType id, DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays)
+        private DietPlanUnit(IdTypeValue id, DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays)
         {
             Id = id;
             PeriodScheduled = unitPeriod;
@@ -82,7 +82,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="id">The diet plan unit ID</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit NewDraft(IdType id)
+        public static DietPlanUnit NewDraft(IdTypeValue id)
 
             => new DietPlanUnit(id);
 
@@ -92,7 +92,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="id">The diet plan unit ID</param>
         /// <param name="period">The perdiod to be scheduled</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit NewScheduledDraft(IdType id, DateRangeValue period) 
+        public static DietPlanUnit NewScheduledDraft(IdTypeValue id, DateRangeValue period) 
             
             => new DietPlanUnit(id, period);
 
@@ -104,7 +104,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="period">The perdiod to be scheduled</param>
         /// <param name="dietDays">The diet days linked to this unit</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit ScheduleDietUnit(IdType id, DateRangeValue period, ICollection<DietPlanDay> dietDays) 
+        public static DietPlanUnit ScheduleDietUnit(IdTypeValue id, DateRangeValue period, ICollection<DietPlanDay> dietDays) 
             
             => new DietPlanUnit(id, period, dietDays);
 
@@ -197,7 +197,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="ArgumentException">Thrown when oldId not found</exception>
         public void ChangeDietDay
         (
-            IdType oldId,
+            IdTypeValue oldId,
             MacronutirentWeightValue dailyCarbs,
             MacronutirentWeightValue dailyFats,
             MacronutirentWeightValue dailyProteins,
@@ -257,7 +257,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             DietDayTypeEnum dayType = null
         )
         {
-            IdType newId = BuildDietPlanDayId();
+            IdTypeValue newId = BuildDietPlanDayId();
 
             _dietDays.Add(
 
@@ -282,7 +282,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="toRemoveId">The ID of the day to be removed</param>
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void UnplanDietDay(IdType toRemoveId)
+        public void UnplanDietDay(IdTypeValue toRemoveId)
         {
             DietPlanDay toBeRemoved = FindDayById(toRemoveId);
 
@@ -304,7 +304,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="id">The Id to be found</param>
         /// <returns>The DietPlanUnit or DEFAULT if not found/returns>
-        public DietPlanDay FindDayById(IdType id) => _dietDays.FirstOrDefault(x => x.Id == id);
+        public DietPlanDay FindDayById(IdTypeValue id) => _dietDays.FirstOrDefault(x => x.Id == id);
 
         #endregion
 
@@ -380,14 +380,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// Build the next valid Diet Plan Unit id
         /// </summary>
         /// <returns>The Diet Plan Unit Id</returns>
-        private IdType BuildDietPlanDayId()
+        private IdTypeValue BuildDietPlanDayId()
         {
             if (_dietDays.Count == 0)
 
-                return new IdType(1);
+                return new IdTypeValue(1);
 
             else
-                return new IdType(_dietDays.Max(x => x.Id.Id) + 1);
+                return new IdTypeValue(_dietDays.Max(x => x.Id.Id) + 1);
         }
         #endregion
 

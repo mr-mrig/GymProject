@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    public class MeasuresEntry : Entity<IdType>, IAggregateRoot
+    public class MeasuresEntry : Entity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -48,7 +48,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         public string OwnerNote { get; private set; } = null;
 
         // FK -> Don't fetch any other fields, as they might slow the process a lot
-        public IdType PostId { get; private set; }
+        public IdTypeValue PostId { get; private set; }
 
         /// <summary>
         /// Reference to the one who performed the measures check
@@ -147,7 +147,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// Linke the entry to a Post
         /// </summary>
         /// <param name="postId">The ID of the post to be linked</param>
-        public void LinkToPost(IdType postId)
+        public void LinkToPost(IdTypeValue postId)
         {
             PostId = postId;
         }

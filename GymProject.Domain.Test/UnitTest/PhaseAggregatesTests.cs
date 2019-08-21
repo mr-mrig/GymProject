@@ -86,7 +86,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void UserPhaseOwnerFail()
         {
             int days = 10;
-            IdType phaseId = new IdType(1);
+            IdTypeValue phaseId = new IdTypeValue(1);
             DateTime startDate = DateTime.Today;
             DateRangeValue period = DateRangeValue.RangeBetween(startDate, startDate.AddDays(days));
 
@@ -101,7 +101,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void UserPhasePeriodFail()
         {
-            IdType phaseId = new IdType(1);
+            IdTypeValue phaseId = new IdTypeValue(1);
             DateTime startDate = DateTime.MinValue;
             Owner owner = Owner.Register("user", "mypic");
 
@@ -117,7 +117,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void PlanUserPhase()
         {
             int days = 10;
-            IdType phaseId = new IdType(1);
+            IdTypeValue phaseId = new IdTypeValue(1);
             DateTime startDate = DateTime.Today;
             Owner owner = Owner.Register("user", "mypic");
             DateRangeValue period = DateRangeValue.RangeBetween(startDate, startDate.AddDays(days));
@@ -150,7 +150,7 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public void StartUserPhase()
         {
-            IdType phaseId = new IdType(1);
+            IdTypeValue phaseId = new IdTypeValue(1);
             DateTime startDate = DateTime.Today;
             Owner owner = Owner.Register("user", "mypic");
             PersonalNoteValue note = PersonalNoteValue.Write("Little-note.");

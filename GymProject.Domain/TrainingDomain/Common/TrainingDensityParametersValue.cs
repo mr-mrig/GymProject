@@ -66,7 +66,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The TrainingDensityValue instance</returns>
         public static TrainingDensityParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets)
         {
-            List<IWorkingSet> wsCopy = workingSets.Clone().ToList() ?? new List<IWorkingSet>();
+            List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
 
             if (wsCopy.Count() == 0)
                 return new TrainingDensityParametersValue(0, 0, 0);

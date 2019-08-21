@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingWeekTemplate : Entity<IdType>, ICloneable
+    public class TrainingWeekTemplate : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -60,7 +60,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
-        private TrainingWeekTemplate(IdType id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
+        private TrainingWeekTemplate(IdTypeValue id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
         {
             Id = id;
             ProgressiveNumber = progressiveNumber;
@@ -88,7 +88,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate AddTrainingWeekToPlan(IdType id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekTemplate AddTrainingWeekToPlan(IdTypeValue id, uint progressiveNumber, IList<WorkoutTemplate> workouts, TrainingWeekTypeEnum weekType = null)
 
             => new TrainingWeekTemplate(id, progressiveNumber, workouts, weekType);
 
@@ -113,7 +113,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Assign the specified week type to the Training Week
         /// </summary>
         /// <param name="weekType">The training week type</param>
-        public void AssignSpecificWeekType(TrainingWeekTypeEnum weekType) => TrainingWeekType = weekType;
+        public void AssignSpecificWeekType(TrainingWeekTypeEnum weekType)
+        {
+            TrainingWeekType = weekType;
+            TestBusinessRules();
+        }
 
 
         /// <summary>
@@ -149,7 +153,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void RemoveWorkout(IdType toRemoveId)
+        public void RemoveWorkout(IdTypeValue toRemoveId)
         {
             WorkoutTemplate toBeRemoved = FindWorkoutById(toRemoveId);
 
@@ -170,7 +174,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="id">The Id to be found</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The WokringSetTemplate object/returns>
-        public WorkoutTemplate FindWorkoutById(IdType id)
+        public WorkoutTemplate FindWorkoutById(IdTypeValue id)
         {
             if (id == null)
                 throw new ArgumentException($"Cannot find a WO with NULL id");
@@ -234,19 +238,43 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #endregion
 
 
+        #region Workouts Methods
+
+
+
+        /// <summary>
+        /// Assign a new progressive number to the WO
+        /// </summary>
+        /// <param name="newPnum">The new progressive number - PNums must be consecutive</param>
+        /// <param name="workoutId">The ID of the WO to be moved</param>
+        public void MoveWorkoutToNewProgressiveNumber(IdTypeValue workoutId, uint newPnum)
+        {
+            uint oldPnum = FindWorkoutById(workoutId).ProgressiveNumber;
+
+            // Switch sets
+            FindWorkoutByProgressiveNumber((int)newPnum).MoveToNewProgressiveNumber(oldPnum);
+            FindWorkoutById(workoutId).MoveToNewProgressiveNumber(newPnum);
+
+            ForceConsecutiveWorkoutProgressiveNumbers();
+            TestBusinessRules();
+        }
+
+        #endregion
+
+
         #region Private Methods
 
         /// <summary>
         /// Build the next valid id
         /// </summary>
         /// <returns>The WO Id</returns>
-        private IdType BuildWorkoutId()
+        private IdTypeValue BuildWorkoutId()
         {
             if (_workouts.Count == 0)
-                return new IdType(1);
+                return new IdTypeValue(1);
 
             else
-                return new IdType(_workouts.Max(x => x.Id.Id) + 1);
+                return new IdTypeValue(_workouts.Max(x => x.Id.Id) + 1);
         }
 
 
@@ -290,14 +318,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Cannot create a Training Week without any Workout unless it is a Full Rest one.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool AtLeastOneWorkout() => TrainingWeekType == TrainingWeekTypeEnum.FullRest || _workouts?.Count > 0;
+        private bool AtLeastOneWorkout() => _workouts?.Count > 0 || TrainingWeekType == TrainingWeekTypeEnum.FullRest;
 
 
         /// <summary>
         /// Full Rest week must have no scheduled Workouts.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool FullRestWeekHasNoWorkouts() => TrainingWeekType == TrainingWeekTypeEnum.FullRest && _workouts?.Count == 0;
+        private bool FullRestWeekHasNoWorkouts() => _workouts?.Count == 0 || TrainingWeekType != TrainingWeekTypeEnum.FullRest;
 
 
         /// <summary>

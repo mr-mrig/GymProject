@@ -3,7 +3,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 {
-    public class Owner : Entity<IdType>
+    public class Owner : Entity<IdTypeValue>
     {
 
 

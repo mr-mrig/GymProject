@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    public class Owner : Entity<IdType>
+    public class Owner : Entity<IdTypeValue>
     {
 
 

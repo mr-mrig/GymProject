@@ -11,26 +11,6 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         #region Consts
-
-        /// <summary>
-        /// What a AMRAP set means on a RPE scale
-        /// </summary>
-        public const int AMRAPAsRPE = 10;
-
-        /// <summary>
-        /// Minimum RPE used for conversions, however the user can still prompt RPEs lower than this
-        /// </summary>
-        public const float MinRPE = 1;
-
-        /// <summary>
-        /// Maximum Intensity Percentage allowed - The user is forced to enter a value beneath it
-        /// </summary>
-        public const float MaxIntensityPercentage = 110f;
-
-        /// <summary>
-        /// Intensity Percentage of a 1RM attempt
-        /// </summary>
-        public const float OneRMIntensityPercentage = 100f;
         #endregion
 
 

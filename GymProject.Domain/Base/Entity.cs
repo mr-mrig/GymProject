@@ -11,11 +11,21 @@ namespace GymProject.Domain.Base
     {
 
 
+        // In order to not overwrite the Hash Code when it has been generated once
         int? _requestedHashCode;
 
 
         public virtual TId Id { get; protected set; }
 
+
+
+        public Entity(TId id)
+        {
+            if (id == null)
+                Id = default;
+            else
+                Id = id;
+        }
 
 
         #region Domain Events Management
@@ -76,22 +86,24 @@ namespace GymProject.Domain.Base
 
             if (item.IsTransient() || IsTransient())
                 return false;
-            else
-                return Id.Equals(item.Id);
+            
+            return Id.Equals(item.Id);
         }
 
 
         public override int GetHashCode()
         {
-            if (!IsTransient())
+            if (IsTransient())
+                return base.GetHashCode();
+
+            else
             {
+                // Never change the Hash Code again
                 if (!_requestedHashCode.HasValue)
                     _requestedHashCode = this.Id.GetHashCode() ^ 31;
 
                 return _requestedHashCode.Value;
             }
-            else
-                return base.GetHashCode();
         }
 
 

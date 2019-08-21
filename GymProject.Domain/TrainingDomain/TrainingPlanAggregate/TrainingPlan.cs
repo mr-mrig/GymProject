@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingPlan : Entity<IdType>, ICloneable
+    public class TrainingPlan : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -78,90 +78,90 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// FK to the Training Plan note - Optional
         /// </summary>
-        public IdType PersonalNoteId { get; private set; } = null;
+        public IdTypeValue PersonalNoteId { get; private set; } = null;
 
 
         /// <summary>
         /// FK to the Training Plan Message, when sent to another user -> Only Inherited Plans can have it - Optional
         /// </summary>
-        public IdType AttachedMessageId { get; private set; } = null;
+        public IdTypeValue AttachedMessageId { get; private set; } = null;
 
 
         /// <summary>
         /// FK to the owner of the Training Plan - The author or the receiver if Inherited Training Plan
         /// </summary>
-        public IdType OwnerId { get; private set; } = null;
+        public IdTypeValue OwnerId { get; private set; } = null;
 
 
-        private ICollection<IdType> _trainingScheduleIds = null;
+        private ICollection<IdTypeValue> _trainingScheduleIds = null;
 
         /// <summary>
         /// FK to the Training Schedules
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdType> TrainingScheduleIds
+        public IReadOnlyCollection<IdTypeValue> TrainingScheduleIds
         {
-            get => _trainingScheduleIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _trainingScheduleIds?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
-        private ICollection<IdType> _childTrainingPlanIds = null;
+        private ICollection<IdTypeValue> _childTrainingPlanIds = null;
 
         /// <summary>
         /// FK to the Training Plans which are derived from this one
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdType> ChildTrainingPlanIds
+        public IReadOnlyCollection<IdTypeValue> ChildTrainingPlanIds
         {
-            get => _childTrainingPlanIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _childTrainingPlanIds?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
-        private ICollection<IdType> _trainingPhaseIds = null;
+        private ICollection<IdTypeValue> _trainingPhaseIds = null;
 
         /// <summary>
         /// FK to the Training Plan target Phases
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdType> TrainingPhaseIds
+        public IReadOnlyCollection<IdTypeValue> TrainingPhaseIds
         {
-            get => _trainingPhaseIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _trainingPhaseIds?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
-        private ICollection<IdType> _trainingProficiencyIds = null;
+        private ICollection<IdTypeValue> _trainingProficiencyIds = null;
 
         /// <summary>
         /// FK to the Training target Proficiencies
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdType> TrainingProficiencyIds
+        public IReadOnlyCollection<IdTypeValue> TrainingProficiencyIds
         {
-            get => _trainingProficiencyIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _trainingProficiencyIds?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
-        private ICollection<IdType> _muscleFocusIds = null;
+        private ICollection<IdTypeValue> _muscleFocusIds = null;
 
         /// <summary>
         /// FK to the Training Muscle focus
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdType> MuscleFocusIds
+        public IReadOnlyCollection<IdTypeValue> MuscleFocusIds
         {
-            get => _muscleFocusIds?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _muscleFocusIds?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
-        private ICollection<IdType> _hashtags = null;
+        private ICollection<IdTypeValue> _hashtags = null;
 
         /// <summary>
         /// FK to the Training target Proficiencies
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdType> Hashtags
+        public IReadOnlyCollection<IdTypeValue> Hashtags
         {
-            get => _hashtags?.Clone().ToList().AsReadOnly() ?? new List<IdType>().AsReadOnly();
+            get => _hashtags?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
@@ -171,21 +171,21 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Ctors
 
         private TrainingPlan(
-            IdType id, 
+            IdTypeValue id, 
             string name,
             bool isBookmarked,
             bool isTemplate,
-            IdType ownerId,
-            IdType personalNoteId = null, 
-            IdType attachedMessageId = null,
+            IdTypeValue ownerId,
             TrainingPlanTypeEnum trainingPlanType = null,
+            IdTypeValue personalNoteId = null, 
+            IdTypeValue attachedMessageId = null,
             IList<TrainingWeekTemplate> trainingWeeks = null,
-            ICollection<IdType> trainingScheduleIds = null,
-            ICollection<IdType> trainingPhaseIds = null,
-            ICollection<IdType> trainingPlanProficiencyIds = null,
-            ICollection<IdType> trainingMuscleFocusIds = null,
-            ICollection<IdType> hashtags = null,
-            ICollection<IdType> childTrainingPlanIds = null)
+            ICollection<IdTypeValue> trainingScheduleIds = null,
+            ICollection<IdTypeValue> trainingPhaseIds = null,
+            ICollection<IdTypeValue> trainingPlanProficiencyIds = null,
+            ICollection<IdTypeValue> trainingMuscleFocusIds = null,
+            ICollection<IdTypeValue> hashtags = null,
+            ICollection<IdTypeValue> childTrainingPlanIds = null)
         {
             Id = id;
             Name = name ?? string.Empty;
@@ -198,12 +198,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             _trainingWeeks = trainingWeeks?.Clone().ToList() ?? new List<TrainingWeekTemplate>();
 
-            _trainingScheduleIds = trainingScheduleIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
-            _childTrainingPlanIds = childTrainingPlanIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
-            _trainingPhaseIds = trainingPhaseIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
-            _trainingProficiencyIds = trainingPlanProficiencyIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
-            _muscleFocusIds = trainingMuscleFocusIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
-            _hashtags = hashtags?.Clone().ToList() ?? new List<IdType>();
+            _trainingScheduleIds = trainingScheduleIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
+            _childTrainingPlanIds = childTrainingPlanIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
+            _trainingPhaseIds = trainingPhaseIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
+            _trainingProficiencyIds = trainingPlanProficiencyIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
+            _muscleFocusIds = trainingMuscleFocusIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
+            _hashtags = hashtags?.Clone().ToList() ?? new List<IdTypeValue>();
 
             TestBusinessRules();
 
@@ -236,23 +236,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingMuscleFocusIds">The list of the  IDs of the Muscles which the Training Plan focuses on</param>
         /// <param name="trainingScheduleIds">The list of the IDs of the Training Schedules which the Training Plan has been scheduled to</param>
         public static TrainingPlan CreateTrainingPlan(
-            IdType id,
+            IdTypeValue id,
             string name,
             bool isBookmarked,
             bool isTemplate,
-            IdType ownerId,
-            IdType personalNoteId = null,
-            IdType attachedMessageId = null,
+            IdTypeValue ownerId,
             TrainingPlanTypeEnum trainingPlanType = null,
+            IdTypeValue personalNoteId = null,
+            IdTypeValue attachedMessageId = null,
             IList<TrainingWeekTemplate> trainingWeeks = null,
-            ICollection<IdType> trainingScheduleIds = null,
-            ICollection<IdType> trainingPhaseIds = null,
-            ICollection<IdType> trainingPlanProficiencyIds = null,
-            ICollection<IdType> trainingMuscleFocusIds = null,
-            ICollection<IdType> hashtags = null,
-            ICollection<IdType> childTrainingPlanIds = null)
+            ICollection<IdTypeValue> trainingScheduleIds = null,
+            ICollection<IdTypeValue> trainingPhaseIds = null,
+            ICollection<IdTypeValue> trainingPlanProficiencyIds = null,
+            ICollection<IdTypeValue> trainingMuscleFocusIds = null,
+            ICollection<IdTypeValue> hashtags = null,
+            ICollection<IdTypeValue> childTrainingPlanIds = null)
 
-            => new TrainingPlan(id, name, isBookmarked, isTemplate, ownerId, personalNoteId, attachedMessageId, trainingPlanType, trainingWeeks, 
+            => new TrainingPlan(id, name, isBookmarked, isTemplate, ownerId, trainingPlanType, personalNoteId, attachedMessageId, trainingWeeks, 
                 trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtags, childTrainingPlanIds);
 
 
@@ -266,11 +266,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingScheduleId">The ID of the Training Schedule for this Plan - Optional</param>
         /// <returns></returns>
         public static TrainingPlan SendInheritedTrainingPlan(
-            IdType id,
+            IdTypeValue id,
             TrainingPlan rootPlan,
-            IdType destinationUserId,
-            IdType attachedMessageId = null,
-            IdType trainingScheduleId = null)
+            IdTypeValue destinationUserId,
+            IdTypeValue attachedMessageId = null,
+            IdTypeValue trainingScheduleId = null)
 
             => CreateTrainingPlan(
                 id: id,
@@ -278,11 +278,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 isBookmarked: false,
                 isTemplate: false,
                 ownerId: destinationUserId,
+                trainingPlanType: TrainingPlanTypeEnum.Inherited,
                 personalNoteId: null,
                 attachedMessageId: attachedMessageId,
-                trainingPlanType: TrainingPlanTypeEnum.Inherited,
                 trainingWeeks: rootPlan.TrainingWeeks.ToList(),
-                trainingScheduleIds: new List<IdType>() { trainingScheduleId });
+                trainingScheduleIds: new List<IdTypeValue>() { trainingScheduleId });
 
 
         /// <summary>
@@ -292,7 +292,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="rootPlan">The Training Plan to create a Varaint of</param>
         /// <returns></returns>
         public static TrainingPlan CreateVariantTrainingPlan(
-            IdType id,
+            IdTypeValue id,
             TrainingPlan rootPlan)
 
             => CreateTrainingPlan(
@@ -301,9 +301,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 isBookmarked: false,
                 isTemplate: false,
                 ownerId: rootPlan.OwnerId,
+                trainingPlanType: TrainingPlanTypeEnum.Variant,
                 personalNoteId: null,
                 attachedMessageId: null,
-                trainingPlanType: TrainingPlanTypeEnum.Variant,
                 trainingWeeks: rootPlan.TrainingWeeks.ToList(),
                 trainingScheduleIds: null,
                 trainingPhaseIds: rootPlan.TrainingPhaseIds.ToList(),
@@ -326,12 +326,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         // Training plan type should be assigned only when creating a new instance
         //public void SetTrainingPlanType() =>
 
-        // Training plan relations should be assigned only when creating a new instance
-        //public void AddChildTrainingPlan() =>
 
         // Unschedule shouldn't be possible -> reschedule instead (IE: change the Schedule object)
         //public void UnscheduleTraining() =>
 
+        // A template is created only when linked to a child -> look at the proper function
+        //public void ChangeTemplateFlag(bool templateFlag) => IsTemplate = templateFlag;
 
         /// <summary>
         /// Assign the name to the Training Plan
@@ -352,19 +352,53 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public void ChangeBookmarkedFlag(bool bookmarkedFlag) => IsBookmarked = bookmarkedFlag;
 
 
-
-        /// <summary>
-        /// Assign the IsTemplate flag
-        /// </summary>
-        /// <param name="templateFlag">The flag</param>
-        public void ChangeTemplateFlag(bool templateFlag) => IsTemplate = templateFlag;
-
-
         /// <summary>
         /// Assign the Training Plan Note ID
         /// </summary>
         /// <param name="trainingPlanNoteId">The note ID</param>
-        public void WriteNote(IdType trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
+        public void WriteNote(IdTypeValue trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
+
+
+        /// <summary>
+        /// Make the Training Plan Template by attaching the specified one
+        /// </summary>
+        /// <param name="childPlanId">The Training Plan ID to be added to the child ones</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void AttachChildToTemplatePlan(IdTypeValue childPlanId)
+        {
+            if (childPlanId == null)
+                throw new ArgumentNullException($"Child Plan ID must be valid when attaching to the Training Plan", nameof(childPlanId));
+
+            if (_childTrainingPlanIds.Contains(childPlanId))
+                return;
+
+            _childTrainingPlanIds.Add(childPlanId);
+
+            IsTemplate = true;
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Removes the specified Training Plan from this one childs.
+        /// If no child left, then mark the plan as 'Not Template'
+        /// </summary>
+        /// <param name="childPlanId">The Training Plan ID to be removed from the child ones</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void DetachChildToTemplatePlan(IdTypeValue childPlanId)
+        {
+            if (childPlanId == null)
+                throw new ArgumentNullException($"Child Plan ID must be valid when detaching from the Training Plan", nameof(childPlanId));
+
+            _childTrainingPlanIds.Remove(childPlanId);
+
+            if(_childTrainingPlanIds.Count == 0)
+                IsTemplate = false;
+
+            TestBusinessRules();
+        }
 
 
         /// <summary>
@@ -373,7 +407,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="hashtagId">The Hashtag ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void AddHashtag(IdType hashtagId)
+        public void AddHashtag(IdTypeValue hashtagId)
         {
             if (hashtagId == null)
                 throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan",nameof(hashtagId));
@@ -392,7 +426,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="hashtagId">The Hashtag ID to be removed</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void RemoveHashtag(IdType hashtagId)
+        public void RemoveHashtag(IdTypeValue hashtagId)
         {
             if (hashtagId == null)
                 throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
@@ -408,7 +442,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="phaseId">The Phase ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void LinkTargetPhase(IdType phaseId)
+        public void LinkTargetPhase(IdTypeValue phaseId)
         {
             if (phaseId == null)
                 throw new ArgumentNullException($"Phase ID must be valid when tagging the Training Plan", nameof(phaseId));
@@ -427,7 +461,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="phaseId">The Hashtag ID to be removed</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnlinkTargetPhase(IdType phaseId)
+        public void UnlinkTargetPhase(IdTypeValue phaseId)
         {
             if (phaseId == null)
                 throw new ArgumentNullException($"Phase ID must be valid when tagging the Training Plan", nameof(phaseId));
@@ -443,7 +477,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="proficiencyId">The Proficiency ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void LinkTargetProficiency(IdType proficiencyId)
+        public void LinkTargetProficiency(IdTypeValue proficiencyId)
         {
             if (proficiencyId == null)
                 throw new ArgumentNullException($"Proficiency ID must be valid when tagging the Training Plan", nameof(proficiencyId));
@@ -462,7 +496,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="proficiencyId">The Proficiency ID to be removed</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnlinkTargetProficiency(IdType proficiencyId)
+        public void UnlinkTargetProficiency(IdTypeValue proficiencyId)
         {
             if (proficiencyId == null)
                 throw new ArgumentNullException($"Proficiency ID must be valid when tagging the Training Plan", nameof(proficiencyId));
@@ -478,7 +512,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="proficiencyId">The Muscle ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void GiveFocusToMuscle(IdType muscleId)
+        public void GiveFocusToMuscle(IdTypeValue muscleId)
         {
             if (muscleId == null)
                 throw new ArgumentNullException($"Proficiency ID must be valid when tagging the Training Plan", nameof(muscleId));
@@ -497,7 +531,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="muscleId">The Muscle ID to be removed</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void RemoveFocusToMuscle(IdType muscleId)
+        public void RemoveFocusToMuscle(IdTypeValue muscleId)
         {
             if (muscleId == null)
                 throw new ArgumentNullException($"Proficiency ID must be valid when tagging the Training Plan", nameof(muscleId));
@@ -513,7 +547,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="scheduleId">The Schedule ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ScheduleTraining(IdType scheduleId)
+        public void ScheduleTraining(IdTypeValue scheduleId)
         {
             if (scheduleId == null)
                 throw new ArgumentNullException($"Schedule ID must be valid when tagging the Training Plan", nameof(scheduleId));
@@ -557,7 +591,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void RemoveTrainingWeek(IdType toRemoveId)
+        public void RemoveTrainingWeek(IdTypeValue toRemoveId)
         {
             TrainingWeekTemplate toBeRemoved = FindTrainingWeekById(toRemoveId);
 
@@ -581,7 +615,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="id">The Id to be found</param>
         /// <exception cref="ArgumentNullException">If ID could not be found</exception>
         /// <returns>The WokringSetTemplate object/returns>
-        public TrainingWeekTemplate FindTrainingWeekById(IdType id)
+        public TrainingWeekTemplate FindTrainingWeekById(IdTypeValue id)
         {
             if (id == null)
                 throw new ArgumentNullException($"Cannot find a Training Week with NULL id");
@@ -652,13 +686,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Build the next valid id
         /// </summary>
         /// <returns>The Training Week Id</returns>
-        private IdType BuildTrainingWeekId()
+        private IdTypeValue BuildTrainingWeekId()
         {
             if (_trainingWeeks.Count == 0)
-                return new IdType(1);
+                return new IdTypeValue(1);
 
             else
-                return new IdType(_trainingWeeks.Max(x => x.Id.Id) + 1);
+                return new IdTypeValue(_trainingWeeks.Max(x => x.Id.Id) + 1);
         }
 
 
@@ -831,7 +865,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         public object Clone()
 
-            => CreateTrainingPlan(Id, Name, IsBookmarked, IsTemplate, OwnerId, PersonalNoteId, AttachedMessageId, TrainingPlanType,
+            => CreateTrainingPlan(Id, Name, IsBookmarked, IsTemplate, OwnerId, TrainingPlanType, PersonalNoteId, AttachedMessageId,
                 TrainingWeeks.ToList(), TrainingScheduleIds.ToList(), TrainingPhaseIds.ToList(), TrainingProficiencyIds.ToList(), MuscleFocusIds.ToList(), 
                 Hashtags.ToList(), ChildTrainingPlanIds.ToList());
 

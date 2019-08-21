@@ -8,7 +8,7 @@ using GymProject.Domain.Utils;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanDay : Entity<IdType>, ICloneable
+    public class DietPlanDay : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -69,7 +69,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         #region Ctors
 
         private DietPlanDay(
-            IdType id,
+            IdTypeValue id,
             string name = null,
             WeeklyOccuranceValue weeklyOccurrances = null,
             MacronutirentWeightValue carbs = null,
@@ -128,7 +128,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="weeklyOccurrances">How many times the day is repetead throghout the week</param>
         /// <returns>The DietPlanDayValue instance</returns>
         public static DietPlanDay AddDayToPlan(
-            IdType id,
+            IdTypeValue id,
             string name = null,
             WeeklyOccuranceValue weeklyOccurrances = null,
             MacronutirentWeightValue carbs = null,

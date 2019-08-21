@@ -54,5 +54,6 @@ namespace GymProject.Domain.Utils.Extensions
 
             => Clone<T>(toClone?.Where(x => x != null));
 
+
     }
 }

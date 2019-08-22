@@ -78,9 +78,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             MicronutirentWeightValue salt = null,
             VolumeValue water = null,
             WeekdayEnum specificWeekday = null,
-            DietDayTypeEnum dayType = null)
+            DietDayTypeEnum dayType = null) : base(id)
         {
-            Id = id;
             Name = name ?? string.Empty;
             Carbs = carbs;
             Fats = fats;
@@ -101,7 +100,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         }
 
 
-        private DietPlanDay()
+        private DietPlanDay() : base(null)
         {
             DietDayType = DietDayTypeEnum.NotSet;
             SpecificWeekday = WeekdayEnum.Generic;

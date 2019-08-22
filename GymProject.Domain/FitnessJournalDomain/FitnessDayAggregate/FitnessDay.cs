@@ -53,7 +53,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         #region Ctors
 
 
-        private FitnessDay(DateTime dayDate, RatingValue rating = null)
+        private FitnessDay(DateTime dayDate, RatingValue rating = null) : base(null)
         {
             DayDate = dayDate;
             Rating = rating;
@@ -63,7 +63,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         }
 
 
-        private FitnessDay(IdTypeValue postId, DateTime dayDate, RatingValue rating = null)
+        private FitnessDay(IdTypeValue postId, DateTime dayDate, RatingValue rating = null) : base(null)
         {
             PostId = postId;
             DayDate = dayDate;

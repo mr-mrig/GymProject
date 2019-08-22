@@ -13,7 +13,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
 
 
-        protected Like(IdTypeValue id, Author author, DateTime? createdOn = null)
+        protected Like(IdTypeValue id, Author author, DateTime? createdOn = null) : base(id)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Like with no author");

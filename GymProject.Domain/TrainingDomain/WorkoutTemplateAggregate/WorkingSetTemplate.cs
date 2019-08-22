@@ -69,7 +69,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             Effort = effort?? TrainingEffortValue.DefaultEffort;
 
             //_intensityTechniqueIds = intensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
-            _intensityTechniquesIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds).ToList() ?? new List<IdTypeValue>();
+            _intensityTechniquesIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds)?.ToList() ?? new List<IdTypeValue>();
 
             TestBusinessRules();
         }
@@ -89,7 +89,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplate PlanWorkingSet(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplate PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
 
             => new WorkingSetTemplate(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -104,7 +104,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplate LoadWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplate PlanWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
 
             => new WorkingSetTemplate(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -170,18 +170,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
-        /// Change the lifting tempo
-        /// </summary>
-        /// <param name="newTempo">The new value</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void ChangeRestPeriod(TUTValue newTempo)
-        {
-            Tempo = newTempo;
-            TestBusinessRules();
-        }
-
-
-        /// <summary>
         /// Add an intensity technique - Do nothing if already present in the list
         /// </summary>
         /// <param name="toAddId">The id to be added</param>
@@ -205,12 +193,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="toRemoveId">The id to be removed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public bool RemoveIntensityTechnique(IdTypeValue toRemoveId)
+        public void RemoveIntensityTechnique(IdTypeValue toRemoveId)
         {
             bool removed = _intensityTechniquesIds.Remove(toRemoveId);
-            TestBusinessRules();
 
-            return removed;
+            if(removed)
+                TestBusinessRules();
         }
 
 
@@ -461,7 +449,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => LoadWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, _intensityTechniquesIds);
+            => PlanWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, _intensityTechniquesIds);
 
         #endregion
     }

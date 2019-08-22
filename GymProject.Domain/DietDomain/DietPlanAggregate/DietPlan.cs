@@ -74,7 +74,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         public IReadOnlyCollection<IdTypeValue> HashtagIds
         {
-            get => _hashtagIds?.Clone().ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
+            get => _hashtagIds.ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
         }
 
 
@@ -94,7 +94,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlan(Owner author, Trainee trainee, ICollection<DietPlanUnit> dietUnits)
+        private DietPlan(Owner author, Trainee trainee, ICollection<DietPlanUnit> dietUnits) : base(null)
         {
             Trainer = author;
             Trainee = trainee;
@@ -110,7 +110,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             Trainee trainee,
             ICollection<DietPlanUnit> dietUnits,
             PersonalNoteValue ownerNote = null,
-            WeeklyOccuranceValue weeklyFreeMeals = null)
+            WeeklyOccuranceValue weeklyFreeMeals = null) : base(postId)
         {
             Name = name;
             Trainer = owner;
@@ -165,7 +165,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         {
             List<DietPlanUnit> draftUnits = new List<DietPlanUnit>()
             {
-                DietPlanUnit.NewDraft(new IdTypeValue(1)),
+                DietPlanUnit.NewDraft(IdTypeValue.Create(1)),
             };
 
             return new DietPlan(sourceTrainer, destTrainee, draftUnits);
@@ -622,10 +622,10 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         private IdTypeValue BuildDietPlanUnitId()
         {
             if (_dietUnits.Count == 0)
-                return new IdTypeValue(1); 
+                return IdTypeValue.Create(1); 
 
             else
-                return new IdTypeValue(_dietUnits.Max(x => x.Id.Id) + 1);
+                return IdTypeValue.Create(_dietUnits.Max(x => x.Id.Id) + 1);
         }
 
 

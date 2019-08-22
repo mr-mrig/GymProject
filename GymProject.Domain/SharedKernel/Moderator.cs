@@ -11,7 +11,7 @@ namespace GymProject.Domain.SharedKernel
 
 
 
-        private Moderator(string username)
+        private Moderator(string username) : base(null)
         {
             Username = UsernameValue.Register(username);
         }

@@ -16,7 +16,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Owner(string username, string imageProfileUrl)
+        private Owner(string username, string imageProfileUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace GymApp.Test
@@ -18,6 +19,7 @@ namespace GymApp.Test
             Object x1 = new Object();
             Object x2 = new Object();
             Object x3 = new Object();
+            Object xnotfound = new Object();
             Object xnull = null;
 
             List<Object> xx = new List<Object>()
@@ -27,8 +29,10 @@ namespace GymApp.Test
 
             xx.Remove(xnull);
 
+            xx.Add(x1);
 
-            System.Diagnostics.Debugger.Break();
+            Assert.Throws<InvalidOperationException>(() => xx.Single(x => x == x1));
+            xx.Single(x => x == xnotfound);
         }
 
 

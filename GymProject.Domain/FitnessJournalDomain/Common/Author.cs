@@ -15,7 +15,7 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Author(string username, string imageProfileUrl)
+        private Author(string username, string imageProfileUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));

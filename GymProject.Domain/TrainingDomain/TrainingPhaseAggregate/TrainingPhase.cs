@@ -29,7 +29,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
         #region Ctors
 
-        private TrainingPhase(string name, EntryStatusTypeEnum entryStatus)
+        private TrainingPhase(string name, EntryStatusTypeEnum entryStatus) : base(null)
         {
             Name = name ?? string.Empty;
             EntryStatusType = entryStatus;

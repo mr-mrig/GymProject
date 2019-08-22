@@ -26,14 +26,14 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
 
         #region Ctors
 
-        private Picture(UrlValue imageUrl, PictureTypeEnum pictureType, long postId)
+        private Picture(UrlValue imageUrl, PictureTypeEnum pictureType, long postId) : base(null)
         {
             ImageUrl = imageUrl;
             PictureType = pictureType;
             PostId = postId;
         }
 
-        private Picture(string imageUrl, PictureTypeEnum pictureType, long postId)
+        private Picture(string imageUrl, PictureTypeEnum pictureType, long postId) : base(null)
         {
             ImageUrl = UrlValue.CreateLink(imageUrl);
             PictureType = pictureType;

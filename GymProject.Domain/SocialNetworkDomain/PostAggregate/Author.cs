@@ -16,7 +16,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Author(string username, string imageProfileUrl)
+        private Author(string username, string imageProfileUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));

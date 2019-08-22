@@ -61,7 +61,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 
         #region Ctors
 
-        private MeasuresEntry(DateTime date, RatingValue rating, string ownerNote, Owner owner)
+        private MeasuresEntry(DateTime date, RatingValue rating, string ownerNote, Owner owner) : base(null)
         {
             EntryDate = date;
             Rating = rating;
@@ -71,7 +71,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         }
 
 
-        private MeasuresEntry(DateTime date, RatingValue rating)
+        private MeasuresEntry(DateTime date, RatingValue rating) : base(null)
         {
             EntryDate = date;
             Rating = rating;

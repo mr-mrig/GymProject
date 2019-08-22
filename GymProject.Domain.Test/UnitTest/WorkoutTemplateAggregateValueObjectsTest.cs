@@ -7,6 +7,7 @@ using Xunit;
 using GymProject.Domain.Test.Util;
 using System.Collections.Generic;
 using GymProject.Domain.Base;
+using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 
 namespace GymProject.Domain.Test.UnitTest
 {
@@ -455,8 +456,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                         for (int iws = 0; iws < wsNumMax; iws++)
                         {
-                            IdTypeValue id = new IdTypeValue(iws + 1);
-                            ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, rest, null, tut));
+                            IdTypeValue id = IdTypeValue.Create(iws + 1);
+                            ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, rest, null, tut));
                             totalReps += ireps;
                         }
 
@@ -519,8 +520,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                         for (int iws = 0; iws < wsNumMax; iws++)
                         {
-                            IdTypeValue id = new IdTypeValue(iws + 1);
-                            ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, rest, null, tut));
+                            IdTypeValue id = IdTypeValue.Create(iws + 1);
+                            ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, rest, null, tut));
                             totalReps += ireps;
                         }
 
@@ -530,10 +531,10 @@ namespace GymProject.Domain.Test.UnitTest
                         // Add sets to the parameters
                         for(int iadditionalWs = 0; iadditionalWs < additionalSetsMax; iadditionalWs++)
                         {
-                            IdTypeValue id = new IdTypeValue(wsNumMax + iadditionalWs);
+                            IdTypeValue id = IdTypeValue.Create(wsNumMax + iadditionalWs);
                             WSRepetitionValue additionalWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps + 2)); // Higher reps
-                            volume = volume.AddWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsNumMax, additionalWs, rest, null, tut));
-                            density = density.AddWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsNumMax, additionalWs, rest, null, tut));
+                            volume = volume.AddWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsNumMax, additionalWs, rest, null, tut));
+                            density = density.AddWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsNumMax, additionalWs, rest, null, tut));
 
                             totalReps += additionalWs.Value;
                         }
@@ -541,10 +542,10 @@ namespace GymProject.Domain.Test.UnitTest
                         // Remove sets from the parameters
                         for (int iremoveWs = 0; iremoveWs < removeSetsMax; iremoveWs++)
                         {
-                            IdTypeValue id = new IdTypeValue(wsNumMax + additionalSetsMax - iremoveWs);
+                            IdTypeValue id = IdTypeValue.Create(wsNumMax + additionalSetsMax - iremoveWs);
                             WSRepetitionValue removeWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps));         // Same reps
-                            volume = volume.RemoveWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsNumMax, removeWs, rest, null, tut));
-                            density = density.RemoveWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsNumMax, removeWs, rest, null, tut));
+                            volume = volume.RemoveWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsNumMax, removeWs, rest, null, tut));
+                            density = density.RemoveWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsNumMax, removeWs, rest, null, tut));
 
                             totalReps -= removeWs.Value;
                         }
@@ -599,8 +600,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                     for (int iws = 0; iws < wsTot; iws++)
                     {
-                        IdTypeValue id = new IdTypeValue(iws + 1);
-                        ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, null, rpe, null));
+                        IdTypeValue id = IdTypeValue.Create(iws + 1);
+                        ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, null, rpe, null));
                     }
 
                     TrainingIntensityParametersValue intensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(ws, TrainingEffortTypeEnum.RPE);
@@ -609,17 +610,17 @@ namespace GymProject.Domain.Test.UnitTest
                     // Add sets to the parameters
                     for (int iadditionalWs = 0; iadditionalWs < additionalSetsMax; iadditionalWs++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot + iadditionalWs);
+                        IdTypeValue id = IdTypeValue.Create(wsTot + iadditionalWs);
                         WSRepetitionValue additionalWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps + 2));
-                        intensity = intensity.AddWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsTot, additionalWs, effort: rpe2));  // Lower effort
+                        intensity = intensity.AddWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsTot, additionalWs, effort: rpe2));  // Lower effort
                     }
 
                     // Remove sets from the parameters
                     for (int iremoveWs = 0; iremoveWs < removeSetsMax; iremoveWs++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot + additionalSetsMax - iremoveWs);
+                        IdTypeValue id = IdTypeValue.Create(wsTot + additionalSetsMax - iremoveWs);
                         WSRepetitionValue removeWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps));
-                        intensity = intensity.RemoveWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsTot, removeWs, effort: rpe));    // Same effort
+                        intensity = intensity.RemoveWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsTot, removeWs, effort: rpe));    // Same effort
                     }
 
                     int newSetsNumber = wsTot + additionalSetsMax - removeSetsMax;
@@ -648,8 +649,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                     for (int iws = 0; iws < wsTot; iws++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot);
-                        ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, null, intensiyEffort, null));
+                        IdTypeValue id = IdTypeValue.Create(wsTot);
+                        ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, null, intensiyEffort, null));
                         totalReps += ireps;
                     }
 
@@ -658,17 +659,17 @@ namespace GymProject.Domain.Test.UnitTest
                     // Add sets to the parameters
                     for (int iadditionalWs = 0; iadditionalWs < additionalSetsMax; iadditionalWs++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot + iadditionalWs);
+                        IdTypeValue id = IdTypeValue.Create(wsTot + iadditionalWs);
                         WSRepetitionValue additionalWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps + 2));
-                        intensity = intensity.AddWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsTot, additionalWs, effort: intensiyEffort2));  // Lower effort
+                        intensity = intensity.AddWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsTot, additionalWs, effort: intensiyEffort2));  // Lower effort
                     }
 
                     // Remove sets from the parameters
                     for (int iremoveWs = 0; iremoveWs < removeSetsMax; iremoveWs++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot + additionalSetsMax - iremoveWs);
+                        IdTypeValue id = IdTypeValue.Create(wsTot + additionalSetsMax - iremoveWs);
                         WSRepetitionValue removeWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps));
-                        intensity = intensity.RemoveWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsTot, removeWs, effort: intensiyEffort));    // Same effort
+                        intensity = intensity.RemoveWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsTot, removeWs, effort: intensiyEffort));    // Same effort
                     }
                     int newSetsNumber = wsTot + additionalSetsMax - removeSetsMax;
 
@@ -697,8 +698,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                     for (int iws = 0; iws < wsTot; iws++)
                     {
-                        IdTypeValue id = new IdTypeValue(iws + 1);
-                        ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, null, rm, null));
+                        IdTypeValue id = IdTypeValue.Create(iws + 1);
+                        ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, null, rm, null));
                         totalReps += ireps;
                     }
 
@@ -707,17 +708,17 @@ namespace GymProject.Domain.Test.UnitTest
                     // Add sets to the parameters
                     for (int iadditionalWs = 0; iadditionalWs < additionalSetsMax; iadditionalWs++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot + iadditionalWs);
+                        IdTypeValue id = IdTypeValue.Create(wsTot + iadditionalWs);
                         WSRepetitionValue additionalWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps + 2));
-                        intensity = intensity.AddWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsTot, additionalWs, effort: rm2));  // Lower effort
+                        intensity = intensity.AddWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsTot, additionalWs, effort: rm2));  // Lower effort
                     }
 
                     // Remove sets from the parameters
                     for (int iremoveWs = 0; iremoveWs < removeSetsMax; iremoveWs++)
                     {
-                        IdTypeValue id = new IdTypeValue(wsTot + additionalSetsMax - removeSetsMax);
+                        IdTypeValue id = IdTypeValue.Create(wsTot + additionalSetsMax - removeSetsMax);
                         WSRepetitionValue removeWs = WSRepetitionValue.TrackRepetitionSerie((uint)(ireps));
-                        intensity = intensity.RemoveWorkingSet(WorkingSetTemplate.AddWorkingSet(id, (uint)wsTot, removeWs, effort: rm));    // Same effort
+                        intensity = intensity.RemoveWorkingSet(WorkingSetTemplate.PlanWorkingSet(id, (uint)wsTot, removeWs, effort: rm));    // Same effort
                     }
                     int newSetsNumber = wsTot + additionalSetsMax - removeSetsMax;
 
@@ -756,8 +757,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                     for (int iws = 0; iws < wsTot; iws++)
                     {
-                        IdTypeValue id = new IdTypeValue(iws + 1);
-                        ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, null, rpe, null));
+                        IdTypeValue id = IdTypeValue.Create(iws + 1);
+                        ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, null, rpe, null));
                         totalReps += ireps;
                     }
                     TrainingIntensityParametersValue intensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(ws, TrainingEffortTypeEnum.RPE);
@@ -783,8 +784,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                     for (int iws = 0; iws < wsTot; iws++)
                     {
-                        IdTypeValue id = new IdTypeValue(iws + 1);
-                        ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, null, intensiyEffort, null));
+                        IdTypeValue id = IdTypeValue.Create(iws + 1);
+                        ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, null, intensiyEffort, null));
                         totalReps += ireps;
                     }
                     TrainingIntensityParametersValue intensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(ws);
@@ -810,8 +811,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                     for (int iws = 0; iws < wsTot; iws++)
                     {
-                        IdTypeValue id = new IdTypeValue(iws + 1);
-                        ws.Add(WorkingSetTemplate.AddWorkingSet(id, (uint)iws, reps, null, rm, null));
+                        IdTypeValue id = IdTypeValue.Create(iws + 1);
+                        ws.Add(WorkingSetTemplate.PlanWorkingSet(id, (uint)iws, reps, null, rm, null));
                         totalReps += ireps;
                     }
                     TrainingIntensityParametersValue intensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(ws, TrainingEffortTypeEnum.RM);

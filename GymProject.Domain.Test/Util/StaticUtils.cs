@@ -2,6 +2,7 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.Utils;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,22 @@ namespace GymProject.Domain.Test.Util
 
             if(srcUnitMeasId > 0 && convertedUnitMeasId > 0)
                 Assert.Equal(srcUnitMeasId, convertedUnitMeasId);
+        }
+
+
+
+
+        public static ICollection<WorkingSetTemplate> ForceConsecutiveProgressiveNumbers(ICollection<WorkingSetTemplate> input)
+        {
+            ICollection<WorkingSetTemplate> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+
+            // Just overwrite all the progressive numbers
+            for (int iws = 0; iws < result.Count(); iws++)
+            {
+                WorkingSetTemplate ws = result.ElementAt(iws);
+                ws.MoveToNewProgressiveNumber((uint)iws);
+            }
+            return result;
         }
 
 
@@ -129,51 +146,51 @@ namespace GymProject.Domain.Test.Util
             List<IdTypeValue> result = new List<IdTypeValue>();
 
             for (int iel = 0; iel < nElments; iel++)
-                result.Add(new IdTypeValue(iel + 1));
+                result.Add(IdTypeValue.Create(iel + 1));
 
             return result;
         }
 
-        internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, int nWorkoutsMin = 3, int nWorkoutsMax = 7, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
-        {
-            // Workouts
-            List<WorkoutTemplate> workouts = new List<WorkoutTemplate>();
+        //internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, int nWorkoutsMin = 3, int nWorkoutsMax = 7, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
+        //{
+        //    // Workouts
+        //    List<WorkoutTemplate> workouts = new List<WorkoutTemplate>();
 
-            int? nWorkouts = RandomFieldGenerator.RandomIntNullable(nWorkoutsMin, nWorkoutsMax, noWorkoutsProb);
+        //    int? nWorkouts = RandomFieldGenerator.RandomIntNullable(nWorkoutsMin, nWorkoutsMax, noWorkoutsProb);
 
-            if (nWorkouts == null)
-                nWorkouts = 0;
-
-
-            for (int iwo = 0; iwo < nWorkouts; iwo++)
-            {
-                //long strongId = ((id - 1) * wuIdOffset + iwu + 1);      // Easiest to read
-                long strongId = ((id - 1) * nWorkoutsMax + iwo + 1);      // Smallest possible
-
-                workouts.Add(BuildRandomWorkout(strongId, iwo));
-            }
-
-            // Week Type
-            if (weekType == null)
-            {
-                int? weekTypeId = RandomFieldGenerator.RandomIntNullable(0, TrainingWeekTypeEnum.Peak.Id, 0.1f);
-
-                if (weekTypeId == null)
-                    weekType = TrainingWeekTypeEnum.Generic;
-                else
-                    weekType = TrainingWeekTypeEnum.From(weekTypeId.Value);
-            }
-
-            return TrainingWeekTemplate.AddTrainingWeekToPlan(
-                id: new IdTypeValue(id),
-                progressiveNumber: (uint)progn,
-                workouts: workouts,
-                weekType: weekType
-                );
-        }
+        //    if (nWorkouts == null)
+        //        nWorkouts = 0;
 
 
-        internal static WorkoutTemplate BuildRandomWorkout(long id, int progn, int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
+        //    for (int iwo = 0; iwo < nWorkouts; iwo++)
+        //    {
+        //        //long strongId = ((id - 1) * wuIdOffset + iwu + 1);      // Easiest to read
+        //        long strongId = ((id - 1) * nWorkoutsMax + iwo + 1);      // Smallest possible
+
+        //        workouts.Add(BuildRandomWorkout(strongId, iwo));
+        //    }
+
+        //    // Week Type
+        //    if (weekType == null)
+        //    {
+        //        int? weekTypeId = RandomFieldGenerator.RandomIntNullable(0, TrainingWeekTypeEnum.Peak.Id, 0.1f);
+
+        //        if (weekTypeId == null)
+        //            weekType = TrainingWeekTypeEnum.Generic;
+        //        else
+        //            weekType = TrainingWeekTypeEnum.From(weekTypeId.Value);
+        //    }
+
+        //    return TrainingWeekTemplate.AddTrainingWeekToPlan(
+        //        id: IdTypeValue.Create(id),
+        //        progressiveNumber: (uint)progn,
+        //        workouts: workouts,
+        //        weekType: weekType
+        //        );
+        //}
+
+
+        internal static WorkoutTemplate BuildRandomWorkout(long id, int progn, bool isTransient, int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
             List<WorkUnitTemplate> workUnits = new List<WorkUnitTemplate>();
@@ -189,7 +206,7 @@ namespace GymProject.Domain.Test.Util
                 //long strongId = ((id - 1) * wuIdOffset + iwu + 1);      // Easiest to read
                 long strongId = ((id - 1) * nWorkUnitsMax + iwu + 1);      // Smallest possible
 
-                workUnits.Add(BuildRandomWorkUnit(strongId, iwu));
+                workUnits.Add(BuildRandomWorkUnit(strongId, iwu, isTransient));
             }
 
             // Specific Day
@@ -203,19 +220,27 @@ namespace GymProject.Domain.Test.Util
                     specificDay = WeekdayEnum.From(weekDayId.Value);
             }
 
+            if(isTransient)
 
-            return WorkoutTemplate.PlanWorkout(
-                id: new IdTypeValue(id),
-                progressiveNumber: (uint)progn,
-                workUnits: workUnits,
-                workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
-                weekday: specificDay
-                );
+                return WorkoutTemplate.PlanTransientWorkout(
+                    progressiveNumber: (uint)progn,
+                    workUnits: workUnits,
+                    workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
+                    weekday: specificDay
+                    );
+            else
+                return WorkoutTemplate.PlanWorkout(
+                    id: IdTypeValue.Create(id),
+                    progressiveNumber: (uint)progn,
+                    workUnits: workUnits,
+                    workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
+                    weekday: specificDay
+                    );
         }
 
 
 
-        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
+        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, bool isTransient, int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
             int ownerNoteIdMin = 10, int ownerNoteIdMax = 500)
         {
             List<WorkingSetTemplate> workingSets = new List<WorkingSetTemplate>();
@@ -224,34 +249,18 @@ namespace GymProject.Domain.Test.Util
             int wuIntTechniquesMin = 0, wuIntTechniquesMax = 3;
             int intTechniqueIdMin = 1, intTechniqueIdMax = 1000;
 
-            float intPercMin = 0.5f, intePercMax = 1f;
-            float rmMin = 1f, rmMax = 20f;
-            float rpeMin = 3f, rpeMax = 11f;
-            float effortMin, effortMax;
-
+  
             //int wsIdOffset = 100;       // Used to ensure no ID collisions among WSs of different WUs
 
             // Build randomic Effort
             if (id % 2 == 0)
-            {
                 effortType = TrainingEffortTypeEnum.IntensityPerc;
-                effortMin = intPercMin;
-                effortMax = intePercMax;
-            }
 
             else if (id % 3 == 0)
-            {
                 effortType = TrainingEffortTypeEnum.RM;
-                effortMin = rmMin;
-                effortMax = rmMax;
-            }
 
             else
-            {
                 effortType = TrainingEffortTypeEnum.RPE;
-                effortMin = rpeMin;
-                effortMax = rpeMax;
-            }
 
             // Build randomic TUT
             List<TUTValue> tuts = new List<TUTValue>()
@@ -267,7 +276,7 @@ namespace GymProject.Domain.Test.Util
             int wuIntTechniquesNum = RandomFieldGenerator.RandomInt(wuIntTechniquesMin, wuIntTechniquesMax);
             List<IdTypeValue> wuIntensityTechniques = new List<IdTypeValue>();
             for (int i = 0; i < wuIntTechniquesNum; i++)
-                wuIntensityTechniques.Add(new IdTypeValue(RandomFieldGenerator.RandomIntValueExcluded(intTechniqueIdMin, intTechniqueIdMax, wuIntensityTechniques.Select(x => (int)x.Id))));
+                wuIntensityTechniques.Add(IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(intTechniqueIdMin, intTechniqueIdMax, wuIntensityTechniques.Select(x => (int)x.Id))));
 
             // Add randomic Working Sets
             int iwsMax = RandomFieldGenerator.RandomInt(wsNumMin, wsNumMax);
@@ -277,24 +286,39 @@ namespace GymProject.Domain.Test.Util
                 //long strongId = ((id - 1) * wsIdOffset + iws + 1);      // Easiest to read
                 long strongId = ((id - 1) * wsNumMax + iws + 1);      // Smallest possible
 
-                workingSets.Add(BuildRandomWorkingSet(strongId, iws, effortType, effortMin, effortMax, tutToChooseAmong: tuts));
+                workingSets.Add(BuildRandomWorkingSet(strongId, iws, isTransient, effortType, tutToChooseAmong: tuts));
             }
 
-            return WorkUnitTemplate.PlanWorkUnit(
-                id: new IdTypeValue(id),
+            if (isTransient)
+
+                return WorkUnitTemplate.PlanTransientWorkUnit(
                 progressiveNumber: (uint)progn,
-                excerciseId: new IdTypeValue(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
+                excerciseId: IdTypeValue.Create(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
                 workingSets: workingSets,
                 workUnitIntensityTechniqueIds: wuIntensityTechniques,
-                ownerNoteId: new IdTypeValue(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
+                ownerNoteId: IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
             );
+            else
+
+                return WorkUnitTemplate.PlanWorkUnit(
+                    id: IdTypeValue.Create(id),
+                    progressiveNumber: (uint)progn,
+                    excerciseId: IdTypeValue.Create(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
+                    workingSets: workingSets,
+                    workUnitIntensityTechniqueIds: wuIntensityTechniques,
+                    ownerNoteId: IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
+                );
         }
 
 
-        internal static WorkingSetTemplate BuildRandomWorkingSet(long id, int progn, TrainingEffortTypeEnum effortType, float effortMin, float effortMax,
+        internal static WorkingSetTemplate BuildRandomWorkingSet(long id, int progn, bool isTransient, TrainingEffortTypeEnum effortType,
             int repsMin = 1, int repsMax = 20, bool repetitionsSerie = true, float amrapProbability = 0.1f, int restMin = 5, int restMax = 500,
             IList<TUTValue> tutToChooseAmong = null, IList<IdTypeValue> techniquesId = null)
         {
+            float rpeMin = 1, rpeMax = 11;
+            float rmMin = 1, rmMax = 20;
+            float intPercMin = 50, intPercMax = 105;
+
             TrainingEffortValue effort;
             WSRepetitionValue serie;
 
@@ -302,17 +326,17 @@ namespace GymProject.Domain.Test.Util
             {
                 case var _ when effortType == TrainingEffortTypeEnum.IntensityPerc:
 
-                    effort = TrainingEffortValue.AsIntensityPerc(RandomFieldGenerator.RandomFloat(effortMin, effortMax));
+                    effort = TrainingEffortValue.AsIntensityPerc(RandomFieldGenerator.RandomFloat(intPercMin, intPercMax));
                     break;
 
                 case var _ when effortType == TrainingEffortTypeEnum.RM:
 
-                    effort = TrainingEffortValue.AsRM(RandomFieldGenerator.RandomFloat(effortMin, effortMax));
+                    effort = TrainingEffortValue.AsRM(RandomFieldGenerator.RandomFloat(rmMin, rmMax));
                     break;
 
                 case var _ when effortType == TrainingEffortTypeEnum.RPE:
 
-                    effort = TrainingEffortValue.AsRPE((float)CommonUtilities.RoundToPointFive(RandomFieldGenerator.RandomFloat(effortMin, effortMax)));
+                    effort = TrainingEffortValue.AsRPE((float)CommonUtilities.RoundToPointFive(RandomFieldGenerator.RandomFloat(rpeMin, rpeMax)));
                     break;
 
                 default:
@@ -335,15 +359,27 @@ namespace GymProject.Domain.Test.Util
             else
                 serie = WSRepetitionValue.TrackTimedSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
 
-            return WorkingSetTemplate.AddWorkingSet(
-                new IdTypeValue(id),
-                (uint)progn,
-                serie,
-                RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax)),
-                effort,
-                tutToChooseAmong == null ? null : tutToChooseAmong[RandomFieldGenerator.RandomInt(0, tutToChooseAmong.Count - 1)],
-                techniquesId
-            );
+            if (isTransient)
+
+                return WorkingSetTemplate.PlanTransientWorkingSet(
+                    (uint)progn,
+                    serie,
+                    RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax)),
+                    effort,
+                    tutToChooseAmong == null ? null : tutToChooseAmong[RandomFieldGenerator.RandomInt(0, tutToChooseAmong.Count - 1)],
+                    techniquesId
+                );
+            else
+
+                return WorkingSetTemplate.PlanWorkingSet(
+                    IdTypeValue.Create(id),
+                    (uint)progn,
+                    serie,
+                    RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax)),
+                    effort,
+                    tutToChooseAmong == null ? null : tutToChooseAmong[RandomFieldGenerator.RandomInt(0, tutToChooseAmong.Count - 1)],
+                    techniquesId
+                );
         }
 
     }

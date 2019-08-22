@@ -17,13 +17,13 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         #region Ctors
 
 
-        private Picture(UrlValue url)
+        private Picture(UrlValue url) : base(null)
         {
             PictureUrl = url;
         }
 
 
-        private Picture(string url)
+        private Picture(string url) : base(null)
         {
             PictureUrl = UrlValue.CreateLink(url);
         }

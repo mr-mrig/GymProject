@@ -229,6 +229,17 @@ namespace GymProject.Domain.Test.Util
                 return false;
         }
 
+
+        /// <summary>
+        /// Simulate the chance of an event to occur
+        /// </summary>
+        /// <param name="probabilityToOccur">The probability for the event to happen</param>
+        /// <returns>True if the event occurs, false otherwise</returns>
+        public static bool RollEventWithProbability(double probabilityToOccur)
+
+            => RandomDouble(0, 1) < probabilityToOccur;
+
+
         /// <summary>
         /// Randomly choose the number of reps according to the selected intensity [%].
         /// </summary>

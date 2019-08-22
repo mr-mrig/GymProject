@@ -17,7 +17,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         #region Ctors
 
-        protected Comment(IdTypeValue id, Author author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null)
+        protected Comment(IdTypeValue id, Author author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null) : base(id)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Comment with no author");

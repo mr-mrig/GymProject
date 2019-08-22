@@ -44,9 +44,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlanUnit(IdTypeValue id, DateRangeValue period = null)
+        private DietPlanUnit(IdTypeValue id, DateRangeValue period = null) : base(id)
         {
-            Id = id;
             PeriodScheduled = period;
             _dietDays = new List<DietPlanDay>();
 
@@ -55,9 +54,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         }
 
 
-        private DietPlanUnit(IdTypeValue id, DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays)
+        private DietPlanUnit(IdTypeValue id, DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays) : base(id)
         {
-            Id = id;
             PeriodScheduled = unitPeriod;
 
             if (dietDays == null || dietDays?.Count == 0)
@@ -384,10 +382,10 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         {
             if (_dietDays.Count == 0)
 
-                return new IdTypeValue(1);
+                return IdTypeValue.Create(1);
 
             else
-                return new IdTypeValue(_dietDays.Max(x => x.Id.Id) + 1);
+                return IdTypeValue.Create(_dietDays.Max(x => x.Id.Id) + 1);
         }
         #endregion
 

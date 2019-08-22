@@ -11,7 +11,7 @@
 
 //namespace GymProject.Domain.Test.UnitTest
 //{
-//    public class TrainingPlanAggregateTest
+//    public class WorkoutTemplateAggregateTest
 //    {
 
 
@@ -1700,7 +1700,7 @@
 //            if (weekType == TrainingPlanTypeEnum.NotSet)
 //                messageId = null;
 
-//            else if(weekType == TrainingPlanTypeEnum.Variant)
+//            else if (weekType == TrainingPlanTypeEnum.Variant)
 //                messageId = null;
 
 //            else

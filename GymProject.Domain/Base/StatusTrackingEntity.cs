@@ -13,6 +13,15 @@ namespace GymProject.Domain.Base
 
 
 
+        #region Ctors
+
+        public StatusTrackingEntity(IdType id) : base(id)
+        {
+
+        }
+        #endregion
+
+
         /// <summary>
         /// Changes the status of the entry - Moderator
         /// </summary>

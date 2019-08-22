@@ -44,7 +44,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
         #region Ctors
 
-        private UserPhase(IdTypeValue phaseId, Owner owner, DateRangeValue period, EntryStatusTypeEnum status, PersonalNoteValue note)
+        private UserPhase(IdTypeValue phaseId, Owner owner, DateRangeValue period, EntryStatusTypeEnum status, PersonalNoteValue note) : base(null)
         {
             PhaseId = phaseId;
             Owner = owner;

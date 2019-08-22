@@ -15,5 +15,10 @@ namespace GymProject.Domain.Base
 
 
 
+        public ChangeTrackingEntity(TId id) : base(id)
+        {
+
+        }
+
     }
 }

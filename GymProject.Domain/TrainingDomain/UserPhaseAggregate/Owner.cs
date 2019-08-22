@@ -13,7 +13,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         public ProfilePictureValue ProfilePicture { get; private set; }
 
 
-        private Owner(string username, string profilePictureUrl)
+        private Owner(string username, string profilePictureUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfilePicture = ProfilePictureValue.Link(UrlValue.CreateLink(profilePictureUrl));

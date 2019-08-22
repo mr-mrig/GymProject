@@ -13,7 +13,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         public ProfilePictureValue ProfilePicture { get; private set; }
 
 
-        private Trainee(string username, string profilePictureUrl)
+        private Trainee(string username, string profilePictureUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfilePicture = ProfilePictureValue.Link(UrlValue.CreateLink(profilePictureUrl));

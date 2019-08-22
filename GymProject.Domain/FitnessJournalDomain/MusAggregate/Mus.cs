@@ -18,7 +18,7 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 
         #region Ctors
 
-        private Mus(string name, string description = null)
+        private Mus(string name, string description = null) : base(null)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new FitnessJournalDomainInvariantViolationException($"Trying to create a Mus with blank name");

@@ -64,7 +64,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         #region Ctors
 
-        private Post(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null, DateTime? createdOn = null, DateTime? lastUpdate = null)
+        private Post(Author author, string caption, SharingPolicyEnum isShared, Picture attachedPicture = null, DateTime? createdOn = null, DateTime? lastUpdate = null) : base(null)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Post with no author");
@@ -363,7 +363,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         private IdTypeValue BuildLikeId()
         {
             if (_likes.Count == 0)
-                return new IdTypeValue(1);
+                return IdTypeValue.Create(1);
 
             else
                 return _likes.Last().Id + 1;
@@ -377,7 +377,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         private IdTypeValue BuildCommentId()
         {
             if (_comments.Count == 0)
-                return new IdTypeValue(1);
+                return IdTypeValue.Create(1);
 
             else
                 return _comments.Last().Id + 1;

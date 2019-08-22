@@ -22,7 +22,7 @@ namespace GymProject.Domain.Utils
         /// </summary>
         /// <typeparam name="T">An object</typeparam>
         /// <param name="src">The source list</param>
-        /// <returns>The new list with no duplicates</returns>
+        /// <returns>The new list with no duplicates - Can return NULL</returns>
         public static ICollection<T> RemoveDuplicatesFrom<T>(ICollection<T> src)
         {
             if (src == null)

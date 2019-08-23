@@ -119,7 +119,25 @@ namespace GymProject.Domain.TrainingDomain.Common
                 (uint)(TotalReps + toAdd.ToRepetitions()),
                 (uint)(TotalWorkingSets + 1),
                 TotalWorkload + toAdd.ToWorkload());
-        
+
+
+        /// <summary>
+        /// Updates the Volume parameters including the working sets added
+        /// </summary>
+        /// <param name="workingSetList">The list of the working sets to be added</param>
+        /// <returns>The new TrainingVolumeValue instance</returns>
+        public TrainingVolumeParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        {
+            int wsTotalReps = workingSetList.Sum(x => x.ToRepetitions());
+            int wsTotalNumber = workingSetList.Count();
+            WeightPlatesValue wsTotalWorkload = WeightPlatesValue.MeasureKilograms(workingSetList.Sum(x => x.ToWorkload().Value));
+
+            return SetTrainingVolume(
+                (uint)(TotalReps + wsTotalReps),
+                (uint)(TotalWorkingSets + wsTotalNumber),
+                TotalWorkload + wsTotalWorkload);
+        }
+
 
         /// <summary>
         /// Updates the Volume parameters excluding the working set removed
@@ -136,6 +154,24 @@ namespace GymProject.Domain.TrainingDomain.Common
                 (uint)(TotalReps - toRemove.ToRepetitions()),
                 (uint)(TotalWorkingSets - 1),
                 TotalWorkload + toRemove.ToWorkload());
+        }
+
+
+        /// <summary>
+        /// Updates the Volume parameters excluding the working sets added
+        /// </summary>
+        /// <param name="workingSetList">The list of the working sets to be removed</param>
+        /// <returns>The new TrainingVolumeValue instance</returns>
+        public TrainingVolumeParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        {
+            int wsTotalReps = workingSetList.Sum(x => x.ToRepetitions());
+            int wsTotalNumber = workingSetList.Count();
+            WeightPlatesValue wsTotalWorkload = WeightPlatesValue.MeasureKilograms(workingSetList.Sum(x => x.ToWorkload().Value));
+
+            return SetTrainingVolume(
+                (uint)(TotalReps - wsTotalReps),
+                (uint)(TotalWorkingSets - wsTotalNumber),
+                TotalWorkload - wsTotalWorkload);
         }
 
 

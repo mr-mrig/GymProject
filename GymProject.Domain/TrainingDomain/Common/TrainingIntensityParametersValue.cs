@@ -113,10 +113,34 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Public Methods
 
+
+        ///// <summary>
+        ///// Updates the Volume parameters including the working sets added
+        ///// </summary>
+        ///// <param name="workingSetList">The list of the working sets to be added</param>
+        ///// <returns>The new TrainingVolumeValue instance</returns>
+        //public TrainingIntensityParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        //{
+        //    float wsIntensitySum = workingSetList.Sum(x => x.Effort.Value);
+
+        //    int wsTotalNumber = workingSetList.Count();
+
+        //    TrainingEffortValue wsTotalWorkload = WeightPlatesValue.MeasureKilograms(workingSetList.Sum(x => x.ToWorkload().Value));
+
+        //    return SetTrainingIntensity(
+        //        _intensitySumAccumulator + wsIntensitySum,
+        //        TotalWorkingSets + wsTotalNumber,
+        //        _totalWorkingSets + wsTotalNumber);
+        //}
+
+
+        [Obsolete("This function works well only if the intial EffortType computed by the Factory method stays unchanged after " +
+            "all the WS added. But adding more sets might make the original EffortType wrong")]
         /// <summary>
         /// Updates the Density parameters including the working set added
         /// </summary>
         /// <param name="toAdd">The working set to be added</param>
+        /// <param name="effortType">The effort type to convert to</param>
         /// <exception cref="ArgumentNullException">Thrown when input WS is null</exception>
         /// <returns>The new TrainingDensityValue instance</returns>
         public TrainingIntensityParametersValue AddWorkingSet(IWorkingSet toAdd)
@@ -124,12 +148,13 @@ namespace GymProject.Domain.TrainingDomain.Common
             if (toAdd == null)
                 throw new ArgumentNullException($"Trying to add a NULL working set.");
 
+
             if (toAdd.Effort.EffortType != AverageIntensity.EffortType)
                 toAdd.ToNewEffortType(AverageIntensity.EffortType);
 
 
             return SetTrainingIntensity(
-                    toAdd.Effort.Value + _intensitySumAccumulator, AverageIntensity.EffortType,_totalWorkingSets + 1);
+                    toAdd.Effort.Value + _intensitySumAccumulator, AverageIntensity.EffortType, _totalWorkingSets + 1);
 
 
             //// Incremental average
@@ -141,6 +166,9 @@ namespace GymProject.Domain.TrainingDomain.Common
         }
 
 
+
+        [Obsolete("This function works well only if the intial EffortType computed by the Factory method stays unchanged after " +
+            "all the WS added. But adding more sets might make the original EffortType wrong")]
         /// <summary>
         /// Updates the Density parameters excluding the working set removed
         /// </summary>
@@ -159,13 +187,28 @@ namespace GymProject.Domain.TrainingDomain.Common
             return SetTrainingIntensity(
                 _intensitySumAccumulator - toRemove.Effort.Value, AverageIntensity.EffortType, _totalWorkingSets - 1);
 
-
             //return SetTrainingIntensity(
             //TrainingEffortValue.TrackEffort(
             //    ((AverageIntensity?.Value ?? 0) * _totalWorkingSets - toRemove.Effort.Value) / (_totalWorkingSets - 1),
             //    AverageIntensity.EffortType),
             //_totalWorkingSets + 1);
         }
+
+        ///// <summary>
+        ///// Updates the Intensity parameters excluding the working sets added
+        ///// </summary>
+        ///// <param name="workingSetList">The list of the working sets to be removed</param>
+        ///// <returns>The new TrainingVolumeValue instance</returns>
+        //public TrainingIntensityParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        //{
+        //    TrainingIntensityParametersValue result = this;
+
+        //    foreach (IWorkingSet ws in workingSetList)
+        //        result = RemoveWorkingSet(ws);
+
+        //    return result;
+        //}
+
         #endregion
 
 

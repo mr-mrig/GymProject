@@ -190,7 +190,7 @@ namespace GymProject.Domain.Test.Util
         //}
 
 
-        internal static WorkoutTemplate BuildRandomWorkout(long id, int progn, bool isTransient, int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
+        internal static WorkoutTemplate BuildRandomWorkout(long id, bool isTransient, int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
             List<WorkUnitTemplate> workUnits = new List<WorkUnitTemplate>();
@@ -223,7 +223,6 @@ namespace GymProject.Domain.Test.Util
             if(isTransient)
 
                 return WorkoutTemplate.PlanTransientWorkout(
-                    progressiveNumber: (uint)progn,
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
                     weekday: specificDay
@@ -231,7 +230,6 @@ namespace GymProject.Domain.Test.Util
             else
                 return WorkoutTemplate.PlanWorkout(
                     id: IdTypeValue.Create(id),
-                    progressiveNumber: (uint)progn,
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
                     weekday: specificDay

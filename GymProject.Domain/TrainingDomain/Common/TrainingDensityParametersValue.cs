@@ -79,7 +79,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
             return SetTrainingDensity(
                 wsCopy.Sum(x => x.ToSecondsUnderTension()),
-                wsCopy.Sum(x => x.Rest.Value),
+                wsCopy.Sum(x => x.ToTotalSeconds() - x.ToSecondsUnderTension()),
                 wsCopy.Count());
         }
 
@@ -117,8 +117,26 @@ namespace GymProject.Domain.TrainingDomain.Common
 
             => SetTrainingDensity(
                 TotalSecondsUnderTension + toAdd.ToTotalSeconds(),
-                TotalRest + toAdd.Rest.Value,
+                TotalRest + (toAdd.ToTotalSeconds() - toAdd.ToSecondsUnderTension()),
                 ++_totalWorkingSets);
+
+
+        /// <summary>
+        /// Updates the Volume parameters including the working sets added
+        /// </summary>
+        /// <param name="workingSetList">The list of the working sets to be added</param>
+        /// <returns>The new TrainingVolumeValue instance</returns>
+        public TrainingDensityParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        {
+            int wsTotalTut = workingSetList.Sum(x => x.ToSecondsUnderTension());
+            int wsTotalRest = workingSetList.Sum(x => x.ToTotalSeconds() - x.ToSecondsUnderTension());
+            int wsTotalNumber = workingSetList.Count();
+
+            return SetTrainingDensity(
+                TotalSecondsUnderTension + wsTotalTut,
+                TotalRest + wsTotalRest,
+                _totalWorkingSets + wsTotalNumber);
+        }
 
 
         /// <summary>
@@ -133,9 +151,27 @@ namespace GymProject.Domain.TrainingDomain.Common
                 throw new ArgumentException($"Trying to remove a WorkingSet when no one has been added.");
 
             return SetTrainingDensity(
-                TotalSecondsUnderTension - toRemove.ToTotalSeconds(),
-                TotalRest - toRemove.Rest.Value,
+                TotalSecondsUnderTension - toRemove.ToSecondsUnderTension(),
+                TotalRest - (toRemove.ToTotalSeconds() - toRemove.ToSecondsUnderTension()),
                 --_totalWorkingSets);
+        }
+
+
+        /// <summary>
+        /// Updates the Desnity parameters excluding the working sets added
+        /// </summary>
+        /// <param name="workingSetList">The list of the working sets to be removed</param>
+        /// <returns>The new TrainingVolumeValue instance</returns>
+        public TrainingDensityParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        {
+            int wsTotalTut = workingSetList.Sum(x => x.ToSecondsUnderTension());
+            int wsTotalRest = workingSetList.Sum(x => x.ToTotalSeconds() - x.ToSecondsUnderTension());
+            int wsTotalNumber = workingSetList.Count();
+
+            return SetTrainingDensity(
+                TotalSecondsUnderTension - wsTotalTut,
+                TotalRest - wsTotalRest,
+                _totalWorkingSets - wsTotalNumber);
         }
 
 

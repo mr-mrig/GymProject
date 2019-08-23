@@ -14,10 +14,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
     {
 
 
-        /// <summary>
-        /// The progressive number of the Workout - Starts from 0
-        /// </summary>
-        public uint ProgressiveNumber { get; private set; } = 0;
+        ///// <summary>
+        ///// The progressive number of the Workout - Starts from 0
+        ///// </summary>
+        //public uint ProgressiveNumber { get; private set; } = 0;
 
 
         /// <summary>
@@ -33,19 +33,19 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
-        /// The training volume parameters, as the sum of the params of the single WOs
+        /// The training volume parameters, as the sum of the params of the single WUs
         /// </summary>
         public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
 
 
         /// <summary>
-        /// The training effort, as the average of the single WOs efforts
+        /// The training effort, as the average of the single WUs efforts
         /// </summary>
         public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
 
 
         /// <summary>
-        /// The training density parameters, as the sum of the params of the single WOs
+        /// The training density parameters, as the sum of the params of the single WUs
         /// </summary>
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
@@ -66,9 +66,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkoutTemplate(IdTypeValue id, uint progressiveNumber, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
+        private WorkoutTemplate(IdTypeValue id, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
         {
-            ProgressiveNumber = progressiveNumber;
             Name = workoutName ?? string.Empty;
             SpecificWeekday = weekday ?? WeekdayEnum.Generic;
 
@@ -90,13 +89,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// Factory method - Create a transient Workout
         /// </summary>
         /// <param name="weekday">The week day the Workout is scheduled to - if any</param>
-        /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplate PlanTransientWorkout(uint progressiveNumber, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplate PlanTransientWorkout(IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
 
-            => new WorkoutTemplate(null, progressiveNumber, workUnits, workoutName, weekday);
+            => new WorkoutTemplate(null, workUnits, workoutName, weekday);
 
 
         /// <summary>
@@ -104,30 +102,18 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="id">The ID of the WU</param>
         /// <param name="weekday">The week day the Workout is scheduled to - if any</param>
-        /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplate PlanWorkout(IdTypeValue id, uint progressiveNumber, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplate PlanWorkout(IdTypeValue id, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
 
-            => new WorkoutTemplate(id, progressiveNumber, workUnits, workoutName, weekday);
+            => new WorkoutTemplate(id, workUnits, workoutName, weekday);
 
         #endregion
 
 
 
         #region Public Methods
-
-        /// <summary>
-        /// Assign a new progressive number to the WO
-        /// </summary>
-        /// <param name="newPnum">The new progressive number - PNums must be consecutive</param>
-        public void MoveToNewProgressiveNumber(uint newPnum)
-        {
-            ProgressiveNumber = newPnum;
-            //TestBusinessRules();
-        }
-
 
         /// <summary>
         /// Change the name of the WO
@@ -257,9 +243,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workUnits.Add(toAdd.Clone() as WorkUnitTemplate);
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+            TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
+            TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
+            //TrainingIntensity.AddWorkingSets(toAdd.WorkingSets, GetMainEffortType());
 
             TestBusinessRules();
         }
@@ -284,9 +274,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workUnits.Add(toAdd);
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
+            TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
+            //TrainingIntensity.AddWorkingSets(toAdd.WorkingSets);
 
             TestBusinessRules();
         }
@@ -323,11 +317,15 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             if(removed)
             {
-                TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-                TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+                //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+                //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
 
-                ForceConsecutiveWorkUnitProgressiveNumbers();
+                TrainingVolume = TrainingVolume.RemoveWorkingSets(toBeRemoved.WorkingSets);
+                TrainingDensity = TrainingDensity.RemoveWorkingSets(toBeRemoved.WorkingSets);
+                //TrainingIntensity.RemoveWorkingSets(toBeRemoved.WorkingSets);
+
+                ForceConsecutiveWorkUnitProgressiveNumbers(toRemovePnum);
                 TestBusinessRules();
             }
         }
@@ -526,9 +524,16 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                     intensityTechniqueIds
                 );
 
-                TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-                TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+                //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+                //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+
+                WorkingSetTemplate added = WorkingSetTemplate.
+                    PlanTransientWorkingSet(0, repetitions, rest, effort, tempo, intensityTechniqueIds);
+
+                TrainingVolume = TrainingVolume.AddWorkingSet(added);
+                TrainingDensity = TrainingDensity.AddWorkingSet(added);
+                //TrainingIntensity.AddWorkingSet(added);
             }
         }
 
@@ -544,9 +549,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         {
             FindWorkUnit(workUnitPnum).AddWorkingSet(workingSet);
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+
+            TrainingVolume = TrainingVolume.AddWorkingSet(workingSet);
+            TrainingDensity = TrainingDensity.AddWorkingSet(workingSet);
+            //TrainingIntensity.AddWorkingSet(workingSet);
         }
 
 
@@ -578,12 +587,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public void RemoveWorkingSet(uint parentWorkUnitPnum, uint workingSetPnum)
         {
             WorkUnitTemplate parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
+            WorkingSetTemplate toRemove = parentWorkUnit.CloneWorkingSet(workingSetPnum);
 
             parentWorkUnit?.RemoveWorkingSet(workingSetPnum);
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+
+            TrainingVolume = TrainingVolume.RemoveWorkingSet(toRemove);
+            TrainingDensity = TrainingDensity.RemoveWorkingSet(toRemove);
+            //TrainingIntensity.AddWorkingSet(workingSet);
         }
 
 
@@ -738,7 +752,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
-        /// Force the WSs to have consecutive progressive numbers
+        /// Force the WUs to have consecutive progressive numbers
         /// It works by assuming that the WSs are added in a sorted fashion.
         /// </summary>
         private void ForceConsecutiveWorkUnitProgressiveNumbers()
@@ -747,6 +761,24 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < _workUnits.Count(); iws++)
+            {
+                WorkUnitTemplate ws = _workUnits[iws];
+                ws.MoveToNewProgressiveNumber((uint)iws);
+            }
+        }
+
+
+        /// <summary>
+        /// Force the WUs to have consecutive progressive numbers
+        /// This algorithm is more efficient as it ignores the elments before pnum, provided that they are already sorted
+        /// </summary>
+        /// <param name="fromPnum">The Progressive number from which the order is not respected</param>
+        private void ForceConsecutiveWorkUnitProgressiveNumbers(uint fromPnum)
+        {
+            //_workUnits = SortWorkUnitByProgressiveNumber(_workUnits).ToList();
+
+            // Just overwrite all the progressive numbers
+            for (int iws = (int)fromPnum; iws < _workUnits.Count(); iws++)
             {
                 WorkUnitTemplate ws = _workUnits[iws];
                 ws.MoveToNewProgressiveNumber((uint)iws);
@@ -865,7 +897,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkout(Id, ProgressiveNumber, _workUnits, Name, SpecificWeekday);
+            => PlanWorkout(Id, _workUnits, Name, SpecificWeekday);
 
         #endregion
     }

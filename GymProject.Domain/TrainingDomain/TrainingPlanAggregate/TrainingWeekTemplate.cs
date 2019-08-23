@@ -22,7 +22,34 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint ProgressiveNumber { get; private set; } = 0;
 
 
-        private ICollection<WorkoutTemplateReferenceValue> _workouts = new List<WorkoutTemplateReferenceValue>();
+        /// <summary>
+        /// The training volume parameters, as the sum of the params of the single WOs
+        /// </summary>
+        public TrainingVolumeParametersValue TrainingVolume
+        {
+            get => TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+        }
+
+
+        /// <summary>
+        /// The training effort, as the average of the single WOs efforts
+        /// </summary>
+        public TrainingIntensityParametersValue TrainingIntensity
+        {
+            get => TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+        }
+
+
+        /// <summary>
+        /// The training density parameters, as the sum of the params of the single WOs
+        /// </summary>
+        public TrainingDensityParametersValue TrainingDensity
+        {
+            get => TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+        }
+
+
+        private IList<WorkoutTemplateReferenceValue> _workouts = new List<WorkoutTemplateReferenceValue>();
 
         /// <summary>
         /// The IDs of the Workouts belonging to the TW
@@ -44,7 +71,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
-        private TrainingWeekTemplate(IdTypeValue id, uint progressiveNumber, IList<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
+        private TrainingWeekTemplate(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             TrainingWeekType = weekType ?? TrainingWeekTypeEnum.Generic;
@@ -67,7 +94,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate AddTrainingWeekToPlan(IdTypeValue id, uint progressiveNumber, IList<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekTemplate PlanTrainingWeek(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
 
             => new TrainingWeekTemplate(id, progressiveNumber, workouts, weekType);
 
@@ -79,10 +106,30 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate AddTransientTrainingWeekToPlan(uint progressiveNumber, IList<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekTemplate PlanTransientTrainingWeek(uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
 
             => new TrainingWeekTemplate(null, progressiveNumber, workouts, weekType);
 
+
+        /// <summary>
+        /// Factory method for full rest weeks
+        /// </summary>
+        /// <param name="progressiveNumber">The progressive number of the Training Week</param>
+        /// <returns>The TrainingWeekTemplate instance</returns>
+        public static TrainingWeekTemplate PlanTransientFullRestWeek(uint progressiveNumber)
+
+            => new TrainingWeekTemplate(null, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
+
+
+        /// <summary>
+        /// Factory method for full rest weeks
+        /// </summary>
+        /// <param name="id">The ID of the Training Week</param>
+        /// <param name="progressiveNumber">The progressive number of the Training Week</param>
+        /// <returns>The TrainingWeekTemplate instance</returns>
+        public static TrainingWeekTemplate PlanFullRestWeek(IdTypeValue id, uint progressiveNumber)
+
+            => new TrainingWeekTemplate(id, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
 
         #endregion
 
@@ -102,6 +149,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         /// <summary>
         /// Assign the specified week type to the Training Week
+        /// Be careful when switching to/from Full Rest as business rule might be violated
         /// </summary>
         /// <param name="weekType">The training week type</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
@@ -110,6 +158,35 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TrainingWeekType = weekType;
             TestBusinessRules();
         }
+
+
+        /// <summary>
+        /// Make the week a full rest one. 
+        /// This function also clears all the workouts scheduled, in order to meet the business rule.
+        /// </summary>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void MarkAsFullRestWeek()
+        {
+            _workouts.Clear();
+            TrainingWeekType = TrainingWeekTypeEnum.FullRest;
+
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WU 
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        public TrainingEffortTypeEnum GetMainEffortType()
+
+            => _workouts.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
+                : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
 
         #endregion
 
@@ -140,13 +217,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         public void UnplanWorkout(uint workoutPnum)
         {
-            WorkoutTemplateReferenceValue toBeRemoved = _workouts.Single(x => x.ProgressiveNumber == workoutPnum);
+            //WorkoutTemplateReferenceValue toBeRemoved = _workouts.Single(x => x.ProgressiveNumber == workoutPnum);
 
-            if(_workouts.Remove(toBeRemoved))
-            {
-                ForceConsecutiveWorkoutProgressiveNumbers();
-                TestBusinessRules();
-            }
+            _workouts.RemoveAt((int)workoutPnum);
+
+            ForceConsecutiveWorkoutProgressiveNumbers(workoutPnum);
+            TestBusinessRules();
         }
 
 
@@ -173,9 +249,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             WorkoutTemplateReferenceValue src = FindWorkout(srcPnum);
             WorkoutTemplateReferenceValue dest = FindWorkout(destPnum);
 
+            _workouts[(int)srcPnum] = dest.MoveToNewProgressiveNumber(srcPnum);
+            _workouts[(int)destPnum] = src.MoveToNewProgressiveNumber(destPnum);
 
-            // Raise domain events
-            throw new NotImplementedException();
+            //src.MoveToNewProgressiveNumber(destPnum);
+            //dest.MoveToNewProgressiveNumber(srcPnum);
         }
 
         #endregion
@@ -190,7 +268,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns></returns>
         private WorkoutTemplateReferenceValue FindWorkout(uint progressiveNumber)
 
-            => _workouts.Single(x => x.ProgressiveNumber == progressiveNumber);
+            => _workouts[(int)progressiveNumber];
 
 
         /// <summary>
@@ -198,8 +276,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// To be used before adding the WS to the list
         /// </summary>
         /// <returns>The WS Progressive Number</returns>
-        private uint BuildWorkoutProgressiveNumber() 
-            
+        private uint BuildWorkoutProgressiveNumber()
+
             => (uint)_workouts.Count();
 
 
@@ -209,27 +287,33 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         private void ForceConsecutiveWorkoutProgressiveNumbers()
         {
-            ICollection<WorkoutTemplateReferenceValue> workoutsLocal = _workouts.OrderBy(x => x.ProgressiveNumber).ToList();
+            IList<WorkoutTemplateReferenceValue> sortedCopy = new List<WorkoutTemplateReferenceValue>();
 
             // Just overwrite all the progressive numbers
             for (int iwo = 0; iwo < _workouts.Count(); iwo++)
             {
-                WorkoutTemplateReferenceValue srcWorkout = workoutsLocal.ElementAt(iwo);
+                WorkoutTemplateReferenceValue srcWorkout = _workouts.ElementAt(iwo);
 
-                // Check if the WO is not already ordered correctly
-                if(srcWorkout.ProgressiveNumber != iwo)
-                {
-                    AddDomainEvent(new );
-                    //WorkoutTemplateReferenceValue movedWorkout = srcWorkout.MoveToNewProgressiveNumber((uint)iwo);
-
-                    // Raise event
-                }
+                sortedCopy.Add(
+                    srcWorkout.MoveToNewProgressiveNumber((uint)iwo));
             }
 
             // Copy back
-            _workouts = workoutsLocal;
+            _workouts = sortedCopy;
+        }
 
-            throw new NotImplementedException();
+
+        /// <summary>
+        /// Force the WOs to have consecutive progressive numbers
+        /// It works by assuming that the WSs are added in a sorted fashion.
+        /// This algorithm is more efficient as it ignores the elments before pnum, provided that they are already sorted
+        /// </summary>
+        /// <param name="fromPnum">The Progressive number from which the order is not respected</param>
+        private void ForceConsecutiveWorkoutProgressiveNumbers(uint fromPnum)
+        {
+            // Just overwrite all the progressive numbers
+            for (int iwo = (int)fromPnum; iwo < _workouts.Count(); iwo++)
+                _workouts[iwo] = _workouts[iwo].MoveToNewProgressiveNumber((uint)iwo);
         }
 
         #endregion
@@ -298,8 +382,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!NoNullWorkouts())
                 throw new TrainingDomainInvariantViolationException($"The Training Week must have no NULL workouts.");
 
-            if (!AtLeastOneWorkout())
-                throw new TrainingDomainInvariantViolationException($"Cannot create a Training Week without any Workout unless it is a Full Rest one.");
+            //if (!AtLeastOneWorkout())
+            //    throw new TrainingDomainInvariantViolationException($"Cannot create a Training Week without any Workout unless it is a Full Rest one.");
 
             if (!FullRestWeekHasNoWorkouts())
                 throw new TrainingDomainInvariantViolationException($"Full Rest week must have no scheduled Workouts.");
@@ -315,7 +399,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         public object Clone()
 
-            => AddTrainingWeekToPlan(Id, ProgressiveNumber, Workouts.ToList(), TrainingWeekType);
+            => PlanTrainingWeek(Id, ProgressiveNumber, Workouts.ToList(), TrainingWeekType);
 
         #endregion
     }

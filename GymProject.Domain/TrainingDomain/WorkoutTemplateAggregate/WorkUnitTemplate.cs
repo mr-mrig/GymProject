@@ -235,9 +235,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workingSets.Add(copy);
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
+
+            TrainingVolume = TrainingVolume.AddWorkingSet(copy);
+            TrainingDensity = TrainingDensity.AddWorkingSet(copy);
+            //TrainingIntensity.AddWorkingSet(copy);
 
             TestBusinessRules();
         }
@@ -259,19 +263,24 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (_intensityTechniquesIds.Count > 0)
                 localIntensityTechniqueIds.AddRange(_intensityTechniquesIds.Select(x => x));
 
-            _workingSets.Add(
-                WorkingSetTemplate.PlanTransientWorkingSet(
+            WorkingSetTemplate toAdd = WorkingSetTemplate.PlanTransientWorkingSet(
                     BuildWorkingSetProgressiveNumber(),
                     repetitions,
                     rest,
                     effort,
                     tempo,
                     localIntensityTechniqueIds
-                ));
+                );
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
+            _workingSets.Add(toAdd);
+
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
+
+            TrainingVolume = TrainingVolume.AddWorkingSet(toAdd);
+            TrainingDensity = TrainingDensity.AddWorkingSet(toAdd);
+            //TrainingIntensity.AddWorkingSet(toAdd);
 
             TestBusinessRules();
         }
@@ -326,11 +335,16 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workingSets.Remove(toBeRemoved);
 
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
+            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
+            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
 
-            ForceConsecutiveWorkingSetsProgressiveNumbers();
+
+            TrainingVolume = TrainingVolume.RemoveWorkingSet(toBeRemoved);
+            TrainingDensity = TrainingDensity.RemoveWorkingSet(toBeRemoved);
+            //TrainingIntensity.RemoveWorkingSet(toBeRemoved);
+
+            ForceConsecutiveWorkingSetsProgressiveNumbers(progressiveNumber);
             TestBusinessRules();
         }
 
@@ -634,6 +648,21 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < _workingSets.Count(); iws++)
+            {
+                WorkingSetTemplate ws = _workingSets[iws];
+                ws.MoveToNewProgressiveNumber((uint)iws);
+            }
+        }
+
+        /// <summary>
+        /// Force the WSs to have consecutive progressive numbers
+        /// This algorithm is more efficient as it ignores the elments before pnum, provided that they are already sorted
+        /// </summary>
+        /// <param name="fromPnum">The Progressive number from which the order is not respected</param>
+        private void ForceConsecutiveWorkingSetsProgressiveNumbers(uint fromPnum)
+        {
+            // Just overwrite all the progressive numbers
+            for (int iws = (int)fromPnum; iws < _workingSets.Count(); iws++)
             {
                 WorkingSetTemplate ws = _workingSets[iws];
                 ws.MoveToNewProgressiveNumber((uint)iws);

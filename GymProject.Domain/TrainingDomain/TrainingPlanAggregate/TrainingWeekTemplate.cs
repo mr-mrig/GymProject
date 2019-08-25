@@ -25,28 +25,19 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// The training volume parameters, as the sum of the params of the single WOs
         /// </summary>
-        public TrainingVolumeParametersValue TrainingVolume
-        {
-            get => TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-        }
+        public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
 
 
         /// <summary>
         /// The training effort, as the average of the single WOs efforts
         /// </summary>
-        public TrainingIntensityParametersValue TrainingIntensity
-        {
-            get => TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-        }
+        public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
 
 
         /// <summary>
         /// The training density parameters, as the sum of the params of the single WOs
         /// </summary>
-        public TrainingDensityParametersValue TrainingDensity
-        {
-            get => TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-        }
+        public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
         private IList<WorkoutTemplateReferenceValue> _workouts = new List<WorkoutTemplateReferenceValue>();
@@ -79,6 +70,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _workouts = workouts?.ToList() ?? new List<WorkoutTemplateReferenceValue>();
 
             TestBusinessRules();
+
+            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
         #endregion
 
@@ -138,6 +133,15 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Public Methods
 
         /// <summary>
+        /// Tell whether the Training Week is a Full Rest one
+        /// </summary>
+        /// <returns>True if Full Rest week</returns>
+        public bool IsFullRestWeek()
+
+            => TrainingWeekType == TrainingWeekTypeEnum.FullRest;
+
+
+        /// <summary>
         /// Assign a new progressive number to the Training Week
         /// </summary>
         /// <param name="newPnum">The new progressive number - PNums must be consecutive</param>
@@ -170,6 +174,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _workouts.Clear();
             TrainingWeekType = TrainingWeekTypeEnum.FullRest;
 
+            TrainingVolume = TrainingVolumeParametersValue.InitEmpty();
+            TrainingDensity = TrainingDensityParametersValue.InitEmpty();
+            TrainingIntensity = TrainingIntensityParametersValue.InitEmpty();
+
             TestBusinessRules();
         }
 
@@ -180,7 +188,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workouts.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
+            => _workouts.Sum(x => x?.WorkingSets?.Count()) == 0 
+                ? TrainingEffortTypeEnum.IntensityPerc
                 : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {
@@ -205,6 +214,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 BuildWorkoutProgressiveNumber(),
                 workingSets));
 
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
+            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+
             TestBusinessRules();
         }
 
@@ -217,9 +231,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         public void UnplanWorkout(uint workoutPnum)
         {
-            //WorkoutTemplateReferenceValue toBeRemoved = _workouts.Single(x => x.ProgressiveNumber == workoutPnum);
+            IEnumerable<WorkingSetTemplate> removedWorkingSets = 
+                _workouts.ElementAt((int)workoutPnum).WorkingSets;
 
             _workouts.RemoveAt((int)workoutPnum);
+
+            TrainingVolume = TrainingVolume.RemoveWorkingSets(removedWorkingSets);
+            TrainingDensity = TrainingDensity.RemoveWorkingSets(removedWorkingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
 
             ForceConsecutiveWorkoutProgressiveNumbers(workoutPnum);
             TestBusinessRules();
@@ -232,7 +251,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The list of the Working Sets</returns>
         public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
 
-             => _workouts.SelectMany(x => x.WorkingSets);
+             => _workouts.Where(x => x != null).SelectMany(x => x.WorkingSets);
 
         #endregion
 
@@ -251,9 +270,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             _workouts[(int)srcPnum] = dest.MoveToNewProgressiveNumber(srcPnum);
             _workouts[(int)destPnum] = src.MoveToNewProgressiveNumber(destPnum);
-
-            //src.MoveToNewProgressiveNumber(destPnum);
-            //dest.MoveToNewProgressiveNumber(srcPnum);
         }
 
         #endregion

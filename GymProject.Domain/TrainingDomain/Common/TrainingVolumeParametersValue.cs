@@ -70,7 +70,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
 
             if (wsCopy.Count() == 0)
-                return SetTrainingVolume(0, 0, WeightPlatesValue.MeasureKilograms(0));
+                return InitEmpty();
 
             // Exception or exclude from computation?
             if (wsCopy.Any(x => x == null))
@@ -82,6 +82,14 @@ namespace GymProject.Domain.TrainingDomain.Common
                 (uint)wsCopy.Count(),
                 WeightPlatesValue.Measure(wsCopy.Sum(x => x.ToWorkload().Value), wsCopy.FirstOrDefault().ToWorkload().Unit));
         }
+
+        /// <summary>
+        /// Factory method - Initializes an empty volume
+        /// </summary>
+        /// <returns>The TrainingVolumeValue instance</returns>
+        public static TrainingVolumeParametersValue InitEmpty()
+
+            => new TrainingVolumeParametersValue(0, 0, WeightPlatesValue.MeasureKilograms(0));
 
         #endregion
 

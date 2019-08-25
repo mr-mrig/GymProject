@@ -243,14 +243,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workUnits.Add(toAdd.Clone() as WorkUnitTemplate);
 
-            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
             TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
             TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
-            //TrainingIntensity.AddWorkingSets(toAdd.WorkingSets, GetMainEffortType());
-
+  
             TestBusinessRules();
         }
 
@@ -274,13 +270,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workUnits.Add(toAdd);
 
-            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-
             TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
             TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
-            //TrainingIntensity.AddWorkingSets(toAdd.WorkingSets);
 
             TestBusinessRules();
         }
@@ -317,13 +309,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             if(removed)
             {
-                //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-                //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-
                 TrainingVolume = TrainingVolume.RemoveWorkingSets(toBeRemoved.WorkingSets);
                 TrainingDensity = TrainingDensity.RemoveWorkingSets(toBeRemoved.WorkingSets);
-                //TrainingIntensity.RemoveWorkingSets(toBeRemoved.WorkingSets);
 
                 ForceConsecutiveWorkUnitProgressiveNumbers(toRemovePnum);
                 TestBusinessRules();
@@ -367,7 +355,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workUnits.Count == 0 ? TrainingEffortTypeEnum.IntensityPerc
+            => _workUnits.Where(x => x != null).Count() == 0 ? TrainingEffortTypeEnum.IntensityPerc
                 : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {

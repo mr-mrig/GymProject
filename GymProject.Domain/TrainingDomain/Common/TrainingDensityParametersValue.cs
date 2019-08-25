@@ -69,7 +69,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
 
             if (wsCopy.Count() == 0)
-                return new TrainingDensityParametersValue(0, 0, 0);
+                return InitEmpty();
 
 
             // Exception or exclude from computation?
@@ -82,6 +82,15 @@ namespace GymProject.Domain.TrainingDomain.Common
                 wsCopy.Sum(x => x.ToTotalSeconds() - x.ToSecondsUnderTension()),
                 wsCopy.Count());
         }
+
+
+        /// <summary>
+        /// Factory method - Initializes an empty density
+        /// </summary>
+        /// <returns>The TrainingVolumeValue instance</returns>
+        public static TrainingDensityParametersValue InitEmpty()
+
+            => new TrainingDensityParametersValue(0, 0, 0);
 
         #endregion
 
@@ -116,8 +125,8 @@ namespace GymProject.Domain.TrainingDomain.Common
         public TrainingDensityParametersValue AddWorkingSet(IWorkingSet toAdd)
 
             => SetTrainingDensity(
-                TotalSecondsUnderTension + toAdd.ToTotalSeconds(),
-                TotalRest + (toAdd.ToTotalSeconds() - toAdd.ToSecondsUnderTension()),
+                TotalSecondsUnderTension + toAdd.ToSecondsUnderTension(),
+                TotalRest + toAdd.ToRest(),
                 ++_totalWorkingSets);
 
 
@@ -129,7 +138,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         public TrainingDensityParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
         {
             int wsTotalTut = workingSetList.Sum(x => x.ToSecondsUnderTension());
-            int wsTotalRest = workingSetList.Sum(x => x.ToTotalSeconds() - x.ToSecondsUnderTension());
+            int wsTotalRest = workingSetList.Sum(x => x.ToRest());
             int wsTotalNumber = workingSetList.Count();
 
             return SetTrainingDensity(
@@ -165,7 +174,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         public TrainingDensityParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
         {
             int wsTotalTut = workingSetList.Sum(x => x.ToSecondsUnderTension());
-            int wsTotalRest = workingSetList.Sum(x => x.ToTotalSeconds() - x.ToSecondsUnderTension());
+            int wsTotalRest = workingSetList.Sum(x => x.ToRest());
             int wsTotalNumber = workingSetList.Count();
 
             return SetTrainingDensity(

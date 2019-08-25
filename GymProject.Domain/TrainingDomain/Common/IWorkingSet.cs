@@ -45,6 +45,13 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         /// <summary>
+        /// Get the rest interval between the set and the following one [s]
+        /// </summary>
+        /// <returns>The rest period</returns>
+        int ToRest();
+
+
+        /// <summary>
         /// Changes the WS effort type to the one specified, with respect to the target repetitions.
         /// <param name="toEffortType">The effort type to convert to</param>
         /// </summary>

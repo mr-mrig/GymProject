@@ -324,17 +324,21 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
+        /// Get the rest interval between the set and the following one [s]
+        /// </summary>
+        /// <returns>The rest period</returns>
+        public int ToRest()
+
+            => Rest.IsRestSpecified() ? Rest.Value : RestPeriodValue.DefaultRestValue;
+
+
+        /// <summary>
         /// Get the duration of the WS in terms of TUT + rest [s]
         /// </summary>
         /// <returns>The number of seconds the WS requires</returns>
         public int ToTotalSeconds()
-        {
-            if(Rest.IsRestSpecified())
-                return ToSecondsUnderTension() + Rest.Value;
 
-            else
-                return ToSecondsUnderTension() + RestPeriodValue.DefaultRestValue;
-        }
+            => ToSecondsUnderTension() + ToRest();
 
 
         /// <summary>

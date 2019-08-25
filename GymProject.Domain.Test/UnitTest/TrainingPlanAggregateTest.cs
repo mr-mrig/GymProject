@@ -139,10 +139,10 @@ namespace GymProject.Domain.Test.UnitTest
 
                             if (isTransient)
                                 Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                                TrainingWeekTemplate.PlanTransientTrainingWeek(0, initialWorkoutsReferences, weekType));
+                                    TrainingWeekTemplate.PlanTransientTrainingWeek(0, initialWorkoutsReferences, weekType));
                             else
                                 Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                                TrainingWeekTemplate.PlanTrainingWeek(weekId, 0, initialWorkoutsReferences, weekType));
+                                    TrainingWeekTemplate.PlanTrainingWeek(weekId, 0, initialWorkoutsReferences, weekType));
                             break;
 
                         // Invalid Progressive Numbers
@@ -263,6 +263,10 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.True(Enumerable.Range(0, initialWorkouts.Count).ToList().SequenceEqual
                     (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
 
+                WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                    initialWorkouts.SelectMany(x => x.CloneAllWorkingSets()),
+                    week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
+
                 // Change Week
                 weekPnum = (uint)RandomFieldGenerator.RandomIntValueExcluded(0, 20, (int)weekPnum);
                 week.MoveToNewProgressiveNumber(weekPnum);
@@ -302,6 +306,10 @@ namespace GymProject.Domain.Test.UnitTest
 
                     Assert.True(Enumerable.Range(0, workouts.Count).ToList().SequenceEqual
                         (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+
+                    WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                        workouts.SelectMany(x => x.CloneAllWorkingSets()),
+                        week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
                 }
 
                 // Remove Workouts
@@ -318,6 +326,10 @@ namespace GymProject.Domain.Test.UnitTest
 
                     Assert.True(Enumerable.Range(0, workouts.Count).ToList().SequenceEqual
                         (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+
+                    WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                        workouts.SelectMany(x => x.CloneAllWorkingSets()),
+                        week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
                 }
 
                 // Change Workouts
@@ -343,7 +355,110 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
+        [Fact]
+        public static void TrainingPlanFail()
+        {
+            int ntests = 500;
+            int planNameLengthMin = 10, planNameLengthMax = 100;
 
+            IdTypeValue planId = IdTypeValue.Create(17);
+            TrainingPlan plan = null;
+
+            for(int itest = 0; itest < ntests; itest++)
+            {
+                string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
+                bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+                bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+
+
+
+                float testCaseProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
+
+                float constructorTypeProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
+
+                int constructorType = constructorTypeProbability < 0.33f ? 0 
+                    : constructorTypeProbability < 0.66f ? 1 : 2;
+
+                IdTypeValue rootPlan = IdTypeValue.Create(RandomFieldGenerator.RandomInt(0, 1000));
+
+                TrainingPlanTypeEnum planType = TrainingPlanTypeEnum.From(
+                    RandomFieldGenerator.RandomInt(TrainingPlanTypeEnum.NotSet.Id, TrainingPlanTypeEnum.Inherited.Id);
+
+                switch (testCaseProbability)
+                {
+                    // Null Weeks
+                    case var _ when testCaseProbability < 0.1f:
+
+                        switch(constructorType)
+                        {
+                            case 0:
+
+                                Assert.Throws<TrainingDomainInvariantViolationException>(()
+                                    => TrainingPlan.CreateTrainingPlan(
+                                        );
+                                break;
+
+                            case 1:
+
+                                Assert.Throws<TrainingDomainInvariantViolationException>(()
+                                    => TrainingPlan.CreateVariantTrainingPlan(
+                                        );
+                                break;
+
+                            default:
+
+                                break;
+                        }
+
+                        break;
+
+                    // Null owner
+                    case var _ when testCaseProbability < 0.2f:
+
+                        break;
+
+                    // Null Schedules
+                    case var _ when testCaseProbability < 0.3f:
+
+                        break;
+
+                    // Null Phases
+                    case var _ when testCaseProbability < 0.4f:
+
+                        break;
+
+                    // Null Proficiencies
+                    case var _ when testCaseProbability < 0.5f:
+
+                        break;
+
+                    // Null Childs
+                    case var _ when testCaseProbability < 0.6f:
+
+                        break;
+
+                    // Null focus
+                    case var _ when testCaseProbability < 0.7f:
+
+                        break;
+
+                    // Non hinerited with message attached
+                    case var _ when testCaseProbability < 0.8f:
+
+                        break;
+
+                    // Non Consecutive Numbers
+                    case var _ when testCaseProbability < 0.9f:
+
+                        break;
+
+                    // Child Plan same as Root Plan
+                    default:
+
+                        break;
+                }
+            }
+        }
 
 
         #region Support Functions

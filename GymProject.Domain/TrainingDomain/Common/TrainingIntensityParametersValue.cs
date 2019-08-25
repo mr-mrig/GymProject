@@ -76,7 +76,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
 
             if (wsCopy.Count() == 0)
-                return new TrainingIntensityParametersValue(0, toEffortType, 0);
+                return InitEmpty(effortType);
 
 
             foreach (IWorkingSet ws in wsCopy)
@@ -92,6 +92,16 @@ namespace GymProject.Domain.TrainingDomain.Common
             return SetTrainingIntensity(
                     wsCopy.Sum(x => x?.Effort?.Value ?? TrainingEffortValue.DefaultEffort.Value), toEffortType, wsCopy.Count());
         }
+
+
+        /// <summary>
+        /// Factory method - Initializes an empty intensity
+        /// </summary>
+        /// <param name="effortType">The effort type - optional</param>
+        /// <returns>The TrainingVolumeValue instance</returns>
+        public static TrainingIntensityParametersValue InitEmpty(TrainingEffortTypeEnum effortType = null)
+
+            => new TrainingIntensityParametersValue(0, effortType ?? DefaultEffortType, 0);
 
         #endregion
 

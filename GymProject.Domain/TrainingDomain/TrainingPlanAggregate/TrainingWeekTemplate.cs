@@ -200,13 +200,50 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #endregion
 
 
+        #region Training Parameters Aggregates
+
+        /// <summary>
+        /// Get the Training Volume Parameters for the selected Workout
+        /// </summary>
+        /// <param name="progressiveNumber">The Workout progressive number</param>
+        /// <returns>The Training Volume Parameters</returns>
+        public TrainingVolumeParametersValue GetWorkoutTrainingVolume(uint progressiveNumber)
+
+            => TrainingVolumeParametersValue.ComputeFromWorkingSets(FindWorkout(progressiveNumber).WorkingSets);
+
+
+        /// <summary>
+        /// Get the Training Density Parameters for the selected Workout
+        /// </summary>
+        /// <param name="progressiveNumber">The Workout progressive number</param>
+        /// <returns>The Training Volume Parameters</returns>
+        public TrainingDensityParametersValue GetWorkoutTrainingDensity(uint progressiveNumber)
+
+            => TrainingDensityParametersValue.ComputeFromWorkingSets(FindWorkout(progressiveNumber).WorkingSets);
+
+
+        /// <summary>
+        /// Get the Training Intensity Parameters for the selected Workout
+        /// </summary>
+        /// <param name="progressiveNumber">The Workout progressive number</param>
+        /// <returns>The Training Volume Parameters</returns>
+        public TrainingIntensityParametersValue GetWorkoutTrainingIntensity(uint progressiveNumber)
+        {
+            WorkoutTemplateReferenceValue workout = FindWorkout(progressiveNumber);
+
+            return TrainingIntensityParametersValue.ComputeFromWorkingSets(workout.WorkingSets, workout.GetMainEffortType());
+        }
+
+
+        #endregion
+
+
         #region Workout Methods
 
         /// <summary>
         /// Add the Workout to the Training Week
         /// </summary>
         /// <param name="workingSets">The list of the WSs which the WO is made up of</param>
-        /// <param name="workoutPnum">The name of the WO</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         public void PlanWorkout(ICollection<WorkingSetTemplate> workingSets)
         {
@@ -217,7 +254,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
             TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
 
             TestBusinessRules();
         }
@@ -238,25 +275,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             TrainingVolume = TrainingVolume.RemoveWorkingSets(removedWorkingSets);
             TrainingDensity = TrainingDensity.RemoveWorkingSets(removedWorkingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
 
             ForceConsecutiveWorkoutProgressiveNumbers(workoutPnum);
             TestBusinessRules();
         }
 
-
-        /// <summary>
-        /// Get the WSs of all the Workouts belonging to the Training Week
-        /// </summary>
-        /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
-
-             => _workouts.Where(x => x != null).SelectMany(x => x.WorkingSets);
-
-        #endregion
-
-
-        #region Workouts Methods
 
         /// <summary>
         /// Assign a new progressive number to the WO
@@ -271,6 +295,25 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _workouts[(int)srcPnum] = dest.MoveToNewProgressiveNumber(srcPnum);
             _workouts[(int)destPnum] = src.MoveToNewProgressiveNumber(destPnum);
         }
+
+
+        /// <summary>
+        /// Get the WSs of the specified Workout
+        /// </summary>
+        /// <param name="workoutPnum">The Progressive Number of the Workout</param>
+        /// <returns>The list of the Working Sets</returns>
+        public IEnumerable<WorkingSetTemplate> CloneWorkoutWorkingSets(uint workoutPnum)
+
+             => _workouts.Where(x => x?.ProgressiveNumber == workoutPnum)?.SelectMany(x => x.WorkingSets);
+
+
+        /// <summary>
+        /// Get the WSs of all the Workouts belonging to the Training Week
+        /// </summary>
+        /// <returns>The list of the Working Sets</returns>
+        public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
+
+             => _workouts.Where(x => x != null).SelectMany(x => x.WorkingSets);
 
         #endregion
 

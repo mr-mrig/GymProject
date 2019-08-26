@@ -431,8 +431,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (hashtagId == null)
                 throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
 
-            _hashtags.Remove(hashtagId);
-            TestBusinessRules();
+            if(_hashtags.Remove(hashtagId))
+                TestBusinessRules();
         }
 
 
@@ -466,8 +466,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (phaseId == null)
                 throw new ArgumentNullException($"Phase ID must be valid when tagging the Training Plan", nameof(phaseId));
 
-            _trainingPhaseIds.Remove(phaseId);
-            TestBusinessRules();
+            if(_trainingPhaseIds.Remove(phaseId))
+                TestBusinessRules();
         }
 
 
@@ -501,8 +501,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (proficiencyId == null)
                 throw new ArgumentNullException($"Proficiency ID must be valid when tagging the Training Plan", nameof(proficiencyId));
 
-            _trainingProficiencyIds.Remove(proficiencyId);
-            TestBusinessRules();
+            if(_trainingProficiencyIds.Remove(proficiencyId))
+                TestBusinessRules();
         }
 
 
@@ -536,8 +536,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (muscleId == null)
                 throw new ArgumentNullException($"Proficiency ID must be valid when tagging the Training Plan", nameof(muscleId));
 
-            _muscleFocusIds.Remove(muscleId);
-            TestBusinessRules();
+            if(_muscleFocusIds.Remove(muscleId))
+                TestBusinessRules();
         }
 
 
@@ -565,8 +565,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="trainingWeek">The input Training Week</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
+        /// <exception cref="ArgumentNullException">If null input</exception>
         public void AddTrainingWeek(TrainingWeekTemplate trainingWeek)
         {
+            if (trainingWeek == null)
+                throw new ArgumentNullException(nameof(trainingWeek), "Null input when trying to create a new Training Week.");
+
             if (trainingWeek.IsFullRestWeek())
                 AddFullRestWeek();
             else
@@ -621,8 +625,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="restWeek">The Training Week, which must be a Full Rest one</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         /// <exception cref="ArgumentException">If the input week is not a Full Rest one</exception>
+        /// <exception cref="ArgumentNullException">If null input</exception>
         public void AddFullRestWeek(TrainingWeekTemplate restWeek)
         {
+            if (restWeek == null)
+                throw new ArgumentNullException(nameof(restWeek), "Null input when trying to create a new Full Rest Week.");
+
             if (!restWeek.IsFullRestWeek())
                 throw new ArgumentException("Trying to add a Full Rest Week from a non-rest one.", nameof(restWeek));
 
@@ -690,6 +698,144 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #endregion
 
 
+        #region Training Week Methods
+
+        /// <summary>
+        /// Assign a new progressive number to the Training Week
+        /// </summary>
+        /// <param name="destPnum">The new Progressive Number - PNums must be consecutive</param>
+        /// <param name="srcPnum">The Progressive Number of the Training Week to be moved</param>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void MoveTrainingWeekToNewProgressiveNumber(uint srcPnum, uint destPnum)
+        {
+            TrainingWeekTemplate src = FindTrainingWeekByProgressiveNumber((int)srcPnum);
+            TrainingWeekTemplate dest = FindTrainingWeekByProgressiveNumber((int)destPnum);
+
+            src.MoveToNewProgressiveNumber(srcPnum);
+            dest.MoveToNewProgressiveNumber(destPnum);
+
+            ForceConsecutiveTrainingWeeksProgressiveNumbers();
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Make the week a full rest one. 
+        /// This function also clears all the workouts scheduled, in order to meet the business rule.
+        /// </summary>
+        /// <param name="weekType">The training week type</param>
+        /// <param name="weekPnum">The Progressive Number of the week to be moved</param>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void AssignSpecificWeekType(uint weekPnum, TrainingWeekTypeEnum weekType)
+        {
+            FindTrainingWeekByProgressiveNumber((int)weekPnum).AssignSpecificWeekType(weekType);
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Make the week a full rest one. 
+        /// This function also clears all the workouts scheduled, in order to meet the business rule.
+        /// </summary>
+        /// <param name="weekPnum">The Progressive Number of the week to be moved</param>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void MarkTrainingWeekAsFullRest(uint weekPnum)
+        {
+            FindTrainingWeekByProgressiveNumber((int)weekPnum).MarkAsFullRestWeek();
+            TestBusinessRules();
+        }
+
+        #endregion
+
+
+        #region Workout Methods
+
+
+        /// <summary>
+        /// Add the Workout to the specified Training Week
+        /// </summary>
+        /// <param name="workingSets">The list of the WSs which the WO is made up of</param>
+        /// <param name="weekPnum">The Progressive Number of the Week to which to add the WO to</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
+        public void PlanWorkout(uint weekPnum, ICollection<WorkingSetTemplate> workingSets)
+        {
+            FindTrainingWeekByProgressiveNumber((int)weekPnum).PlanWorkout(workingSets);
+
+            TestBusinessRules();
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
+            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+        }
+
+
+        /// <summary>
+        /// Remove the Workout from the specified Training Week
+        /// </summary>
+        /// <param name="workoutPnum">The Progressive Number of the WO to be removed</param>
+        /// <param name="weekPnum">The Progressive Number of the Week to which to remove the WO from</param>
+        /// <exception cref="InvalidOperationException">If no workouts or more than one found</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
+        public void UnplanWorkout(uint weekPnum, uint workoutPnum)
+        {
+            TrainingWeekTemplate week = FindTrainingWeekByProgressiveNumber((int)weekPnum);
+            IEnumerable<WorkingSetTemplate> removedWorkingSets = week.CloneWorkoutWorkingSets(workoutPnum);
+
+            week.UnplanWorkout(workoutPnum);
+
+            TestBusinessRules();
+
+            TrainingVolume = TrainingVolume.RemoveWorkingSets(removedWorkingSets);
+            TrainingDensity = TrainingDensity.RemoveWorkingSets(removedWorkingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+        }
+
+
+        /// <summary>
+        /// Assign a new progressive number to the WO of the Training Week
+        /// </summary>
+        /// <param name="destPnum">The new Progressive Number - PNums must be consecutive</param>
+        /// <param name="srcPnum">The Progressive Number of the WO to be moved</param>
+        public void MoveWorkoutToNewProgressiveNumber(uint weekPnum, uint srcPnum, uint destPnum)
+        {
+            TrainingWeekTemplate week = FindTrainingWeekByProgressiveNumber((int)weekPnum);
+            week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
+        }
+
+
+        /// <summary>
+        /// Get the average number of Workouts per Training Week of the Plan
+        /// </summary>
+        /// <returns>The average number of weekly workouts</returns>
+        public float GetAverageWorkoutsPerWeek()
+
+            => (float)_trainingWeeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Average(x => x?.Workouts.Count ?? 0);
+
+
+        /// <summary>
+        /// Get the minimum number of weekly Workouts
+        /// </summary>
+        /// <returns>The minimum number of weekly workouts</returns>
+        public int GetMinimumWorkoutsPerWeek()
+
+            => (int)_trainingWeeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Min(x => x?.Workouts.Count ?? 0);
+
+
+        /// <summary>
+        /// Get the amximum number of weekly Workouts
+        /// </summary>
+        /// <returns>The maximum number of weekly workouts</returns>
+        public int GetMaximumWorkoutsPerWeek()
+
+            => (int)_trainingWeeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Max(x => x?.Workouts.Count ?? 0);
+
+
+        #endregion
+
+
         #region Private Methods
 
 
@@ -718,7 +864,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="pNum">The progressive number to be found</param>
         /// <returns>The WokringSetTemplate object/returns>
-        /// <exception cref="ArgumentNullException">If ID could not be found</exception>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
         private TrainingWeekTemplate FindTrainingWeekByProgressiveNumber(int pNum)
         {
             TrainingWeekTemplate week = _trainingWeeks.Where(x => x.ProgressiveNumber == pNum).FirstOrDefault();

@@ -140,6 +140,27 @@ namespace GymProject.Domain.Test.Util
 
 
 
+        internal static void InsertRandomNullElements<T>(IList<T> inputList) where T : class
+        {
+            if (inputList.Count == 0)
+
+                inputList.Add(null);
+            else
+            {
+                // Quick way to provide at least one null element
+                int nullIndex1 = RandomFieldGenerator.RandomInt(0, inputList.Count - 1);
+                int nullIndex2 = inputList.Count > 1 ?
+                    (RandomFieldGenerator.RollEventWithProbability(0.5f)
+                    ? RandomFieldGenerator.RandomIntValueExcluded(0, inputList.Count - 1, nullIndex1)
+                    : nullIndex1)    // Just one
+                    : nullIndex1;
+
+                inputList[nullIndex1] = null;
+                inputList[nullIndex2] = null;
+            }
+        }
+
+
         internal static ICollection<IdTypeValue> BuildIdsCollection(int minNumber, int maxNumber)
         {
             int nElments = RandomFieldGenerator.RandomInt(minNumber, maxNumber);
@@ -151,46 +172,72 @@ namespace GymProject.Domain.Test.Util
             return result;
         }
 
-        //internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, int nWorkoutsMin = 3, int nWorkoutsMax = 7, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
-        //{
-        //    // Workouts
-        //    List<WorkoutTemplate> workouts = new List<WorkoutTemplate>();
-
-        //    int? nWorkouts = RandomFieldGenerator.RandomIntNullable(nWorkoutsMin, nWorkoutsMax, noWorkoutsProb);
-
-        //    if (nWorkouts == null)
-        //        nWorkouts = 0;
 
 
-        //    for (int iwo = 0; iwo < nWorkouts; iwo++)
-        //    {
-        //        //long strongId = ((id - 1) * wuIdOffset + iwu + 1);      // Easiest to read
-        //        long strongId = ((id - 1) * nWorkoutsMax + iwo + 1);      // Smallest possible
-
-        //        workouts.Add(BuildRandomWorkout(strongId, iwo));
-        //    }
-
-        //    // Week Type
-        //    if (weekType == null)
-        //    {
-        //        int? weekTypeId = RandomFieldGenerator.RandomIntNullable(0, TrainingWeekTypeEnum.Peak.Id, 0.1f);
-
-        //        if (weekTypeId == null)
-        //            weekType = TrainingWeekTypeEnum.Generic;
-        //        else
-        //            weekType = TrainingWeekTypeEnum.From(weekTypeId.Value);
-        //    }
-
-        //    return TrainingWeekTemplate.AddTrainingWeekToPlan(
-        //        id: IdTypeValue.Create(id),
-        //        progressiveNumber: (uint)progn,
-        //        workouts: workouts,
-        //        weekType: weekType
-        //        );
-        //}
 
 
-        internal static WorkoutTemplate BuildRandomWorkout(long id, bool isTransient, int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
+
+        internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, bool isTransient, 
+            int nWorkoutsMin = 3, int nWorkoutsMax = 7, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
+        {
+            float workoutWithNoWorkingSetsProbability = 0.05f;
+            int workingSetsMin = 10, workingSetsMax = 30;
+
+            // Workouts
+            List<WorkoutTemplateReferenceValue> workouts = new List<WorkoutTemplateReferenceValue>();
+
+            // Week Type
+            if (weekType == null)
+            {
+                int? weekTypeId = RandomFieldGenerator.RandomIntNullable(0, TrainingWeekTypeEnum.Peak.Id, 0.1f);
+
+                if (weekTypeId == null)
+                    weekType = TrainingWeekTypeEnum.Generic;
+                else
+                    weekType = TrainingWeekTypeEnum.From(weekTypeId.Value);
+            }
+
+            // Buil Workouts
+            int? nWorkouts = RandomFieldGenerator.RandomIntNullable(nWorkoutsMin, nWorkoutsMax, noWorkoutsProb);
+
+            if (nWorkouts == null || weekType == TrainingWeekTypeEnum.FullRest)
+                nWorkouts = 0;
+
+            for (int iwo = 0; iwo < nWorkouts; iwo++)
+            {
+                //long strongId = ((id - 1) * wuIdOffset + iwu + 1);      // Easiest to read
+                long strongId = ((id - 1) * nWorkoutsMax + iwo + 1);      // Smallest possible
+
+                // Build working sets
+                int workingSetsNumber = RandomFieldGenerator.RollEventWithProbability(workoutWithNoWorkingSetsProbability)
+                    ? 0
+                    : RandomFieldGenerator.RandomInt(workingSetsMin, workingSetsMax);
+
+                List<WorkingSetTemplate> workoutSets = new List<WorkingSetTemplate>();
+
+                for (int iws = 0; iws < workingSetsNumber; iws++)
+                {
+                    TrainingEffortTypeEnum effortType = TrainingEffortTypeEnum.From(RandomFieldGenerator.RandomInt(1, 3));
+
+                    workoutSets.Add(BuildRandomWorkingSet(iwo * iws + 1, iwo, isTransient, effortType));
+                }
+
+                workouts.Add(
+                    WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)iwo, workoutSets));
+            }
+
+            // Create the Week
+            if (isTransient)
+                return TrainingWeekTemplate.PlanTransientTrainingWeek((uint)progn, workouts, weekType);
+
+            else
+
+                return TrainingWeekTemplate.PlanTrainingWeek(IdTypeValue.Create(id), (uint)progn, workouts, weekType);
+        }
+
+
+        internal static WorkoutTemplate BuildRandomWorkout(long id, bool isTransient, 
+            int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
             List<WorkUnitTemplate> workUnits = new List<WorkUnitTemplate>();
@@ -238,7 +285,8 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, bool isTransient, int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
+        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, bool isTransient, 
+            int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
             int ownerNoteIdMin = 10, int ownerNoteIdMax = 500)
         {
             List<WorkingSetTemplate> workingSets = new List<WorkingSetTemplate>();

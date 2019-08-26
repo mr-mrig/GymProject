@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.Test.Util;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
@@ -225,16 +226,8 @@ namespace GymProject.Domain.Test.UnitTest
                     else
                         week = TrainingWeekTemplate.PlanFullRestWeek(weekId, weekPnum);
 
-                    // Check Week
-                    Assert.NotNull(week);
-                    Assert.Equal(weekPnum, week.ProgressiveNumber);
-                    Assert.Equal(weekType, week.TrainingWeekType);
-                    Assert.Equal(initialWorkouts.Count, week.Workouts.Count);
-
-                    CheckWorkingSetSequence(initialWorkouts, week, isTransient);
-
-                    Assert.True(Enumerable.Range(0, initialWorkouts.Count).ToList().SequenceEqual
-                        (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+                    // Check
+                    CheckWeekWorkouts(initialWorkouts, week, isTransient);
 
                     continue;   // Skip to next test
                 }
@@ -252,20 +245,8 @@ namespace GymProject.Domain.Test.UnitTest
                     week = TrainingWeekTemplate.PlanTrainingWeek(weekId, weekPnum, initialWorkoutsReferences, weekType);
 
 
-                // Check Week
-                Assert.NotNull(week);
-                Assert.Equal(weekPnum, week.ProgressiveNumber);
-                Assert.Equal(weekType, week.TrainingWeekType);
-                Assert.Equal(initialWorkouts.Count, week.Workouts.Count);
-
-                CheckWorkingSetSequence(initialWorkouts, week, isTransient);
-
-                Assert.True(Enumerable.Range(0, initialWorkouts.Count).ToList().SequenceEqual
-                    (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
-
-                WorkoutTemplateAggregateTest.CheckTrainingParameters(
-                    initialWorkouts.SelectMany(x => x.CloneAllWorkingSets()),
-                    week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
+                // Check
+                CheckWeekWorkouts(initialWorkouts, week, isTransient);
 
                 // Change Week
                 weekPnum = (uint)RandomFieldGenerator.RandomIntValueExcluded(0, 20, (int)weekPnum);
@@ -302,14 +283,8 @@ namespace GymProject.Domain.Test.UnitTest
                     workouts.Add(wo);
                     week.PlanWorkout(wo.CloneAllWorkingSets().ToList());
 
-                    CheckWorkingSetSequence(workouts, week, isTransient);
-
-                    Assert.True(Enumerable.Range(0, workouts.Count).ToList().SequenceEqual
-                        (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
-
-                    WorkoutTemplateAggregateTest.CheckTrainingParameters(
-                        workouts.SelectMany(x => x.CloneAllWorkingSets()),
-                        week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
+                    // Check
+                    CheckWeekWorkouts(workouts, week, isTransient);
                 }
 
                 // Remove Workouts
@@ -322,14 +297,8 @@ namespace GymProject.Domain.Test.UnitTest
                     workouts.RemoveAt((int)removePnum);
                     week.UnplanWorkout(removePnum);
 
-                    CheckWorkingSetSequence(workouts, week, isTransient);
-
-                    Assert.True(Enumerable.Range(0, workouts.Count).ToList().SequenceEqual
-                        (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
-
-                    WorkoutTemplateAggregateTest.CheckTrainingParameters(
-                        workouts.SelectMany(x => x.CloneAllWorkingSets()),
-                        week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
+                    // Check 
+                    CheckWeekWorkouts(workouts, week, isTransient);
                 }
 
                 // Change Workouts
@@ -358,107 +327,390 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public static void TrainingPlanFail()
         {
-            int ntests = 500;
+            int ntests = 300;
             int planNameLengthMin = 10, planNameLengthMax = 100;
+            int ownerIdMin = 50000, ownerIdMax = 55555;
+            int idsSizeMin = 0, idsSizeMax = 10;
+            int noteIdMin = 7000, noteIdMax = 12999;
+            int messageIdMin = 6881, messageIdMax = 22441;
+            int trainingWeeksMin = 0, trainingWeeksMax = 10;
 
             IdTypeValue planId = IdTypeValue.Create(17);
+            IdTypeValue inheritedPlanScheduleId = null;
             TrainingPlan plan = null;
+            int constructorType;
 
-            for(int itest = 0; itest < ntests; itest++)
+            for (int itest = 0; itest < ntests; itest++)
             {
+                List<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>();
+
+                bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
                 string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
                 bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
                 bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
 
+                IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
+                IdTypeValue messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
+                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
 
+                List<IdTypeValue> scheduleIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> phaseIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
 
                 float testCaseProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
-
                 float constructorTypeProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
 
-                int constructorType = constructorTypeProbability < 0.33f ? 0 
-                    : constructorTypeProbability < 0.66f ? 1 : 2;
 
-                IdTypeValue rootPlan = IdTypeValue.Create(RandomFieldGenerator.RandomInt(0, 1000));
+                TrainingPlanTypeEnum planType = RandomFieldGenerator.RollEventWithProbability(0.1f)
+                    ? null
+                    : TrainingPlanTypeEnum.From(
+                        RandomFieldGenerator.RandomInt(TrainingPlanTypeEnum.NotSet.Id, TrainingPlanTypeEnum.Inherited.Id));
 
-                TrainingPlanTypeEnum planType = TrainingPlanTypeEnum.From(
-                    RandomFieldGenerator.RandomInt(TrainingPlanTypeEnum.NotSet.Id, TrainingPlanTypeEnum.Inherited.Id);
+                int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
 
+                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
+                    weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
+
+                // Root plan - just in case it will be needed
+                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
+                                    scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
+
+                #region Check Creation Fails
                 switch (testCaseProbability)
                 {
                     // Null Weeks
+                    case var _ when testCaseProbability < 0.05f:
+
+                        StaticUtils.InsertRandomNullElements(weeks);
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
+                            scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds));
+
+                        // Cannot test non-template plans: rootPlan would have raised the esception if it had null weeks
+                        break;
+
+                    // Null owner
                     case var _ when testCaseProbability < 0.1f:
 
-                        switch(constructorType)
+                        constructorType = constructorTypeProbability < 0.5f ? 0 : 1;
+                        ownerId = null;
+
+                        switch (constructorType)
                         {
                             case 0:
 
                                 Assert.Throws<TrainingDomainInvariantViolationException>(()
-                                    => TrainingPlan.CreateTrainingPlan(
-                                        );
-                                break;
-
-                            case 1:
-
-                                Assert.Throws<TrainingDomainInvariantViolationException>(()
-                                    => TrainingPlan.CreateVariantTrainingPlan(
-                                        );
+                                    => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                                    null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
                                 break;
 
                             default:
 
+                                inheritedPlanScheduleId = scheduleIds.Count > 0 ? scheduleIds[0] : null;
+
+                                Assert.Throws<TrainingDomainInvariantViolationException>(()
+                                    => TrainingPlan.SendInheritedTrainingPlan(planId, rootPlan, ownerId, messageId, inheritedPlanScheduleId));
                                 break;
                         }
 
                         break;
 
-                    // Null owner
+                    // Null Schedules
                     case var _ when testCaseProbability < 0.2f:
 
-                        break;
+                        constructorType = constructorTypeProbability < 0.5f ? 0 : 1;
+                        ownerId = null;
 
-                    // Null Schedules
-                    case var _ when testCaseProbability < 0.3f:
+                        switch (constructorType)
+                        {
+                            case 0:
+
+                                Assert.Throws<TrainingDomainInvariantViolationException>(()
+                                    => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                                    null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                                break;
+
+                            default:
+
+                                inheritedPlanScheduleId = scheduleIds.Count > 0 ? scheduleIds[0] : null;
+
+                                Assert.Throws<TrainingDomainInvariantViolationException>(()
+                                    => TrainingPlan.SendInheritedTrainingPlan(planId, rootPlan, ownerId, messageId, inheritedPlanScheduleId));
+                                break;
+                        }
 
                         break;
 
                     // Null Phases
-                    case var _ when testCaseProbability < 0.4f:
+                    case var _ when testCaseProbability < 0.25f:
 
+                        StaticUtils.InsertRandomNullElements(phaseIds);
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                            null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
                         break;
 
                     // Null Proficiencies
-                    case var _ when testCaseProbability < 0.5f:
+                    case var _ when testCaseProbability < 0.35f:
 
+                        StaticUtils.InsertRandomNullElements(proficiencyIds);
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                            null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
                         break;
 
                     // Null Childs
-                    case var _ when testCaseProbability < 0.6f:
+                    case var _ when testCaseProbability < 0.45f:
+
+                        StaticUtils.InsertRandomNullElements(childPlanIds);
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
+                            scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
 
                         break;
 
                     // Null focus
-                    case var _ when testCaseProbability < 0.7f:
+                    case var _ when testCaseProbability < 0.55f:
+
+                        StaticUtils.InsertRandomNullElements(focusIds);
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
+                            scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
 
                         break;
 
-                    // Non hinerited with message attached
-                    case var _ when testCaseProbability < 0.8f:
+                    // Non inherited with message attached
+                    case var _ when testCaseProbability < 0.65f:
+
+                        planType = RandomFieldGenerator.RollEventWithProbability(0.5f)
+                            ? TrainingPlanTypeEnum.NotSet : TrainingPlanTypeEnum.Variant;
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, messageId,
+                            weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
 
                         break;
 
                     // Non Consecutive Numbers
                     case var _ when testCaseProbability < 0.9f:
 
+                        bool faked = false;
+                        weeks = new List<TrainingWeekTemplate>();
+
+                        for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
+                        {
+                            if (RandomFieldGenerator.RollEventWithProbability(0.2f))
+                            {
+                                faked = true;
+                                weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, (iweek + 1) * trainingWeeksNumber * 3, isTransient));
+                            }
+                            else
+                                weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
+                        }
+
+                        if (weeks.Count == 0)
+                            weeks.Add(StaticUtils.BuildRandomTrainingWeek(1, 1, isTransient));
+                        else if (!faked)
+                            weeks.Add(StaticUtils.BuildRandomTrainingWeek(1, trainingWeeksNumber * 3, isTransient));
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
+                            weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+
                         break;
 
                     // Child Plan same as Root Plan
                     default:
 
+                        // Violate rule for Template plans
+                        childPlanIds.Add(planId);
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
+                            weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
                         break;
                 }
+                #endregion
+
+
+                #region Check Modifications Fails
+
+                Assert.Throws<ArgumentNullException>(() => rootPlan.AddHashtag(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.LinkTargetPhase(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.LinkTargetProficiency(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.GiveFocusToMuscle(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.ScheduleTraining(null));
+
+                Assert.Throws<ArgumentNullException>(() => rootPlan.RemoveHashtag(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.UnlinkTargetPhase(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.UnlinkTargetProficiency(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.RemoveFocusToMuscle(null));
+
+                Assert.Throws<ArgumentNullException>(() => rootPlan.AddFullRestWeek(null));
+                Assert.Throws<ArgumentException>(() => rootPlan.AddFullRestWeek(
+                    StaticUtils.BuildRandomTrainingWeek(1, 0, isTransient, weekType: TrainingWeekTypeEnum.Generic)));
+
+                Assert.Throws<ArgumentNullException>(() => rootPlan.AddTrainingWeek(null));
+
+                Assert.Throws<ArgumentException>(() => rootPlan.AddTrainingWeek(TrainingWeekTypeEnum.FullRest
+                    , new List<WorkoutTemplateReferenceValue>() { WorkoutTemplateReferenceValue.BuildLinkToWorkout(0, null) }));
+
+
+
+                //Assert.Throws<ArgumentException>(() => rootPlan.RemoveHashtag(IdTypeValue.Create(
+                //    RandomFieldGenerator.RandomIntValueExcluded(1, 10000, rootPlan.Hashtags.Select(x => (int)x.Id)))));
+
+                //Assert.Throws<ArgumentException>(() => rootPlan.UnlinkTargetPhase(IdTypeValue.Create(
+                //    RandomFieldGenerator.RandomIntValueExcluded(1, 10000, rootPlan.TrainingPhaseIds.Select(x => (int)x.Id)))));
+
+                //Assert.Throws<ArgumentException>(() => rootPlan.UnlinkTargetProficiency(IdTypeValue.Create(
+                //    RandomFieldGenerator.RandomIntValueExcluded(1, 10000, rootPlan.TrainingProficiencyIds.Select(x => (int)x.Id)))));
+
+                //Assert.Throws<ArgumentException>(() => rootPlan.RemoveFocusToMuscle(IdTypeValue.Create(
+                //    RandomFieldGenerator.RandomIntValueExcluded(1, 10000, rootPlan.MuscleFocusIds.Select(x => (int)x.Id)))));
+                #endregion
             }
         }
+
+
+        [Fact]
+        public static void TrainingPlanTemplateFullTest()
+        {
+            long planId = 17;
+
+            for (int itest = 0; itest < ntests; itest++)
+            {
+                // Build the Plan and check the correctness
+                TrainingPlan plan = BuildAndCheckRandomTrainingPlan(planId, TrainingPlanTypeEnum.NotSet);
+
+;
+            }
+        }
+
+
+        [Fact]
+        public static void TrainingPlanInheritedFullTest()
+        {
+            int planNameLengthMin = 10, planNameLengthMax = 100;
+            int ownerIdMin = 50000, ownerIdMax = 55555;
+            int idsSizeMin = 0, idsSizeMax = 10;
+            int noteIdMin = 7000, noteIdMax = 12999;
+            int messageIdMin = 6881, messageIdMax = 22441;
+            int trainingWeeksMin = 0, trainingWeeksMax = 10;
+
+            float mainConstructorProb = 0.2f;
+
+            IdTypeValue planId = IdTypeValue.Create(17);
+            IdTypeValue inheritedPlanScheduleId = null;
+            TrainingPlan plan = null;
+
+            TrainingPlanTypeEnum planType = TrainingPlanTypeEnum.Inherited;
+
+            for (int itest = 0; itest < ntests; itest++)
+            {
+                List<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>();
+
+                bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
+                string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
+                bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+                bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+
+                IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
+                IdTypeValue messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
+                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
+
+                List<IdTypeValue> scheduleIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> phaseIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+
+                int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
+
+                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
+                    weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
+
+                // Root plan - just in case it will be needed
+                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
+                                    scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
+
+                if (RandomFieldGenerator.RollEventWithProbability(mainConstructorProb))
+                    plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
+                        weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
+                else
+                    plan = null;
+
+                throw new NotImplementedException();
+            }
+        }
+
+
+        [Fact]
+        public static void TrainingPlanVariantFullTest()
+        {
+            int planNameLengthMin = 10, planNameLengthMax = 100;
+            int ownerIdMin = 50000, ownerIdMax = 55555;
+            int idsSizeMin = 0, idsSizeMax = 10;
+            int noteIdMin = 7000, noteIdMax = 12999;
+            int messageIdMin = 6881, messageIdMax = 22441;
+            int trainingWeeksMin = 0, trainingWeeksMax = 10;
+
+            float mainConstructorProb = 0.2f;
+
+            IdTypeValue planId = IdTypeValue.Create(17);
+            IdTypeValue inheritedPlanScheduleId = null;
+            TrainingPlan plan = null;
+
+            TrainingPlanTypeEnum planType = TrainingPlanTypeEnum.Variant;
+
+            for (int itest = 0; itest < ntests; itest++)
+            {
+                List<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>();
+
+                bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
+                string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
+                bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+                bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+
+                IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
+                IdTypeValue messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
+                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
+
+                List<IdTypeValue> scheduleIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> phaseIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+                List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+
+                int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
+
+                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
+                    weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
+
+                // Root plan - just in case it will be needed
+                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
+                                    scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
+
+                if (RandomFieldGenerator.RollEventWithProbability(mainConstructorProb))
+                    plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
+                        weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
+                else
+                    plan = null;
+
+                throw new NotImplementedException();
+            }
+        }
+
 
 
         #region Support Functions
@@ -487,6 +739,185 @@ namespace GymProject.Domain.Test.UnitTest
                 week.Workouts.SelectMany(x => x.WorkingSets),
                 isTransient);
 
+
+        internal static void CheckWorkingSetSequence(
+            IEnumerable<WorkoutTemplateReferenceValue> workouts, TrainingWeekTemplate week, bool isTransient)
+
+            => CheckWorkingSetSequence(
+                workouts.SelectMany(x => x.WorkingSets),
+                week.Workouts.SelectMany(x => x.WorkingSets),
+                isTransient);
+
+
+        internal static void CheckWeekWorkouts(IEnumerable<WorkoutTemplate> workouts, TrainingWeekTemplate week, bool isTransient)
+        {
+            CheckWorkingSetSequence(workouts, week, isTransient);
+
+            Assert.True(Enumerable.Range(0, workouts.Count()).ToList().SequenceEqual
+                (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+
+            // Global Training Parameters
+            WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                workouts.SelectMany(x => x.CloneAllWorkingSets()),
+                week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
+
+            // Single Workout Training Parameters
+            foreach (WorkoutTemplateReferenceValue workout in week.Workouts)
+            {
+                WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                    workout.WorkingSets,
+                    week.GetWorkoutTrainingVolume(workout.ProgressiveNumber),
+                    week.GetWorkoutTrainingDensity(workout.ProgressiveNumber),
+                    week.GetWorkoutTrainingIntensity(workout.ProgressiveNumber));
+            }
+        }
+
+
+        internal static void CheckWeekWorkouts(IEnumerable<WorkoutTemplateReferenceValue> workouts, TrainingWeekTemplate week, bool isTransient)
+        {
+            CheckWorkingSetSequence(workouts, week, isTransient);
+
+            Assert.True(Enumerable.Range(0, workouts.Count()).ToList().SequenceEqual
+                (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+
+            // Global Training Parameters
+            WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                workouts.SelectMany(x => x.WorkingSets),
+                week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
+
+            // Single Workout Training Parameters
+            foreach (WorkoutTemplateReferenceValue workout in week.Workouts)
+            {
+                WorkoutTemplateAggregateTest.CheckTrainingParameters(
+                    workout.WorkingSets,
+                    week.GetWorkoutTrainingVolume(workout.ProgressiveNumber),
+                    week.GetWorkoutTrainingDensity(workout.ProgressiveNumber),
+                    week.GetWorkoutTrainingIntensity(workout.ProgressiveNumber));
+            }
+        }
+
+
+        internal static TrainingPlan BuildAndCheckRandomTrainingPlan(
+            long planIdNum, TrainingPlanTypeEnum planType = null, IList<TrainingWeekTemplate> weeks = null)
+        {
+            int planNameLengthMin = 10, planNameLengthMax = 100;
+            int ownerIdMin = 50000, ownerIdMax = 55555;
+            int idsSizeMin = 0, idsSizeMax = 10;
+            int noteIdMin = 7000, noteIdMax = 12999;
+            int messageIdMin = 6881, messageIdMax = 22441;
+            int trainingWeeksMin = 0, trainingWeeksMax = 10;
+
+            IdTypeValue planId = IdTypeValue.Create(planIdNum);
+
+            bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
+            string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
+            bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+            bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
+
+            IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
+            IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
+
+            List<IdTypeValue> scheduleIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+            List<IdTypeValue> phaseIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+            List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+            List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+            List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+            List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
+
+            if (planType == null)
+            {
+                planType = RandomFieldGenerator.RollEventWithProbability(0.1f)
+                    ? null
+                    : TrainingPlanTypeEnum.From(
+                        RandomFieldGenerator.RandomInt(TrainingPlanTypeEnum.NotSet.Id, TrainingPlanTypeEnum.Inherited.Id));
+            }
+
+            int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
+
+            if (weeks == null)
+            {
+                weeks = new List<TrainingWeekTemplate>();
+
+                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
+                    weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
+            }
+
+            IdTypeValue messageId = null;
+
+            if (planType == TrainingPlanTypeEnum.Inherited)
+                messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax)); ;
+
+            TrainingPlan plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
+
+
+            Assert.Equal(planId, plan.Id);
+            Assert.Equal(name, plan.Name);
+            Assert.Equal(isBookmarked, plan.IsBookmarked);
+            Assert.Equal(isTemplate, plan.IsTemplate);
+            Assert.Equal(ownerId, plan.OwnerId);
+            Assert.Equal(planType ?? TrainingPlanTypeEnum.NotSet, plan.TrainingPlanType);
+            Assert.Equal(noteId, plan.PersonalNoteId);
+            Assert.Equal(messageId, plan.AttachedMessageId);
+            Assert.Equal(scheduleIds, plan.TrainingScheduleIds);
+            Assert.Equal(phaseIds, plan.TrainingPhaseIds);
+            Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
+            Assert.Equal(focusIds, plan.MuscleFocusIds);
+            Assert.Equal(hashtagIds, plan.Hashtags);
+            Assert.Equal(childPlanIds, plan.ChildTrainingPlanIds);
+            Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
+
+            Assert.Equal((float)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Average(x => x?.Workouts.Count ?? 0)
+                , plan.GetAverageWorkoutsPerWeek(), 1);
+            Assert.Equal((int)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Min(x => x?.Workouts.Count ?? 0)
+                , plan.GetMinimumWorkoutsPerWeek());
+            Assert.Equal((int)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Max(x => x?.Workouts.Count ?? 0)
+                , plan.GetMaximumWorkoutsPerWeek());
+
+            WorkoutTemplateAggregateTest.CheckTrainingParameters(weeks.SelectMany(x => x.CloneAllWorkingSets()),
+                plan.TrainingVolume, plan.TrainingDensity, plan.TrainingIntensity);
+
+            CheckTrainingWeeksSequence(weeks, plan.TrainingWeeks, isTransient);
+
+            return plan;
+        }
+
+
+        internal static void CheckTrainingWeeksSequence(
+            IEnumerable<TrainingWeekTemplate> leftSequence, IEnumerable<TrainingWeekTemplate> rightSequence, bool isTransient)
+        {
+            IEnumerator<TrainingWeekTemplate> leftEnum = leftSequence.GetEnumerator();
+            IEnumerator<TrainingWeekTemplate> rightEnum = rightSequence.GetEnumerator();
+
+            Assert.Equal(leftSequence.Count(), rightSequence.Count());
+
+            while (leftEnum.MoveNext() && rightEnum.MoveNext())
+            {
+                CheckTrainingWeek(leftEnum.Current, rightEnum.Current, isTransient);
+            }
+        }
+
+
+        internal static void CheckTrainingWeek(TrainingWeekTemplate left, TrainingWeekTemplate right, bool isTransient)
+        {
+            if(!isTransient)
+                Assert.Equal(left.Id, right.Id);
+
+            Assert.Equal(left.ProgressiveNumber, right.ProgressiveNumber);
+            Assert.Equal(left.TrainingWeekType, right.TrainingWeekType);
+
+            CheckWeekWorkouts(left.Workouts, right, isTransient);
+
+            //Assert.Equal(left.Workouts.Count, right.Workouts.Count);
+
+            //// Workouts Progressive Numbers
+            //Assert.True(Enumerable.Range(0, left.Workouts.Count).ToList().SequenceEqual
+            //    (right.Workouts.Select(x => (int)x.ProgressiveNumber)));
+
+            //// Workouts Working Sets
+            //CheckWorkingSetSequence(left.Workouts.SelectMany(x => x.WorkingSets),
+            //    right.Workouts.SelectMany(x => x.WorkingSets), isTransient);
+        }
 
         #endregion
 

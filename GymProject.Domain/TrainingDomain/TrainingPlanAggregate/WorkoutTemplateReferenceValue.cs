@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.Utils.Extensions;
@@ -77,6 +78,22 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public WorkoutTemplateReferenceValue MoveToNewProgressiveNumber(uint newPnum)
 
             => BuildLinkToWorkout(newPnum, _workingSets);
+
+
+        /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WO
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        public TrainingEffortTypeEnum GetMainEffortType()
+
+            => _workingSets.Count() == 0
+                ? TrainingEffortTypeEnum.IntensityPerc
+                : _workingSets.GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
 
         #endregion
 

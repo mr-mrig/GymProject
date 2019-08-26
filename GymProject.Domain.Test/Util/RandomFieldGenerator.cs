@@ -152,12 +152,12 @@ namespace GymProject.Domain.Test.Util
         /// </summary>
         /// <param name="possibleChoices">The items list which to choose from</param>
         /// <returns>One of the possible items.</returns>
-        public static T ChooseAmong<T>(IList<T> possibleChoices)
+        public static T ChooseAmong<T>(ICollection<T> possibleChoices)
         {
             if (possibleChoices == null || possibleChoices.Count == 0)
                 return default;
 
-            return possibleChoices[RandomInt(0, possibleChoices.Count() - 1)];
+            return possibleChoices.ElementAt(RandomInt(0, possibleChoices.Count() - 1));
         }
 
 

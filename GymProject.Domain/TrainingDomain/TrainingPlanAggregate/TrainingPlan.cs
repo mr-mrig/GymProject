@@ -323,7 +323,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         //public void AttachMessage(IdType messageId) =>
 
 
-        // Training plan type should be assigned only when creating a new instance
+        // Training plan type should be assigned only when creating a new instance - Excpet for variant maybe
         //public void SetTrainingPlanType() =>
 
 
@@ -332,6 +332,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         // A template is created only when linked to a child -> look at the proper function
         //public void ChangeTemplateFlag(bool templateFlag) => IsTemplate = templateFlag;
+
+        /// <summary>
+        /// Mark the Training Plan as variant, if not already marked as a special type plan. Raises an exception otherwise
+        /// </summary>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        /// <exception cref="InvalidOperationException">If trying to change the type of a plan which has already been marked as a special type</exception>
+        public void MarkAsVariant()
+        {
+            if (TrainingPlanType == TrainingPlanTypeEnum.Variant)
+                return;
+
+            if (TrainingPlanType != TrainingPlanTypeEnum.NotSet)
+                throw new InvalidOperationException($"Trying to change the type of a Training Plan which has already a non-generic type.");
+
+            TrainingPlanType = TrainingPlanTypeEnum.Variant;
+            TestBusinessRules();
+        }
 
         /// <summary>
         /// Assign the name to the Training Plan
@@ -357,6 +374,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="trainingPlanNoteId">The note ID</param>
         public void WriteNote(IdTypeValue trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
+
+
+        /// <summary>
+        /// Remove the Training Plan Note ID
+        /// </summary>
+        public void CleanNote() => WriteNote(null);
 
 
         /// <summary>
@@ -561,6 +584,36 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
+        /// Get the main effort type as the effort of most of the WSs of the WU 
+        /// </summary>
+        /// <returns>The training effort type</returns>
+        public TrainingEffortTypeEnum GetMainEffortType()
+
+            => _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0 
+
+                ? TrainingEffortTypeEnum.IntensityPerc
+                : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
+                     => new
+                     {
+                         Counter = x.Count(),
+                         EffortType = x.Key
+                     }).OrderByDescending(x => x.Counter).First().EffortType;
+
+
+        /// <summary>
+        /// Get the WSs of all the Workouts belonging to the Plan
+        /// </summary>
+        /// <returns>The list of the Working Sets</returns>
+        public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
+
+             => _trainingWeeks.SelectMany(x => x.CloneAllWorkingSets());
+
+        #endregion
+
+
+        #region Training Week Methods
+
+        /// <summary>
         /// Add the Training Week to the Plan.
         /// </summary>
         /// <param name="trainingWeek">The input Training Week</param>
@@ -669,36 +722,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             }
         }
 
-
-        /// <summary>
-        /// Get the main effort type as the effort of most of the WSs of the WU 
-        /// </summary>
-        /// <returns>The training effort type</returns>
-        public TrainingEffortTypeEnum GetMainEffortType()
-
-            => _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0 
-
-                ? TrainingEffortTypeEnum.IntensityPerc
-                : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
-
-
-        /// <summary>
-        /// Get the WSs of all the Workouts belonging to the Plan
-        /// </summary>
-        /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
-
-             => _trainingWeeks.SelectMany(x => x.CloneAllWorkingSets());
-
-        #endregion
-
-
-        #region Training Week Methods
 
         /// <summary>
         /// Assign a new progressive number to the Training Week

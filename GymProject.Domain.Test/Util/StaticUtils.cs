@@ -173,6 +173,16 @@ namespace GymProject.Domain.Test.Util
         }
 
 
+        internal static void RemoveFromIdsCollection(ICollection<IdTypeValue> inputIds, int numberOfElemntsToRemove, Action<IdTypeValue> removeFunction)
+        {
+            for (int i = 0; i < numberOfElemntsToRemove; i++)
+            {
+                IdTypeValue toRemoveId = RandomFieldGenerator.ChooseAmong(inputIds.ToList());
+                removeFunction(toRemoveId);
+            }
+        }
+
+
 
 
 

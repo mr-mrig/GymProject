@@ -4,6 +4,7 @@ using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.Utils.Extensions;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
@@ -78,6 +79,35 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public WorkoutTemplateReferenceValue MoveToNewProgressiveNumber(uint newPnum)
 
             => BuildLinkToWorkout(newPnum, _workingSets);
+
+
+        /// <summary>
+        /// Add the specifed Working Sets to the Workout by creating a new ValueObject
+        /// </summary>
+        /// <param name="workingSets">The Working Sets to be added</param>
+        /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
+        public WorkoutTemplateReferenceValue AddWorkingSets(IEnumerable<WorkingSetTemplate> workingSets)
+
+            => BuildLinkToWorkout(ProgressiveNumber, _workingSets.Union(workingSets));
+
+
+        /// <summary>
+        /// Remove the specifed Working Sets to the Workout by creating a new ValueObject
+        /// </summary>
+        /// <param name="workingSets">The Working Sets to be removed</param>
+        /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
+        /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
+        public WorkoutTemplateReferenceValue RemoveWorkingSets(IEnumerable<WorkingSetTemplate> workingSets)
+        {
+            if (workingSets?.DefaultIfEmpty() == default)
+                return this;
+
+            // Transient entities
+            if (workingSets.Any(x => x.IsTransient()) || _workingSets.Any(x => x.IsTransient()))
+                throw new InvalidOperationException($"Cannot remove transient Working Sets");
+
+            return BuildLinkToWorkout(ProgressiveNumber, _workingSets.Except(workingSets));
+        }
 
 
         /// <summary>

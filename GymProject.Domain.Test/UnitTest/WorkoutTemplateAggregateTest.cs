@@ -16,7 +16,7 @@ namespace GymProject.Domain.Test.UnitTest
     {
 
 
-        public const int ntests = 300;
+        public const int ntests = 500;
 
 
 
@@ -136,7 +136,7 @@ namespace GymProject.Domain.Test.UnitTest
                     wu = StaticUtils.BuildRandomWorkUnit(wuIds.Last().Id, pnum++, isTransient);
 
                     if (isTransient)
-                        workout.AddWorkUnit(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.OwnerNoteId);
+                        workout.AddTransientWorkUnit(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.OwnerNoteId);
                     else
                         workout.AddWorkUnit(wu);
 
@@ -205,6 +205,9 @@ namespace GymProject.Domain.Test.UnitTest
 
                     if (workout.WorkUnits.Count > 0)
                     {
+                        Assert.True(workout.WorkUnits.Select(x => (int)x.ProgressiveNumber).
+                            SequenceEqual(Enumerable.Range(0, workout.WorkUnits.Count)));
+                            
                         Assert.DoesNotContain(removed, workout.WorkUnits);
                         // Check pnum boundaries
                         Assert.Equal(0, (int)workout.WorkUnits.OrderBy(x => x.ProgressiveNumber).FirstOrDefault().ProgressiveNumber);
@@ -230,7 +233,7 @@ namespace GymProject.Domain.Test.UnitTest
                     {
                         wasAdded = true;
                         toAdd = StaticUtils.BuildRandomWorkUnit(1, workout.WorkUnits.Count, isTransient);
-                        workout.AddWorkUnit(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.OwnerNoteId);
+                        workout.AddTransientWorkUnit(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.OwnerNoteId);
                     }
                     else
                     {
@@ -285,7 +288,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             TrainingEffortValue avgEffort = null;
             float intensityPercentageTolerance = 0.025f;
-            float rpeAndRmTolerance = 0.06f;      // Smaller numbers -> Higher tolerance. IE: 5RPE Vs 5.5RPE must be considered equivalent
+            float rpeAndRmTolerance = 0.0625f;      // Smaller numbers -> Higher tolerance. IE: 5RPE Vs 5.5RPE must be considered equivalent
 
             // Get the expected training parameters
             int totalReps = srcWorkingSets.Sum(x => x.ToRepetitions());
@@ -464,6 +467,9 @@ namespace GymProject.Domain.Test.UnitTest
 
                     finalSets = StaticUtils.ForceConsecutiveProgressiveNumbers(
                         finalSets.Where(x => x.ProgressiveNumber != pnumToRemove).ToList()).ToList();
+
+                    Assert.True(toCheck.WorkingSets.Select(x => (int)x.ProgressiveNumber).
+                        SequenceEqual(Enumerable.Range(0, toCheck.WorkingSets.Count)));
 
                     CheckWorkUnitSets(toCheck, finalSets, isTransient, toCheck.TrainingIntensity.AverageIntensity.EffortType, false);
                 }

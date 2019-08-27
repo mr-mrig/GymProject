@@ -45,14 +45,42 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        public static ICollection<WorkingSetTemplate> ForceConsecutiveProgressiveNumbers(ICollection<WorkingSetTemplate> input)
+        public static IEnumerable<WorkingSetTemplate> ForceConsecutiveProgressiveNumbers(IEnumerable<WorkingSetTemplate> input)
         {
-            ICollection<WorkingSetTemplate> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+            IEnumerable<WorkingSetTemplate> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
 
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < result.Count(); iws++)
             {
                 WorkingSetTemplate ws = result.ElementAt(iws);
+                ws.MoveToNewProgressiveNumber((uint)iws);
+            }
+            return result;
+        }
+
+
+        public static IEnumerable<WorkoutTemplateReferenceValue> ForceConsecutiveProgressiveNumbers(IEnumerable<WorkoutTemplateReferenceValue> input)
+        {
+            IEnumerable<WorkoutTemplateReferenceValue> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+
+            // Just overwrite all the progressive numbers
+            for (int iws = 0; iws < result.Count(); iws++)
+            {
+                WorkoutTemplateReferenceValue ws = result.ElementAt(iws);
+                ws.MoveToNewProgressiveNumber((uint)iws);
+            }
+            return result;
+        }
+
+
+        public static IEnumerable<TrainingWeekTemplate> ForceConsecutiveProgressiveNumbers(IEnumerable<TrainingWeekTemplate> input)
+        {
+            IEnumerable<TrainingWeekTemplate> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+
+            // Just overwrite all the progressive numbers
+            for (int iws = 0; iws < result.Count(); iws++)
+            {
+                TrainingWeekTemplate ws = result.ElementAt(iws);
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
             return result;
@@ -188,7 +216,7 @@ namespace GymProject.Domain.Test.Util
 
 
         internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, bool isTransient, 
-            int nWorkoutsMin = 3, int nWorkoutsMax = 7, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
+            int nWorkoutsMin = 3, int nWorkoutsMax = 9, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
         {
             float workoutWithNoWorkingSetsProbability = 0.05f;
             int workingSetsMin = 10, workingSetsMax = 30;

@@ -207,6 +207,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="progressiveNumber">The Workout progressive number</param>
         /// <returns>The Training Volume Parameters</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public TrainingVolumeParametersValue GetWorkoutTrainingVolume(uint progressiveNumber)
 
             => TrainingVolumeParametersValue.ComputeFromWorkingSets(FindWorkout(progressiveNumber).WorkingSets);
@@ -217,6 +218,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="progressiveNumber">The Workout progressive number</param>
         /// <returns>The Training Volume Parameters</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public TrainingDensityParametersValue GetWorkoutTrainingDensity(uint progressiveNumber)
 
             => TrainingDensityParametersValue.ComputeFromWorkingSets(FindWorkout(progressiveNumber).WorkingSets);
@@ -227,6 +229,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="progressiveNumber">The Workout progressive number</param>
         /// <returns>The Training Volume Parameters</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public TrainingIntensityParametersValue GetWorkoutTrainingIntensity(uint progressiveNumber)
         {
             WorkoutTemplateReferenceValue workout = FindWorkout(progressiveNumber);
@@ -245,7 +248,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="workingSets">The list of the WSs which the WO is made up of</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void PlanWorkout(ICollection<WorkingSetTemplate> workingSets)
+        public void PlanWorkout(IEnumerable<WorkingSetTemplate> workingSets)
         {
             _workouts.Add(WorkoutTemplateReferenceValue.BuildLinkToWorkout(
                 BuildWorkoutProgressiveNumber(),
@@ -283,10 +286,48 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
+        /// Modify the Workout by adding the selected Working Sets
+        /// </summary>
+        /// <param name="workingSets">The list of the WSs to add to the WO</param>
+        /// <param name="workoutPnum">The Progressive Number of the Workout to be modified</param>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
+        public void AddWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplate> workingSets)
+        {
+            WorkoutTemplateReferenceValue workout =  FindWorkout(workoutPnum);
+
+            _workouts[(int)workoutPnum] = workout.AddWorkingSets(workingSets);
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
+            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+        }
+
+
+        /// <summary>
+        /// Modify the Workout by removing the selected Working Sets
+        /// </summary>
+        /// <param name="workingSets">The list of the WSs to remove from the WO</param>
+        /// <param name="workoutPnum">The Progressive Number of the Workout to be modified</param>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
+        /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
+        public void RemoveWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplate> workingSets)
+        {
+            WorkoutTemplateReferenceValue workout = FindWorkout(workoutPnum);
+
+            _workouts[(int)workoutPnum] = workout.RemoveWorkingSets(workingSets);
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
+            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+        }
+
+
+        /// <summary>
         /// Assign a new progressive number to the WO
         /// </summary>
         /// <param name="destPnum">The new Progressive Number - PNums must be consecutive</param>
         /// <param name="srcPnum">The Progressive Number of the WO to be moved</param>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public void MoveWorkoutToNewProgressiveNumber(uint srcPnum, uint destPnum)
         {
             WorkoutTemplateReferenceValue src = FindWorkout(srcPnum);
@@ -302,10 +343,21 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="workoutPnum">The Progressive Number of the Workout</param>
         /// <returns>The list of the Working Sets</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public IEnumerable<WorkingSetTemplate> CloneWorkoutWorkingSets(uint workoutPnum)
 
-             => _workouts.Where(x => x?.ProgressiveNumber == workoutPnum)?.SelectMany(x => x.WorkingSets);
+             => FindWorkout(workoutPnum)?.WorkingSets;
 
+
+        /// <summary>
+        /// Clone the Workout Reference with the specified Progressive Number
+        /// </summary>
+        /// <param name="workoutPnum">The Progressive Number of the Workout</param>
+        /// <returns>The list of the Working Sets</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
+        public WorkoutTemplateReferenceValue CloneWorkout(uint workoutPnum)
+
+            => FindWorkout(workoutPnum);
 
         /// <summary>
         /// Get the WSs of all the Workouts belonging to the Training Week
@@ -325,6 +377,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="progressiveNumber"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         private WorkoutTemplateReferenceValue FindWorkout(uint progressiveNumber)
 
             => _workouts[(int)progressiveNumber];

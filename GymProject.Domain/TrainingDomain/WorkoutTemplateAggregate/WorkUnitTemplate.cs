@@ -73,7 +73,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkUnitTemplate(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, IList<WorkingSetTemplate> workingSets, ICollection<IdTypeValue> workUnitIntensityTechniqueIds, IdTypeValue ownerNoteId = null) : base(id)
+        private WorkUnitTemplate(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, 
+            IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds, IdTypeValue ownerNoteId = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             OwnerNoteId = ownerNoteId;
@@ -112,7 +113,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <param name="workUnitIntensityTechniqueIds">The list of the IDs of the WU Intensity Techniques</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkUnitTemplate PlanTransientWorkUnit(uint progressiveNumber, IdTypeValue excerciseId, IList<WorkingSetTemplate> workingSets, ICollection<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
+        public static WorkUnitTemplate PlanTransientWorkUnit(uint progressiveNumber, IdTypeValue excerciseId, 
+            IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
 
             => new WorkUnitTemplate(null, progressiveNumber, excerciseId, workingSets, workUnitIntensityTechniqueIds, ownerNoteId);
 
@@ -127,7 +129,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <param name="workUnitIntensityTechniqueIds">The list of the IDs of the WU Intensity Techniques</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkUnitTemplate PlanWorkUnit(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, IList<WorkingSetTemplate> workingSets, ICollection<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
+        public static WorkUnitTemplate PlanWorkUnit(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, 
+            IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
 
             => new WorkUnitTemplate(id, progressiveNumber, excerciseId, workingSets, workUnitIntensityTechniqueIds, ownerNoteId);
 
@@ -255,7 +258,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="effort">The WS effort</param>
         /// <param name="tempo">The WS lifting tempo</param>
         /// <param name="intensityTechniqueIds">The ids of the WS intensity techniques</param>
-        public void AddWorkingSet(WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public void AddTransientWorkingSet(WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, 
+            IEnumerable<IdTypeValue> intensityTechniqueIds = null)
         {
             List<IdTypeValue> localIntensityTechniqueIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds)?.ToList() ?? new List<IdTypeValue>();
 

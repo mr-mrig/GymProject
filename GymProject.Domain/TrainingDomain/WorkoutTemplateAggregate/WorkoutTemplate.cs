@@ -66,7 +66,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkoutTemplate(IdTypeValue id, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
+        private WorkoutTemplate(IdTypeValue id, IEnumerable<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
         {
             Name = workoutName ?? string.Empty;
             SpecificWeekday = weekday ?? WeekdayEnum.Generic;
@@ -92,7 +92,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplate PlanTransientWorkout(IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplate PlanTransientWorkout(IEnumerable<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
 
             => new WorkoutTemplate(null, workUnits, workoutName, weekday);
 
@@ -105,7 +105,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplate PlanWorkout(IdTypeValue id, IList<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplate PlanWorkout(IdTypeValue id, IEnumerable<WorkUnitTemplate> workUnits, string workoutName, WeekdayEnum weekday = null)
 
             => new WorkoutTemplate(id, workUnits, workoutName, weekday);
 
@@ -259,7 +259,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The WS which the WU is made up of</param>
         /// <param name="workUnitIntensityTechniquesIds">The IDs of the WS intensity techniques</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void AddWorkUnit(IdTypeValue excerciseId, IList<WorkingSetTemplate> workingSets, ICollection<IdTypeValue> workUnitIntensityTechniquesIds = null, IdTypeValue ownerNoteId = null)
+        public void AddTransientWorkUnit(IdTypeValue excerciseId, IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniquesIds = null, IdTypeValue ownerNoteId = null)
         {
             WorkUnitTemplate toAdd = WorkUnitTemplate.PlanTransientWorkUnit(
                 BuildWorkUnitProgressiveNumber(),
@@ -504,7 +504,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             if (parentWorkUnit != default)
             {
-                parentWorkUnit.AddWorkingSet(
+                parentWorkUnit.AddTransientWorkingSet(
                     repetitions,
                     rest,
                     effort,
@@ -557,8 +557,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public void RemoveWorkingSet(WorkingSetTemplate workingSet)
         {
             // Transient entities
-            if (workingSet?.Id == null)
+            if (workingSet == null)
                 return;
+
+            if(workingSet.IsTransient())
+                throw new InvalidOperationException($"Cannot remove transient Working Sets");
 
             WorkUnitTemplate parentWorkUnit = _workUnits.Single(x => x.WorkingSets.Contains(workingSet));
 

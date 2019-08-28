@@ -17,7 +17,6 @@
     <Folder Include="TrainingDomain\IntensityTechniqueAggregate\" />
     <Folder Include="TrainingDomain\TrainingPlanMessageAggregate\" />
     <Folder Include="TrainingDomain\TrainingPlanNoteAggregate\" />
-    <Folder Include="TrainingDomain\TrainingScheduleAggregate\" />
     <Folder Include="TrainingDomain\WorkUnitNoteAggregate\" />
     <Folder Include="UserAccountDomain\" />
   </ItemGroup>

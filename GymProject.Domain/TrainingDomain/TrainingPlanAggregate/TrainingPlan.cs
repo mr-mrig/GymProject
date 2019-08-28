@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingPlan : Entity<IdTypeValue>, ICloneable
+    public class TrainingPlan : Entity<IdTypeValue>, IAggregateRoot , ICloneable
     {
 
 

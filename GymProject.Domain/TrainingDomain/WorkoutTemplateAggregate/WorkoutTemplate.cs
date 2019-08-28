@@ -236,10 +236,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="toAdd">The Work Unit to be added</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        /// <exception cref="ArgumentException">If Work Unit already present</exception>
         public void AddWorkUnit(WorkUnitTemplate toAdd)
         {
             if (_workUnits.Contains(toAdd))
-                return;
+                throw new ArgumentException("Trying to add a duplicate Work Unit", nameof(toAdd));
 
             _workUnits.Add(toAdd.Clone() as WorkUnitTemplate);
 
@@ -498,7 +499,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="intensityTechniqueIds">The ids of the WS intensity techniques</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void AddWorkingSet(uint workUnitPnum, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionValue repetitions, 
+            RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
         {
             WorkUnitTemplate parentWorkUnit = FindWorkUnit(workUnitPnum);
 
@@ -512,8 +514,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                     intensityTechniqueIds
                 );
 
-                //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-                //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
+
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
 
                 WorkingSetTemplate added = WorkingSetTemplate.
@@ -521,7 +522,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
                 TrainingVolume = TrainingVolume.AddWorkingSet(added);
                 TrainingDensity = TrainingDensity.AddWorkingSet(added);
-                //TrainingIntensity.AddWorkingSet(added);
             }
         }
 
@@ -537,13 +537,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         {
             FindWorkUnit(workUnitPnum).AddWorkingSet(workingSet);
 
-            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-
             TrainingVolume = TrainingVolume.AddWorkingSet(workingSet);
             TrainingDensity = TrainingDensity.AddWorkingSet(workingSet);
-            //TrainingIntensity.AddWorkingSet(workingSet);
         }
 
 
@@ -582,13 +578,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             parentWorkUnit?.RemoveWorkingSet(workingSetPnum);
 
-            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-
             TrainingVolume = TrainingVolume.RemoveWorkingSet(toRemove);
             TrainingDensity = TrainingDensity.RemoveWorkingSet(toRemove);
-            //TrainingIntensity.AddWorkingSet(workingSet);
         }
 
 

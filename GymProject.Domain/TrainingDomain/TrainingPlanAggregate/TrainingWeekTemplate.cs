@@ -48,7 +48,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         public IReadOnlyCollection<WorkoutTemplateReferenceValue> Workouts
         {
-            get => _workouts?.ToList().AsReadOnly() ?? new List<WorkoutTemplateReferenceValue>().AsReadOnly();
+            get => _workouts?.Clone().ToList().AsReadOnly() ?? new List<WorkoutTemplateReferenceValue>().AsReadOnly();
         }
 
 

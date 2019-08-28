@@ -5,6 +5,7 @@ using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
+using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
 
-        public const int ntests = 50;
+        public const int ntests = 60;
 
         private readonly ITestOutputHelper output;
 
@@ -233,8 +234,6 @@ namespace GymProject.Domain.Test.UnitTest
         {
             int initialWorkoutMin = 1, initialWorkoutMax = 10;
             int addWorkoutsMin = 2, addWorkoutsMax = 3;
-            int addWorkingSetsMin = 1, addWorkingSetsMax = 2;
-            int removeWorkingSetsMin = 1, removeWorkingSetsMax = initialWorkoutMin + addWorkoutsMin;
             int removeWorkoutsMin = 1, removeWorkoutsMax = addWorkoutsMin + initialWorkoutMin - 1;
             int changeWorkoutMin = 1;
 
@@ -345,56 +344,8 @@ namespace GymProject.Domain.Test.UnitTest
                 int changeWorkoutsNum = RandomFieldGenerator.RandomInt(changeWorkoutMin, workouts.Count);
 
                 for (int iwo = 0; iwo < changeWorkoutsNum; iwo++)
-                {
-                    uint srcPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
+                    CheckWeekWorkoutChanges(week, isTransient);
 
-                    ICollection<WorkingSetTemplate> newWorkingSets = new List<WorkingSetTemplate>();
-                    ICollection<WorkingSetTemplate> removeWorkingSets = new List<WorkingSetTemplate>();
-
-                    WorkoutTemplateReferenceValue srcWorkout =  week.CloneWorkout(srcPnum);
-
-                    // Add Working Sets
-                    int addWorkingSetsNumber = RandomFieldGenerator.RandomInt(addWorkingSetsMin, addWorkingSetsMax);
-
-                    for (int iws = 0; iws < addWorkingSetsNumber; iws++)
-                        newWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(srcWorkout.WorkingSets.Count + 1, srcWorkout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
-
-                    week.AddWorkingSets(srcPnum, newWorkingSets);
-
-                    CheckWorkingSetSequence(srcWorkout.WorkingSets.Union(newWorkingSets), week.CloneWorkout(srcPnum).WorkingSets, isTransient);
-
-                    // Remove Working sets
-                    if(!isTransient)
-                    {
-                        srcWorkout = week.CloneWorkout(srcPnum);    // Refresh it
-                        int removeWorkingSetsNumber = RandomFieldGenerator.RandomInt(removeWorkingSetsMin, Math.Min(removeWorkingSetsMax, srcWorkout.WorkingSets.Count));
-
-                        for (int iws = 0; iws < removeWorkingSetsNumber; iws++)
-                        {
-                            long idToRemove = RandomFieldGenerator.ChooseAmong(
-                                srcWorkout.WorkingSets.Select(x => x.Id.Id).Except(removeWorkingSets.Select(x => x.Id.Id)).ToList());
-
-                            removeWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToRemove, srcWorkout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
-                        }
-                        week.RemoveWorkingSets(srcPnum, removeWorkingSets);
-
-                        CheckWorkingSetSequence(srcWorkout.WorkingSets.Except(removeWorkingSets), week.CloneWorkout(srcPnum).WorkingSets, isTransient);
-                    }
-
-                    // Move Workouts
-                    uint destPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
-
-                    srcWorkout = week.CloneWorkout(srcPnum);    // Refresh it
-                    WorkoutTemplateReferenceValue destWorkout = week.Workouts.ToList()[(int)destPnum];
-
-                    week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
-
-                    CheckWorkingSetSequence(srcWorkout.WorkingSets, week.Workouts.ToList()[(int)destPnum].WorkingSets, isTransient);
-                    CheckWorkingSetSequence(destWorkout.WorkingSets, week.Workouts.ToList()[(int)srcPnum].WorkingSets, isTransient);
-
-                    Assert.True(Enumerable.Range(0, workouts.Count).ToList().SequenceEqual
-                        (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
-                }
             }
         }
 
@@ -668,16 +619,32 @@ namespace GymProject.Domain.Test.UnitTest
             int addWeekMin = 1, addWeekMax = 3;
             int removeWeekMin = 1, removeWeekMax = 3;
             int changeWeekMin = 1, changeWeekMax = 3;
-            int addWorkingSetsMin = 1, addWorkingSetsMax = 3;
+
+            bool faked;
+            float fakedOperationProbability = 0.05f;
+            float inheritedPlanProbability = 0.25f;
+            float variantPlanProbability = 0.25f;
 
             TrainingWeekTypeEnum weekType;
+            TrainingWeekTemplate week;
+            TrainingPlanTypeEnum planType;
 
             for (int itest = 0; itest < ntests; itest++)
             {
                 bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
 
-                // Build the Plan and check the correctness
-                TrainingPlan plan = BuildAndCheckRandomTrainingPlan(planId, TrainingPlanTypeEnum.NotSet);
+                // Build the Plan according to randomic type
+                float rolledChance = (float)RandomFieldGenerator.RandomDouble(0, 1);
+
+                if (rolledChance <= inheritedPlanProbability)
+                    planType = TrainingPlanTypeEnum.Inherited;
+
+                else if (rolledChance <= variantPlanProbability)
+                    planType = TrainingPlanTypeEnum.Variant;
+                else
+                    planType = TrainingPlanTypeEnum.NotSet;
+
+                TrainingPlan plan = BuildAndCheckRandomTrainingPlan(planId, isTransient, planType);
 
                 // Change Plan
                 CheckTrainingPlanChanges(plan);
@@ -685,11 +652,13 @@ namespace GymProject.Domain.Test.UnitTest
                 // Add Training Week
                 int addWeeksNumber = RandomFieldGenerator.RandomInt(addWeekMin, addWeekMax);
                 int srcWeeksNumber = plan.TrainingWeeks.Count;
+                int weeksAddedCount = 0;
 
                 IList<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>(plan.TrainingWeeks);
 
                 for(int iweek = 0; iweek <addWeeksNumber; iweek++)
                 {
+                    faked = false;
                     // Full rest is a specific case -> choose it with a small chance
                     if (RandomFieldGenerator.RollEventWithProbability(restWeekProbability))
                         weekType = TrainingWeekTypeEnum.FullRest;
@@ -697,9 +666,20 @@ namespace GymProject.Domain.Test.UnitTest
                         weekType = TrainingWeekTypeEnum.From(
                             RandomFieldGenerator.RandomIntValueExcluded(TrainingWeekTypeEnum.Generic.Id, TrainingWeekTypeEnum.Peak.Id, TrainingWeekTypeEnum.FullRest.Id));
 
-                    TrainingWeekTemplate week = StaticUtils.BuildRandomTrainingWeek(iweek + 1, srcWeeksNumber + iweek, isTransient, weekType: weekType);
+                    if(!isTransient && plan.TrainingWeeks.Count > 0 &&
+                        (faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability)))
 
-                    weeks.Add(week);
+                        // Fake insertion
+                        week = StaticUtils.BuildRandomTrainingWeek(
+                            RandomFieldGenerator.ChooseAmong(plan.TrainingWeeks.Select(x => (int)x.Id.Id)), 
+                            srcWeeksNumber + weeksAddedCount, isTransient, weekType: weekType);
+                    else
+                    {
+                        // Valid insertion
+                        week = StaticUtils.BuildRandomTrainingWeek(srcWeeksNumber + iweek + 1, srcWeeksNumber + weeksAddedCount++, isTransient, weekType: weekType);
+                        weeks.Add(week);
+                    }
+
 
                     if (isTransient)
                     {
@@ -711,7 +691,13 @@ namespace GymProject.Domain.Test.UnitTest
                     }
   
                     else
-                        plan.PlanTrainingWeek(week);
+                    {
+                        if(faked)
+                            Assert.Throws<ArgumentException>(() => plan.PlanTrainingWeek(week));
+                        else
+                            plan.PlanTrainingWeek(week);
+                    }
+                        
 
                     CheckTrainingWeeksSequence(weeks, plan.TrainingWeeks, isTransient);
                 }
@@ -724,13 +710,14 @@ namespace GymProject.Domain.Test.UnitTest
                 for (int iweek = 0; iweek < changeWeeksNumber; iweek++)
                 {
                     uint weekPnum = RandomFieldGenerator.ChooseAmong(plan.TrainingWeeks.Select(x => x.ProgressiveNumber));
-                    TrainingWeekTemplate week = weeks.Single(x => x.ProgressiveNumber == weekPnum);
+                    week = weeks.Single(x => x.ProgressiveNumber == weekPnum);
 
                     if(!week.IsFullRestWeek())
                     {
                         // Value Copy
-                        IList<WorkoutTemplateReferenceValue> workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts
-                            .Select(x => WorkoutTemplateReferenceValue.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList();
+                        //IList<WorkoutTemplateReferenceValue> workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts
+                        //    .Select(x => WorkoutTemplateReferenceValue.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList();
+                        IList<WorkoutTemplateReferenceValue> workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts.ToList();
 
                         // Add Workout
                         WorkoutTemplate workout = StaticUtils.BuildRandomWorkout(1, isTransient);
@@ -740,6 +727,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                         CheckWeekWorkouts(workouts.Union(new List<WorkoutTemplateReferenceValue>() {
                             WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)workouts.Count(), workout.CloneAllWorkingSets()) }), week, isTransient);
+
+                        Assert.Equal((float)(weeks.Sum(x => x.Workouts.Count) + 1) / (float)weeks.Count, plan.GetAverageWorkoutsPerWeek(), 1);
 
                         // Move Workout
                         uint srcPnum = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
@@ -753,8 +742,9 @@ namespace GymProject.Domain.Test.UnitTest
                         CheckWorkingSetSequence(destWorkout.WorkingSets, week.Workouts.ToList()[(int)srcPnum].WorkingSets, isTransient);
 
                         // Remove Workout
-                        workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts
-                            .Select(x => WorkoutTemplateReferenceValue.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList();
+                        //workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts
+                        //    .Select(x => WorkoutTemplateReferenceValue.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList();
+                        workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts.ToList();
 
                         uint pnumToRemove = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
                         plan.UnplanWorkout(weekPnum, pnumToRemove);
@@ -766,179 +756,274 @@ namespace GymProject.Domain.Test.UnitTest
 
                         CheckWeekWorkouts(workoutsLeft, week, isTransient);
 
-                        // Modify Workout
-                        uint pnumToChange = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
-                        int addWorkingSetsNumber = RandomFieldGenerator.RandomInt(addWorkingSetsMin, addWorkingSetsMax);
+                        Assert.Equal((float)(weeks.Sum(x => x.Workouts.Count)) / (float)weeks.Count, plan.GetAverageWorkoutsPerWeek(), 1);
 
-                        IList<WorkingSetTemplate> additionalWorkingSets = new List<WorkingSetTemplate>();
-                        IList<WorkingSetTemplate> originalWorkingSets = week.CloneWorkoutWorkingSets(pnumToChange).ToList();
-
-                        for (int iws = 0; iws < addWorkingSetsNumber; iws++)
-                            additionalWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(
-                                originalWorkingSets.Count + 1, originalWorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
-
-                        plan.AddWorkingSets(weekPnum, pnumToChange, additionalWorkingSets);
-
-                        week = plan.TrainingWeeks.Single(x => x.ProgressiveNumber == weekPnum);     // Keep Updated
-
-
-                        //WorkoutTemplateAggregateTest.CheckWorkingSet(week.CloneWorkoutWorkingSets(pnumToChange), null, InsufficientExecutionStackException);
-
-                        //plan.RemoveWorkingSets();
-
-                        //plan.GetAverageWorkoutsPerWeek();
-
-
-
-                        //weeks = StaticUtils.ForceConsecutiveProgressiveNumbers(weeks).ToList();
-
-                        //CheckTrainingWeeksSequence(weeks, plan.TrainingWeeks, isTransient);
+                        if (week.Workouts.Count > 0)
+                            CheckPlanWorkoutChanges(plan, weekPnum, isTransient);
                     }
 
                 }
 
                 // Remove Training Week
                 int removeWeeksNumber = RandomFieldGenerator.RandomInt(removeWeekMin, Math.Min(removeWeekMax, plan.TrainingWeeks.Count));
+                uint toRemovePnum;
 
+                faked = false;
                 weeks = new List<TrainingWeekTemplate>(plan.TrainingWeeks);
 
                 for (int iweek = 0; iweek < removeWeeksNumber; iweek++)
                 {
-                    uint toRemovePnum = RandomFieldGenerator.ChooseAmong(plan.TrainingWeeks.Select(x => x.ProgressiveNumber));
-                    TrainingWeekTemplate week = weeks.Single(x => x.ProgressiveNumber == toRemovePnum);
-                    
-                    weeks.Remove(week);
-                    plan.UnplanTrainingWeek(toRemovePnum);
+                    if(faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability))
+                    {
+                        toRemovePnum = (uint)RandomFieldGenerator.RandomIntValueExcluded(1, 10000, plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber));
+                        Assert.Throws<ArgumentException>(() => plan.UnplanTrainingWeek(toRemovePnum));
+                    }
+                    else
+                    {
+                        toRemovePnum = RandomFieldGenerator.ChooseAmong(plan.TrainingWeeks.Select(x => x.ProgressiveNumber));
 
-                    weeks = StaticUtils.ForceConsecutiveProgressiveNumbers(weeks).ToList();
+                        week = weeks.Single(x => x.ProgressiveNumber == toRemovePnum);
 
-                    CheckTrainingWeeksSequence(weeks, plan.TrainingWeeks, isTransient);
+                        weeks.Remove(week);
+                        plan.UnplanTrainingWeek(toRemovePnum);
 
-                    output.WriteLine($"Removed : {toRemovePnum.ToString()}");
+                        weeks = StaticUtils.ForceConsecutiveProgressiveNumbers(weeks).ToList();
+
+                        CheckTrainingWeeksSequence(weeks, plan.TrainingWeeks, isTransient);
+
+                        output.WriteLine($"Removed : {toRemovePnum.ToString()}");
+                    }
                 }
 
             }
         }
 
 
-        [Fact]
-        public void TrainingPlanInheritedFullTest()
-        {
-            int planNameLengthMin = 10, planNameLengthMax = 100;
-            int ownerIdMin = 50000, ownerIdMax = 55555;
-            int idsSizeMin = 0, idsSizeMax = 10;
-            int noteIdMin = 7000, noteIdMax = 12999;
-            int messageIdMin = 6881, messageIdMax = 22441;
-            int trainingWeeksMin = 0, trainingWeeksMax = 10;
-
-            float mainConstructorProb = 0.2f;
-
-            IdTypeValue planId = IdTypeValue.Create(17);
-            IdTypeValue inheritedPlanScheduleId = null;
-            TrainingPlan plan = null;
-
-            TrainingPlanTypeEnum planType = TrainingPlanTypeEnum.Inherited;
-
-            for (int itest = 0; itest < ntests; itest++)
-            {
-                List<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>();
-
-                bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
-                string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
-                bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
-                bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
-
-                IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
-                IdTypeValue messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
-                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
-
-                List<IdTypeValue> scheduleIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> phaseIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-
-                int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
-
-                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
-                    weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
-
-                // Root plan - just in case it will be needed
-                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
-                                    scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
-
-                if (RandomFieldGenerator.RollEventWithProbability(mainConstructorProb))
-                    plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
-                        weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
-                else
-                    plan = null;
-
-                throw new NotImplementedException();
-            }
-        }
-
-
-        [Fact]
-        public static void TrainingPlanVariantFullTest()
-        {
-            int planNameLengthMin = 10, planNameLengthMax = 100;
-            int ownerIdMin = 50000, ownerIdMax = 55555;
-            int idsSizeMin = 0, idsSizeMax = 10;
-            int noteIdMin = 7000, noteIdMax = 12999;
-            int messageIdMin = 6881, messageIdMax = 22441;
-            int trainingWeeksMin = 0, trainingWeeksMax = 10;
-
-            float mainConstructorProb = 0.2f;
-
-            IdTypeValue planId = IdTypeValue.Create(17);
-            IdTypeValue inheritedPlanScheduleId = null;
-            TrainingPlan plan = null;
-
-            TrainingPlanTypeEnum planType = TrainingPlanTypeEnum.Variant;
-
-            for (int itest = 0; itest < ntests; itest++)
-            {
-                List<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>();
-
-                bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
-                string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
-                bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
-                bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
-
-                IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
-                IdTypeValue messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
-                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
-
-                List<IdTypeValue> scheduleIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> phaseIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-
-                int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
-
-                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
-                    weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
-
-                // Root plan - just in case it will be needed
-                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
-                                    scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
-
-                if (RandomFieldGenerator.RollEventWithProbability(mainConstructorProb))
-                    plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
-                        weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
-                else
-                    plan = null;
-
-                throw new NotImplementedException();
-            }
-        }
-
-
 
         #region Support Functions
+
+
+
+        internal static void CheckPlanWorkoutChanges(TrainingPlan plan, uint weekPnum, bool isTransient)
+        {
+            bool faked = false;
+
+            int addWorkingSetsMin = 1, addWorkingSetsMax = 2;
+            int removeWorkingSetsMin = 1, removeWorkingSetsMax = 2;
+
+            float fakedOperationProbability = 0.05f;
+
+            ICollection<WorkingSetTemplate> newWorkingSets = new List<WorkingSetTemplate>();
+            ICollection<WorkingSetTemplate> removeWorkingSets = new List<WorkingSetTemplate>();
+
+
+            TrainingWeekTemplate week = plan.TrainingWeeks.Single(x => x.ProgressiveNumber == weekPnum);
+            IList<WorkoutTemplateReferenceValue> workouts = week.Workouts.ToList();
+
+            // Add Working Sets
+            uint workoutPnum = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
+            int addWorkingSetsNumber = RandomFieldGenerator.RandomInt(addWorkingSetsMin, addWorkingSetsMax);
+            int idToAdd;
+           
+            WorkoutTemplateReferenceValue workout = week.CloneWorkout(workoutPnum);
+
+            for (int iws = 0; iws < addWorkingSetsNumber; iws++)
+            {
+                if (isTransient)
+                    idToAdd = 1;
+                else
+                {
+                    IEnumerable<int> alreadyChosenIds = newWorkingSets.Union(workout.WorkingSets).Select(x => (int)x.Id.Id);
+
+                    if (faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability) && workout.WorkingSets.Count > 0)
+                    {
+                        if (newWorkingSets.Count > 0 && RandomFieldGenerator.RollEventWithProbability(0.5f))
+                            // Simulate duplicate elment in input list
+                            idToAdd = RandomFieldGenerator.ChooseAmong(newWorkingSets.Select(x => (int)x.Id.Id));
+                        else
+                            // Simulate element already present
+                            idToAdd = RandomFieldGenerator.ChooseAmong(alreadyChosenIds);
+
+                        newWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToAdd, workout.WorkingSets.Count + iws, isTransient, TrainingEffortTypeEnum.RM));
+                        break;   // Exit loop so faked won't be overridden
+                    }
+                    else
+                        idToAdd = RandomFieldGenerator.RandomIntValueExcluded(1, 10000, alreadyChosenIds);
+                }
+
+                newWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToAdd, workout.WorkingSets.Count + iws, isTransient, TrainingEffortTypeEnum.RM));
+            }
+
+            if (faked)
+                Assert.Throws<ArgumentException>(() => plan.AddWorkingSets(weekPnum, workoutPnum, newWorkingSets));
+            else
+            {
+                plan.AddWorkingSets(weekPnum, workoutPnum, newWorkingSets);
+                workouts[(int)workoutPnum] = workouts.First(x => x.ProgressiveNumber == workoutPnum).AddWorkingSets(newWorkingSets);
+                
+                week = plan.TrainingWeeks.Single(x => x.ProgressiveNumber == weekPnum);     // Keep Updated
+
+                CheckWeekWorkouts(workouts, week, isTransient);
+            }
+
+
+
+            // Remove Working sets
+            workout = week.CloneWorkout(workoutPnum);
+            faked = false;
+
+            if (!isTransient)
+            {
+                workout = week.CloneWorkout(workoutPnum);    // Refresh it
+                long idToRemove;
+                int removeWorkingSetsNumber = RandomFieldGenerator.RandomInt(removeWorkingSetsMin, Math.Min(removeWorkingSetsMax, workout.WorkingSets.Count));
+
+                for (int iws = 0; iws < removeWorkingSetsNumber; iws++)
+                {
+                    if (faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability))
+                    {
+                        idToRemove = RandomFieldGenerator.RandomIntValueExcluded(1, 10000, workout.WorkingSets.Select(x => (int)x.Id.Id));
+                        removeWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToRemove, workout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
+                        break;
+                    }
+
+                    idToRemove = RandomFieldGenerator.ChooseAmong(
+                        workout.WorkingSets.Select(x => x.Id.Id).Except(removeWorkingSets.Select(x => x.Id.Id)).ToList());
+
+                    removeWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToRemove, workout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
+                }
+                if (faked)
+                    Assert.Throws<ArgumentException>(() => plan.RemoveWorkingSets(weekPnum, workoutPnum, removeWorkingSets));
+                else
+                {
+                    plan.RemoveWorkingSets(weekPnum, workoutPnum, removeWorkingSets);
+                    CheckWorkingSetSequence(workout.WorkingSets.Except(removeWorkingSets), plan.CloneWorkout(weekPnum, workoutPnum).WorkingSets, isTransient);
+                }
+            }
+
+            // Move Workouts
+            uint destPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
+            uint srcPnum = workoutPnum;
+
+            workout = week.CloneWorkout(srcPnum);    // Refresh it
+            WorkoutTemplateReferenceValue destWorkout = week.Workouts.ToList()[(int)destPnum];
+
+            week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
+
+            CheckWorkingSetSequence(workout.WorkingSets, week.Workouts.ToList()[(int)destPnum].WorkingSets, isTransient);
+            CheckWorkingSetSequence(destWorkout.WorkingSets, week.Workouts.ToList()[(int)srcPnum].WorkingSets, isTransient);
+
+            Assert.True(Enumerable.Range(0, workouts.Count()).ToList().SequenceEqual
+                (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+        }
+
+
+        internal static void CheckWeekWorkoutChanges(TrainingWeekTemplate week, bool isTransient)
+        {
+            bool faked = false;
+
+            int addWorkingSetsMin = 1, addWorkingSetsMax = 2;
+            int removeWorkingSetsMin = 1, removeWorkingSetsMax = 2;
+
+            float fakedOperationProbability = 0.05f;
+
+            IEnumerable<WorkoutTemplateReferenceValue> workouts = new List<WorkoutTemplateReferenceValue>(week.Workouts);
+            uint srcPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
+
+            ICollection<WorkingSetTemplate> newWorkingSets = new List<WorkingSetTemplate>();
+            ICollection<WorkingSetTemplate> removeWorkingSets = new List<WorkingSetTemplate>();
+
+            WorkoutTemplateReferenceValue srcWorkout = week.CloneWorkout(srcPnum);
+
+
+            // Add Working Sets
+            int addWorkingSetsNumber = RandomFieldGenerator.RandomInt(addWorkingSetsMin, addWorkingSetsMax);
+            int idToAdd;
+
+            for (int iws = 0; iws < addWorkingSetsNumber; iws++)
+            {
+                if (isTransient)
+                    idToAdd = 1;
+                else
+                {
+                    IEnumerable<int> alreadyChosenIds = newWorkingSets.Union(srcWorkout.WorkingSets).Select(x => (int)x.Id.Id);
+
+                    if (faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability))
+                    {
+                        if (newWorkingSets.Count > 0 &&  RandomFieldGenerator.RollEventWithProbability(0.5f))
+                            // Simulate duplicate elment in input list
+                            idToAdd = RandomFieldGenerator.ChooseAmong(newWorkingSets.Select(x => (int)x.Id.Id));
+                        else
+                            // Simulate element already present
+                            idToAdd = RandomFieldGenerator.ChooseAmong(alreadyChosenIds);
+
+                        newWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToAdd, srcWorkout.WorkingSets.Count + iws, isTransient, TrainingEffortTypeEnum.RM));
+                        break;   // Exit loop so faked won't be overridden
+                    }
+                    else
+                        idToAdd = RandomFieldGenerator.RandomIntValueExcluded(1, 10000, alreadyChosenIds);
+                }
+
+                newWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToAdd, srcWorkout.WorkingSets.Count + iws, isTransient, TrainingEffortTypeEnum.RM));
+            }
+
+            if (faked)
+                Assert.Throws<ArgumentException>(() => week.AddWorkingSets(srcPnum, newWorkingSets));
+            else
+            {
+                week.AddWorkingSets(srcPnum, newWorkingSets);
+                CheckWorkingSetSequence(srcWorkout.WorkingSets.Union(newWorkingSets), week.CloneWorkout(srcPnum).WorkingSets, isTransient);
+            }
+
+
+            // Remove Working sets
+            faked = false;
+
+            if (!isTransient)
+            {
+                srcWorkout = week.CloneWorkout(srcPnum);    // Refresh it
+                long idToRemove;
+                int removeWorkingSetsNumber = RandomFieldGenerator.RandomInt(removeWorkingSetsMin, Math.Min(removeWorkingSetsMax, srcWorkout.WorkingSets.Count));
+
+                for (int iws = 0; iws < removeWorkingSetsNumber; iws++)
+                {
+                    if (faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability))
+                    {
+                        idToRemove = RandomFieldGenerator.RandomIntValueExcluded(1, 10000, srcWorkout.WorkingSets.Select(x => (int)x.Id.Id));
+                        removeWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToRemove, srcWorkout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
+                        break;
+                    }
+
+                    idToRemove = RandomFieldGenerator.ChooseAmong(
+                        srcWorkout.WorkingSets.Select(x => x.Id.Id).Except(removeWorkingSets.Select(x => x.Id.Id)).ToList());
+
+                    removeWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToRemove, srcWorkout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
+                }
+                if (faked)
+                    Assert.Throws<ArgumentException>(() => week.RemoveWorkingSets(srcPnum, removeWorkingSets));
+                else
+                {
+                    week.RemoveWorkingSets(srcPnum, removeWorkingSets);
+                    CheckWorkingSetSequence(srcWorkout.WorkingSets.Except(removeWorkingSets), week.CloneWorkout(srcPnum).WorkingSets, isTransient);
+                }
+            }
+
+            // Move Workouts
+            uint destPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
+
+            srcWorkout = week.CloneWorkout(srcPnum);    // Refresh it
+            WorkoutTemplateReferenceValue destWorkout = week.Workouts.ToList()[(int)destPnum];
+
+            week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
+
+            CheckWorkingSetSequence(srcWorkout.WorkingSets, week.Workouts.ToList()[(int)destPnum].WorkingSets, isTransient);
+            CheckWorkingSetSequence(destWorkout.WorkingSets, week.Workouts.ToList()[(int)srcPnum].WorkingSets, isTransient);
+
+            Assert.True(Enumerable.Range(0, workouts.Count()).ToList().SequenceEqual
+                (week.Workouts.Select(x => (int)x.ProgressiveNumber)));
+        }
+
+
 
         internal static void CheckWorkingSetSequence(
             IEnumerable<WorkingSetTemplate> leftSequence, IEnumerable<WorkingSetTemplate> rightSequence, bool isTransient)
@@ -1023,7 +1108,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         internal static TrainingPlan BuildAndCheckRandomTrainingPlan(
-            long planIdNum, TrainingPlanTypeEnum planType = null, IList<TrainingWeekTemplate> weeks = null)
+            long planIdNum, bool isTransient, TrainingPlanTypeEnum planType = null, IList<TrainingWeekTemplate> weeks = null)
         {
             int planNameLengthMin = 10, planNameLengthMax = 100;
             int ownerIdMin = 50000, ownerIdMax = 55555;
@@ -1032,9 +1117,11 @@ namespace GymProject.Domain.Test.UnitTest
             int messageIdMin = 6881, messageIdMax = 22441;
             int trainingWeeksMin = 0, trainingWeeksMax = 10;
 
-            IdTypeValue planId = IdTypeValue.Create(planIdNum);
+            float alternativeConstructorProbabilty = 0.25f;
 
-            bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
+            IdTypeValue planId = IdTypeValue.Create(planIdNum);
+            TrainingPlan plan;
+
             string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
             bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
             bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
@@ -1069,27 +1156,89 @@ namespace GymProject.Domain.Test.UnitTest
 
             IdTypeValue messageId = null;
 
+
             if (planType == TrainingPlanTypeEnum.Inherited)
-                messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax)); ;
+            {
+                IdTypeValue traineeId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                IdTypeValue scheduleId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
 
-            TrainingPlan plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
+                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                    messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
 
+                messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
 
-            Assert.Equal(planId, plan.Id);
-            Assert.Equal(name, plan.Name);
-            Assert.Equal(isBookmarked, plan.IsBookmarked);
-            Assert.Equal(isTemplate, plan.IsTemplate);
-            Assert.Equal(ownerId, plan.OwnerId);
-            Assert.Equal(planType ?? TrainingPlanTypeEnum.NotSet, plan.TrainingPlanType);
-            Assert.Equal(noteId, plan.PersonalNoteId);
-            Assert.Equal(messageId, plan.AttachedMessageId);
-            Assert.Equal(scheduleIds, plan.TrainingScheduleIds);
-            Assert.Equal(phaseIds, plan.TrainingPhaseIds);
-            Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
-            Assert.Equal(focusIds, plan.MuscleFocusIds);
-            Assert.Equal(hashtagIds, plan.Hashtags);
-            Assert.Equal(childPlanIds, plan.ChildTrainingPlanIds);
+                if(RandomFieldGenerator.RollEventWithProbability(alternativeConstructorProbabilty))
+                    plan = TrainingPlan.CreateTrainingPlan(planId, name, false, false, traineeId, planType, null,
+                        messageId, weeks, new List<IdTypeValue>() { scheduleId });
+                else
+                    plan = TrainingPlan.SendInheritedTrainingPlan(planId, rootPlan, traineeId, messageId, scheduleId);
+
+                Assert.Equal(planId, plan.Id);
+                Assert.Equal(name, plan.Name);
+                Assert.False(plan.IsBookmarked);
+                Assert.False(plan.IsTemplate);
+                Assert.Equal(traineeId, plan.OwnerId);
+                Assert.Equal(planType, plan.TrainingPlanType);
+                Assert.Null(plan.PersonalNoteId);
+                Assert.Equal(messageId, plan.AttachedMessageId);
+                Assert.Single(plan.TrainingScheduleIds);
+                Assert.Contains(scheduleId, plan.TrainingScheduleIds);
+                Assert.Empty(plan.TrainingPhaseIds);
+                Assert.Empty(plan.TrainingProficiencyIds);
+                Assert.Empty(plan.MuscleFocusIds);
+                Assert.Empty(plan.Hashtags);
+                Assert.Empty(plan.ChildTrainingPlanIds);
+                Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
+            }
+
+            else if(planType == TrainingPlanTypeEnum.Variant)
+            {
+                TrainingPlan rootPlan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                    messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
+
+                if (RandomFieldGenerator.RollEventWithProbability(alternativeConstructorProbabilty))
+                    plan = TrainingPlan.CreateTrainingPlan(planId, name, false, false, ownerId, planType, null,
+                        messageId, weeks, null, phaseIds, proficiencyIds, focusIds, hashtagIds);
+                else
+                    plan = TrainingPlan.CreateVariantTrainingPlan(planId, rootPlan);
+
+                Assert.Equal(planId, plan.Id);
+                Assert.Equal(name, plan.Name);
+                Assert.False(plan.IsBookmarked);
+                Assert.False(plan.IsTemplate);
+                Assert.Equal(ownerId, plan.OwnerId);
+                Assert.Equal(planType, plan.TrainingPlanType);
+                Assert.Null(plan.PersonalNoteId);
+                Assert.Equal(messageId, plan.AttachedMessageId);
+                Assert.Empty(plan.TrainingScheduleIds);
+                Assert.Equal(phaseIds, plan.TrainingPhaseIds);
+                Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
+                Assert.Equal(focusIds, plan.MuscleFocusIds);
+                Assert.Equal(hashtagIds, plan.Hashtags);
+                Assert.Empty(plan.ChildTrainingPlanIds);
+            }
+
+            else
+            {
+                plan = TrainingPlan.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+                    messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
+
+                Assert.Equal(planId, plan.Id);
+                Assert.Equal(name, plan.Name);
+                Assert.Equal(isBookmarked, plan.IsBookmarked);
+                Assert.Equal(isTemplate, plan.IsTemplate);
+                Assert.Equal(ownerId, plan.OwnerId);
+                Assert.Equal(planType ?? TrainingPlanTypeEnum.NotSet, plan.TrainingPlanType);
+                Assert.Equal(noteId, plan.PersonalNoteId);
+                Assert.Equal(messageId, plan.AttachedMessageId);
+                Assert.Equal(scheduleIds, plan.TrainingScheduleIds);
+                Assert.Equal(phaseIds, plan.TrainingPhaseIds);
+                Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
+                Assert.Equal(focusIds, plan.MuscleFocusIds);
+                Assert.Equal(hashtagIds, plan.Hashtags);
+                Assert.Equal(childPlanIds, plan.ChildTrainingPlanIds);
+            }
+
             Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
 
             Assert.Equal((float)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Average(x => x?.Workouts.Count ?? 0)

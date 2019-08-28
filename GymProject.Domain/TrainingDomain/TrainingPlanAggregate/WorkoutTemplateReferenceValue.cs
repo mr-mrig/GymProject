@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
 
 
-    public class WorkoutTemplateReferenceValue : ValueObject
+    public class WorkoutTemplateReferenceValue : ValueObject, ICloneable
     {
 
 
@@ -86,9 +86,19 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="workingSets">The Working Sets to be added</param>
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
+        /// <exception cref="ArgumentException">If trying to add duplicate Working Sets to the Training Week</exception>
         public WorkoutTemplateReferenceValue AddWorkingSets(IEnumerable<WorkingSetTemplate> workingSets)
+        {
+            if (workingSets.ContainsDuplicates())
+                throw new ArgumentException("Trying to add duplicate Working Sets to the Training Week", nameof(workingSets));
 
-            => BuildLinkToWorkout(ProgressiveNumber, _workingSets.Union(workingSets));
+            // Check for already added WSs
+            if (workingSets.Any(x => _workingSets.Contains(x)))
+                throw new ArgumentException("Trying to add duplicate Working Sets to the Training Week", nameof(workingSets));
+
+            return BuildLinkToWorkout(ProgressiveNumber, _workingSets.Union(workingSets));
+        }
+
 
 
         /// <summary>
@@ -97,6 +107,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workingSets">The Working Sets to be removed</param>
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
         /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
+        /// <exception cref="ArgumentException">If at least one of the Working Sets couldn't be found</exception>
         public WorkoutTemplateReferenceValue RemoveWorkingSets(IEnumerable<WorkingSetTemplate> workingSets)
         {
             if (workingSets?.DefaultIfEmpty() == default)
@@ -105,6 +116,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             // Transient entities
             if (workingSets.Any(x => x.IsTransient()) || _workingSets.Any(x => x.IsTransient()))
                 throw new InvalidOperationException($"Cannot remove transient Working Sets");
+
+            IEnumerable<WorkingSetTemplate> newWorkingSets = _workingSets.Except(workingSets);
+
+            // Missing WS
+            if (newWorkingSets.Count() != _workingSets.Count - workingSets.Count())
+                throw new ArgumentException($"Working Set couldn't be found");
 
             return BuildLinkToWorkout(ProgressiveNumber, _workingSets.Except(workingSets));
         }
@@ -149,5 +166,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             yield return ProgressiveNumber;
             yield return WorkingSets;
         }
+
+        public object Clone()
+
+            => BuildLinkToWorkout(ProgressiveNumber, WorkingSets);
     }
 }

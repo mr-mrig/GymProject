@@ -630,10 +630,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingWeek">The input Training Week</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         /// <exception cref="ArgumentNullException">If null input</exception>
+        /// <exception cref="ArgumentException">If already present Training Week</exception>
         public void PlanTrainingWeek(TrainingWeekTemplate trainingWeek)
         {
             if (trainingWeek == null)
                 throw new ArgumentNullException(nameof(trainingWeek), "Null input when trying to create a new Training Week.");
+
+            if(_trainingWeeks.Contains(trainingWeek))
+                throw new ArgumentException("The Training Week has already been added.", nameof(trainingWeek));
 
             if (trainingWeek.IsFullRestWeek())
                 PlanFullRestWeek(trainingWeek);

@@ -27,7 +27,7 @@ namespace GymProject.Domain.Utils.Extensions
         /// <typeparam name="T">Must be a class, must implement IClonable</typeparam>
         /// <param name="toClone">The input list</param>
         /// <returns>The copy</returns>
-        public static IEnumerable<T> NoDuplicatesClone<T>(this ICollection<T> toClone) where T : class, ICloneable
+        public static IEnumerable<T> NoDuplicatesClone<T>(this IEnumerable<T> toClone) where T : class, ICloneable
         {
             ICollection<T> src = Clone(toClone).ToList();
             ICollection<T> dest = new List<T>();
@@ -41,6 +41,17 @@ namespace GymProject.Domain.Utils.Extensions
 
             return dest;
         }
+
+
+        /// <summary>
+        /// Provide the value copy of the input list by cloning its elements.
+        /// </summary>
+        /// <typeparam name="T">Must be a class, must implement IClonable</typeparam>
+        /// <param name="inputList">The input list</param>
+        /// <returns>The copy</returns>
+        public static bool ContainsDuplicates<T>(this IEnumerable<T> inputList) where T : class
+
+            => inputList.Count() != inputList.Distinct().Count();
 
 
         /// <summary>

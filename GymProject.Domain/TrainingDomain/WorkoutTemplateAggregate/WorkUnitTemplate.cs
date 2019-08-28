@@ -226,25 +226,22 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// Add the Working Set to the Work Unit - copy not reference
         /// </summary>
         /// <param name="toAdd">The WS to be added</param>
+        /// <exception cref="ArgumentException">If Working Set already present</exception>
         public void AddWorkingSet(WorkingSetTemplate toAdd)
         {
             WorkingSetTemplate copy = toAdd.Clone() as WorkingSetTemplate;
 
             if (_workingSets.Contains(copy))
-                return;
+                throw new ArgumentException("Trying to add a duplicate Working Set", nameof(toAdd));
 
             foreach(IdTypeValue techniqueId in _intensityTechniquesIds)
                 copy.AddIntensityTechnique(techniqueId);
 
             _workingSets.Add(copy);
 
-            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
-            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
-
             TrainingVolume = TrainingVolume.AddWorkingSet(copy);
             TrainingDensity = TrainingDensity.AddWorkingSet(copy);
-            //TrainingIntensity.AddWorkingSet(copy);
 
             TestBusinessRules();
         }
@@ -337,19 +334,15 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         {
             WorkingSetTemplate toBeRemoved = FindWorkingSet(progressiveNumber);
 
-            _workingSets.Remove(toBeRemoved);
+            if(_workingSets.Remove(toBeRemoved))
+            {
+                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
+                TrainingVolume = TrainingVolume.RemoveWorkingSet(toBeRemoved);
+                TrainingDensity = TrainingDensity.RemoveWorkingSet(toBeRemoved);
 
-            //TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(_workingSets);
-            //TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(_workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
-
-
-            TrainingVolume = TrainingVolume.RemoveWorkingSet(toBeRemoved);
-            TrainingDensity = TrainingDensity.RemoveWorkingSet(toBeRemoved);
-            //TrainingIntensity.RemoveWorkingSet(toBeRemoved);
-
-            ForceConsecutiveWorkingSetsProgressiveNumbers(progressiveNumber);
-            TestBusinessRules();
+                ForceConsecutiveWorkingSetsProgressiveNumbers(progressiveNumber);
+                TestBusinessRules();
+            }
         }
 
 

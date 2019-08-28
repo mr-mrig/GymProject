@@ -7,7 +7,7 @@ using GymProject.Domain.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using GymProject.Domain.Utils.Extensions;
 using Xunit;
 
 
@@ -257,8 +257,11 @@ namespace GymProject.Domain.Test.Util
                 {
                     TrainingEffortTypeEnum effortType = TrainingEffortTypeEnum.From(RandomFieldGenerator.RandomInt(1, 3));
 
-                    workoutSets.Add(BuildRandomWorkingSet(iwo * iws + 1, iwo, isTransient, effortType));
+                    workoutSets.Add(BuildRandomWorkingSet(strongId * iws + 1, iwo, isTransient, effortType));
                 }
+
+                //if (workoutSets.ContainsDuplicates())
+                //    System.Diagnostics.Debugger.Break();
 
                 workouts.Add(
                     WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)iwo, workoutSets));

@@ -18,7 +18,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <summary>
         /// The feedback comment
         /// </summary>
-        public string Comment{ get; private set; } = string.Empty;
+        public PersonalNoteValue Comment{ get; private set; } = null;
 
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
-        private TrainingScheduleFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, string comment) : base(id)
+        private TrainingScheduleFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
         {
-            Comment = comment;
+            Comment = comment ?? PersonalNoteValue.Write("");
             Rating = rating;
             UserId = authorId;
 
@@ -59,7 +59,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedback ProvideTransientFeedback(IdTypeValue authorId, RatingValue rating, string comment)
+        public static TrainingScheduleFeedback ProvideTransientFeedback(IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
 
             => ProvideFeedback(null, authorId, rating, comment);
 
@@ -71,7 +71,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedback ProvideFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, string comment)
+        public static TrainingScheduleFeedback ProvideFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
 
             => new TrainingScheduleFeedback(id, authorId, rating, comment);
 
@@ -99,7 +99,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="comment">The body of the comment</param>
         public void WriteComment(string comment)
         {
-            Comment = comment;
+            Comment = PersonalNoteValue.Write(comment);
         }
 
         #endregion
@@ -115,6 +115,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         private bool RatingIsMandatory() => Rating != null;
 
 
+        /// <summary>
+        /// The Author is mandatory when providing a Feedback
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool UserIsMandatory() => UserId != null;
+
 
 
         /// <summary>
@@ -125,6 +131,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         {
             if (!RatingIsMandatory())
                 throw new TrainingDomainInvariantViolationException($"Rating is mandatory when providing a Feedback.");
+
+            if (!UserIsMandatory())
+                throw new TrainingDomainInvariantViolationException($"The Author is mandatory when providing a Feedback.");
         }
 
         #endregion

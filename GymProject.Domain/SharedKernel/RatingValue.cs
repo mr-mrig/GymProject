@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,7 +29,9 @@ namespace GymProject.Domain.SharedKernel
 
 
 
-
+        /// <summary>
+        /// The Rating numeric Value
+        /// </summary>
         public float Value { get; private set; }
 
 
@@ -37,11 +40,9 @@ namespace GymProject.Domain.SharedKernel
 
         private RatingValue(float ratingValue)
         {
-            if (ratingValue < MinimumValue || ratingValue > MaximumValue)
-
-                throw new ArgumentException($"Trying to create an invalid Rating object: {ratingValue.ToString()} is not between {MinimumValue.ToString()} and {MaximumValue.ToString()}");
-
             Value = ratingValue;
+
+            TestBusinessRules();
         }
 
         #endregion
@@ -54,6 +55,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="ratingValue">Rating value</param>
         /// <returns>The Rating object</returns>
+        /// <exception cref="ValueObjectInvariantViolationException">If ratingValue out of boundaries</exception>
         public static RatingValue Rate(float ratingValue) => new RatingValue(FormatRating(ratingValue));
 
         #endregion
@@ -83,7 +85,6 @@ namespace GymProject.Domain.SharedKernel
         /// Converts the number to a rating compliant value
         /// </summary>
         /// <param name="value">The input rating value</param>
-        /// <param name="measUnit">The measure unit</param>
         /// <returns>The converted value</returns>
         private static float FormatRating(float value)
         {
@@ -92,6 +93,28 @@ namespace GymProject.Domain.SharedKernel
         }
         #endregion
 
+
+        #region Business Rules Validation
+
+        /// <summary>
+        /// The Rating value must fall inside boundaries
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool RatingInsideBoundaries() => Value >= MinimumValue && Value <= MaximumValue;
+
+
+
+        /// <summary>
+        /// Tests that all the business rules are met and manages invalid states
+        /// </summary>
+        /// <exception cref="ValueObjectInvariantViolationException">Thrown if business rules violation</exception>
+        private void TestBusinessRules()
+        {
+            if (!RatingInsideBoundaries())
+                throw new ValueObjectInvariantViolationException($"The Rating value must fall inside boundaries: {MinimumValue.ToString()} <= Rating <= {MaximumValue.ToString()}");
+        }
+
+        #endregion
 
 
         protected override IEnumerable<object> GetAtomicValues()

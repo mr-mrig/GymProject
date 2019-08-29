@@ -54,6 +54,17 @@ namespace GymProject.Domain.Utils.Extensions
             => inputList.Count() != inputList.Distinct().Count();
 
 
+        ///// <summary>
+        ///// Provide the value copy of the input list by cloning its elements.
+        ///// </summary>
+        ///// <typeparam name="T">Must be a class, must implement IClonable</typeparam>
+        ///// <param name="inputList">The input list</param>
+        ///// <returns>The copy</returns>
+        //public static bool ContainsDuplicates<T>(this IEnumerable<T> inputList, Func<T, T> selector) where T : class
+
+        //    => inputList.GroupBy(selector).Any(g => g.Count() > 1);
+
+
         /// <summary>
         /// Provide the value copy of the input list by cloning its elements.
         /// Null values are omitted.

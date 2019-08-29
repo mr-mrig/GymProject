@@ -27,6 +27,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         public IdTypeValue TrainingPlanId { get; private set; } = null;
 
 
+
         private ICollection<TrainingScheduleFeedback> _feedbacks = null;
 
         /// <summary>
@@ -87,183 +88,34 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         #region Public Methods
 
         /// <summary>
-        /// Change the name of the WO
+        /// Check if the Schedule has been completed or is it still ongoing.
         /// </summary>
-        /// <param name="newName">The new name</param>
-        public void GiveName(string newName)
+        /// <returns>True if the training plan has been completed</returns>
+        public bool IsCompleted()
+
+            => ScheduledPeriod.IsRightBounded() && ScheduledPeriod.End <= DateTime.Now;
+
+
+        /// <summary>
+        /// Reschedule the Training Plan to the day specified
+        /// </summary>
+        /// <param name="firstDate">The day the Training Schedule starts</param>
+        public void Reschedule(DateTime firstDate)
         {
-            Name = newName;
-        }
-
-
-        /// <summary>
-        /// Assign a specific day to the WO
-        /// </summary>
-        /// <param name="newDay">The specific day to schedule the workout</param>
-        public void ScheduleToSpecificDay(WeekdayEnum newDay)
-        {
-            SpecificWeekday = newDay ?? WeekdayEnum.Generic;
-        }
-
-
-        /// <summary>
-        /// Mark the WO as 'not scheduled to specific day'
-        /// </summary>
-        public void UnscheduleSpecificDay()
-        {
-            ScheduleToSpecificDay(WeekdayEnum.Generic);
-        }
-
-
-
-        /// <summary>
-        /// Find the Working Unit with the progressive number specified - DEFAULT if not found
-        /// </summary>
-        /// <param name="workingSetPnum">The progressive number to be found</param>
-        /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
-        /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
-        public WorkUnitTemplate CloneWorkUnit(uint workingSetPnum)
-
-            => FindWorkUnitOrDefault(workingSetPnum)?.Clone() as WorkUnitTemplate;
-
-
-        /// <summary>
-        /// Get a copy of the Working Set with the ID specified - DEFAULT if not found
-        /// </summary>
-        /// <param name="workUnitPnum">The WU Progressive Number to be found</param>
-        /// <param name="workingSetPnum">The WS Progressive Number to be found</param>
-        /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
-        /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
-        public WorkingSetTemplate CloneWorkingSet(uint workUnitPnum, uint workingSetPnum)
-
-            => CloneWorkUnit(workUnitPnum)?.CloneWorkingSet(workingSetPnum) as WorkingSetTemplate;
-
-
-        /// <summary>
-        /// Add the Working Unit (as a copy) to the Workout - if not already present
-        /// </summary>
-        /// <param name="toAdd">The Work Unit to be added</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        /// <exception cref="ArgumentException">If Work Unit already present</exception>
-        public void AddWorkUnit(WorkUnitTemplate toAdd)
-        {
-            if (_workUnits.Contains(toAdd))
-                throw new ArgumentException("Trying to add a duplicate Work Unit", nameof(toAdd));
-
-            _workUnits.Add(toAdd.Clone() as WorkUnitTemplate);
-
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-            TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
-            TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
-
+            ScheduledPeriod = ScheduledPeriod.RescheduleStart(firstDate);
             TestBusinessRules();
         }
 
 
         /// <summary>
-        /// Add the Working Unit to the Workout
+        /// Mark the Training Schedule as Completed.
         /// </summary>
-        /// <param name="excerciseId">The ID of the excercise of the WU</param>
-        /// <param name="ownerNoteId">The ID of the WU Owner's note</param>
-        /// <param name="workingSets">The WS which the WU is made up of</param>
-        /// <param name="workUnitIntensityTechniquesIds">The IDs of the WS intensity techniques</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void AddTransientWorkUnit(IdTypeValue excerciseId, IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniquesIds = null, IdTypeValue ownerNoteId = null)
+        /// <param name="lastDay">The the day the Training Schedule ends</param>
+        public void Complete(DateTime lastDay)
         {
-            WorkUnitTemplate toAdd = WorkUnitTemplate.PlanTransientWorkUnit(
-                BuildWorkUnitProgressiveNumber(),
-                excerciseId,
-                workingSets,
-                workUnitIntensityTechniquesIds,
-                ownerNoteId);
-
-            _workUnits.Add(toAdd);
-
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-            TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
-            TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
-
+            ScheduledPeriod = ScheduledPeriod.RescheduleEnd(lastDay);
             TestBusinessRules();
         }
-
-
-        /// <summary>
-        /// Remove the Working Unit from the Workout
-        /// </summary>
-        /// <param name="toRemove">The WU to be removed</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        /// <exception cref="ArgumentException">If the Work Unit could not be found</exception>
-        /// <returns>True if remove successful</returns>
-        public void RemoveWorkUnit(WorkUnitTemplate toRemove)
-        {
-            if (toRemove == null)
-                return;
-
-            RemoveWorkUnit(toRemove.ProgressiveNumber);
-        }
-
-
-
-        /// <summary>
-        /// Remove the Working Unit from the Workout
-        /// </summary>
-        /// <param name="toRemovePnum">The Progressive Number of the WU to be removed</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        /// <exception cref="InvalidOperationException">If no Work Units or more than one with the specified Progressive Number</exception>
-        public void RemoveWorkUnit(uint toRemovePnum)
-        {
-            WorkUnitTemplate toBeRemoved = FindWorkUnit(toRemovePnum);
-
-            bool removed = _workUnits.Remove(toBeRemoved);
-
-            if (removed)
-            {
-                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-                TrainingVolume = TrainingVolume.RemoveWorkingSets(toBeRemoved.WorkingSets);
-                TrainingDensity = TrainingDensity.RemoveWorkingSets(toBeRemoved.WorkingSets);
-
-                ForceConsecutiveWorkUnitProgressiveNumbers(toRemovePnum);
-                TestBusinessRules();
-            }
-        }
-
-
-
-        /// <summary>
-        /// Get a copy of the WSs of all the Work Units belonging to the Workout
-        /// </summary>
-        /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
-
-             => _workUnits.SelectMany(x => x.WorkingSets).Clone();
-
-
-        /// <summary>
-        /// Get the main effort type as the effort of most of the WSs of the WU 
-        /// </summary>
-        /// <returns>The training effort type</returns>
-        public TrainingEffortTypeEnum GetMainEffortType()
-
-            => _workUnits.Where(x => x != null).Count() == 0 ? TrainingEffortTypeEnum.IntensityPerc
-                : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
-
-
-        [Obsolete("To be removed: this should be a presentation/application logic task", true)]
-        /// <summary>
-        /// Get the Intensity parameters computed over the specified excercises
-        /// </summary>
-        /// <param name="excerciseIdsList">The list of the IDs of the excercises</param>
-        /// <returns>The training Intensity Parameters for the specified excercises</returns>
-        public TrainingIntensityParametersValue GetIntensityByExcercises(IEnumerable<IdTypeValue> excerciseIdsList)
-
-            => TrainingIntensityParametersValue.ComputeFromWorkingSets(
-                _workUnits.Where(x => excerciseIdsList.Contains(x.ExcerciseId)).SelectMany(x => x.WorkingSets));
-
 
         #endregion
 
@@ -271,146 +123,167 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         #region Feebacks Methods
 
         /// <summary>
-        /// Rate the Training Schedule
+        /// Chnages a Feedback which has already been provided.
         /// </summary>
-        /// <param name="rating">The rating value</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void RateTrainingSchedule(IdTypeValue authorId, RatingValue rating)
+        /// <param name="userId">The ID of the author of the Feedback</param>
+        /// <param name="newRating">The Feedback rating</param>
+        /// <param name="newComment">The Feedback comment body</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If business rules not met</exception>
+        /// <exception cref="ArgumentNullException">If Owner ID is null</exception>
+        /// <exception cref="InvalidOperationException">If the Feedback with the specified User couldn't be found</exception>
+        public void ChangeFeedback(IdTypeValue userId, RatingValue newRating, string newComment)
         {
-            Rating = rating;
+            if (userId == null)
+                throw new ArgumentNullException(nameof(userId), $"Trying to change the Feedback of a NULL User.");
+
+            TrainingScheduleFeedback feedback = FindUserFeedback(userId);
+
+            feedback?.RateTrainingSchedule(newRating);
+            feedback?.WriteComment(newComment);
+
+            TestBusinessRules();
         }
 
 
         /// <summary>
-        /// Attach a comment
+        /// Chnages a Feedback which has already been provided.
         /// </summary>
-        /// <param name="comment">The body of the comment</param>
-        public void WriteComment(IdTypeValue authorId, string comment)
+        /// <param name="feedbackId">The ID of the Feedback to be changed</param>
+        /// <param name="newRating">The Feedback rating</param>
+        /// <param name="newComment">The Feedback comment body</param>
+        /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
+        /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void ChangeFeedback(TrainingScheduleFeedback updatedFeedback)
         {
-            Comment = comment;
+            if (updatedFeedback == null)
+                throw new ArgumentNullException(nameof(updatedFeedback), $"Trying to change a NULL Feedback.");
+
+            TrainingScheduleFeedback toChange = FindFeedback(updatedFeedback);
+
+            toChange?.RateTrainingSchedule(updatedFeedback.Rating);
+            toChange?.WriteComment(updatedFeedback.Comment.Body);
+
+            TestBusinessRules();
         }
 
 
-        public void ProvideFeedback()
+        /// <summary>
+        /// Provide a Feedback to the Training Schedule
+        /// </summary>
+        /// <param name="feedback">The Feedback to be added</param>
+        /// <exception cref="ArgumentNullException">If trying to add a NULL Feedback</exception>
+        /// <exception cref="ArgumentException">If the input Feedback is already present in the list</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void ProvideFeedback(TrainingScheduleFeedback feedback)
         {
+            if(feedback == null)
+                throw new ArgumentNullException(nameof(feedback), $"Trying to add a NULL Feedback.");
 
+            if (_feedbacks.Contains(feedback))
+                throw new ArgumentException($"The Training Schedule Feedback (Id = {feedback.Id.ToString()}) is already present in the list", nameof(feedback));
+
+            _feedbacks.Add(feedback.Clone() as TrainingScheduleFeedback);
+
+            TestBusinessRules();
         }
 
 
-        public void RemoveFeedback()
+        /// <summary>
+        /// Remove the Feedback from the Training Schedule ones
+        /// </summary>
+        /// <param name="feedback">The Feedback to be added</param>
+        /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
+        /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void RemoveFeedback(TrainingScheduleFeedback feedback)
         {
+            if(feedback == null)
+                throw new ArgumentNullException(nameof(feedback), $"Trying to remove a NULL Feedback.");
 
+            TrainingScheduleFeedback toRemove = FindFeedback(feedback);
+
+            if (_feedbacks.Remove(toRemove))
+                TestBusinessRules();
         }
+
+
+        /// <summary>
+        /// Remove the Feedback from the Training Schedule ones
+        /// </summary>
+        /// <param name="userId">The ID of the author of the Feedback to be removed</param>
+        /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
+        /// <exception cref="InvalidOperationException">If the input Feedback is already present in the list</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void RemoveFeedback(IdTypeValue userId)
+        {
+            if (userId == null)
+                throw new ArgumentNullException(nameof(userId), $"Trying to remove a Feedback of a NULL Author.");
+
+            //TrainingScheduleFeedback toRemove = FindUserFeedbackOrDefault(userId) ??
+            //    throw new ArgumentException($"The Training Schedule Feedback (UserId = {userId.ToString()}) is not present in the list.", nameof(userId));
+
+            TrainingScheduleFeedback toRemove = FindUserFeedback(userId);
+
+            if (_feedbacks.Remove(toRemove))
+                TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Get a copy of the Feedback provided by the specified user
+        /// </summary>
+        /// <param name="authorId">The ID of the author of the Feedback</param>
+        /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
+        /// <returns>A copy of the TrainingScheduleFeedback object/returns>
+        public TrainingScheduleFeedback CloneFeedback(IdTypeValue authorId)
+
+            => _feedbacks.Single(x => x.UserId == authorId)?.Clone() as TrainingScheduleFeedback;
 
         #endregion
 
 
-
         #region Private Methods
 
-
         /// <summary>
-        /// Build the next valid progressive number
-        /// To be used before adding the WS to the list
+        /// Find the Feedback provided by the specified user
         /// </summary>
-        /// <returns>The WS Progressive Number</returns>
-        private uint BuildWorkUnitProgressiveNumber()
+        /// <param name="authorId">The ID of the author of the Feedback</param>
+        /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
+        /// <returns>The TrainingScheduleFeedback object/returns>
+        private TrainingScheduleFeedback FindUserFeedback(IdTypeValue authorId)
 
-            => (uint)_workUnits.Count();
-
-
-        /// <summary>
-        /// Sort the Work Unit list wrt the WU progressive numbers
-        /// </summary>
-        /// <param name="wsIn">The input WU list</param>
-        /// <returns>The sorted list</returns>
-        private IEnumerable<WorkUnitTemplate> SortWorkUnitByProgressiveNumber(IEnumerable<WorkUnitTemplate> wsIn)
-
-            => wsIn.OrderBy(x => x.ProgressiveNumber);
+            => _feedbacks.Single(x => x.UserId == authorId);
 
 
         /// <summary>
-        /// Force the WUs to have consecutive progressive numbers
-        /// It works by assuming that the WSs are added in a sorted fashion.
+        /// Find the Feedback provided by the specified user, or NULL if not found
         /// </summary>
-        private void ForceConsecutiveWorkUnitProgressiveNumbers()
+        /// <param name="authorId">The ID of the author of the Feedback</param>
+        /// <returns>The TrainingScheduleFeedback object or NULL/returns>
+        private TrainingScheduleFeedback FindUserFeedbackOrDefault(IdTypeValue authorId)
+
+            => _feedbacks.SingleOrDefault(x => x.UserId == authorId);
+
+
+        /// <summary>
+        /// Find the Feedback searching for the ID, if possible, or for the Author ID
+        /// </summary>
+        /// <param name="feedback">The Feedback to be fetched</param>
+        /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
+        /// <returns>The TrainingScheduleFeedback object/returns>
+        private TrainingScheduleFeedback FindFeedback(TrainingScheduleFeedback feedback)
         {
-            _workUnits = SortWorkUnitByProgressiveNumber(_workUnits).ToList();
+            if (feedback.IsTransient())
 
-            // Just overwrite all the progressive numbers
-            for (int iws = 0; iws < _workUnits.Count(); iws++)
-            {
-                WorkUnitTemplate ws = _workUnits[iws];
-                ws.MoveToNewProgressiveNumber((uint)iws);
-            }
+                // Find by Author ID
+                return FindUserFeedback(feedback.UserId);
+
+            else
+                // Find by ID
+                return _feedbacks.Single(x => x == feedback);
         }
 
-
-        /// <summary>
-        /// Force the WUs to have consecutive progressive numbers
-        /// This algorithm is more efficient as it ignores the elments before pnum, provided that they are already sorted
-        /// </summary>
-        /// <param name="fromPnum">The Progressive number from which the order is not respected</param>
-        private void ForceConsecutiveWorkUnitProgressiveNumbers(uint fromPnum)
-        {
-            //_workUnits = SortWorkUnitByProgressiveNumber(_workUnits).ToList();
-
-            // Just overwrite all the progressive numbers
-            for (int iws = (int)fromPnum; iws < _workUnits.Count(); iws++)
-            {
-                WorkUnitTemplate ws = _workUnits[iws];
-                ws.MoveToNewProgressiveNumber((uint)iws);
-            }
-        }
-
-        /// <summary>
-        /// Find the Working Unit with the progressive number specified - DEFAULT if not found
-        /// </summary>
-        /// <param name="workUnitPnum">The progressive number to be found</param>
-        /// <exception cref="InvalidOperationException">If more Work Units with the specified Progressive Number</exception>
-        /// <returns>The WorkingSetTemplate object or DEFAULT if not found/returns>
-        private WorkUnitTemplate FindWorkUnitOrDefault(uint workUnitPnum)
-
-            => _workUnits.SingleOrDefault(x => x.ProgressiveNumber == workUnitPnum);
-
-
-        /// <summary>
-        /// Find the Working Unit with the progressive number specified
-        /// </summary>
-        /// <param name="workUnitPnum">The progressive number to be found</param>
-        /// <exception cref="InvalidOperationException">If no Work Units or more than one with the specified Progressive Number</exception>
-        /// <returns>The WorkingSetTemplate object/returns>
-        private WorkUnitTemplate FindWorkUnit(uint workUnitPnum)
-
-            => _workUnits.SingleOrDefault(x => x.ProgressiveNumber == workUnitPnum);
-
-
-        /// <summary>
-        /// Find the Working Set according to the Progressive Numbers - DEFAULT if not found
-        /// </summary>
-        /// <param name="parentWorkUnitPnum">The Progressive Number of the WU which the WS belongs to</param>
-        /// <param name="workingSetPnum">The Progressive Number of the Working Set to be found</param>
-        /// <exception cref="InvalidOperationException">If more Work Units with the specified Progressive Number</exception>
-        /// <returns>The WorkingSetTemplate object or DEFAULT if not found/returns>
-        private WorkingSetTemplate FindWorkingSetOrDefault(uint parentWorkUnitPnum, uint workingSetPnum)
-        {
-            WorkUnitTemplate parentWorkUnit = FindWorkUnitOrDefault(parentWorkUnitPnum);
-            return parentWorkUnit?.WorkingSets.SingleOrDefault(x => x.ProgressiveNumber == workingSetPnum);
-        }
-
-
-        /// <summary>
-        /// Find the Working Set according to the Progressive Numbers
-        /// </summary>
-        /// <param name="parentWorkUnitPnum">The Progressive Number of the WU which the WS belongs to</param>
-        /// <param name="workingSetPnum">The Progressive Number of the Working Set to be found</param>
-        /// <exception cref="InvalidOperationException">If no WOrk Unit or more than one with the specified Progressive Number</exception>
-        /// <returns>The WorkingSetTemplate object/returns>
-        private WorkingSetTemplate FindWorkingSet(uint parentWorkUnitPnum, uint workingSetPnum)
-        {
-            WorkUnitTemplate parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
-            return parentWorkUnit.WorkingSets.Single(x => x.ProgressiveNumber == workingSetPnum);
-        }
 
         #endregion
 
@@ -421,14 +294,35 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// The Schedule must refer to a non-NULL Training Plan.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool NonNullTrainingPlan() => _workUnits.All(x => x != null);
+        private bool NonNullTrainingPlan() => TrainingPlanId != null;
+
+
+        /// <summary>
+        /// The Training Schedule must have no NULL Feedbacks.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool NonNullFeedbacks() => _feedbacks.All(x => x != null);
+
+
+        /// <summary>
+        /// The Training Schedule cannot have Feebacks with duplicate IDs.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool NoDuplicateFeedbacks() => !_feedbacks.ContainsDuplicates();
+
+
+        /// <summary>
+        /// The Schedule must refer to a non-NULL Training Plan.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool SchedulingStartDateIsValid() => ScheduledPeriod.IsLeftBounded();
 
 
         /// <summary>
         /// A single User can provide one Training Scheule Feedback only.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool OneUserProvidesOneFeedbackOnly() => _workUnits.All(x => x != null);
+        private bool OneUserProvidesOnlyOneFeedback() => _feedbacks.GroupBy(x => x.UserId).All(g => g.Count() == 1);
 
 
 
@@ -442,7 +336,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
             if (!NonNullTrainingPlan())
                 throw new TrainingDomainInvariantViolationException($"The Schedule must refer to a non-NULL Training Plan.");
 
-            if (!OneUserProvidesOneFeedbackOnly())
+            if (!NonNullFeedbacks())
+                throw new TrainingDomainInvariantViolationException($"The Training Schedule must have no NULL Feedbacks.");
+
+            if (!NoDuplicateFeedbacks())
+                throw new TrainingDomainInvariantViolationException($"The Training Schedule cannot have Feebacks with duplicate IDs.");
+
+            if (!SchedulingStartDateIsValid())
+                throw new TrainingDomainInvariantViolationException($"The Training Plan must have a valid start date.");
+
+            if (!OneUserProvidesOnlyOneFeedback())
                 throw new TrainingDomainInvariantViolationException($"A single User can provide one Training Scheule Feedback only.");
         }
 

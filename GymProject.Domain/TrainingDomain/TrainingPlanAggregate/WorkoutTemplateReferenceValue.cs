@@ -42,7 +42,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private WorkoutTemplateReferenceValue(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplate> workingSets)
         {
             ProgressiveNumber = workoutProgressiveNumber;
-            _workingSets = workingSets?.Clone()?.ToList();
+            _workingSets = workingSets?.Clone()?.ToList() ?? new List<WorkingSetTemplate>();
 
             TestBusinessRules();
         }

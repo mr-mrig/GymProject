@@ -9,7 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using GymProject.Domain.Utils.Extensions;
 using Xunit;
-
+using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
+using GymProject.Domain.Test.UnitTest;
 
 namespace GymProject.Domain.Test.Util
 {
@@ -38,7 +39,7 @@ namespace GymProject.Domain.Test.Util
         {
             Assert.InRange(convertedValue, srcValue * (1 - tolerance), srcValue * (1 + tolerance));
 
-            if(srcUnitMeasId > 0 && convertedUnitMeasId > 0)
+            if (srcUnitMeasId > 0 && convertedUnitMeasId > 0)
                 Assert.Equal(srcUnitMeasId, convertedUnitMeasId);
         }
 
@@ -215,7 +216,7 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, bool isTransient, 
+        internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, bool isTransient,
             int nWorkoutsMin = 3, int nWorkoutsMax = 9, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
         {
             float workoutWithNoWorkingSetsProbability = 0.05f;
@@ -277,7 +278,7 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static WorkoutTemplate BuildRandomWorkout(long id, bool isTransient, 
+        internal static WorkoutTemplate BuildRandomWorkout(long id, bool isTransient,
             int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
@@ -298,7 +299,7 @@ namespace GymProject.Domain.Test.Util
             }
 
             // Specific Day
-            if(specificDay == null)
+            if (specificDay == null)
             {
                 int? weekDayId = RandomFieldGenerator.RandomIntNullable(WeekdayEnum.Monday.Id, WeekdayEnum.AllTheWeek, 0.1f);
 
@@ -308,7 +309,7 @@ namespace GymProject.Domain.Test.Util
                     specificDay = WeekdayEnum.From(weekDayId.Value);
             }
 
-            if(isTransient)
+            if (isTransient)
 
                 return WorkoutTemplate.PlanTransientWorkout(
                     workUnits: workUnits,
@@ -326,7 +327,7 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, bool isTransient, 
+        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, bool isTransient,
             int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
             int ownerNoteIdMin = 10, int ownerNoteIdMax = 500)
         {
@@ -336,7 +337,7 @@ namespace GymProject.Domain.Test.Util
             int wuIntTechniquesMin = 0, wuIntTechniquesMax = 3;
             int intTechniqueIdMin = 1, intTechniqueIdMax = 1000;
 
-  
+
             //int wsIdOffset = 100;       // Used to ensure no ID collisions among WSs of different WUs
 
             // Build randomic Effort
@@ -468,6 +469,78 @@ namespace GymProject.Domain.Test.Util
                     techniquesId
                 );
         }
+
+
+        internal static TrainingScheduleFeedback BuildRandomFeedback(long id, bool isTransient, IdTypeValue userId = null,
+            RatingValue rating = null, PersonalNoteValue commentBody = null, IEnumerable<IdTypeValue> userIdsToExclude = null)
+        {
+            // Used to avoid collision -> ensure the Business Rule is always met
+            IEnumerable<int> userIdNumbersToExclude = userIdsToExclude?.Select(x => (int)(x?.Id ?? 0)) ?? new List<int>();
+
+            userId = userId ?? IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 99999, userIdNumbersToExclude));
+            rating = rating ?? RatingValue.Rate(RandomFieldGenerator.RandomFloat(0, 5));
+            commentBody = commentBody ?? PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
+
+            return isTransient 
+                ? TrainingScheduleFeedback.ProvideTransientFeedback(userId, rating, commentBody)
+                : TrainingScheduleFeedback.ProvideFeedback(IdTypeValue.Create(id), userId, rating, commentBody);
+        }
+
+
+        internal static TrainingSchedule BuildRandomSchedule(long id, bool isTransient, bool checkAsserts = true)
+        {
+            TrainingSchedule result;
+            int feedbacksMin = 0, feedbacksMax = 5;
+
+            float rightUnboundedScheduleProbability = 0.5f;
+
+            int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
+
+            List<TrainingScheduleFeedback> initialFeedbacks = new List<TrainingScheduleFeedback>();
+
+            // Init Feedbacks
+            if (RandomFieldGenerator.RollEventWithProbability(0.1f))
+                initialFeedbacks = null;
+            else
+            {
+                for (int ifeed = 0; ifeed < feedbacksNumber; ifeed++)
+                    initialFeedbacks.Add(BuildRandomFeedback(ifeed + 1, isTransient));
+            }
+
+            // Create the Schedule
+            IdTypeValue planId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 1000000));
+
+            DateTime startDate = RandomFieldGenerator.RandomDate(1000);
+
+            DateRangeValue period = RandomFieldGenerator.RollEventWithProbability(rightUnboundedScheduleProbability)
+                ? DateRangeValue.RangeStartingFrom(startDate)
+                : DateRangeValue.RangeBetween(startDate, startDate.AddDays(RandomFieldGenerator.RandomInt(14, 100)));
+                       
+            if (isTransient)
+                result = TrainingSchedule.ScheduleTrainingPlanTransient(planId, period, initialFeedbacks);
+            else
+                result = TrainingSchedule.ScheduleTrainingPlan(IdTypeValue.Create(id), planId, period, initialFeedbacks);
+
+            initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedback>();
+
+            if (checkAsserts)
+            {
+                Assert.Equal(period, result.ScheduledPeriod);
+                Assert.Equal(planId, result.TrainingPlanId);
+
+                if(!isTransient)
+                    Assert.Equal(IdTypeValue.Create(id), result.Id);
+
+                TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, result.Feedbacks);
+
+                TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, 
+                    result.Feedbacks.Select(x => result.CloneFeedback(x.UserId)));
+            }
+
+
+            return result;
+        }
+
 
     }
 }

@@ -133,33 +133,79 @@
 //            //IdTypeValue id2 = IdTypeValue.Create(2);
 //            //IdTypeValue idRes = id1 + id2;
 
-//            IList<IdTypeValue> intTechniquesintTechniques = new List<IdTypeValue>
-//            {
-//                IdTypeValue.Create(1), IdTypeValue.Create(2),
-//            };
+//            //IList<IdTypeValue> intTechniquesintTechniques = new List<IdTypeValue>
+//            //{
+//            //    IdTypeValue.Create(1), IdTypeValue.Create(2),
+//            //};
 
-//            WorkoutTemplate wo = WorkoutTemplate.PlanWorkout(IdTypeValue.Create(22), null, "WO");
+//            //WorkoutTemplate wo = WorkoutTemplate.PlanWorkout(IdTypeValue.Create(22), null, "WO");
 
-//            WorkUnitTemplate wu = WorkUnitTemplate.PlanWorkUnit(IdTypeValue.Create(22), 0, IdTypeValue.Create(2345), 
-//                new List<WorkingSetTemplate>() { WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(12), 0, WSRepetitionValue.TrackRepetitionSerie(22)), },
-//                intTechniquesintTechniques);
+//            //WorkUnitTemplate wu = WorkUnitTemplate.PlanWorkUnit(IdTypeValue.Create(22), 0, IdTypeValue.Create(2345),
+//            //    new List<WorkingSetTemplate>() { WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(12), 0, WSRepetitionValue.TrackRepetitionSerie(22)), },
+//            //    intTechniquesintTechniques);
 
-//            wo.AddWorkUnit(wu);
+//            //wo.AddWorkUnit(wu);
 
-//            //WorkingSetTemplate ws = WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(88), 0, WSRepetitionValue.TrackRepetitionSerie(22));
+//            ////WorkingSetTemplate ws = WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(88), 0, WSRepetitionValue.TrackRepetitionSerie(22));
+
+//            ////// Invalid domain detected -> wrong progn
+//            ////Assert.Throws<TrainingDomainInvariantViolationException>(() => wo.AddWorkingSet(0, ws));
+
+//            //WorkingSetTemplate ws = WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(5701), 10, WSRepetitionValue.TrackRepetitionSerie(22));
 
 //            //// Invalid domain detected -> wrong progn
 //            //Assert.Throws<TrainingDomainInvariantViolationException>(() => wo.AddWorkingSet(0, ws));
 
-//            WorkingSetTemplate ws = WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(5701), 10, WSRepetitionValue.TrackRepetitionSerie(22));
+//            //ws = WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(88), 1, WSRepetitionValue.TrackRepetitionSerie(22));
 
-//            // Invalid domain detected -> wrong progn
-//            Assert.Throws<TrainingDomainInvariantViolationException>(() => wo.AddWorkingSet(0, ws));
+//            //// Invalid domain detected -> invalid int technique
+//            //Assert.Throws<TrainingDomainInvariantViolationException>(() => wo.AddWorkingSet(0, ws));
 
-//            ws = WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(88), 1, WSRepetitionValue.TrackRepetitionSerie(22));
 
-//            // Invalid domain detected -> invalid int technique
-//            Assert.Throws<TrainingDomainInvariantViolationException>(() => wo.AddWorkingSet(0, ws));
+//            List<TrainingWeekTemplate> weeks = new List<TrainingWeekTemplate>()
+//            {
+//                TrainingWeekTemplate.PlanTransientTrainingWeek(0),
+//                TrainingWeekTemplate.PlanTransientTrainingWeek(1),
+//                TrainingWeekTemplate.PlanTransientTrainingWeek(2),
+//            };
+
+//            TrainingPlan plan = TrainingPlan.CreateTrainingPlan(IdTypeValue.Create(1), "", false, false, IdTypeValue.Create(2),trainingWeeks: weeks);
+
+//            Assert.Equal(3, plan.TrainingWeeks.Count);
+
+//            weeks.Add(TrainingWeekTemplate.PlanTransientTrainingWeek(3));
+//            weeks.Add(TrainingWeekTemplate.PlanTransientTrainingWeek(3));
+//            weeks.Add(TrainingWeekTemplate.PlanTransientTrainingWeek(3));
+
+//            Assert.Equal(3, plan.TrainingWeeks.Count);
+
+//            List<WorkoutTemplateReferenceValue> workouts = new List<WorkoutTemplateReferenceValue>()
+//            {
+//                WorkoutTemplateReferenceValue.BuildLinkToWorkout(0, null),
+//                WorkoutTemplateReferenceValue.BuildLinkToWorkout(1, null),
+//            };
+
+//            List<WorkingSetTemplate> wss = new List<WorkingSetTemplate>()
+//            {
+//                WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(1), 0, WSRepetitionValue.TrackRepetitionSerie(10)),
+//                WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(2), 1, WSRepetitionValue.TrackRepetitionSerie(10)),
+//                WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(3), 2, WSRepetitionValue.TrackRepetitionSerie(10)),
+//                WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(4), 3, WSRepetitionValue.TrackRepetitionSerie(10)),
+//            };
+
+//            plan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Overreach, workouts);
+
+//            plan.AddWorkingSets((uint)(plan.TrainingWeeks.Count() - 1), 0, wss);
+//            Assert.Equal(4, plan.CloneAllWorkingSets().Count());
+
+//            wss.Add(WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(1), 0, WSRepetitionValue.TrackRepetitionSerie(10)));
+//            wss.Add(WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(1), 0, WSRepetitionValue.TrackRepetitionSerie(10)));
+//            wss.Add(WorkingSetTemplate.PlanWorkingSet(IdTypeValue.Create(1), 0, WSRepetitionValue.TrackRepetitionSerie(10)));
+
+//            Assert.Equal(4, plan.CloneAllWorkingSets().Count());
+
+
+
 //        }
 
 

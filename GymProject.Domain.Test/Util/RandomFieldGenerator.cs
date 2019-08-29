@@ -193,7 +193,7 @@ namespace GymProject.Domain.Test.Util
 
 
         /// <summary>
-        /// Generate a pseudo-random double (incapsuled in a string) in the range specifed.
+        /// Generate a pseudo-random double  in the range specifed - lower boundary included, higher excluded.
         /// </summary>
         /// <param name="from">Range lower bound</param>
         /// <param name="to">Range upper bound</param>
@@ -205,7 +205,7 @@ namespace GymProject.Domain.Test.Util
 
 
         /// <summary>
-        /// Generate a pseudo-random double (incapsuled in a string) in the range specifed.
+        /// Generate a pseudo-random float in the range specifed - lower boundary included, higher excluded.
         /// </summary>
         /// <param name="from">Range lower bound</param>
         /// <param name="to">Range upper bound</param>
@@ -238,6 +238,46 @@ namespace GymProject.Domain.Test.Util
         public static bool RollEventWithProbability(double probabilityToOccur)
 
             => RandomDouble(0, 1) < probabilityToOccur;
+
+
+        /// <summary>
+        /// Generate a random DateTime in the interval specified
+        /// </summary>
+        /// <param name="fromDate">The lower bound</param>
+        /// <param name="toDate">The upper bound</param>
+        /// <returns>The randomic DateTime</returns>
+        public static DateTime RandomDate(DateTime fromDate, DateTime toDate)
+        {
+            int range = (toDate - fromDate).Days;
+            return fromDate.AddDays(RandomInt(0, range));
+        }
+
+
+        /// <summary>
+        /// Generate a random DateTime in the interval between [centralDate - range/2, centralDate + range/2]
+        /// </summary>
+        /// <param name="daysRange">The timespan where the date will be picked from [days]</param>
+        /// <param name="centralDate">The central date</param>
+        /// <returns>The randomic DateTime</returns>
+        public static DateTime RandomDate(DateTime centralDate, int daysRange)
+        {
+            bool inTheFuture = RollEventWithProbability(0.5f);
+
+            if(inTheFuture)
+                return centralDate.AddDays(RandomInt(0, daysRange / 2));
+            else
+                return centralDate.AddDays(-RandomInt(0, daysRange / 2));
+        }
+
+
+        /// <summary>
+        /// Generate a random DateTime in the interval between [Today - range/2, Today + range/2]
+        /// </summary>
+        /// <param name="daysRange">The timespan where the date will be picked from [days]</param>
+        /// <returns>The randomic DateTime</returns>
+        public static DateTime RandomDate(int daysRange)
+
+            => RandomDate(DateTime.Today, daysRange);
 
 
         /// <summary>

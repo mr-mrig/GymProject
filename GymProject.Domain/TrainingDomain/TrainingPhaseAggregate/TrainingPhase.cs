@@ -20,7 +20,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
 
         ///// <summary>
-        ///// The author of the diet plan
+        ///// The User who created the Phase entry
         ///// </summary>
         //public Owner Owner { get; private set; } = null;
 
@@ -31,15 +31,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
         private TrainingPhase(string name, EntryStatusTypeEnum entryStatus) : base(null)
         {
-            Name = name ?? string.Empty;
-            EntryStatusType = entryStatus;
+            Name = name?.Trim() ?? string.Empty;
+            EntryStatusType = entryStatus ?? EntryStatusTypeEnum.NotSet;
 
-
-            if(string.IsNullOrWhiteSpace(Name))
-                throw new TrainingDomainInvariantViolationException($"Training Phase must have a tag name.");
-
-            if (EntryStatusType == null || EntryStatusType.Equals(EntryStatusTypeEnum.NotSet))
-                throw new TrainingDomainInvariantViolationException($"Cannot create a TrainingPhase object with an invalid entry status");
+            TestBusinessRules();
         }
 
         #endregion
@@ -101,20 +96,52 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// Set the Phase name
         /// </summary>
         /// <param name="newName">The new Phase name</param>
-        public void Rename(string newName) => Name = newName ?? string.Empty;
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is not met</exception>
+        public void Rename(string newName)
+        {
+            Name = newName?.Trim() ?? string.Empty;
+
+            TestBusinessRules();
+        }
 
         #endregion
 
 
-        #region Private Methods
 
-        ///// <summary>
-        ///// Builds the DescriptiveNameValue from the name text
-        ///// </summary>
-        ///// <param name="nameText">The name text</param>
-        ///// <returns>The DescriptiveNameValue object</returns>
-        //private DescriptiveNameValue BuildName(string nameText) => DescriptiveNameValue.Write(nameText, TagMinimumLength, TagMaximumLength);
+
+        #region Business Rules Validation
+
+        /// <summary>
+        /// The Training Phase must have a valid name.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool NameIsMandatory() => !string.IsNullOrWhiteSpace(Name);
+
+
+        /// <summary>
+        /// The Training Phase requires the Entry Status to be set.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool ValidEntryStatus() => EntryStatusType != EntryStatusTypeEnum.NotSet;
+
+
+
+
+        /// <summary>
+        /// Tests that all the business rules are met and manages invalid states
+        /// </summary>
+        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
+        protected override void TestBusinessRules()
+        {
+            if (!NameIsMandatory())
+                throw new TrainingDomainInvariantViolationException($"The Training Phase must have a valid name.");
+
+            if (!ValidEntryStatus())
+                throw new TrainingDomainInvariantViolationException($"The Training Phase requires the Entry Status to be set.");
+
+        }
         #endregion
+
 
     }
 }

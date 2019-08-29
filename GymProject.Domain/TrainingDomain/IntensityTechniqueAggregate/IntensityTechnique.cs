@@ -34,7 +34,10 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         public bool IsLinkingTechnique { get; private set; }
 
 
-        public 
+        /// <summary>
+        /// FK to the User who created the Intensity Technique entry
+        /// </summary>
+        public IdTypeValue OwnerId { get; private set; }
 
 
 
@@ -42,17 +45,17 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
 
         #region Ctors
 
-        private IntensityTechnique(string name, EntryStatusTypeEnum entryStatus) : base(null)
+        private IntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus) : base(id)
         {
-            Name = name ?? string.Empty;
+            Name = name?.Trim() ?? string.Empty;
+            OwnerId = ownerId;
+            Abbreviation = abbreviation.Trim();
+            Description = description;
+            IsLinkingTechnique = isLinkingTechnique;
+
             EntryStatusType = entryStatus;
 
-
-            if (string.IsNullOrWhiteSpace(Name))
-                throw new TrainingDomainInvariantViolationException($"Training Phase must have a tag name.");
-
-            if (EntryStatusType == null || EntryStatusType.Equals(EntryStatusTypeEnum.NotSet))
-                throw new TrainingDomainInvariantViolationException($"Cannot create a IntensityTechnique object with an invalid entry status");
+            TestBusinessRules();
         }
 
         #endregion
@@ -64,45 +67,62 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <summary>
         /// Factory method - PROTECTED
         /// </summary>
-        /// <param name="name">The name of the phase</param>
-        /// <param name="entryStatus">TThe specified entry status</param>
+        /// <param name="name">The Intensity Technique name</param>
+        /// <param name="abbreviation">The Intensity Technique abbreviation</param>
+        /// <param name="description">The Intensity Technique description</param>
+        /// <param name="ownerId">The ID of the User which is adding the entry</param>
+        /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
+        /// <param name="id">The ID of the Intensity Technique</param>
+        /// <param name="entryStatus">The status of the entry</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        protected static IntensityTechnique CreateIntensityTechnique
-        (
-            string name,
-            EntryStatusTypeEnum entryStatus
-        )
-            => new IntensityTechnique(name, entryStatus);
+        protected static IntensityTechnique CreateIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus)
+
+            => new IntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, entryStatus);
 
 
         /// <summary>
-        /// Factory method fro private Phases
+        /// Factory method for private Intensity Technqiue entries as pending before approval
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="name">The Intensity Technique name</param>
+        /// <param name="abbreviation">The Intensity Technique abbreviation</param>
+        /// <param name="description">The Intensity Technique description</param>
+        /// <param name="ownerId">The ID of the User which is adding the entry</param>
+        /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
+        /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechnique CreatePrivateIntensityTechnique(string name)
+        public static IntensityTechnique CreatePrivateIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
-            => CreateIntensityTechnique(name, EntryStatusTypeEnum.Private);
+            => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Private);
 
 
         /// <summary>
-        /// Factory method fro native Phases
+        /// Factory method for native Intensity Technqiue entries as pending before approval
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="name">The Intensity Technique name</param>
+        /// <param name="abbreviation">The Intensity Technique abbreviation</param>
+        /// <param name="description">The Intensity Technique description</param>
+        /// <param name="ownerId">The ID of the User which is adding the entry</param>
+        /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
+        /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechnique CreateNativeIntensityTechnique(string name)
+        public static IntensityTechnique CreateNativeIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
-            => CreateIntensityTechnique(name, EntryStatusTypeEnum.Native);
+            => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Native);
 
 
         /// <summary>
-        /// Factory method fro public Phases as pending before approval
+        /// Factory method for public Intensity Technqiue entries as pending before approval
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="name">The Intensity Technique name</param>
+        /// <param name="abbreviation">The Intensity Technique abbreviation</param>
+        /// <param name="description">The Intensity Technique description</param>
+        /// <param name="ownerId">The ID of the User which is adding the entry</param>
+        /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
+        /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechnique CreatePublicIntensityTechnique(string name)
+        public static IntensityTechnique CreatePublicIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
-            => CreateIntensityTechnique(name, EntryStatusTypeEnum.Pending);
+            => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Pending);
 
         #endregion
 
@@ -110,23 +130,66 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
 
         #region Business Methods
 
+
+        //public void Rename(string newName)
+        //{
+        //    Name = newName?.Trim() ?? string.Empty;
+        //    TestBusinessRules();
+        //}
+
         /// <summary>
-        /// Set the Phase name
+        /// Attach a description to the Intensity Technique
         /// </summary>
-        /// <param name="newName">The new Phase name</param>
-        public void Rename(string newName) => Name = newName ?? string.Empty;
+        /// <param name="description"></param>
+        public void AttachDescription(PersonalNoteValue description)
+
+            => Description = description;
+
+
 
         #endregion
 
 
-        #region Private Methods
+        #region Business Rules Validation
 
-        ///// <summary>
-        ///// Builds the DescriptiveNameValue from the name text
-        ///// </summary>
-        ///// <param name="nameText">The name text</param>
-        ///// <returns>The DescriptiveNameValue object</returns>
-        //private DescriptiveNameValue BuildName(string nameText) => DescriptiveNameValue.Write(nameText, TagMinimumLength, TagMaximumLength);
+        /// <summary>
+        /// The Intensity Technique must have a valid name.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool NameIsMandatory() => !string.IsNullOrWhiteSpace(Name);
+
+
+        /// <summary>
+        /// The Intensity Technique must have a valid abbreviation.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool AbbreviationIsMandatory() => !string.IsNullOrWhiteSpace(Abbreviation);
+
+
+        /// <summary>
+        /// The Intensity Technique must be linked to its Owner.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool OwnerIsMandatory() => OwnerId != null;
+
+
+
+        /// <summary>
+        /// Tests that all the business rules are met and manages invalid states
+        /// </summary>
+        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
+        protected override void TestBusinessRules()
+        {
+            if (!NameIsMandatory())
+                throw new TrainingDomainInvariantViolationException($"The Intensity Technique must have a valid name.");
+
+            if (!AbbreviationIsMandatory())
+                throw new TrainingDomainInvariantViolationException($"The Intensity Technique must have a valid abbreviation.");
+
+            if (!OwnerIsMandatory())
+                throw new TrainingDomainInvariantViolationException($"The Intensity Technique must be linked to its Owner.");
+
+        }
         #endregion
 
     }

@@ -1,11 +1,9 @@
 ﻿using GymProject.Domain.SharedKernel;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GymProject.Domain.Base
 {
-    public class StatusTrackingEntity<IdType> : Entity<IdType>
+    public abstract class StatusTrackingEntity<IdType> : Entity<IdType>
     {
 
 
@@ -29,7 +27,8 @@ namespace GymProject.Domain.Base
         /// <param name="moderator">The moderator who changed the status</param>
         public virtual void ModerateEntryStatus(EntryStatusTypeEnum newStatus, Moderator moderator = null)
         {
-            EntryStatusType = newStatus;
+            EntryStatusType = newStatus ?? EntryStatusTypeEnum.NotSet;
+            TestBusinessRules();
         }
 
 
@@ -39,7 +38,18 @@ namespace GymProject.Domain.Base
         /// <param name="newStatus">The new status</param>
         public virtual void ChangeEntryStatus(EntryStatusTypeEnum newStatus)
         {
-            EntryStatusType = newStatus;
+            EntryStatusType = newStatus ?? EntryStatusTypeEnum.NotSet;
+            TestBusinessRules();
+        }
+
+        /// <summary>
+        /// Tests that all the business rules are met and manages invalid states
+        /// </summary>
+        /// <exception cref="Exception">Thrown if business rules violation</exception>
+        protected virtual void TestBusinessRules()
+        {
+            if (EntryStatusType == null || EntryStatusType == EntryStatusTypeEnum.NotSet)
+                throw new InvalidOperationException($"The Entry Status must be valid.");
         }
     }
 }

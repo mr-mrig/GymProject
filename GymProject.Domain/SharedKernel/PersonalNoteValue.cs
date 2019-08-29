@@ -30,7 +30,7 @@ namespace GymProject.Domain.SharedKernel
 
         private PersonalNoteValue(string body)
         {
-            Body = body;
+            Body = body?.Trim() ?? string.Empty;
 
             TestBusinessRules();
         }

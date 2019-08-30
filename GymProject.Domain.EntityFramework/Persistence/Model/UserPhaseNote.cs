@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GymProject.Domain.EntityFramework.Persistence.Model
+namespace GymProject.Infrastructure.EntityFramework.Persistence.Model
 {
     public partial class UserPhaseNote
     {

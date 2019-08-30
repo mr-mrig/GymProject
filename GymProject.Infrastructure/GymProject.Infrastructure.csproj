@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <ApplicationIcon />
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <StartupObject />
   </PropertyGroup>
 
@@ -11,10 +11,13 @@
     <Folder Include="AntiCorruptionLayer\" />
     <Folder Include="Logger\" />
     <Folder Include="Persistence\SqlRepository\FitnessJournalDomain\" />
+    <Folder Include="Persistence\SqlRepository\SocialNetworkDomain\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.6" />
   </ItemGroup>
 
   <ItemGroup>

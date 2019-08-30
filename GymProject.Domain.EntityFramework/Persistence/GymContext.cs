@@ -1,11 +1,24 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace GymProject.Domain.EntityFramework.Persistence.Model
+namespace GymProject.Infrastructure.EntityFramework.Persistence.Model
 {
     public partial class GymContext : DbContext
     {
+
+        //        ((IObjectContextAdapter)this).ObjectContext
+        //  .ObjectMaterialized += (sender, args) =>
+        // {
+        //  var entity = args.Entity as IObjectWithState;
+        //  if (entity != null)
+        //  {
+        //   entity.State = State.Unchanged;
+        //  }
+        //};
+
+
         public GymContext()
         {
         }
@@ -14,6 +27,7 @@ namespace GymProject.Domain.EntityFramework.Persistence.Model
             : base(options)
         {
         }
+
 
         public virtual DbSet<AccountStatusType> AccountStatusType { get; set; }
         public virtual DbSet<ActivityDay> ActivityDay { get; set; }

@@ -25,7 +25,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         [Fact]
-        public static void IntensityTechnqiueFail()
+        public static void IntensityTechniqueFail()
         {
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -61,7 +61,11 @@ namespace GymProject.Domain.Test.UnitTest
                         break;
                 }
 
-                IntensityTechnique tech = IntensityTechnique.CreateNativeIntensityTechnique();
+                IdTypeValue id = IdTypeValue.Create(1);
+
+                IntensityTechnique tech = IntensityTechnique.CreateNativeIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
+                Assert.Throws<InvalidOperationException>(() => tech.ModerateEntryStatus(EntryStatusTypeEnum.NotSet));
+                Assert.Throws<InvalidOperationException>(() => tech.ChangeEntryStatus(EntryStatusTypeEnum.NotSet));
             }
         }
 
@@ -70,7 +74,73 @@ namespace GymProject.Domain.Test.UnitTest
         [Fact]
         public static void IntensityTechniqueFullTest()
         {
+            IntensityTechnique technique;
 
+            for (int itest = 0; itest < ntests; itest++)
+            {
+                string name = RandomFieldGenerator.RandomTextValue(1, 20);
+                string abbreviation = RandomFieldGenerator.RandomTextValue(2, 5);
+                bool isLinkingTechnique = RandomFieldGenerator.RollEventWithProbability(0.5f);
+                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 999999));
+                PersonalNoteValue description = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
+                IdTypeValue id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 999999));
+
+                // Pad with spaces
+                if(RandomFieldGenerator.RollEventWithProbability(0.05f))
+                {
+                    int leftSpacesNumber = RandomFieldGenerator.RandomInt(1, 5);
+                    int rightSpacesNumber = RandomFieldGenerator.RandomInt(1, 5);
+
+                    name = abbreviation.PadLeft(name.Length + leftSpacesNumber, ' ').PadRight(name.Length + rightSpacesNumber + leftSpacesNumber, ' ');
+                    abbreviation = abbreviation.PadLeft(abbreviation.Length + leftSpacesNumber, ' ').PadRight(abbreviation.Length + rightSpacesNumber + leftSpacesNumber, ' ');
+
+                    if (description.Length() + leftSpacesNumber + rightSpacesNumber < PersonalNoteValue.DefaultMaximumLength)
+                        description = PersonalNoteValue.Write(
+                            description.Body.PadLeft(description.Length() + leftSpacesNumber, ' ').PadRight(description.Length() + rightSpacesNumber + leftSpacesNumber, ' '));
+                }
+
+                float constructorProbability = RandomFieldGenerator.RandomFloat(0, 1);
+
+                switch (constructorProbability)
+                {
+                    case var _ when constructorProbability < 0.33f:
+
+                        technique = IntensityTechnique.CreatePublicIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
+                        break;
+
+                    case var _ when constructorProbability < 0.33f:
+
+                        technique = IntensityTechnique.CreateNativeIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
+                        break;
+
+                    default:
+
+                        technique = IntensityTechnique.CreatePrivateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
+                        break;
+                }
+
+                Assert.Equal(id, technique.Id);
+                Assert.Equal(ownerId, technique.OwnerId);
+                Assert.Equal(name.Trim(), technique.Name);
+                Assert.Equal(abbreviation.Trim(), technique.Abbreviation);
+                Assert.Equal(description, technique.Description);
+                Assert.Equal(isLinkingTechnique, technique.IsLinkingTechnique);
+
+                technique.AttachDescription(null);
+                Assert.Null(technique.Description);
+
+                description = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
+                technique.AttachDescription(null);
+                technique.AttachDescription(description);
+                Assert.Equal(description, technique.Description);
+
+                EntryStatusTypeEnum newStatus = RandomFieldGenerator.ChooseAmong(
+                    EntryStatusTypeEnum.List().Except(new List<EntryStatusTypeEnum>() { EntryStatusTypeEnum.NotSet }));
+
+                technique.ChangeEntryStatus(newStatus);
+
+                Assert.Equal(newStatus, technique.EntryStatusType);
+            }
         }
 
 

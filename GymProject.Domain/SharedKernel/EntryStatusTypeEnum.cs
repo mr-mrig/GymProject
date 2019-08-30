@@ -45,10 +45,10 @@ namespace GymProject.Domain.SharedKernel
 
 
         /// <summary>
-        /// Creates a PictureType object with the selected name
+        /// Creates a EntryStatusType object with the selected name
         /// </summary>
         /// <param name="name">Enumeration name</param>
-        /// <returns>The PictureType object instance</returns>
+        /// <returns>The EntryStatusType object instance</returns>
         public static EntryStatusTypeEnum FromName(string name)
         {
             EntryStatusTypeEnum unit = List()
@@ -57,6 +57,18 @@ namespace GymProject.Domain.SharedKernel
 
             return unit;
         }
+
+
+        /// <summary>
+        /// Creates a EntryStatusType object with the selected id
+        /// </summary>
+        /// <param name="name">Enumeration id</param>
+        /// <returns>The EntryStatusType object instance</returns>
+        public static EntryStatusTypeEnum From(int id)
+        {
+            return List().SingleOrDefault(s => s.Id == id);
+        }
+
 
     }
 }

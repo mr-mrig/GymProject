@@ -349,7 +349,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void PersonalNoteFail()
         {
             string body = "ciao ciao.";
-            body = body.PadLeft(PersonalNoteValue.DefaultMaximumLength + 1);
+            body = body.PadLeft(PersonalNoteValue.DefaultMaximumLength + 1, 'x');
 
             Assert.Throws<ValueObjectInvariantViolationException>(() => PersonalNoteValue.Write(body));
         }

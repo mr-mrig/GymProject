@@ -178,7 +178,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// Tests that all the business rules are met and manages invalid states
         /// </summary>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
-        protected override void TestBusinessRules()
+        protected void TestBusinessRules()
         {
             if (!NameIsMandatory())
                 throw new TrainingDomainInvariantViolationException($"The Intensity Technique must have a valid name.");

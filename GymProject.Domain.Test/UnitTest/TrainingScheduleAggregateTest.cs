@@ -18,7 +18,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
 
-        public const int ntests = 1000;
+        public const int ntests = 500;
 
 
 

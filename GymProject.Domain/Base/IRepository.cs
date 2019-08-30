@@ -1,33 +1,31 @@
 ﻿
-
-using System.Collections;
-using System.Collections.Generic;
-
 namespace GymProject.Domain.Base
 {
 
     public interface IRepository<T> where T : IAggregateRoot
     {
-        IUnitOfWork UnitOfWork { get; }
+
+
+
+        /// <summary>
+        /// Adds an aggregate
+        /// </summary>
+        /// <param name="aggregateRoot">The root to the aggregate to be added</param>
+        T Add(T aggregateRoot);
 
 
         /// <summary>
-        /// Get all the entities in the table
+        /// Modifies an aggregate
         /// </summary>
-        /// <returns>The list of entities</returns>
-        IEnumerable<T> FindAll();
+        /// <param name="aggregateRoot">The root to the aggregate to be modified</param>
+        T Modify(T aggregateRoot);
+
 
         /// <summary>
-        /// Adds an entity
+        /// Remove the selected aggregate
         /// </summary>
-        /// <param name="entity">The entity to be added</param>
-        void Add(T entity);
-
-        /// <summary>
-        /// Remove the selected entity
-        /// </summary>
-        /// <param name="entity">The entity to be removed</param>
-        void Remove(T entity);
+        /// <param name="aggregateRoot">The root to the aggregate to be removed</param>
+        void Remove(T aggregateRoot);
 
     }
 

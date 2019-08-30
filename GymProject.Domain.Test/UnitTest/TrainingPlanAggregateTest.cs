@@ -5,11 +5,9 @@ using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
-using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,7 +18,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
 
-        public const int ntests = 60;
+        public const int ntests = 100;
 
         private readonly ITestOutputHelper output;
 
@@ -946,16 +944,23 @@ namespace GymProject.Domain.Test.UnitTest
                     idToAdd = 1;
                 else
                 {
-                    IEnumerable<int> alreadyChosenIds = newWorkingSets.Union(srcWorkout.WorkingSets).Select(x => (int)x.Id.Id);
+                    IEnumerable<int> alreadyChosenIds = newWorkingSets.Union(srcWorkout.WorkingSets).
+                        Where(x => (x?.Id?.Id ?? 0) > 0).Select(x => (int)x.Id.Id);
 
                     if (faked = RandomFieldGenerator.RollEventWithProbability(fakedOperationProbability))
                     {
                         if (newWorkingSets.Count > 0 &&  RandomFieldGenerator.RollEventWithProbability(0.5f))
                             // Simulate duplicate elment in input list
-                            idToAdd = RandomFieldGenerator.ChooseAmong(newWorkingSets.Select(x => (int)x.Id.Id));
+                            idToAdd = RandomFieldGenerator.ChooseAmong(alreadyChosenIds);
                         else
                             // Simulate element already present
                             idToAdd = RandomFieldGenerator.ChooseAmong(alreadyChosenIds);
+
+                        if (idToAdd == 0)
+                        {
+                            faked = false;
+                            continue;   // Skip
+                        }
 
                         newWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToAdd, srcWorkout.WorkingSets.Count + iws, isTransient, TrainingEffortTypeEnum.RM));
                         break;   // Exit loop so faked won't be overridden
@@ -995,7 +1000,14 @@ namespace GymProject.Domain.Test.UnitTest
                     }
 
                     idToRemove = RandomFieldGenerator.ChooseAmong(
-                        srcWorkout.WorkingSets.Select(x => x.Id.Id).Except(removeWorkingSets.Select(x => x.Id.Id)).ToList());
+                        srcWorkout.WorkingSets.Where(x => (x?.Id?.Id ?? 0) > 0)
+                        .Select(x => x.Id.Id).Except(removeWorkingSets.Select(x => x.Id.Id)).ToList());
+
+                    if(idToRemove == 0)
+                    {
+                        faked = false;
+                        continue;   // Skip
+                    }
 
                     removeWorkingSets.Add(StaticUtils.BuildRandomWorkingSet(idToRemove, srcWorkout.WorkingSets.Count, isTransient, TrainingEffortTypeEnum.RM));
                 }

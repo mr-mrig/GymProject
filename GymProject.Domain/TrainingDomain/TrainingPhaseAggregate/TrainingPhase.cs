@@ -1,6 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
+using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 {
@@ -131,7 +132,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// Tests that all the business rules are met and manages invalid states
         /// </summary>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
-        protected override void TestBusinessRules()
+        protected void TestBusinessRules()
         {
             if (!NameIsMandatory())
                 throw new TrainingDomainInvariantViolationException($"The Training Phase must have a valid name.");

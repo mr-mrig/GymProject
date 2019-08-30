@@ -52,6 +52,12 @@ namespace GymProject.Domain.SharedKernel
 
 
         #region Business Methods
+
+        /// <summary>
+        /// Get the length of the note body
+        /// </summary>
+        /// <returns>The length</returns>
+        public int Length() => Body.Length;
         #endregion
 
 

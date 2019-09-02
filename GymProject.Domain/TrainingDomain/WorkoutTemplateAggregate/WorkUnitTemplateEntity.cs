@@ -255,7 +255,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="effort">The WS effort</param>
         /// <param name="tempo">The WS lifting tempo</param>
         /// <param name="intensityTechniqueIds">The ids of the WS intensity techniques</param>
-        public void AddTransientWorkingSet(WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, 
+        public void AddTransientWorkingSet(WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, 
             IEnumerable<IdTypeValue> intensityTechniqueIds = null)
         {
             List<IdTypeValue> localIntensityTechniqueIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds)?.ToList() ?? new List<IdTypeValue>();
@@ -416,7 +416,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void ChangeWorkingSetRepetitions(uint workingSetPnum, WSRepetitionValue newReps)
+        public void ChangeWorkingSetRepetitions(uint workingSetPnum, WSRepetitionsValue newReps)
         {
             WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
             ws.ChangeRepetitions(newReps);

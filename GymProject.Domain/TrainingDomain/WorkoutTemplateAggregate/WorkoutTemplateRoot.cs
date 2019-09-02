@@ -499,7 +499,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="intensityTechniqueIds">The ids of the WS intensity techniques</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionValue repetitions, 
+        public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionsValue repetitions, 
             RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
         {
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(workUnitPnum);
@@ -640,7 +640,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The Progressive Number of the WS to be modifed</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void ChangeWorkingSetRepetitions(uint parentWorkUnitPnum, uint workingSetPnum, WSRepetitionValue newReps)
+        public void ChangeWorkingSetRepetitions(uint parentWorkUnitPnum, uint workingSetPnum, WSRepetitionsValue newReps)
         {
             WorkingSetTemplateEntity ws = FindWorkingSet(parentWorkUnitPnum, workingSetPnum);
 

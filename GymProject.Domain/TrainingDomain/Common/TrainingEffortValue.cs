@@ -192,7 +192,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="targetReps">The target repetitions, needed for RPE effort types only</param>
         /// <exception cref="ArgumentException">Thrown if repetitions are invalid</exception>
         /// <returns>The new TrainingEffortValue instance</returns>
-        private float ToRmExact(WSRepetitionValue targetReps = null)
+        private float ToRmExact(WSRepetitionsValue targetReps = null)
         {
             // From Intenisty Percentage
             if (EffortType == TrainingEffortTypeEnum.IntensityPerc)
@@ -226,7 +226,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="targetReps">The target repetitions, needed for RPE effort types only</param>
         /// <exception cref="ArgumentException">Thrown if repetitions are invalid</exception>
         /// <returns>The new TrainingEffortValue instance</returns>
-        public TrainingEffortValue ToRm(WSRepetitionValue targetReps = null)
+        public TrainingEffortValue ToRm(WSRepetitionsValue targetReps = null)
         {
             // From Intenisty Percentage
             if (EffortType == TrainingEffortTypeEnum.IntensityPerc)
@@ -270,7 +270,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="targetReps">The target repetitions, needed for RPE effort types only</param>
         /// <returns>The new TrainingEffortValue instance</returns>
-        public TrainingEffortValue ToIntensityPercentage(WSRepetitionValue targetReps = null)
+        public TrainingEffortValue ToIntensityPercentage(WSRepetitionsValue targetReps = null)
         {
             // From RM
             if (EffortType == TrainingEffortTypeEnum.RM)
@@ -310,7 +310,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="targetReps">The target repetitions, needed for RPE effort types only</param>
         /// <returns>The new TrainingEffortValue instance</returns>
-        public TrainingEffortValue ToRPE(WSRepetitionValue targetReps = null)
+        public TrainingEffortValue ToRPE(WSRepetitionsValue targetReps = null)
         {
             float rmValue;
 

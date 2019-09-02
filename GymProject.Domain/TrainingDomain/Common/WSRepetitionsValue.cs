@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.Common
 {
-    public class WSRepetitionValue : ValueObject
+    public class WSRepetitionsValue : ValueObject
     {
 
 
@@ -42,7 +42,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Ctors
 
-        private WSRepetitionValue(int serieLength, WSWorkTypeEnum serieType)
+        private WSRepetitionsValue(int serieLength, WSWorkTypeEnum serieType)
         {
             Value = serieLength;
             WorkType = serieType ?? WSWorkTypeEnum.NotSet;
@@ -60,9 +60,9 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workValue">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        protected static WSRepetitionValue TrackWork(int workValue, WSWorkTypeEnum workType)
+        protected static WSRepetitionsValue TrackWork(int workValue, WSWorkTypeEnum workType)
 
-            => new WSRepetitionValue(workValue, workType);
+            => new WSRepetitionsValue(workValue, workType);
 
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="repetitions">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        public static WSRepetitionValue TrackRepetitionSerie(uint repetitions)
+        public static WSRepetitionsValue TrackRepetitionSerie(uint repetitions)
 
             => TrackWork((int)repetitions, WSWorkTypeEnum.RepetitionBasedSerie);
 
@@ -80,7 +80,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workValue">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        public static WSRepetitionValue TrackNotSetRepetitions()
+        public static WSRepetitionsValue TrackNotSetRepetitions()
 
             => TrackWork(NotSetValue, WSWorkTypeEnum.RepetitionBasedSerie);
 
@@ -90,7 +90,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="repetitionsValue">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        public static WSRepetitionValue TrackAMRAP()
+        public static WSRepetitionsValue TrackAMRAP()
 
             => TrackWork(AMRAPValue, WSWorkTypeEnum.RepetitionBasedSerie);
 
@@ -100,7 +100,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="duration">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        public static WSRepetitionValue TrackTimedSerie(uint duration)
+        public static WSRepetitionsValue TrackTimedSerie(uint duration)
 
             => TrackWork((int)duration, WSWorkTypeEnum.TimeBasedSerie);
 
@@ -110,7 +110,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workValue">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        public static WSRepetitionValue TrackNotSetTime()
+        public static WSRepetitionsValue TrackNotSetTime()
 
             => TrackWork(NotSetValue, WSWorkTypeEnum.TimeBasedSerie);
 

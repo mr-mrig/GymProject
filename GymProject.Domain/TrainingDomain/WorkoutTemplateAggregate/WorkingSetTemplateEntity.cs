@@ -21,7 +21,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <summary>
         /// The repetitions number which the working set is planned of - Mandatory value
         /// </summary>
-        public WSRepetitionValue Repetitions { get; private set; } = null;
+        public WSRepetitionsValue Repetitions { get; private set; } = null;
 
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkingSetTemplateEntity(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null) : base(id)
+        private WorkingSetTemplateEntity(IdTypeValue id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
@@ -88,7 +88,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
 
             => new WorkingSetTemplateEntity(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -103,7 +103,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplateEntity PlanWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
 
             => new WorkingSetTemplateEntity(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -125,7 +125,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="newReps">The new target repetitions</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void ChangeRepetitions(WSRepetitionValue newReps)
+        public void ChangeRepetitions(WSRepetitionsValue newReps)
         {
             Repetitions = newReps;
             TestBusinessRules();
@@ -263,10 +263,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                 return;
 
             // Timed serie needs to be converted to the repetition equivalent
-            WSRepetitionValue reps;
+            WSRepetitionsValue reps;
 
             if (Repetitions.WorkType == WSWorkTypeEnum.TimeBasedSerie)
-                reps = WSRepetitionValue.TrackRepetitionSerie((uint)ToRepetitions());
+                reps = WSRepetitionsValue.TrackRepetitionSerie((uint)ToRepetitions());
             else
                 reps = Repetitions;
 

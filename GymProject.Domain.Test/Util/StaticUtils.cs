@@ -97,7 +97,7 @@ namespace GymProject.Domain.Test.Util
         internal static TrainingEffortValue ComputeAverageEffort(IEnumerable<IWorkingSet> workingSets, TrainingEffortTypeEnum mainEffortType = null)
         {
             TrainingEffortValue result = null;
-            WSRepetitionValue avgReps;
+            WSRepetitionsValue avgReps;
 
             // Get the main effort type if not specified, as the most used effort among the WSs ones
             if (mainEffortType == null)
@@ -118,7 +118,7 @@ namespace GymProject.Domain.Test.Util
                 if (rpeSets.Count() == 0)
                     avgReps = null;
                 else
-                    avgReps = WSRepetitionValue.TrackRepetitionSerie((uint)rpeSets.Average(x => x.ToRepetitions()));
+                    avgReps = WSRepetitionsValue.TrackRepetitionSerie((uint)rpeSets.Average(x => x.ToRepetitions()));
 
                 result = TrainingEffortValue.AsRM((workingSets.Where(x => x.Effort.IsRM()).Sum(x => x.Effort.Value)
                     + workingSets.Where(x => x.Effort.IsRPE()).Sum(x => x.Effort.ToRm(avgReps).Value)
@@ -127,22 +127,22 @@ namespace GymProject.Domain.Test.Util
 
             else if (mainEffortType == TrainingEffortTypeEnum.RPE)
             {
-                WSRepetitionValue avgRepsInt;
-                WSRepetitionValue avgRepsRM;
+                WSRepetitionsValue avgRepsInt;
+                WSRepetitionsValue avgRepsRM;
 
                 IEnumerable<IWorkingSet> intSets = workingSets.Where(x => x.Effort.IsIntensityPercentage());
 
                 if (intSets.Count() == 0)
                     avgRepsInt = null;
                 else
-                    avgRepsInt = WSRepetitionValue.TrackRepetitionSerie((uint)intSets.Average(x => x.ToRepetitions()));
+                    avgRepsInt = WSRepetitionsValue.TrackRepetitionSerie((uint)intSets.Average(x => x.ToRepetitions()));
 
                 IEnumerable<IWorkingSet> rmSets = workingSets.Where(x => x.Effort.IsRM());
 
                 if (rmSets.Count() == 0)
                     avgRepsRM = null;
                 else
-                    avgRepsRM = WSRepetitionValue.TrackRepetitionSerie((uint)rmSets.Average(x => x.ToRepetitions()));
+                    avgRepsRM = WSRepetitionsValue.TrackRepetitionSerie((uint)rmSets.Average(x => x.ToRepetitions()));
 
 
                 result = TrainingEffortValue.AsRPE((workingSets.Where(x => x.Effort.IsRM()).Sum(x => x.Effort.ToRPE(avgRepsRM).Value)
@@ -157,7 +157,7 @@ namespace GymProject.Domain.Test.Util
                 if (rpeSets.Count() == 0)
                     avgReps = null;
                 else
-                    avgReps = WSRepetitionValue.TrackRepetitionSerie((uint)rpeSets.Average(x => x.ToRepetitions()));
+                    avgReps = WSRepetitionsValue.TrackRepetitionSerie((uint)rpeSets.Average(x => x.ToRepetitions()));
 
                 result = TrainingEffortValue.AsRM((workingSets.Where(x => x.Effort.IsRM()).Sum(x => x.Effort.ToIntensityPercentage().Value)
                     + workingSets.Where(x => x.Effort.IsRPE()).Sum(x => x.Effort.ToIntensityPercentage(avgReps).Value)
@@ -408,7 +408,7 @@ namespace GymProject.Domain.Test.Util
             float intPercMin = 50, intPercMax = 105;
 
             TrainingEffortValue effort;
-            WSRepetitionValue serie;
+            WSRepetitionsValue serie;
 
             switch (effortType)
             {
@@ -437,15 +437,15 @@ namespace GymProject.Domain.Test.Util
             {
                 if (RandomFieldGenerator.RandomDouble(0, 1) < amrapProbability)
                 {
-                    serie = WSRepetitionValue.TrackAMRAP();
+                    serie = WSRepetitionsValue.TrackAMRAP();
                     effort = effortType == TrainingEffortTypeEnum.RPE ? TrainingEffortValue.AsRM(10) : effort; // Couldn't resolve this
                     //effort = effortType == TrainingEffortTypeEnum.IntensityPerc ? effort.ToIntensityPercentage(serie) : effort.ToRm(serie);
                 }
                 else
-                    serie = WSRepetitionValue.TrackRepetitionSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
+                    serie = WSRepetitionsValue.TrackRepetitionSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
             }
             else
-                serie = WSRepetitionValue.TrackTimedSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
+                serie = WSRepetitionsValue.TrackTimedSerie((uint)RandomFieldGenerator.RandomInt(repsMin, repsMax));
 
             if (isTransient)
 

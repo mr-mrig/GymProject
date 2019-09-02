@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class FitnessDay : Entity<IdTypeValue>, IAggregateRoot
+    public class DailyFitnessRoot : Entity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -53,7 +53,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         #region Ctors
 
 
-        private FitnessDay(DateTime dayDate, RatingValue rating = null) : base(null)
+        private DailyFitnessRoot(DateTime dayDate, RatingValue rating = null) : base(null)
         {
             DayDate = dayDate;
             Rating = rating;
@@ -63,7 +63,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         }
 
 
-        private FitnessDay(IdTypeValue postId, DateTime dayDate, RatingValue rating = null) : base(null)
+        private DailyFitnessRoot(IdTypeValue postId, DateTime dayDate, RatingValue rating = null) : base(null)
         {
             PostId = postId;
             DayDate = dayDate;
@@ -81,9 +81,9 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <param name="dayDate">The date of the day to be tracked</param>
         /// <param name="rating">The rating</param>
         /// <returns>The new FitnessDay instance</returns>
-        public static FitnessDay StartTrackingDay(DateTime dayDate, RatingValue rating = null)
+        public static DailyFitnessRoot StartTrackingDay(DateTime dayDate, RatingValue rating = null)
         {
-            return new FitnessDay(dayDate, rating);
+            return new DailyFitnessRoot(dayDate, rating);
         }
         #endregion
 

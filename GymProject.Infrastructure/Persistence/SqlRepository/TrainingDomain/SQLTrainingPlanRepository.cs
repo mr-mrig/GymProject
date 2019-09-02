@@ -27,26 +27,26 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         #region IRepository Implementation
 
-        public TrainingPlan Add(TrainingPlan aggregateRoot)
+        public TrainingPlanRoot Add(TrainingPlanRoot aggregateRoot)
         {
             _gymContext.Add(aggregateRoot);
 
 
-            _gymContext.Add(TrainingPlan.CreateTrainingPlan(IdTypeValue.Create(1), "", true, true, null));
+            _gymContext.Add(TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(1), "", true, true, null));
 
-            foreach (TrainingWeekTemplate week in aggregateRoot.TrainingWeeks)
+            foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
                 _gymContext.Add(week);
 
             throw new NotImplementedException();
         }
 
 
-        public TrainingPlan Modify(TrainingPlan aggregateRoot)
+        public TrainingPlanRoot Modify(TrainingPlanRoot aggregateRoot)
         {
 
-            foreach (TrainingWeekTemplate week in aggregateRoot.TrainingWeeks)
+            foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
             {
-                if(week.State == Modified)
+                //if(week.State == Modified)
                     // Change it
             }
 
@@ -54,13 +54,13 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public void Remove(TrainingPlan aggregateRoot)
+        public void Remove(TrainingPlanRoot aggregateRoot)
         {
             throw new NotImplementedException();
         }
 
 
-        public TrainingPlan WithId(IdTypeValue id)
+        public TrainingPlanRoot WithId(IdTypeValue id)
         {
             throw new NotImplementedException();
         }

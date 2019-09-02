@@ -5,15 +5,15 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Like : ChangeTrackingEntity<IdTypeValue>, ICloneable
+    public class LikeEntity : ChangeTrackingEntity<IdTypeValue>, ICloneable
     {
 
 
-        public Author LikeAuthor { get; private set; }
+        public AuthorEntity LikeAuthor { get; private set; }
 
 
 
-        protected Like(IdTypeValue id, Author author, DateTime? createdOn = null) : base(id)
+        protected LikeEntity(IdTypeValue id, AuthorEntity author, DateTime? createdOn = null) : base(id)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Like with no author");
@@ -28,15 +28,15 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         #region Factory Method
 
-        public static Like Give(IdTypeValue id, Author author)
+        public static LikeEntity Give(IdTypeValue id, AuthorEntity author)
         {
-            return new Like(id, author);
+            return new LikeEntity(id, author);
         }
 
 
-        public static Like Copy(IdTypeValue id, Author author, DateTime createdOn)
+        public static LikeEntity Copy(IdTypeValue id, AuthorEntity author, DateTime createdOn)
         {
-            return new Like(id, author, createdOn);
+            return new LikeEntity(id, author, createdOn);
         }
 
         #endregion

@@ -141,7 +141,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Description)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Description)
                     .IsRequired()
@@ -150,7 +150,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<ActivityDay>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.ActivityDay)
@@ -162,7 +162,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Model)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Model).IsRequired();
 
@@ -182,7 +182,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -192,7 +192,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -202,7 +202,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.OwnerId)
                     .HasName("IDX_BiaEntry_OwnerId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.BiaDevice)
                     .WithMany(p => p.BiaEntry)
@@ -223,7 +223,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.OwnerId)
                     .HasName("IDX_Circumference_OwnerId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.Circumference)
@@ -240,7 +240,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.PostId, e.UserId, e.CreatedOn })
                     .HasName("IDX_Comment_PostId_UserId_CreatedOn");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body)
                     .IsRequired()
@@ -267,7 +267,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<DietDay>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.IsFreeMeal).HasDefaultValueSql("0");
 
@@ -282,7 +282,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<DietDayExample>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.DietDayType)
                     .WithMany(p => p.DietDayExample)
@@ -311,7 +311,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Id)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -334,7 +334,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Body)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
 
@@ -354,7 +354,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.CreatedOn, e.OwnerId })
                     .HasName("IDX_DietPlan_CreatedOn_OwnerId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedOn).HasDefaultValueSql("strftime('%s', 'now')");
 
@@ -377,7 +377,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.DietPlanUnitId, e.DietDayTypeId })
                     .HasName("IDX_DietPlanDay_DietPlanUnitId_DietDayTypeId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.DietDayType)
                     .WithMany(p => p.DietPlanDay)
@@ -410,7 +410,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.DietPlanId, e.StartDate, e.EndDate })
                     .HasName("IDX_DIetPlanUnit_DietPlanId_StartDate");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.DietPlan)
                     .WithMany(p => p.DietPlanUnit)
@@ -425,7 +425,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Abbreviation).IsRequired();
 
@@ -437,7 +437,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -452,7 +452,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.MuscleId, e.ExcerciseDifficultyId, e.TrainingEquipmentId })
                     .HasName("IDX_Excercise_MuscleId_ExcerciseDifficultyId_TrainingEquipmentId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
 
@@ -537,7 +537,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -564,7 +564,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.DayDate)
                     .HasName("IDX_FitnessDayEntry_DayDate");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.DayDate).HasDefaultValueSql("strftime('%s', CURRENT_DATE)");
 
@@ -579,7 +579,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
 
@@ -594,7 +594,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Abbreviation)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Abbreviation).IsRequired();
             });
@@ -604,7 +604,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Body)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body)
                     .IsRequired()
@@ -625,7 +625,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.PostId, e.IsProgressPicture })
                     .HasName("IDX_Image_PostId_CreatedOn_IsProgressPicture");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Url).IsRequired();
 
@@ -642,7 +642,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Abbreviation).IsRequired();
 
@@ -679,7 +679,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<MealExample>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
             });
 
             modelBuilder.Entity<MealExampleHasFood>(entity =>
@@ -700,7 +700,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -710,7 +710,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.MeasureDate)
                     .HasName("IDX_MeasureEntry_MeasureDate");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.MeasureDate).HasDefaultValueSql("strftime('%s', CURRENT_DATE)");
 
@@ -730,7 +730,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
 
@@ -748,7 +748,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Abbreviation).IsRequired();
 
@@ -760,7 +760,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -770,7 +770,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -780,7 +780,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -790,7 +790,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.UserId, e.ExcerciseId, e.RecordDate })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.RecordDate).HasDefaultValueSql("strftime('%s', 'now')");
 
@@ -812,7 +812,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.OwnerId)
                     .HasName("IDX_Phase_OwnerId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
 
@@ -832,7 +832,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.OwnerId)
                     .HasName("IDX_Plicometry_OwnerId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.Plicometry)
@@ -849,7 +849,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.UserId, e.CreatedOn })
                     .HasName("IDX_Post_UserId_CreatedOn");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Caption).HasColumnType("TEXT (1000)");
 
@@ -883,7 +883,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -910,7 +910,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Body)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
 
@@ -926,7 +926,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<Trainer>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.Trainer)
@@ -941,7 +941,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.StartDate, e.TrainerId, e.TraineeId })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.StartDate).HasDefaultValueSql("strftime('%s', 'now')");
 
@@ -961,7 +961,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -971,7 +971,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Body)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
 
@@ -1010,7 +1010,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.OwnerId, e.TrainingPlanNoteId })
                     .HasName("IDX_TrainingPlan_OwnerId_TrainingPlanNoteId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedOn).HasDefaultValueSql("strftime('%s', CURRENT_DATE)");
 
@@ -1059,14 +1059,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<TrainingPlanMessage>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
             });
 
             modelBuilder.Entity<TrainingPlanNote>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
             });
@@ -1103,7 +1103,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -1132,7 +1132,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -1145,7 +1145,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.StartDate, e.TrainingPlanId, e.PhaseId, e.TrainingProficiencyId })
                     .HasName("IDX_TrainingSchedule_StartDate_TrainingPlanId_CurrentWeekId_PhaseId_TrainingProficiencyId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.TrainingSchedule)
@@ -1171,7 +1171,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.TrainingScheduleId, e.UserId })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.LastUpdate).HasDefaultValueSql("STRFTIME('%s', 'now')");
 
@@ -1193,7 +1193,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.TrainingPlanId, e.ProgressiveNumber })
                     .HasName("IDX_TrainingWeekTemplate_TrainingPlanId_ProgressiveNumber");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.TrainingPlan)
                     .WithMany(p => p.TrainingWeek)
@@ -1209,7 +1209,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Name)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).IsRequired();
             });
@@ -1225,7 +1225,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.Username)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Email).IsRequired();
 
@@ -1249,7 +1249,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<UserDetail>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.GenderType)
                     .WithMany(p => p.UserDetail)
@@ -1304,7 +1304,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.OwnerId, e.PhaseId, e.StartDate, e.UserPhaseNoteId })
                     .HasName("IDX_UserPhase_OwnerId_PhaseId_StartDate_UserPhaseNoteId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedOn).HasDefaultValueSql("strftime('%s', 'now')");
 
@@ -1332,7 +1332,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<UserPhaseNote>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
             });
@@ -1362,7 +1362,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<Weight>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.Weight)
@@ -1376,7 +1376,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<WellnessDay>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdNavigation)
                     .WithOne(p => p.WellnessDay)
@@ -1407,7 +1407,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.WorkoutSessionId, e.ExcerciseId, e.ProgressiveNumber })
                     .HasName("IDX_WorkUnit_WorkoutSessionId_ExcerciseId_ProgressiveNumber");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Excercise)
                     .WithMany(p => p.WorkUnit)
@@ -1427,7 +1427,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.WorkoutTemplateId, e.ExcerciseId, e.ProgressiveNumber })
                     .HasName("IDX_WorkUnitTemplate_WorkoutTemplateId_ExcerciseId_ProgressiveNumber");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Excercise)
                     .WithMany(p => p.WorkUnitTemplate)
@@ -1446,7 +1446,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.Entity<WorkUnitTemplateNote>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
             });
@@ -1456,7 +1456,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.ProgressiveNumber, e.WorkUnitId })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.WorkUnit)
                     .WithMany(p => p.WorkingSet)
@@ -1468,7 +1468,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => e.WorkingSetId)
                     .HasName("IDX_WorkingSetNote_WorkingSetId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Body).IsRequired();
 
@@ -1482,7 +1482,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.WorkUnitTemplateId, e.ProgressiveNumber })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.EffortType)
                     .WithMany(p => p.WorkingSetTemplate)
@@ -1520,7 +1520,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.WorkoutTemplateId, e.StartTime })
                     .HasName("IDX_WorkoutSession_WorkoutTemplateId_StartTime");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.StartTime).HasDefaultValueSql("STRFTIME('%s', 'now')");
 
@@ -1542,7 +1542,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 entity.HasIndex(e => new { e.TrainingWeekId, e.ProgressiveNumber })
                     .HasName("IDX_WorkoutTemplate_TrainingWeekId_ProressiveNumber");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.TrainingWeek)
                     .WithMany(p => p.WorkoutTemplate)

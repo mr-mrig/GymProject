@@ -9,10 +9,10 @@ namespace GymProject.Domain.TrainingDomain.Events
         /// <summary>
         /// The Workout which the training parameters have been changed of
         /// </summary>
-        public WorkoutTemplate ChangedWorkout;
+        public WorkoutTemplateRoot ChangedWorkout;
 
 
-        public TrainingParametersChangedDomainEvent(WorkoutTemplate changedWorkout)
+        public TrainingParametersChangedDomainEvent(WorkoutTemplateRoot changedWorkout)
         {
             ChangedWorkout = changedWorkout;
         }

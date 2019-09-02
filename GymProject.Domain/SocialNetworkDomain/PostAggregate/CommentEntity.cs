@@ -5,19 +5,19 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Comment : ChangeTrackingEntity<IdTypeValue>, ICloneable
+    public class CommentEntity : ChangeTrackingEntity<IdTypeValue>, ICloneable
     {
 
 
         public string Body { get; private set; }
 
-        public Author CommentAuthor { get; private set; }
+        public AuthorEntity CommentAuthor { get; private set; }
 
 
 
         #region Ctors
 
-        protected Comment(IdTypeValue id, Author author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null) : base(id)
+        protected CommentEntity(IdTypeValue id, AuthorEntity author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null) : base(id)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Comment with no author");
@@ -42,9 +42,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="comment">The body of the comment</param>
         /// <param name="id">The Id of the Comment</param>
         /// <returns>The Comment instance</returns>
-        public static Comment Write(IdTypeValue id, Author author, string comment)
+        public static CommentEntity Write(IdTypeValue id, AuthorEntity author, string comment)
         {
-            return new Comment(id, author, comment);
+            return new CommentEntity(id, author, comment);
         }
 
 
@@ -57,9 +57,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="createdOn">The date which the comment has been created on</param>
         /// <param name="lastUpdate">The date which the comment has been lastly updated on</param>
         /// <returns>The Comment instance</returns>
-        public static Comment Copy(IdTypeValue id, Author author, string comment, DateTime createdOn, DateTime lastUpdate)
+        public static CommentEntity Copy(IdTypeValue id, AuthorEntity author, string comment, DateTime createdOn, DateTime lastUpdate)
         {
-            return new Comment(id, author, comment, (DateTime?)createdOn, (DateTime?)lastUpdate);
+            return new CommentEntity(id, author, comment, (DateTime?)createdOn, (DateTime?)lastUpdate);
         }
 
         #endregion

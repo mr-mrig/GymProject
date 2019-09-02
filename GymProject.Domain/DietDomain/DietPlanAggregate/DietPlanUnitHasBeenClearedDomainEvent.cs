@@ -9,7 +9,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// The source of the event
         /// </summary>
-        public DietPlanUnit DietPlanUnit { get; private set; }
+        public DietPlanUnitEntity DietPlanUnit { get; private set; }
 
 
 
@@ -18,7 +18,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// Event for communicating that the diet plan unit has been cleared: all the childs have been removed
         /// </summary>
         /// <param name="dietPlanUnit">The DietPlanUnit object</param>
-        public DietPlanUnitHasBeenClearedDomainEvent(DietPlanUnit dietPlanUnit)
+        public DietPlanUnitHasBeenClearedDomainEvent(DietPlanUnitEntity dietPlanUnit)
         {
             DietPlanUnit = dietPlanUnit;
         }

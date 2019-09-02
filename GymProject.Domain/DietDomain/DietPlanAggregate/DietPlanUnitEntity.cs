@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanUnit : Entity<IdTypeValue>, ICloneable
+    public class DietPlanUnitEntity : Entity<IdTypeValue>, ICloneable
     {
 
         // <summary>
@@ -29,12 +29,12 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         ///// </summary>
         //public DateTime PlannedEndDate { get; private set; } = null;
 
-        private ICollection<DietPlanDay> _dietDays;
+        private ICollection<DietPlanDayEntity> _dietDays;
 
         /// <summary>
         /// The diet days planned
         /// </summary>
-        public IReadOnlyCollection<DietPlanDay> DietDays
+        public IReadOnlyCollection<DietPlanDayEntity> DietDays
         {
             get => _dietDays?.Clone().ToList().AsReadOnly();
         }
@@ -44,22 +44,22 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlanUnit(IdTypeValue id, DateRangeValue period = null) : base(id)
+        private DietPlanUnitEntity(IdTypeValue id, DateRangeValue period = null) : base(id)
         {
             PeriodScheduled = period;
-            _dietDays = new List<DietPlanDay>();
+            _dietDays = new List<DietPlanDayEntity>();
 
             if (!DietUnitIdNotNull())
                 throw new DietDomainIvariantViolationException($"The Diet Unit ID period must be valid.");
         }
 
 
-        private DietPlanUnit(IdTypeValue id, DateRangeValue unitPeriod, ICollection<DietPlanDay> dietDays) : base(id)
+        private DietPlanUnitEntity(IdTypeValue id, DateRangeValue unitPeriod, ICollection<DietPlanDayEntity> dietDays) : base(id)
         {
             PeriodScheduled = unitPeriod;
 
             if (dietDays == null || dietDays?.Count == 0)
-                _dietDays = new List<DietPlanDay>();
+                _dietDays = new List<DietPlanDayEntity>();
             else
                 AssignDietDays(dietDays);
 
@@ -80,9 +80,9 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="id">The diet plan unit ID</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit NewDraft(IdTypeValue id)
+        public static DietPlanUnitEntity NewDraft(IdTypeValue id)
 
-            => new DietPlanUnit(id);
+            => new DietPlanUnitEntity(id);
 
         /// <summary>
         /// Factory method for creating drafts, IE: blank unit templates
@@ -90,9 +90,9 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="id">The diet plan unit ID</param>
         /// <param name="period">The perdiod to be scheduled</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit NewScheduledDraft(IdTypeValue id, DateRangeValue period) 
+        public static DietPlanUnitEntity NewScheduledDraft(IdTypeValue id, DateRangeValue period) 
             
-            => new DietPlanUnit(id, period);
+            => new DietPlanUnitEntity(id, period);
 
 
         /// <summary>
@@ -102,9 +102,9 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="period">The perdiod to be scheduled</param>
         /// <param name="dietDays">The diet days linked to this unit</param>
         /// <returns>The DietPlanUnitValue instance</returns>
-        public static DietPlanUnit ScheduleDietUnit(IdTypeValue id, DateRangeValue period, ICollection<DietPlanDay> dietDays) 
+        public static DietPlanUnitEntity ScheduleDietUnit(IdTypeValue id, DateRangeValue period, ICollection<DietPlanDayEntity> dietDays) 
             
-            => new DietPlanUnit(id, period, dietDays);
+            => new DietPlanUnitEntity(id, period, dietDays);
 
         #endregion
 
@@ -140,7 +140,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="newDays">The new end date</param>
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void AssignDietDays(ICollection<DietPlanDay> newDays)
+        public void AssignDietDays(ICollection<DietPlanDayEntity> newDays)
         {
             _dietDays = newDays.Clone().ToList();
             FinalizeDietPlanDaysChanged();
@@ -207,14 +207,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             string dayName = null
         )
         {
-            DietPlanDay toBeChanged = FindDayById(oldId);
+            DietPlanDayEntity toBeChanged = FindDayById(oldId);
 
             if (toBeChanged == default)
                 throw new ArgumentException($"The Diet Plan Day - Id={oldId.ToString()} - does not belong to the Diet Plan Unit - Id={Id.ToString()} -");
 
             if (_dietDays.Remove(toBeChanged))
 
-                _dietDays.Add(DietPlanDay.AddDayToPlan(oldId,
+                _dietDays.Add(DietPlanDayEntity.AddDayToPlan(oldId,
                     dayName,
                     weeklyOccurrances,
                     dailyCarbs,
@@ -259,7 +259,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
             _dietDays.Add(
 
-                DietPlanDay.AddDayToPlan(newId,
+                DietPlanDayEntity.AddDayToPlan(newId,
                 dayName,
                 weeklyOccurrances,
                 dailyCarbs,
@@ -282,7 +282,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
         public void UnplanDietDay(IdTypeValue toRemoveId)
         {
-            DietPlanDay toBeRemoved = FindDayById(toRemoveId);
+            DietPlanDayEntity toBeRemoved = FindDayById(toRemoveId);
 
             if (_dietDays.Remove(toBeRemoved))
             {
@@ -302,7 +302,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="id">The Id to be found</param>
         /// <returns>The DietPlanUnit or DEFAULT if not found/returns>
-        public DietPlanDay FindDayById(IdTypeValue id) => _dietDays.FirstOrDefault(x => x.Id == id);
+        public DietPlanDayEntity FindDayById(IdTypeValue id) => _dietDays.FirstOrDefault(x => x.Id == id);
 
         #endregion
 
@@ -327,7 +327,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="days">The diet days</param>
         /// <returns>The CalorieValue</returns>
-        private CalorieValue GetAvgDaylyCalories(IEnumerable<DietPlanDay> days)
+        private CalorieValue GetAvgDaylyCalories(IEnumerable<DietPlanDayEntity> days)
         {
             CalorieValue calories = CalorieValue.MeasureKcal(days.Sum(x => x.Calories.Value * x.WeeklyOccurrances.Value) / (float)WeekdayEnum.AllTheWeek);
 
@@ -343,12 +343,12 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// IE: MON, TUE, ON, OFF, Refeed, etc.
         /// </summary>
         /// <returns>The renamed Diet Days</returns>
-        private IEnumerable<DietPlanDay> SetDietDaysNames(IEnumerable<DietPlanDay> dietDays)
+        private IEnumerable<DietPlanDayEntity> SetDietDaysNames(IEnumerable<DietPlanDayEntity> dietDays)
         {
             int genericNameCounter = 0;
 
 
-            foreach (DietPlanDay day in dietDays)
+            foreach (DietPlanDayEntity day in dietDays)
             {
                 if (string.IsNullOrWhiteSpace(day.Name))
                 {
@@ -413,7 +413,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <returns>True if the rule is not violatedr</returns>
         private bool DietUnitDaysNoDuplicateWeekdays()
         {
-            foreach (DietPlanDay day in _dietDays
+            foreach (DietPlanDayEntity day in _dietDays
                     .Where(x => !x.SpecificWeekday.Equals(WeekdayEnum.Generic)))
             {
                 if (_dietDays.Any(x => x.SpecificWeekday.Equals(day.SpecificWeekday)))
@@ -429,7 +429,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <returns>True if the rule is not violated</returns>
         private bool DietUnitDaysNoDuplicateName()
         {
-            foreach (DietPlanDay day in _dietDays
+            foreach (DietPlanDayEntity day in _dietDays
                 .Where(x => !string.IsNullOrWhiteSpace(x.Name)))
             {
                 if (_dietDays.Any(x => x.Name.Equals(day.Name)))

@@ -10,7 +10,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// The source of the event
         /// </summary>
-        public DietPlan DietPlanEntry { get; private set; }
+        public DietPlanRoot DietPlanEntry { get; private set; }
 
         /// <summary>
         ///  The destination of the event
@@ -24,7 +24,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="dietPlanEntry">The diet plan entry</param>
         /// <param name="postId">The parent Post Id</param>
-        public DietPlanChangedDomainEvent(DietPlan dietPlanEntry, IdTypeValue postId)
+        public DietPlanChangedDomainEvent(DietPlanRoot dietPlanEntry, IdTypeValue postId)
         {
             DietPlanEntry = dietPlanEntry;
             PostId = postId;

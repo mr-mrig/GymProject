@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public interface ITrainingPlanRepository : IRepository<TrainingPlan>
+    public interface ITrainingPlanRepository : IRepository<TrainingPlanRoot>
     {
 
 
@@ -14,7 +14,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="id">The ID to be fetched</param>
         /// <returns>The Aggregate</returns>
-        TrainingPlan WithId(IdTypeValue id);
+        TrainingPlanRoot WithId(IdTypeValue id);
 
     }
 }

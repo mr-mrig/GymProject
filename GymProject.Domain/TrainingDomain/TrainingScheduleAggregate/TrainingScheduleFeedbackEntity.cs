@@ -1,17 +1,12 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
-using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
-using GymProject.Domain.Utils;
-using GymProject.Domain.Utils.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 {
 
-    public class TrainingScheduleFeedback : Entity<IdTypeValue>, ICloneable
+    public class TrainingScheduleFeedbackEntity : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -38,7 +33,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
-        private TrainingScheduleFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
+        private TrainingScheduleFeedbackEntity(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
         {
             Comment = comment ?? PersonalNoteValue.Write("");
             Rating = rating;
@@ -59,7 +54,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedback ProvideTransientFeedback(IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
+        public static TrainingScheduleFeedbackEntity ProvideTransientFeedback(IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
 
             => ProvideFeedback(null, authorId, rating, comment);
 
@@ -71,9 +66,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedback ProvideFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
+        public static TrainingScheduleFeedbackEntity ProvideFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
 
-            => new TrainingScheduleFeedback(id, authorId, rating, comment);
+            => new TrainingScheduleFeedbackEntity(id, authorId, rating, comment);
 
         #endregion
 

@@ -4,7 +4,7 @@ using GymProject.Domain.SocialNetworkDomain.Common;
 
 namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
 {
-    public class Picture : Entity<IdTypeValue>, IAggregateRoot
+    public class PictureEntity : Entity<IdTypeValue>, IAggregateRoot
     {
 
         /// <summary>
@@ -26,14 +26,14 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
 
         #region Ctors
 
-        private Picture(UrlValue imageUrl, PictureTypeEnum pictureType, long postId) : base(null)
+        private PictureEntity(UrlValue imageUrl, PictureTypeEnum pictureType, long postId) : base(null)
         {
             ImageUrl = imageUrl;
             PictureType = pictureType;
             PostId = postId;
         }
 
-        private Picture(string imageUrl, PictureTypeEnum pictureType, long postId) : base(null)
+        private PictureEntity(string imageUrl, PictureTypeEnum pictureType, long postId) : base(null)
         {
             ImageUrl = UrlValue.CreateLink(imageUrl);
             PictureType = pictureType;
@@ -50,9 +50,9 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// <param name="url">Image url</param>
         /// <param name="picType">Picture type</param>
         /// <returns></returns>
-        public static Picture Attach(UrlValue url, PictureTypeEnum picType, long postId)
+        public static PictureEntity Attach(UrlValue url, PictureTypeEnum picType, long postId)
         {
-            return new Picture(url, picType, postId);
+            return new PictureEntity(url, picType, postId);
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// <param name="url">Image url</param>
         /// <param name="picType">Picture type</param>
         /// <returns></returns>
-        public static Picture Attach(string url, PictureTypeEnum picType, long postId)
+        public static PictureEntity Attach(string url, PictureTypeEnum picType, long postId)
         {
-            return new Picture(url, picType, postId);
+            return new PictureEntity(url, picType, postId);
         }
 
         /// <summary>
@@ -71,9 +71,9 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// </summary>
         /// <param name="url">Image url</param>
         /// <returns></returns>
-        public static Picture AttachProgreesPicture(string url, long postId)
+        public static PictureEntity AttachProgreesPicture(string url, long postId)
         {
-            return new Picture(url, PictureTypeEnum.ProgressPic, postId);
+            return new PictureEntity(url, PictureTypeEnum.ProgressPic, postId);
         }
 
 
@@ -82,9 +82,9 @@ namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
         /// </summary>
         /// <param name="url">Image url</param>
         /// <returns></returns>
-        public static Picture AttachProgreesPicture(UrlValue url, long postId)
+        public static PictureEntity AttachProgreesPicture(UrlValue url, long postId)
         {
-            return new Picture(url, PictureTypeEnum.ProgressPic, postId);
+            return new PictureEntity(url, PictureTypeEnum.ProgressPic, postId);
         }
         #endregion
 

@@ -2,14 +2,13 @@
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.Utils;
-using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkingSetTemplate : Entity<IdTypeValue>, IWorkingSet, ICloneable
+    public class WorkingSetTemplateEntity : Entity<IdTypeValue>, IWorkingSet, ICloneable
     {
 
 
@@ -60,7 +59,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkingSetTemplate(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null) : base(id)
+        private WorkingSetTemplateEntity(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
@@ -89,9 +88,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplate PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
 
-            => new WorkingSetTemplate(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
+            => new WorkingSetTemplateEntity(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
         /// <summary>
         /// Factory method - Loads a WS with the specified ID
@@ -104,9 +103,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplate PlanWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
 
-            => new WorkingSetTemplate(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
+            => new WorkingSetTemplateEntity(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
         #endregion
 

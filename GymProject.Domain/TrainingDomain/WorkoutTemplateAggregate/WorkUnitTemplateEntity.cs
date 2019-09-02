@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkUnitTemplate : Entity<IdTypeValue>, ICloneable
+    public class WorkUnitTemplateEntity : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -37,16 +37,16 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
-        private IList<WorkingSetTemplate> _workingSets = new List<WorkingSetTemplate>();
+        private IList<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
 
         /// <summary>
         /// The Working Sets belonging to the WU, sorted by Progressive Numbers.
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<WorkingSetTemplate> WorkingSets
+        public IReadOnlyCollection<WorkingSetTemplateEntity> WorkingSets
         {
             get => _workingSets?.Clone().ToList().AsReadOnly() 
-                ?? new List<WorkingSetTemplate>().AsReadOnly();  // Objects are not referencally equal
+                ?? new List<WorkingSetTemplateEntity>().AsReadOnly();  // Objects are not referencally equal
         }
         /// </summary>
         public IdTypeValue OwnerNoteId { get; private set; } = null;
@@ -73,14 +73,14 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkUnitTemplate(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, 
-            IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds, IdTypeValue ownerNoteId = null) : base(id)
+        private WorkUnitTemplateEntity(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, 
+            IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds, IdTypeValue ownerNoteId = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             OwnerNoteId = ownerNoteId;
             ExcerciseId = excerciseId;
 
-            _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplate>();
+            _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplateEntity>();
 
             //No duplicate intensity techniques
             //_intensityTechniquesIds = workUnitIntensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<IdType>();
@@ -88,7 +88,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             _intensityTechniquesIds = CommonUtilities.RemoveDuplicatesFrom(workUnitIntensityTechniqueIds)?.ToList() ?? new List<IdTypeValue>();
 
 
-            foreach (WorkingSetTemplate ws in _workingSets)
+            foreach (WorkingSetTemplateEntity ws in _workingSets)
                 foreach (IdTypeValue intTechniqueId in _intensityTechniquesIds)
                     ws.AddIntensityTechnique(intTechniqueId);
 
@@ -113,10 +113,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <param name="workUnitIntensityTechniqueIds">The list of the IDs of the WU Intensity Techniques</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkUnitTemplate PlanTransientWorkUnit(uint progressiveNumber, IdTypeValue excerciseId, 
-            IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
+        public static WorkUnitTemplateEntity PlanTransientWorkUnit(uint progressiveNumber, IdTypeValue excerciseId, 
+            IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
 
-            => new WorkUnitTemplate(null, progressiveNumber, excerciseId, workingSets, workUnitIntensityTechniqueIds, ownerNoteId);
+            => new WorkUnitTemplateEntity(null, progressiveNumber, excerciseId, workingSets, workUnitIntensityTechniqueIds, ownerNoteId);
 
 
         /// <summary>
@@ -129,10 +129,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <param name="workUnitIntensityTechniqueIds">The list of the IDs of the WU Intensity Techniques</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkUnitTemplate PlanWorkUnit(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, 
-            IEnumerable<WorkingSetTemplate> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
+        public static WorkUnitTemplateEntity PlanWorkUnit(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, 
+            IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniqueIds = null, IdTypeValue ownerNoteId = null)
 
-            => new WorkUnitTemplate(id, progressiveNumber, excerciseId, workingSets, workUnitIntensityTechniqueIds, ownerNoteId);
+            => new WorkUnitTemplateEntity(id, progressiveNumber, excerciseId, workingSets, workUnitIntensityTechniqueIds, ownerNoteId);
 
         #endregion
 
@@ -166,7 +166,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _intensityTechniquesIds.Add(intensityTechniqueId);
 
-            foreach (WorkingSetTemplate ws in _workingSets)
+            foreach (WorkingSetTemplateEntity ws in _workingSets)
                 ws.AddIntensityTechnique(intensityTechniqueId);
 
             TestBusinessRules();
@@ -185,7 +185,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             if(removed)
             {
-                foreach (WorkingSetTemplate ws in _workingSets)
+                foreach (WorkingSetTemplateEntity ws in _workingSets)
                     ws.RemoveIntensityTechnique(intensityTechniqueId);
 
                 TestBusinessRules();
@@ -227,9 +227,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="toAdd">The WS to be added</param>
         /// <exception cref="ArgumentException">If Working Set already present</exception>
-        public void AddWorkingSet(WorkingSetTemplate toAdd)
+        public void AddWorkingSet(WorkingSetTemplateEntity toAdd)
         {
-            WorkingSetTemplate copy = toAdd.Clone() as WorkingSetTemplate;
+            WorkingSetTemplateEntity copy = toAdd.Clone() as WorkingSetTemplateEntity;
 
             if (_workingSets.Contains(copy))
                 throw new ArgumentException("Trying to add a duplicate Working Set", nameof(toAdd));
@@ -264,7 +264,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (_intensityTechniquesIds.Count > 0)
                 localIntensityTechniqueIds.AddRange(_intensityTechniquesIds.Select(x => x));
 
-            WorkingSetTemplate toAdd = WorkingSetTemplate.PlanTransientWorkingSet(
+            WorkingSetTemplateEntity toAdd = WorkingSetTemplateEntity.PlanTransientWorkingSet(
                     BuildWorkingSetProgressiveNumber(),
                     repetitions,
                     rest,
@@ -294,7 +294,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="ArgumentException">If the WS could not be found</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
         /// <returns>True if remove successful</returns>
-        public void RemoveWorkingSet(WorkingSetTemplate toRemove)
+        public void RemoveWorkingSet(WorkingSetTemplateEntity toRemove)
         {
             if (toRemove == null)
                 return;
@@ -332,7 +332,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
         public void RemoveWorkingSet(uint progressiveNumber)
         {
-            WorkingSetTemplate toBeRemoved = FindWorkingSet(progressiveNumber);
+            WorkingSetTemplateEntity toBeRemoved = FindWorkingSet(progressiveNumber);
 
             if(_workingSets.Remove(toBeRemoved))
             {
@@ -364,9 +364,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="pNum">The progressive number to be found</param>
         /// <exception cref="InvalidOperationException">If more Working Sets with the specified Progressive Number</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
-        public WorkingSetTemplate CloneWorkingSet(uint pNum)
+        public WorkingSetTemplateEntity CloneWorkingSet(uint pNum)
 
-            => FindWorkingSetOrDefault(pNum)?.Clone() as WorkingSetTemplate;
+            => FindWorkingSetOrDefault(pNum)?.Clone() as WorkingSetTemplateEntity;
 
 
         /// <summary>
@@ -397,8 +397,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void MoveWorkingSetToNewProgressiveNumber(uint toMovePnum, uint newPnum)
         {
-            WorkingSetTemplate dest = FindWorkingSet(newPnum);
-            WorkingSetTemplate source = FindWorkingSet(toMovePnum);
+            WorkingSetTemplateEntity dest = FindWorkingSet(newPnum);
+            WorkingSetTemplateEntity source = FindWorkingSet(toMovePnum);
 
             // Switch sets
             dest.MoveToNewProgressiveNumber(toMovePnum);
@@ -418,7 +418,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void ChangeWorkingSetRepetitions(uint workingSetPnum, WSRepetitionValue newReps)
         {
-            WorkingSetTemplate ws = FindWorkingSet(workingSetPnum);
+            WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
             ws.ChangeRepetitions(newReps);
         }
 
@@ -432,7 +432,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void ChangeWorkingSetEffort(uint workingSetPnum, TrainingEffortValue newEffort)
         {
-            WorkingSetTemplate ws = FindWorkingSet(workingSetPnum);
+            WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
             ws.ChangeEffort(newEffort);
         }
 
@@ -446,7 +446,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void ChangeWorkingSetRestPeriod(uint workingSetPnum, RestPeriodValue newRest)
         {
-            WorkingSetTemplate ws = FindWorkingSet(workingSetPnum);
+            WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
             ws.ChangeRestPeriod(newRest);
         }
 
@@ -460,7 +460,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void ChangeWorkingSetLiftingTempo(uint workingSetPnum, TUTValue newTempo)
         {
-            WorkingSetTemplate ws = FindWorkingSet(workingSetPnum);
+            WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
             ws.ChangeLiftingTempo(newTempo);
         }
 
@@ -474,7 +474,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void AddWorkingSetIntensityTechnique(uint workingSetPnum, IdTypeValue toAddId)
         {
-            WorkingSetTemplate ws = FindWorkingSet(workingSetPnum);
+            WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
             ws.AddIntensityTechnique(toAddId);
         }
 
@@ -488,7 +488,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         public void RemoveWorkingSetIntensityTechnique(uint workingSetPnum, IdTypeValue toRemoveId)
         {
-            WorkingSetTemplate ws = FindWorkingSet(workingSetPnum);
+            WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
 
             ws.RemoveIntensityTechnique(toRemoveId);
             TestBusinessRules();
@@ -631,7 +631,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="wsIn">The input WS list</param>
         /// <returns>The sorted list</returns>
-        private IEnumerable<WorkingSetTemplate> SortWorkingSetsByProgressiveNumber(IEnumerable<WorkingSetTemplate> wsIn)
+        private IEnumerable<WorkingSetTemplateEntity> SortWorkingSetsByProgressiveNumber(IEnumerable<WorkingSetTemplateEntity> wsIn)
 
             => wsIn.OrderBy(x => x.ProgressiveNumber);
 
@@ -646,7 +646,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < _workingSets.Count(); iws++)
             {
-                WorkingSetTemplate ws = _workingSets[iws];
+                WorkingSetTemplateEntity ws = _workingSets[iws];
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
         }
@@ -661,7 +661,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             // Just overwrite all the progressive numbers
             for (int iws = (int)fromPnum; iws < _workingSets.Count(); iws++)
             {
-                WorkingSetTemplate ws = _workingSets[iws];
+                WorkingSetTemplateEntity ws = _workingSets[iws];
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
         }
@@ -693,7 +693,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="pNum">The progressive number to be found</param>
         /// <exception cref="InvalidOperationException">If more Working Sets with the specified Progressive Number</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if notfound</returns>
-        private WorkingSetTemplate FindWorkingSetOrDefault(uint pNum)
+        private WorkingSetTemplateEntity FindWorkingSetOrDefault(uint pNum)
 
             => _workingSets.SingleOrDefault(x => x.ProgressiveNumber == pNum);
 
@@ -704,7 +704,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="pNum">The progressive number to be found</param>
         /// <exception cref="InvalidOperationException">If more Working Sets, or zero, with the specified Progressive Number</exception>
         /// <returns>The WorkingSetTemplate object</returns>
-        private WorkingSetTemplate FindWorkingSet(uint pNum)
+        private WorkingSetTemplateEntity FindWorkingSet(uint pNum)
 
             => _workingSets.Single(x => x.ProgressiveNumber == pNum);
 

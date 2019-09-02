@@ -5,7 +5,7 @@ using GymProject.Domain.FitnessJournalDomain.Exceptions;
 
 namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 {
-    public class Mus : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
+    public class MusRoot : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -18,7 +18,7 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 
         #region Ctors
 
-        private Mus(string name, string description = null) : base(null)
+        private MusRoot(string name, string description = null) : base(null)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new FitnessJournalDomainInvariantViolationException($"Trying to create a Mus with blank name");
@@ -37,9 +37,9 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
         /// <param name="name">MUS name - cannot be empty</param>
         /// <param name="description">MUS description</param>
         /// <returns>The new Mus object</returns>
-        public static Mus Diagnose(string name, string description = null)
+        public static MusRoot Diagnose(string name, string description = null)
         {
-            return new Mus(name, description);
+            return new MusRoot(name, description);
         }
         #endregion
 

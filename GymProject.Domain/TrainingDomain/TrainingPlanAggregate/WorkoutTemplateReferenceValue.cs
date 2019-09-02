@@ -24,14 +24,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint ProgressiveNumber { get; private set; }
 
 
-        private ICollection<WorkingSetTemplate> _workingSets;
+        private ICollection<WorkingSetTemplateEntity> _workingSets;
 
         /// <summary>
         /// The Working Sets of the workout
         /// </summary>
-        public IReadOnlyCollection<WorkingSetTemplate> WorkingSets
+        public IReadOnlyCollection<WorkingSetTemplateEntity> WorkingSets
         {
-            get => _workingSets?.Clone()?.ToList().AsReadOnly() ?? new List<WorkingSetTemplate>().AsReadOnly();
+            get => _workingSets?.Clone()?.ToList().AsReadOnly() ?? new List<WorkingSetTemplateEntity>().AsReadOnly();
         }
 
 
@@ -39,10 +39,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
-        private WorkoutTemplateReferenceValue(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplate> workingSets)
+        private WorkoutTemplateReferenceValue(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             ProgressiveNumber = workoutProgressiveNumber;
-            _workingSets = workingSets?.Clone()?.ToList() ?? new List<WorkingSetTemplate>();
+            _workingSets = workingSets?.Clone()?.ToList() ?? new List<WorkingSetTemplateEntity>();
 
             TestBusinessRules();
         }
@@ -59,7 +59,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workoutProgressiveNumber">The Progressive Number of the workout</param>
         /// <param name="workoutWorkingSets">The list of the Workout Working Sets</param>
         /// <returns>The WorkoutTemplateReferenceValue instance</returns>
-        public static WorkoutTemplateReferenceValue BuildLinkToWorkout(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplate> workoutWorkingSets)
+        public static WorkoutTemplateReferenceValue BuildLinkToWorkout(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workoutWorkingSets)
 
             => new WorkoutTemplateReferenceValue(workoutProgressiveNumber, workoutWorkingSets);
 
@@ -87,7 +87,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workingSets">The Working Sets to be added</param>
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
         /// <exception cref="ArgumentException">If trying to add duplicate Working Sets to the Training Week</exception>
-        public WorkoutTemplateReferenceValue AddWorkingSets(IEnumerable<WorkingSetTemplate> workingSets)
+        public WorkoutTemplateReferenceValue AddWorkingSets(IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             if (workingSets.ContainsDuplicates())
                 throw new ArgumentException("Trying to add duplicate Working Sets to the Training Week", nameof(workingSets));
@@ -108,7 +108,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
         /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
         /// <exception cref="ArgumentException">If at least one of the Working Sets couldn't be found</exception>
-        public WorkoutTemplateReferenceValue RemoveWorkingSets(IEnumerable<WorkingSetTemplate> workingSets)
+        public WorkoutTemplateReferenceValue RemoveWorkingSets(IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             if (workingSets?.DefaultIfEmpty() == default)
                 return this;
@@ -117,7 +117,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (workingSets.Any(x => x.IsTransient()) || _workingSets.Any(x => x.IsTransient()))
                 throw new InvalidOperationException($"Cannot remove transient Working Sets");
 
-            IEnumerable<WorkingSetTemplate> newWorkingSets = _workingSets.Except(workingSets);
+            IEnumerable<WorkingSetTemplateEntity> newWorkingSets = _workingSets.Except(workingSets);
 
             // Missing WS
             if (newWorkingSets.Count() != _workingSets.Count - workingSets.Count())

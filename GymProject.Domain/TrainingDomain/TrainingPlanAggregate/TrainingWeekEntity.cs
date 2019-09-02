@@ -1,6 +1,4 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.Base.Mediator;
-using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
@@ -12,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingWeekTemplate : Entity<IdTypeValue>, ICloneable
+    public class TrainingWeekEntity : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -62,7 +60,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
-        private TrainingWeekTemplate(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
+        private TrainingWeekEntity(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             TrainingWeekType = weekType ?? TrainingWeekTypeEnum.Generic;
@@ -89,9 +87,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate PlanTrainingWeek(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekEntity PlanTrainingWeek(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
 
-            => new TrainingWeekTemplate(id, progressiveNumber, workouts, weekType);
+            => new TrainingWeekEntity(id, progressiveNumber, workouts, weekType);
 
 
         /// <summary>
@@ -101,9 +99,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate PlanTransientTrainingWeek(uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekEntity PlanTransientTrainingWeek(uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
 
-            => new TrainingWeekTemplate(null, progressiveNumber, workouts, weekType);
+            => new TrainingWeekEntity(null, progressiveNumber, workouts, weekType);
 
 
         /// <summary>
@@ -111,9 +109,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate PlanTransientFullRestWeek(uint progressiveNumber)
+        public static TrainingWeekEntity PlanTransientFullRestWeek(uint progressiveNumber)
 
-            => new TrainingWeekTemplate(null, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
+            => new TrainingWeekEntity(null, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
 
 
         /// <summary>
@@ -122,9 +120,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="id">The ID of the Training Week</param>
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekTemplate PlanFullRestWeek(IdTypeValue id, uint progressiveNumber)
+        public static TrainingWeekEntity PlanFullRestWeek(IdTypeValue id, uint progressiveNumber)
 
-            => new TrainingWeekTemplate(id, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
+            => new TrainingWeekEntity(id, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
 
         #endregion
 
@@ -248,7 +246,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="workingSets">The list of the WSs which the WO is made up of</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void PlanWorkout(IEnumerable<WorkingSetTemplate> workingSets)
+        public void PlanWorkout(IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             _workouts.Add(WorkoutTemplateReferenceValue.BuildLinkToWorkout(
                 BuildWorkoutProgressiveNumber(),
@@ -271,7 +269,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         public void UnplanWorkout(uint workoutPnum)
         {
-            IEnumerable<WorkingSetTemplate> removedWorkingSets = 
+            IEnumerable<WorkingSetTemplateEntity> removedWorkingSets = 
                 _workouts.ElementAt((int)workoutPnum).WorkingSets;
 
             _workouts.RemoveAt((int)workoutPnum);
@@ -291,7 +289,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workingSets">The list of the WSs to add to the WO</param>
         /// <param name="workoutPnum">The Progressive Number of the Workout to be modified</param>
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
-        public void AddWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplate> workingSets)
+        public void AddWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             WorkoutTemplateReferenceValue workout =  FindWorkout(workoutPnum);
 
@@ -310,7 +308,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workoutPnum">The Progressive Number of the Workout to be modified</param>
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
-        public void RemoveWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplate> workingSets)
+        public void RemoveWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             WorkoutTemplateReferenceValue workout = FindWorkout(workoutPnum);
 
@@ -344,7 +342,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workoutPnum">The Progressive Number of the Workout</param>
         /// <returns>The list of the Working Sets</returns>
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
-        public IEnumerable<WorkingSetTemplate> CloneWorkoutWorkingSets(uint workoutPnum)
+        public IEnumerable<WorkingSetTemplateEntity> CloneWorkoutWorkingSets(uint workoutPnum)
 
              => FindWorkout(workoutPnum)?.WorkingSets;
 
@@ -363,7 +361,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Get the WSs of all the Workouts belonging to the Training Week
         /// </summary>
         /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkingSetTemplate> CloneAllWorkingSets()
+        public IEnumerable<WorkingSetTemplateEntity> CloneAllWorkingSets()
 
              => _workouts.Where(x => x != null).SelectMany(x => x.WorkingSets);
 

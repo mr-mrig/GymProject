@@ -10,7 +10,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// The source of the event
         /// </summary>
-        public DietPlan DietPlan { get; private set; }
+        public DietPlanRoot DietPlan { get; private set; }
 
         /// <summary>
         ///  The destination of the event
@@ -24,7 +24,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="dietPlan">The DietPlanUnit object</param>
         /// <param name="postId">The reference to the root Post</param>
-        public DietPlanHasBeenClearedDomainEvent(DietPlan dietPlan, IdTypeValue postId)
+        public DietPlanHasBeenClearedDomainEvent(DietPlanRoot dietPlan, IdTypeValue postId)
         {
             DietPlan = dietPlan;
             PostId = postId;

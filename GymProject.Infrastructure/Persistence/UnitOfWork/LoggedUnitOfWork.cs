@@ -31,8 +31,7 @@ namespace GymProject.Infrastructure.Persistence.UnitOfWork
 
         public LoggedUnitOfWork(DbContext dbContext/*, ILogger logger*/)
         {
-            //_context = dbContext as GymContext ?? new GymContext();
-            _context = dbContext;
+            _context = dbContext as GymContext ?? new GymContext();
             //_logger = logger;
         }
         #endregion

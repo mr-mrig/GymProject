@@ -10,7 +10,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// <summary>
         /// The source of the event
         /// </summary>
-        public FitnessDay FitnessDay { get; private set; }
+        public DailyFitnessRoot FitnessDay { get; private set; }
 
         /// <summary>
         ///  The destination of the event
@@ -24,7 +24,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         /// </summary>
         /// <param name="measuresEntry">The measure entry</param>
         /// <param name="postId">The parent Post Id</param>
-        public FitnessDayChangedDomainEvent(FitnessDay fitnessDayEntry, IdTypeValue postId)
+        public FitnessDayChangedDomainEvent(DailyFitnessRoot fitnessDayEntry, IdTypeValue postId)
         {
             FitnessDay = fitnessDayEntry;
             PostId = postId;

@@ -8,7 +8,7 @@ using GymProject.Domain.Utils;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanDay : Entity<IdTypeValue>, ICloneable
+    public class DietPlanDayEntity : Entity<IdTypeValue>, ICloneable
     {
 
 
@@ -68,7 +68,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlanDay(
+        private DietPlanDayEntity(
             IdTypeValue id,
             string name = null,
             WeeklyOccuranceValue weeklyOccurrances = null,
@@ -100,7 +100,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         }
 
 
-        private DietPlanDay() : base(null)
+        private DietPlanDayEntity() : base(null)
         {
             DietDayType = DietDayTypeEnum.NotSet;
             SpecificWeekday = WeekdayEnum.Generic;
@@ -126,7 +126,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="dayType">The day type</param>
         /// <param name="weeklyOccurrances">How many times the day is repetead throghout the week</param>
         /// <returns>The DietPlanDayValue instance</returns>
-        public static DietPlanDay AddDayToPlan(
+        public static DietPlanDayEntity AddDayToPlan(
             IdTypeValue id,
             string name = null,
             WeeklyOccuranceValue weeklyOccurrances = null,
@@ -138,7 +138,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
 
-            => new DietPlanDay(id, name, weeklyOccurrances, carbs, fats, proteins, salt, water, specificWeekday, dayType);
+            => new DietPlanDayEntity(id, name, weeklyOccurrances, carbs, fats, proteins, salt, water, specificWeekday, dayType);
 
 
         #endregion

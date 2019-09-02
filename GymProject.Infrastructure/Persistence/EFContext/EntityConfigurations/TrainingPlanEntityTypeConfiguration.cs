@@ -8,11 +8,11 @@ using System.Text;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 {
-    internal class TrainingPlanEntityTypeConfiguration : IEntityTypeConfiguration<TrainingPlan>
+    internal class TrainingPlanEntityTypeConfiguration : IEntityTypeConfiguration<TrainingPlanRoot>
     {
 
 
-        public void Configure(EntityTypeBuilder<TrainingPlan> planConfiguration)
+        public void Configure(EntityTypeBuilder<TrainingPlanRoot> planConfiguration)
         {
             planConfiguration.ToTable("TrainingPlan", GymContext.DefaultSchema);
 
@@ -23,14 +23,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             planConfiguration.Ignore(b => b.TrainingDensity);
             planConfiguration.Ignore(b => b.AttachedMessageId);
 
-            planConfiguration.HasMany<TrainingPhase>(x => x.TrainingPhaseIds)
-                .WithOne
+            //planConfiguration.HasMany<TrainingPhaseRoot>(x => x.TrainingPhaseIds)
+            //    .WithOne
                 
 
             planConfiguration.HasKey(o => o.Id);
 
-            planConfiguration.Property(o => o.Id)
-                .ForSqlServerUseSequenceHiLo("orderitemseq");
+            //planConfiguration.Property(o => o.Id)
+            //    .ForSqlServerUseSequenceHiLo("orderitemseq");
 
             planConfiguration.Property<int>("OrderId")
                 .IsRequired();

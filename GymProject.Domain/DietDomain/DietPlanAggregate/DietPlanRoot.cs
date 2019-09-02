@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlan : Entity<IdTypeValue>
+    public class DietPlanRoot : Entity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -29,13 +29,13 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// The author of the diet plan
         /// </summary>
-        public Owner Trainer { get; private set; } = null;
+        public OwnerEntity Trainer { get; private set; } = null;
 
 
         /// <summary>
         /// The recipient of the diet plan
         /// </summary>
-        public Trainee Trainee { get; private set; } = null;
+        public TraineeEntity Trainee { get; private set; } = null;
 
         /// <summary>
         /// The Owner's note
@@ -78,15 +78,15 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         }
 
 
-        private ICollection<DietPlanUnit> _dietUnits;
+        private ICollection<DietPlanUnitEntity> _dietUnits;
 
         /// <summary>
         /// The diet days planned.
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<DietPlanUnit> DietUnits
+        public IReadOnlyCollection<DietPlanUnitEntity> DietUnits
         {
-            get => _dietUnits?.Clone().ToList().AsReadOnly() ?? new List<DietPlanUnit>().AsReadOnly();
+            get => _dietUnits?.Clone().ToList().AsReadOnly() ?? new List<DietPlanUnitEntity>().AsReadOnly();
         }
 
 
@@ -94,21 +94,21 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
         #region Ctors
 
-        private DietPlan(Owner author, Trainee trainee, ICollection<DietPlanUnit> dietUnits) : base(null)
+        private DietPlanRoot(OwnerEntity author, TraineeEntity trainee, ICollection<DietPlanUnitEntity> dietUnits) : base(null)
         {
             Trainer = author;
             Trainee = trainee;
-            _dietUnits = dietUnits.Clone().ToList() ?? new List<DietPlanUnit>();
+            _dietUnits = dietUnits.Clone().ToList() ?? new List<DietPlanUnitEntity>();
         }
 
 
-        private DietPlan
+        private DietPlanRoot
          (
             IdTypeValue postId,
             string name,
-            Owner owner,
-            Trainee trainee,
-            ICollection<DietPlanUnit> dietUnits,
+            OwnerEntity owner,
+            TraineeEntity trainee,
+            ICollection<DietPlanUnitEntity> dietUnits,
             PersonalNoteValue ownerNote = null,
             WeeklyOccuranceValue weeklyFreeMeals = null) : base(postId)
         {
@@ -119,7 +119,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             WeeklyFreeMeals = weeklyFreeMeals;
             PostId = postId;
 
-            dietUnits = dietUnits ?? new List<DietPlanUnit>();
+            dietUnits = dietUnits ?? new List<DietPlanUnitEntity>();
 
             AssignDietUnits(dietUnits);     // Throws
             TestBusinessRules();        // Throws
@@ -141,17 +141,17 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="postId">The parent Post Id</param>
         /// <param name="weeklyFreeMeals">The number of weekly free meals allowed</param>
         /// <returns>The DietPlanValue instance</returns>
-        public static DietPlan ScheduleFullDietPlan
+        public static DietPlanRoot ScheduleFullDietPlan
         (
             IdTypeValue postId,
             string name,
-            Owner owner,
-            Trainee trainee,
-            ICollection<DietPlanUnit> dietPlanUnits,
+            OwnerEntity owner,
+            TraineeEntity trainee,
+            ICollection<DietPlanUnitEntity> dietPlanUnits,
             PersonalNoteValue ownerNote = null,
             WeeklyOccuranceValue weeklyFreeMeals = null
         )
-            => new DietPlan(postId, name, owner, trainee, dietPlanUnits, ownerNote, weeklyFreeMeals);
+            => new DietPlanRoot(postId, name, owner, trainee, dietPlanUnits, ownerNote, weeklyFreeMeals);
 
 
 
@@ -161,14 +161,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="sourceTrainer">The owner of the plan</param>
         /// <param name="sourceTrainer">The plan recipient</param>
         /// <returns>The DietPlanValue instance</returns>
-        public static DietPlan NewDraft(Owner sourceTrainer, Trainee destTrainee)
+        public static DietPlanRoot NewDraft(OwnerEntity sourceTrainer, TraineeEntity destTrainee)
         {
-            List<DietPlanUnit> draftUnits = new List<DietPlanUnit>()
+            List<DietPlanUnitEntity> draftUnits = new List<DietPlanUnitEntity>()
             {
-                DietPlanUnit.NewDraft(IdTypeValue.Create(1)),
+                DietPlanUnitEntity.NewDraft(IdTypeValue.Create(1)),
             };
 
-            return new DietPlan(sourceTrainer, destTrainee, draftUnits);
+            return new DietPlanRoot(sourceTrainer, destTrainee, draftUnits);
         }
 
         #endregion
@@ -187,7 +187,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             if (_dietUnits.Count == 0)
                 throw new InvalidOperationException($"No Diet Plan Units linked to the Diet Plan");
 
-            DietPlanUnit last = GetLastScheduledDietPlanUnit();
+            DietPlanUnitEntity last = GetLastScheduledDietPlanUnit();
 
             last.RescheduleEndDate(upTo);
 
@@ -272,7 +272,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             WeekdayEnum specificWeekday = null,
             DietDayTypeEnum dayType = null)
         {
-            DietPlanUnit toBeChanged = FindUnitById(dietUnitId);
+            DietPlanUnitEntity toBeChanged = FindUnitById(dietUnitId);
 
             if (toBeChanged == default)
                 throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan");
@@ -299,7 +299,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="ArgumentException">Thrown if the DietPlanUnit doesn't belong to the Plan </exception>
         public void UnplanDietDay(IdTypeValue dietUnitId, IdTypeValue dietDayId)
         {
-            DietPlanUnit toBeChanged = FindUnitById(dietUnitId);
+            DietPlanUnitEntity toBeChanged = FindUnitById(dietUnitId);
 
             if (toBeChanged == default)
                 throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan");
@@ -329,7 +329,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             string dayName = null
         )
         {
-            DietPlanUnit toBeChanged = FindUnitById(dietUnitId);
+            DietPlanUnitEntity toBeChanged = FindUnitById(dietUnitId);
 
             if (toBeChanged == default)
                 throw new ArgumentException($"The Diet Plan Unit - Id={dietUnitId.ToString()} - does not belong to the Diet Plan.");
@@ -385,10 +385,10 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 throw new InvalidOperationException($"Can't add a new Diet Plan Unit before closing the previous one");
 
             _dietUnits.Add(
-                 DietPlanUnit.NewScheduledDraft(newId, DateRangeValue.RangeBetween(PeriodScheduled.End.AddDays(1), upTo))
+                 DietPlanUnitEntity.NewScheduledDraft(newId, DateRangeValue.RangeBetween(PeriodScheduled.End.AddDays(1), upTo))
                  );
 
-            DietPlanUnit previous = FindUnitById(newId - 1);
+            DietPlanUnitEntity previous = FindUnitById(newId - 1);
 
             AvgDailyCalories = GetAvgDailyCalories(_dietUnits);
             PeriodScheduled = GetPlanPeriod(_dietUnits);
@@ -405,7 +405,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="DietDomainIvariantViolationException">If business ruels violated</exception>
         public void CloseDietPlanUnit(IdTypeValue planUnitId, DateTime startingFrom, DateTime upTo)
         {
-            DietPlanUnit toBeScheduled = FindUnitById(planUnitId);
+            DietPlanUnitEntity toBeScheduled = FindUnitById(planUnitId);
 
             if (toBeScheduled == default)
                 throw new ArgumentException($"The Diet Plan Unit - Id={planUnitId.ToString()} - does not belong to the Diet Plan");
@@ -414,7 +414,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
 
             // If the previous unit is opened - Infinite DateRange - close it
             // Should never happen
-            DietPlanUnit unit = _dietUnits.FirstOrDefault(x => x != toBeScheduled && !x.PeriodScheduled.IsRightBounded());
+            DietPlanUnitEntity unit = _dietUnits.FirstOrDefault(x => x != toBeScheduled && !x.PeriodScheduled.IsRightBounded());
             unit?.RescheduleEndDate(startingFrom.AddDays(-1));
 
             FinalizeDietPlanUnitsAdded();
@@ -441,7 +441,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="DietDomainIvariantViolationException">If business ruels violated</exception>
         public void CloseDietPlanUnit(IdTypeValue planUnitId, DateTime upTo)
         {
-            DietPlanUnit toBeScheduled = FindUnitById(planUnitId);
+            DietPlanUnitEntity toBeScheduled = FindUnitById(planUnitId);
 
             if (FindUnitById(planUnitId) == default)
                 throw new ArgumentException($"The Diet Plan Unit - Id={planUnitId.ToString()} - does not belong to the Diet Plan");
@@ -460,7 +460,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="ArgumentException">Thrown if unit not found</exception>
         public void UnscheduleDietPlanUnit(IdTypeValue toRemoveId)
         {
-            DietPlanUnit toBeRemoved = FindUnitById(toRemoveId);
+            DietPlanUnitEntity toBeRemoved = FindUnitById(toRemoveId);
 
             if (_dietUnits.Remove(toBeRemoved))
             {
@@ -488,7 +488,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <exception cref="ArgumentException">If the Unit doesn't belong to the Diet Plan</exception>
         public void MoveDietPlanUnit(IdTypeValue toMoveId, DateRangeValue newPeriod)
         {
-            DietPlanUnit toBeMoved = FindUnitById(toMoveId);
+            DietPlanUnitEntity toBeMoved = FindUnitById(toMoveId);
 
             if (toBeMoved == default)
                 throw new ArgumentException($"The Diet Plan Unit - Id={toMoveId.ToString()} - does not belong to the Diet Plan");
@@ -505,7 +505,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="dietUnits">The diet plan units</param>
         /// <exception cref="DietDomainIvariantViolationException">Thrown when invalid state</exception>
-        public void AssignDietUnits(ICollection<DietPlanUnit> dietUnits)
+        public void AssignDietUnits(ICollection<DietPlanUnitEntity> dietUnits)
         {
             _dietUnits = dietUnits.Clone().ToList();
             FinalizeDietPlanUnitsAdded();
@@ -516,13 +516,13 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="id">The Id to be found</param>
         /// <returns>The DietPlanUnit or DEFAULT if not found/returns>
-        public DietPlanUnit FindUnitById(IdTypeValue id) => _dietUnits.Where(x => x.Id == id).FirstOrDefault();
+        public DietPlanUnitEntity FindUnitById(IdTypeValue id) => _dietUnits.Where(x => x.Id == id).FirstOrDefault();
 
 
         /// <summary>
         /// Get the last scheduled diet plan unit - chronologically, which might differ from the diet units list order.
         /// </summary>
-        public DietPlanUnit GetLastScheduledDietPlanUnit()
+        public DietPlanUnitEntity GetLastScheduledDietPlanUnit()
         {
             var maxIndex =
                 (
@@ -539,7 +539,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <summary>
         /// Get the first scheduled diet plan unit - chronologically, which might differ from the diet units list order.
         /// </summary>
-        public DietPlanUnit GetFirstScheduledDietPlanUnit()
+        public DietPlanUnitEntity GetFirstScheduledDietPlanUnit()
         {
             var minIndex =
                 (
@@ -589,7 +589,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="units">The diet units</param>
         /// <returns>The CalorieValue</returns>
-        private CalorieValue GetAvgDailyCalories(IEnumerable<DietPlanUnit> units)
+        private CalorieValue GetAvgDailyCalories(IEnumerable<DietPlanUnitEntity> units)
         {
             CalorieValue calories = CalorieValue.MeasureKcal(units.Where(unit => unit.DietDays.Count > 0)   // Skip draft units
                 .Sum(x => x.AvgDailyCalories.Value) / (float)_dietUnits.Count);
@@ -605,9 +605,9 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="units">The diet units</param>
         /// <returns>The DateRangeValue representing the scheduled period</returns>
-        private DateRangeValue GetPlanPeriod(IEnumerable<DietPlanUnit> units)
+        private DateRangeValue GetPlanPeriod(IEnumerable<DietPlanUnitEntity> units)
         {
-            IEnumerable<DietPlanUnit> nonDraftUnits = units.Where(unit => unit.DietDays.Count > 0 && unit.PeriodScheduled != null);
+            IEnumerable<DietPlanUnitEntity> nonDraftUnits = units.Where(unit => unit.DietDays.Count > 0 && unit.PeriodScheduled != null);
 
             return DateRangeValue.RangeBetween(
                 nonDraftUnits.Select(x => x.PeriodScheduled.Start).Min(),
@@ -634,7 +634,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="units">The list to be sorted</param>
         /// <returns>The sorted list</returns>
-        private IList<DietPlanUnit> GetSortedUnits(ICollection<DietPlanUnit> units) 
+        private IList<DietPlanUnitEntity> GetSortedUnits(ICollection<DietPlanUnitEntity> units) 
             
             => _dietUnits.Where(x => x.PeriodScheduled?.Start != null).OrderBy(x => x.PeriodScheduled.Start).ToList();
 
@@ -644,14 +644,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>where each element is chronologically contiguous
         /// <param name="units">The units to be shuffled</param>
         /// <returns>The shiuffled list</returns>
-        private ICollection<DietPlanUnit> MakeUnitsContiguous(ICollection<DietPlanUnit> units)
+        private ICollection<DietPlanUnitEntity> MakeUnitsContiguous(ICollection<DietPlanUnitEntity> units)
         {
-            IList<DietPlanUnit> sorted = GetSortedUnits(_dietUnits);
+            IList<DietPlanUnitEntity> sorted = GetSortedUnits(_dietUnits);
 
             for (int i = 0; i < sorted.Count() - 1; i++) // Skip the last one
             {
-                DietPlanUnit current = sorted[i];
-                DietPlanUnit nextOne = sorted[i + 1];
+                DietPlanUnitEntity current = sorted[i];
+                DietPlanUnitEntity nextOne = sorted[i + 1];
 
                 nextOne.Reschedule(DateRangeValue.RangeBetween(
                     current.PeriodScheduled.End.AddDays(1),
@@ -669,14 +669,14 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <param name="units">The units to be shuffled</param>
         /// <param name="movedId">The DietPlanUnit Id which has been moved</param>
         /// <returns>The shiuffled list</returns>
-        private ICollection<DietPlanUnit> MakeUnitsContiguous(ICollection<DietPlanUnit> units, IdTypeValue movedId)
+        private ICollection<DietPlanUnitEntity> MakeUnitsContiguous(ICollection<DietPlanUnitEntity> units, IdTypeValue movedId)
         {
-            IList<DietPlanUnit> sorted = GetSortedUnits(_dietUnits);
+            IList<DietPlanUnitEntity> sorted = GetSortedUnits(_dietUnits);
 
             for (int i = 0; i < sorted.Count() - 1; i++) // Skip the last one
             {
-                DietPlanUnit current = sorted[i];
-                DietPlanUnit nextOne = sorted[i + 1];
+                DietPlanUnitEntity current = sorted[i];
+                DietPlanUnitEntity nextOne = sorted[i + 1];
 
                 if(nextOne.Id == movedId)
                 {
@@ -722,12 +722,12 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// <returns>True if the business rule is met</returns>
         private bool DietPlanUnitsNotOverlapping()
         {
-            IList<DietPlanUnit> sorted = GetSortedUnits(_dietUnits);
+            IList<DietPlanUnitEntity> sorted = GetSortedUnits(_dietUnits);
 
             for(int i = 0; i< sorted.Count() - 1; i++)      // Skip last unit
             {
-                DietPlanUnit current = sorted[i];
-                DietPlanUnit next = sorted[i + 1];
+                DietPlanUnitEntity current = sorted[i];
+                DietPlanUnitEntity next = sorted[i + 1];
 
                 if (current.PeriodScheduled.Overlaps(next.PeriodScheduled))
                     return false;
@@ -746,12 +746,12 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             if (_dietUnits.Count <= 1)
                 return true;
 
-            IList<DietPlanUnit> sorted = GetSortedUnits(_dietUnits);
+            IList<DietPlanUnitEntity> sorted = GetSortedUnits(_dietUnits);
 
             for (int i = 0; i < sorted.Count() - 1; i++)      // Skip last unit
             {
-                DietPlanUnit current = sorted[i];
-                DietPlanUnit next = sorted[i + 1];
+                DietPlanUnitEntity current = sorted[i];
+                DietPlanUnitEntity next = sorted[i + 1];
 
                 if (current.PeriodScheduled.End != next.PeriodScheduled.Start.AddDays(-1))
                     return false;

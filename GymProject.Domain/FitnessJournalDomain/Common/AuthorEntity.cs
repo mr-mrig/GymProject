@@ -4,11 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
+namespace GymProject.Domain.FitnessJournalDomain.Common
 {
-    public class Owner : Entity<IdTypeValue>
+    public class AuthorEntity : Entity<IdTypeValue>
     {
-
 
         public UsernameValue Username { get; private set; }
 
@@ -16,17 +15,16 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Owner(string username, string imageProfileUrl) : base(null)
+        private AuthorEntity(string username, string imageProfileUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));
         }
 
 
-        public static Owner Register(string username, string imageprofile)
+        public static AuthorEntity Register(string username, string imageprofile)
         {
-            return new Owner(username, imageprofile);
+            return new AuthorEntity(username, imageprofile);
         }
-
     }
 }

@@ -1,13 +1,11 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace GymProject.Domain.FitnessJournalDomain.Common
+namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    public class Author : Entity<IdTypeValue>
+    public class OwnerEntity : Entity<IdTypeValue>
     {
+
 
         public UsernameValue Username { get; private set; }
 
@@ -15,16 +13,17 @@ namespace GymProject.Domain.FitnessJournalDomain.Common
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Author(string username, string imageProfileUrl) : base(null)
+        private OwnerEntity(string username, string imageProfileUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));
         }
 
 
-        public static Author Register(string username, string imageprofile)
+        public static OwnerEntity Register(string username, string imageprofile)
         {
-            return new Author(username, imageprofile);
+            return new OwnerEntity(username, imageprofile);
         }
+
     }
 }

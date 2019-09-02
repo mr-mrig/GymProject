@@ -18,7 +18,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void CreateEmptyFitnessDaySuccess()
         {
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
 
             Assert.NotNull(fd);
             Assert.Equal(DateTime.Today, fd.DayDate);
@@ -33,7 +33,7 @@ namespace GymProject.Domain.Test.UnitTest
             float weight = 101.1f; 
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWeightKilograms(fakeWeight);
             fd.TrackWeightKilograms(weight);
 
@@ -61,7 +61,7 @@ namespace GymProject.Domain.Test.UnitTest
             float weight = 101.1f;
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWeight(fakeWeight, WeightUnitMeasureEnum.Kilograms);
             fd.TrackWeight(weight, WeightUnitMeasureEnum.Kilograms);
 
@@ -80,7 +80,7 @@ namespace GymProject.Domain.Test.UnitTest
             float weight = 170.1f;
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWeightPounds(fakeWeight);
             fd.TrackWeightPounds(weight);
 
@@ -104,7 +104,7 @@ namespace GymProject.Domain.Test.UnitTest
             DietDayTypeEnum dayType = DietDayTypeEnum.On;
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackDiet(MacronutirentWeightValue.MeasureGrams(carbs1), MacronutirentWeightValue.MeasureGrams(fats1), MacronutirentWeightValue.MeasureGrams(pro1), isFreeMeal: isFreeMeal1, dayType: dayType1);
             fd.TrackDiet(MacronutirentWeightValue.MeasureGrams(carbs), MacronutirentWeightValue.MeasureGrams(fats), MacronutirentWeightValue.MeasureGrams(pro), isFreeMeal: isFreeMeal, dayType: dayType);
 
@@ -140,7 +140,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             Assert.Throws<GlobalDomainGenericException>(() => fd.TrackDiet());
         }
 
@@ -156,7 +156,7 @@ namespace GymProject.Domain.Test.UnitTest
             HeartRateValue restHr = HeartRateValue.Measure(100f);
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackActivity(steps, stairs, burned, sleepMinutes, sleepRating, restHr);
 
             Assert.NotNull(fd);
@@ -185,7 +185,7 @@ namespace GymProject.Domain.Test.UnitTest
             GlycemiaValue glycemia = GlycemiaValue.Measure(88.7f);
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWellnessDay(celsius, glycemia);
 
             Assert.NotNull(fd);
@@ -219,7 +219,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWellnessDay(celsius, musList: muses);
             List<MusReference> malevolent = fd.DailyWellness.MusList.ToList();
             malevolent.RemoveAll(x => true);
@@ -251,7 +251,7 @@ namespace GymProject.Domain.Test.UnitTest
             };
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWellnessDay(celsius, musList: muses);
             fd.DiagnoseMus(MusReference.MusLink(IdTypeValue.Create(500), "Added"));
 
@@ -277,7 +277,7 @@ namespace GymProject.Domain.Test.UnitTest
             TemperatureValue celsius = TemperatureValue.Measure(26.8f);
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
 
             fd.TrackWellnessDay(celsius);
             fd.UntrackWellness();
@@ -291,7 +291,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void CreateFitnessDayDietUntrack()
         {
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
 
             fd.TrackDiet(MacronutirentWeightValue.MeasureGrams(300));
             fd.UntrackDiet();
@@ -305,7 +305,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void CreateFitnessDayWeightUntrack()
         {
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
 
             fd.TrackWeightKilograms(66);
             fd.UntrackWeight();
@@ -319,7 +319,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void CreateFitnessDayActivityUntrack()
         {
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
 
             fd.TrackActivity(66);
             fd.UntrackActivity();
@@ -333,7 +333,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void CreateFitnessDayMultipleEntriesUntrack()
         {
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
 
             fd.TrackActivity(66);
             fd.TrackWeightKilograms(44);
@@ -356,7 +356,7 @@ namespace GymProject.Domain.Test.UnitTest
             };
 
             RatingValue rating = RatingValue.Rate(4.2f);
-            FitnessDay fd = FitnessDay.StartTrackingDay(DateTime.Today, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWellnessDay(celsius, musList: muses);
 
             MusReference fakeMus = MusReference.MusLink(IdTypeValue.Create(1000), "WillBeRemoved");
@@ -390,7 +390,7 @@ namespace GymProject.Domain.Test.UnitTest
             DateTime fakeDate = DateTime.MinValue;
             DateTime date = DateTime.Today;
 
-            FitnessDay fd = FitnessDay.StartTrackingDay(fakeDate, fake);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(fakeDate, fake);
 
             fd.ChangeRating(rating);
             fd.ChangeDate(date);
@@ -410,7 +410,7 @@ namespace GymProject.Domain.Test.UnitTest
             RatingValue rating = RatingValue.Rate(4.2f);
             DateTime date = DateTime.Today;
 
-            FitnessDay fd = FitnessDay.StartTrackingDay(date, rating);
+            DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(date, rating);
 
             fd.LinkToPost(IdTypeValue.Create(postId));
 

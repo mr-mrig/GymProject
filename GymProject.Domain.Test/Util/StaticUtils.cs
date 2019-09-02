@@ -46,14 +46,14 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        public static IEnumerable<WorkingSetTemplate> ForceConsecutiveProgressiveNumbers(IEnumerable<WorkingSetTemplate> input)
+        public static IEnumerable<WorkingSetTemplateEntity> ForceConsecutiveProgressiveNumbers(IEnumerable<WorkingSetTemplateEntity> input)
         {
-            IEnumerable<WorkingSetTemplate> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+            IEnumerable<WorkingSetTemplateEntity> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
 
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < result.Count(); iws++)
             {
-                WorkingSetTemplate ws = result.ElementAt(iws);
+                WorkingSetTemplateEntity ws = result.ElementAt(iws);
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
             return result;
@@ -74,14 +74,14 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        public static IEnumerable<TrainingWeekTemplate> ForceConsecutiveProgressiveNumbers(IEnumerable<TrainingWeekTemplate> input)
+        public static IEnumerable<TrainingWeekEntity> ForceConsecutiveProgressiveNumbers(IEnumerable<TrainingWeekEntity> input)
         {
-            IEnumerable<TrainingWeekTemplate> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+            IEnumerable<TrainingWeekEntity> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
 
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < result.Count(); iws++)
             {
-                TrainingWeekTemplate ws = result.ElementAt(iws);
+                TrainingWeekEntity ws = result.ElementAt(iws);
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
             return result;
@@ -216,7 +216,7 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        internal static TrainingWeekTemplate BuildRandomTrainingWeek(long id, int progn, bool isTransient,
+        internal static TrainingWeekEntity BuildRandomTrainingWeek(long id, int progn, bool isTransient,
             int nWorkoutsMin = 3, int nWorkoutsMax = 9, TrainingWeekTypeEnum weekType = null, float noWorkoutsProb = 0.05f)
         {
             float workoutWithNoWorkingSetsProbability = 0.05f;
@@ -252,7 +252,7 @@ namespace GymProject.Domain.Test.Util
                     ? 0
                     : RandomFieldGenerator.RandomInt(workingSetsMin, workingSetsMax);
 
-                List<WorkingSetTemplate> workoutSets = new List<WorkingSetTemplate>();
+                List<WorkingSetTemplateEntity> workoutSets = new List<WorkingSetTemplateEntity>();
 
                 for (int iws = 0; iws < workingSetsNumber; iws++)
                 {
@@ -270,19 +270,19 @@ namespace GymProject.Domain.Test.Util
 
             // Create the Week
             if (isTransient)
-                return TrainingWeekTemplate.PlanTransientTrainingWeek((uint)progn, workouts, weekType);
+                return TrainingWeekEntity.PlanTransientTrainingWeek((uint)progn, workouts, weekType);
 
             else
 
-                return TrainingWeekTemplate.PlanTrainingWeek(IdTypeValue.Create(id), (uint)progn, workouts, weekType);
+                return TrainingWeekEntity.PlanTrainingWeek(IdTypeValue.Create(id), (uint)progn, workouts, weekType);
         }
 
 
-        internal static WorkoutTemplate BuildRandomWorkout(long id, bool isTransient,
+        internal static WorkoutTemplateRoot BuildRandomWorkout(long id, bool isTransient,
             int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
-            List<WorkUnitTemplate> workUnits = new List<WorkUnitTemplate>();
+            List<WorkUnitTemplateEntity> workUnits = new List<WorkUnitTemplateEntity>();
 
             int? nWorkUnits = RandomFieldGenerator.RandomIntNullable(nWorkUnitsMin, nWorkUnitsMax, emptyWorkoutProb);
 
@@ -311,13 +311,13 @@ namespace GymProject.Domain.Test.Util
 
             if (isTransient)
 
-                return WorkoutTemplate.PlanTransientWorkout(
+                return WorkoutTemplateRoot.PlanTransientWorkout(
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
                     weekday: specificDay
                     );
             else
-                return WorkoutTemplate.PlanWorkout(
+                return WorkoutTemplateRoot.PlanWorkout(
                     id: IdTypeValue.Create(id),
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
@@ -327,11 +327,11 @@ namespace GymProject.Domain.Test.Util
 
 
 
-        internal static WorkUnitTemplate BuildRandomWorkUnit(long id, int progn, bool isTransient,
+        internal static WorkUnitTemplateEntity BuildRandomWorkUnit(long id, int progn, bool isTransient,
             int wsNumMin = 2, int wsNumMax = 7, int excerciseIdMin = 1, int excerciseIdMax = 500,
             int ownerNoteIdMin = 10, int ownerNoteIdMax = 500)
         {
-            List<WorkingSetTemplate> workingSets = new List<WorkingSetTemplate>();
+            List<WorkingSetTemplateEntity> workingSets = new List<WorkingSetTemplateEntity>();
             TrainingEffortTypeEnum effortType;
 
             int wuIntTechniquesMin = 0, wuIntTechniquesMax = 3;
@@ -379,7 +379,7 @@ namespace GymProject.Domain.Test.Util
 
             if (isTransient)
 
-                return WorkUnitTemplate.PlanTransientWorkUnit(
+                return WorkUnitTemplateEntity.PlanTransientWorkUnit(
                 progressiveNumber: (uint)progn,
                 excerciseId: IdTypeValue.Create(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
                 workingSets: workingSets,
@@ -388,7 +388,7 @@ namespace GymProject.Domain.Test.Util
             );
             else
 
-                return WorkUnitTemplate.PlanWorkUnit(
+                return WorkUnitTemplateEntity.PlanWorkUnit(
                     id: IdTypeValue.Create(id),
                     progressiveNumber: (uint)progn,
                     excerciseId: IdTypeValue.Create(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
@@ -399,7 +399,7 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static WorkingSetTemplate BuildRandomWorkingSet(long id, int progn, bool isTransient, TrainingEffortTypeEnum effortType,
+        internal static WorkingSetTemplateEntity BuildRandomWorkingSet(long id, int progn, bool isTransient, TrainingEffortTypeEnum effortType,
             int repsMin = 1, int repsMax = 20, bool repetitionsSerie = true, float amrapProbability = 0.1f, int restMin = 5, int restMax = 500,
             IList<TUTValue> tutToChooseAmong = null, IList<IdTypeValue> techniquesId = null)
         {
@@ -449,7 +449,7 @@ namespace GymProject.Domain.Test.Util
 
             if (isTransient)
 
-                return WorkingSetTemplate.PlanTransientWorkingSet(
+                return WorkingSetTemplateEntity.PlanTransientWorkingSet(
                     (uint)progn,
                     serie,
                     RestPeriodValue.SetRestSeconds((uint)RandomFieldGenerator.RandomInt(restMin, restMax)),
@@ -459,7 +459,7 @@ namespace GymProject.Domain.Test.Util
                 );
             else
 
-                return WorkingSetTemplate.PlanWorkingSet(
+                return WorkingSetTemplateEntity.PlanWorkingSet(
                     IdTypeValue.Create(id),
                     (uint)progn,
                     serie,
@@ -471,7 +471,7 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static TrainingScheduleFeedback BuildRandomFeedback(long id, bool isTransient, IdTypeValue userId = null,
+        internal static TrainingScheduleFeedbackEntity BuildRandomFeedback(long id, bool isTransient, IdTypeValue userId = null,
             RatingValue rating = null, PersonalNoteValue commentBody = null, IEnumerable<IdTypeValue> userIdsToExclude = null)
         {
             // Used to avoid collision -> ensure the Business Rule is always met
@@ -482,21 +482,21 @@ namespace GymProject.Domain.Test.Util
             commentBody = commentBody ?? PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
             return isTransient 
-                ? TrainingScheduleFeedback.ProvideTransientFeedback(userId, rating, commentBody)
-                : TrainingScheduleFeedback.ProvideFeedback(IdTypeValue.Create(id), userId, rating, commentBody);
+                ? TrainingScheduleFeedbackEntity.ProvideTransientFeedback(userId, rating, commentBody)
+                : TrainingScheduleFeedbackEntity.ProvideFeedback(IdTypeValue.Create(id), userId, rating, commentBody);
         }
 
 
-        internal static TrainingSchedule BuildRandomSchedule(long id, bool isTransient, bool checkAsserts = true)
+        internal static TrainingScheduleRoot BuildRandomSchedule(long id, bool isTransient, bool checkAsserts = true)
         {
-            TrainingSchedule result;
+            TrainingScheduleRoot result;
             int feedbacksMin = 0, feedbacksMax = 5;
 
             float rightUnboundedScheduleProbability = 0.5f;
 
             int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
 
-            List<TrainingScheduleFeedback> initialFeedbacks = new List<TrainingScheduleFeedback>();
+            List<TrainingScheduleFeedbackEntity> initialFeedbacks = new List<TrainingScheduleFeedbackEntity>();
 
             // Init Feedbacks
             if (RandomFieldGenerator.RollEventWithProbability(0.1f))
@@ -517,11 +517,11 @@ namespace GymProject.Domain.Test.Util
                 : DateRangeValue.RangeBetween(startDate, startDate.AddDays(RandomFieldGenerator.RandomInt(14, 100)));
                        
             if (isTransient)
-                result = TrainingSchedule.ScheduleTrainingPlanTransient(planId, period, initialFeedbacks);
+                result = TrainingScheduleRoot.ScheduleTrainingPlanTransient(planId, period, initialFeedbacks);
             else
-                result = TrainingSchedule.ScheduleTrainingPlan(IdTypeValue.Create(id), planId, period, initialFeedbacks);
+                result = TrainingScheduleRoot.ScheduleTrainingPlan(IdTypeValue.Create(id), planId, period, initialFeedbacks);
 
-            initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedback>();
+            initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedbackEntity>();
 
             if (checkAsserts)
             {

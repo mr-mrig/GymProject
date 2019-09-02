@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 {
-    public class TrainingSchedule : Entity<IdTypeValue>, IAggregateRoot, ICloneable
+    public class TrainingScheduleRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
     {
 
 
@@ -28,26 +28,26 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
 
 
-        private ICollection<TrainingScheduleFeedback> _feedbacks = null;
+        private ICollection<TrainingScheduleFeedbackEntity> _feedbacks = null;
 
         /// <summary>
         /// The Feedbacks of the Training Schedule
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<TrainingScheduleFeedback> Feedbacks
+        public IReadOnlyCollection<TrainingScheduleFeedbackEntity> Feedbacks
         {
-            get => _feedbacks?.Clone().ToList().AsReadOnly() ?? new List<TrainingScheduleFeedback>().AsReadOnly();
+            get => _feedbacks?.Clone().ToList().AsReadOnly() ?? new List<TrainingScheduleFeedbackEntity>().AsReadOnly();
         }
 
 
         #region Ctors
 
-        private TrainingSchedule(IdTypeValue id, IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedback> feedbacks) : base(id)
+        private TrainingScheduleRoot(IdTypeValue id, IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks) : base(id)
         {
             ScheduledPeriod = scheduledPeriod;
             TrainingPlanId = trainingPlanId;
 
-            _feedbacks = feedbacks?.Clone().ToList() ?? new List<TrainingScheduleFeedback>();
+            _feedbacks = feedbacks?.Clone().ToList() ?? new List<TrainingScheduleFeedbackEntity>();
 
             TestBusinessRules();
         }
@@ -65,9 +65,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="scheduledPeriod">The training plan scheduled duration</param>
         /// <param name="feedbacks">The Feedbacks list</param>
         /// <returns>The TrainingSchedule instance</returns>
-        public static TrainingSchedule ScheduleTrainingPlan(IdTypeValue id, IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedback> feedbacks = null)
+        public static TrainingScheduleRoot ScheduleTrainingPlan(IdTypeValue id, IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
 
-            => new TrainingSchedule(id, trainingPlanId, scheduledPeriod, feedbacks);
+            => new TrainingScheduleRoot(id, trainingPlanId, scheduledPeriod, feedbacks);
 
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="scheduledPeriod">The training plan scheduled duration</param>
         /// <param name="feedbacks">The Feedbacks list</param>
         /// <returns>The TrainingSchedule instance</returns>
-        public static TrainingSchedule ScheduleTrainingPlanTransient(IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedback> feedbacks = null)
+        public static TrainingScheduleRoot ScheduleTrainingPlanTransient(IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
 
             => ScheduleTrainingPlan(null, trainingPlanId, scheduledPeriod, feedbacks);
 
@@ -136,7 +136,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
             if (userId == null)
                 throw new ArgumentNullException(nameof(userId), $"Trying to change the Feedback of a NULL User.");
 
-            TrainingScheduleFeedback feedback = FindUserFeedback(userId);
+            TrainingScheduleFeedbackEntity feedback = FindUserFeedback(userId);
 
             feedback?.RateTrainingSchedule(newRating);
             feedback?.WriteComment(newComment);
@@ -154,12 +154,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ChangeFeedback(TrainingScheduleFeedback updatedFeedback)
+        public void ChangeFeedback(TrainingScheduleFeedbackEntity updatedFeedback)
         {
             if (updatedFeedback == null)
                 throw new ArgumentNullException(nameof(updatedFeedback), $"Trying to change a NULL Feedback.");
 
-            TrainingScheduleFeedback toChange = FindFeedback(updatedFeedback);
+            TrainingScheduleFeedbackEntity toChange = FindFeedback(updatedFeedback);
 
             toChange?.RateTrainingSchedule(updatedFeedback.Rating);
             toChange?.WriteComment(updatedFeedback.Comment.Body);
@@ -175,7 +175,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="ArgumentNullException">If trying to add a NULL Feedback</exception>
         /// <exception cref="ArgumentException">If the input Feedback is already present in the list</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ProvideFeedback(TrainingScheduleFeedback feedback)
+        public void ProvideFeedback(TrainingScheduleFeedbackEntity feedback)
         {
             if(feedback == null)
                 throw new ArgumentNullException(nameof(feedback), $"Trying to add a NULL Feedback.");
@@ -183,7 +183,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
             if (_feedbacks.Contains(feedback))
                 throw new ArgumentException($"The Training Schedule Feedback (Id = {feedback.Id.ToString()}) is already present in the list", nameof(feedback));
 
-            _feedbacks.Add(feedback.Clone() as TrainingScheduleFeedback);
+            _feedbacks.Add(feedback.Clone() as TrainingScheduleFeedbackEntity);
 
             TestBusinessRules();
         }
@@ -196,12 +196,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void RemoveFeedback(TrainingScheduleFeedback feedback)
+        public void RemoveFeedback(TrainingScheduleFeedbackEntity feedback)
         {
             if(feedback == null)
                 throw new ArgumentNullException(nameof(feedback), $"Trying to remove a NULL Feedback.");
 
-            TrainingScheduleFeedback toRemove = FindFeedback(feedback);
+            TrainingScheduleFeedbackEntity toRemove = FindFeedback(feedback);
 
             if (_feedbacks.Remove(toRemove))
                 TestBusinessRules();
@@ -223,7 +223,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
             //TrainingScheduleFeedback toRemove = FindUserFeedbackOrDefault(userId) ??
             //    throw new ArgumentException($"The Training Schedule Feedback (UserId = {userId.ToString()}) is not present in the list.", nameof(userId));
 
-            TrainingScheduleFeedback toRemove = FindUserFeedback(userId);
+            TrainingScheduleFeedbackEntity toRemove = FindUserFeedback(userId);
 
             if (_feedbacks.Remove(toRemove))
                 TestBusinessRules();
@@ -236,9 +236,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="authorId">The ID of the author of the Feedback</param>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <returns>A copy of the TrainingScheduleFeedback object/returns>
-        public TrainingScheduleFeedback CloneFeedback(IdTypeValue authorId)
+        public TrainingScheduleFeedbackEntity CloneFeedback(IdTypeValue authorId)
 
-            => _feedbacks.Single(x => x.UserId == authorId)?.Clone() as TrainingScheduleFeedback;
+            => _feedbacks.Single(x => x.UserId == authorId)?.Clone() as TrainingScheduleFeedbackEntity;
 
         #endregion
 
@@ -251,7 +251,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="authorId">The ID of the author of the Feedback</param>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <returns>The TrainingScheduleFeedback object/returns>
-        private TrainingScheduleFeedback FindUserFeedback(IdTypeValue authorId)
+        private TrainingScheduleFeedbackEntity FindUserFeedback(IdTypeValue authorId)
 
             => _feedbacks.Single(x => x.UserId == authorId);
 
@@ -261,7 +261,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// </summary>
         /// <param name="authorId">The ID of the author of the Feedback</param>
         /// <returns>The TrainingScheduleFeedback object or NULL/returns>
-        private TrainingScheduleFeedback FindUserFeedbackOrDefault(IdTypeValue authorId)
+        private TrainingScheduleFeedbackEntity FindUserFeedbackOrDefault(IdTypeValue authorId)
 
             => _feedbacks.SingleOrDefault(x => x.UserId == authorId);
 
@@ -272,7 +272,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="feedback">The Feedback to be fetched</param>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <returns>The TrainingScheduleFeedback object/returns>
-        private TrainingScheduleFeedback FindFeedback(TrainingScheduleFeedback feedback)
+        private TrainingScheduleFeedbackEntity FindFeedback(TrainingScheduleFeedbackEntity feedback)
         {
             if (feedback.IsTransient())
 

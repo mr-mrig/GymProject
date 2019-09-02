@@ -3,7 +3,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class Owner : Entity<IdTypeValue>
+    public class TraineeEntity : Entity<IdTypeValue>
     {
 
 
@@ -13,7 +13,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         public ProfilePictureValue ProfilePicture { get; private set; }
 
 
-        private Owner(string username, string profilePictureUrl) : base(null)
+        private TraineeEntity(string username, string profilePictureUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfilePicture = ProfilePictureValue.Link(UrlValue.CreateLink(profilePictureUrl));
@@ -28,8 +28,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
         /// </summary>
         /// <param name="username">The username</param>
         /// <param name="profilePictureUrl">The profile picture URL</param>
-        /// <returns>A new Owner instance</returns>
-        public static Owner Register(string username, string profilePictureUrl) => new Owner(username, profilePictureUrl);
+        /// <returns>A new Trainee instance</returns>
+        public static TraineeEntity Register(string username, string profilePictureUrl) => new TraineeEntity(username, profilePictureUrl);
         #endregion
 
     }

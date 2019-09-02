@@ -716,7 +716,7 @@ namespace GymProject.Domain.Test.UnitTest
             RatingValue rating = RatingValue.Rate(4.2f);
             DateTime date = DateTime.Today;
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
 
             Assert.NotNull(entry);
             Assert.Equal(rating, entry.Rating);
@@ -732,7 +732,7 @@ namespace GymProject.Domain.Test.UnitTest
             RatingValue rating = RatingValue.Rate(4.2f);
             DateTime date = DateTime.Today;
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date);
 
             Assert.NotNull(entry);
             Assert.Null(entry.Rating);
@@ -751,9 +751,9 @@ namespace GymProject.Domain.Test.UnitTest
             RatingValue rating = RatingValue.Rate(4.2f);
             DateTime date = DateTime.Today;
             string note = "new note";
-            Owner owner = Owner.Register("owner1", "ciao.img");
+            OwnerEntity owner = OwnerEntity.Register("owner1", "ciao.img");
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(fakedate);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(fakedate);
             entry.ChangeDate(date);
             entry.ChangeRating(rating);
             entry.UpdateNote(note);
@@ -784,7 +784,7 @@ namespace GymProject.Domain.Test.UnitTest
                 CaliperSkinfoldValue.MeasureMillimeters(8),
                 CaliperSkinfoldValue.MeasureMillimeters(5.5f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
             entry.AttachPlicometryCheck(plicometry);
             eventsCounter++;
 
@@ -812,7 +812,7 @@ namespace GymProject.Domain.Test.UnitTest
                 CaliperSkinfoldValue.MeasureMillimeters(8),
                 CaliperSkinfoldValue.MeasureMillimeters(5.5f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
             entry.AttachPlicometryCheck(plicometry);
             eventsCounter++;
             entry.RemovePlicometry();
@@ -840,7 +840,7 @@ namespace GymProject.Domain.Test.UnitTest
                 BodyMeasureValue.MeasureCentimeters(174),
                 bf: BodyFatValue.MeasureBodyFat(5.6f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
             entry.AttachBiaCheck(bia);
             eventsCounter++;
 
@@ -865,7 +865,7 @@ namespace GymProject.Domain.Test.UnitTest
                 BodyMeasureValue.MeasureCentimeters(174),
                 bf: BodyFatValue.MeasureBodyFat(5.6f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
 
             entry.AttachBiaCheck(bia);
             eventsCounter++;
@@ -895,7 +895,7 @@ namespace GymProject.Domain.Test.UnitTest
                 GenderTypeEnum.Male,
                 bf: BodyFatValue.MeasureBodyFat(12.6f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
             entry.AttachCircumferenceCheck(circ);
             eventsCounter++;
 
@@ -921,7 +921,7 @@ namespace GymProject.Domain.Test.UnitTest
                 GenderTypeEnum.Male,
                 bf: BodyFatValue.MeasureBodyFat(12.6f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
 
             entry.AttachCircumferenceCheck(circ);
             eventsCounter++;
@@ -964,7 +964,7 @@ namespace GymProject.Domain.Test.UnitTest
                 GenderTypeEnum.Male,
                 bf: BodyFatValue.MeasureBodyFat(12.6f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
 
             entry.AttachCircumferenceCheck(circ);
             eventsCounter++;
@@ -1006,7 +1006,7 @@ namespace GymProject.Domain.Test.UnitTest
                 GenderTypeEnum.Male,
                 bf: BodyFatValue.MeasureBodyFat(12.6f));
 
-            MeasuresEntry entry = MeasuresEntry.StartTrackingMeasures(date, rating);
+            DailyMeasuresEntity entry = DailyMeasuresEntity.StartTrackingMeasures(date, rating);
 
             entry.AttachCircumferenceCheck(circ);
             eventsCounter++;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 {
-    public class TrainingPhase : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
+    public class TrainingPhaseRoot : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -30,7 +30,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
         #region Ctors
 
-        private TrainingPhase(string name, EntryStatusTypeEnum entryStatus) : base(null)
+        private TrainingPhaseRoot(string name, EntryStatusTypeEnum entryStatus) : base(null)
         {
             Name = name?.Trim() ?? string.Empty;
             EntryStatusType = entryStatus ?? EntryStatusTypeEnum.NotSet;
@@ -50,12 +50,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// <param name="name">The name of the phase</param>
         /// <param name="entryStatus">TThe specified entry status</param>
         /// <returns>A new TrainingPhase instance</returns>
-        protected static TrainingPhase CreateTrainingPhase
+        protected static TrainingPhaseRoot CreateTrainingPhase
         (
             string name,
             EntryStatusTypeEnum entryStatus
         )
-            => new TrainingPhase(name, entryStatus);
+            => new TrainingPhaseRoot(name, entryStatus);
 
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// </summary>
         /// <param name="name">The name of the phase</param>
         /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhase CreatePrivateTrainingPhase(string name)
+        public static TrainingPhaseRoot CreatePrivateTrainingPhase(string name)
 
             => CreateTrainingPhase(name, EntryStatusTypeEnum.Private);
 
@@ -73,7 +73,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// </summary>
         /// <param name="name">The name of the phase</param>
         /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhase CreateNativeTrainingPhase(string name)
+        public static TrainingPhaseRoot CreateNativeTrainingPhase(string name)
 
             => CreateTrainingPhase(name, EntryStatusTypeEnum.Native);
 
@@ -83,7 +83,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// </summary>
         /// <param name="name">The name of the phase</param>
         /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhase CreatePublicTrainingPhase(string name)
+        public static TrainingPhaseRoot CreatePublicTrainingPhase(string name)
 
             => CreateTrainingPhase(name, EntryStatusTypeEnum.Pending);
 

@@ -27,9 +27,9 @@ namespace GymProject.Domain.Test.UnitTest
             bool isTransient;
 
             IdTypeValue id = IdTypeValue.Create(1);
-            IList<WorkUnitTemplate> wusFirstNull = new List<WorkUnitTemplate>();
-            IList<WorkUnitTemplate> wusLastNull = new List<WorkUnitTemplate>();
-            IList<WorkUnitTemplate> wusMiddleNull = new List<WorkUnitTemplate>();
+            IList<WorkUnitTemplateEntity> wusFirstNull = new List<WorkUnitTemplateEntity>();
+            IList<WorkUnitTemplateEntity> wusLastNull = new List<WorkUnitTemplateEntity>();
+            IList<WorkUnitTemplateEntity> wusMiddleNull = new List<WorkUnitTemplateEntity>();
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -49,12 +49,12 @@ namespace GymProject.Domain.Test.UnitTest
 
                 wusLastNull.Add(null);
 
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplate.PlanWorkout(id, wusFirstNull, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplate.PlanWorkout(id, wusMiddleNull, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplate.PlanWorkout(id, wusLastNull, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusFirstNull, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusMiddleNull, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusLastNull, string.Empty));
 
-                IList<WorkUnitTemplate> wusPnumStarts1 = new List<WorkUnitTemplate>();
-                IList<WorkUnitTemplate> wusPnumGap = new List<WorkUnitTemplate>();
+                IList<WorkUnitTemplateEntity> wusPnumStarts1 = new List<WorkUnitTemplateEntity>();
+                IList<WorkUnitTemplateEntity> wusPnumGap = new List<WorkUnitTemplateEntity>();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -66,8 +66,8 @@ namespace GymProject.Domain.Test.UnitTest
                         wusPnumStarts1.Add(StaticUtils.BuildRandomWorkUnit(i + 1, i + 1, isTransient));
                 }
 
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplate.PlanWorkout(id, wusPnumStarts1, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplate.PlanWorkout(id, wusPnumGap, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusPnumStarts1, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusPnumGap, string.Empty));
             }
         }
 
@@ -86,8 +86,8 @@ namespace GymProject.Domain.Test.UnitTest
             float transientEntityProbability = 0.1f;
 
             bool isTransient;
-            WorkoutTemplate workout;
-            WorkUnitTemplate wu;
+            WorkoutTemplateRoot workout;
+            WorkUnitTemplateEntity wu;
             IdTypeValue woId = IdTypeValue.Create(1);
 
             for (int itest = 0; itest < ntests; itest++)
@@ -96,8 +96,8 @@ namespace GymProject.Domain.Test.UnitTest
                 int workUnitsNum = RandomFieldGenerator.RandomInt(wuMin, wuMax);
                 string woName = RandomFieldGenerator.RandomTextValue(woNameLengthMin, woNameLengthMax);
                 WeekdayEnum specificDay = WeekdayEnum.From(RandomFieldGenerator.RandomInt(0, WeekdayEnum.Sunday.Id));
-                List<WorkUnitTemplate> initialWus = new List<WorkUnitTemplate>();
-                List<WorkUnitTemplate> wus = new List<WorkUnitTemplate>();
+                List<WorkUnitTemplateEntity> initialWus = new List<WorkUnitTemplateEntity>();
+                List<WorkUnitTemplateEntity> wus = new List<WorkUnitTemplateEntity>();
                 List<IdTypeValue> wuIds = new List<IdTypeValue>();
 
                 isTransient = RandomFieldGenerator.RollEventWithProbability(transientEntityProbability);
@@ -120,9 +120,9 @@ namespace GymProject.Domain.Test.UnitTest
 
                 // WO with initial WUs
                 if (isTransient)
-                    workout = WorkoutTemplate.PlanTransientWorkout(initialWus, woName, specificDay);  // Transient
+                    workout = WorkoutTemplateRoot.PlanTransientWorkout(initialWus, woName, specificDay);  // Transient
                 else
-                    workout = WorkoutTemplate.PlanWorkout(woId, initialWus, woName, specificDay);     // Persistent
+                    workout = WorkoutTemplateRoot.PlanWorkout(woId, initialWus, woName, specificDay);     // Persistent
 
                 // No WUs loaded from the DB -> start the sequence
                 if (initialWuNum == 0)
@@ -149,7 +149,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Equal(initialWuNum + workUnitsNum, workout.WorkUnits.Count);
 
                 // Check WUs
-                foreach (WorkUnitTemplate iwu in wus)
+                foreach (WorkUnitTemplateEntity iwu in wus)
                     CheckWorkUnit(iwu, workout, isTransient);
 
                 // Modify WO
@@ -170,22 +170,22 @@ namespace GymProject.Domain.Test.UnitTest
 
 
                 // Modify WUs
-                foreach (WorkUnitTemplate iwu in workout.WorkUnits)
+                foreach (WorkUnitTemplateEntity iwu in workout.WorkUnits)
                     CheckWorkUnitChanges(workout, iwu, isTransient);
 
 
                 // Modify PNums -> Keep it separate from the Modify WUs block as changing the Pnums will mess with the other tests
-                foreach (WorkUnitTemplate iwu in workout.WorkUnits)
+                foreach (WorkUnitTemplateEntity iwu in workout.WorkUnits)
                 {
                     uint srcPnum = iwu.ProgressiveNumber;
                     uint destPnum = (uint)RandomFieldGenerator.ChooseAmong<int>(
                         workout.WorkUnits.Select(x => (int)x.ProgressiveNumber).ToList());
 
-                    WorkUnitTemplate swappedWorkUnit = workout.CloneWorkUnit(destPnum);
+                    WorkUnitTemplateEntity swappedWorkUnit = workout.CloneWorkUnit(destPnum);
 
                     workout.MoveWorkUnitToNewProgressiveNumber(srcPnum, destPnum);
 
-                    WorkUnitTemplate toCheck = workout.CloneWorkUnit(destPnum);
+                    WorkUnitTemplateEntity toCheck = workout.CloneWorkUnit(destPnum);
                     swappedWorkUnit.MoveToNewProgressiveNumber(srcPnum);    // Simulate the move on the original WU copy
 
                     CheckWorkUnitsBasicCompare(swappedWorkUnit, workout.CloneWorkUnit(srcPnum), isTransient);
@@ -199,7 +199,7 @@ namespace GymProject.Domain.Test.UnitTest
                 for (int iwu = 0; iwu < wuRemoveNum; iwu++)
                 {
                     uint toRemovePnum = RandomFieldGenerator.ChooseAmong(workout.WorkUnits.Select(x => x.ProgressiveNumber).ToList());
-                    WorkUnitTemplate removed = workout.CloneWorkUnit(toRemovePnum);
+                    WorkUnitTemplateEntity removed = workout.CloneWorkUnit(toRemovePnum);
 
                     workout.RemoveWorkUnit(toRemovePnum);
 
@@ -222,7 +222,7 @@ namespace GymProject.Domain.Test.UnitTest
                 // Add WUs
                 long toAddId;
                 bool wasAdded = false;
-                WorkUnitTemplate toAdd;
+                WorkUnitTemplateEntity toAdd;
                 nWorkUnits = workout.WorkUnits.Count;
 
                 for (int iwu = 0; iwu < wuAddNum; iwu++)
@@ -264,7 +264,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                     if(wasAdded)
                     {
-                        WorkUnitTemplate added = workout.CloneWorkUnit(toAdd.ProgressiveNumber);      // Id is different, not PNum
+                        WorkUnitTemplateEntity added = workout.CloneWorkUnit(toAdd.ProgressiveNumber);      // Id is different, not PNum
 
                         Assert.Equal(++nWorkUnits, workout.WorkUnits.Count);
                         CheckWorkUnitsBasicCompare(toAdd, added, isTransient);
@@ -280,7 +280,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         #region Support Check Functions
-        internal static void CheckTrainingParameters(IEnumerable<WorkingSetTemplate> srcWorkingSets,
+        internal static void CheckTrainingParameters(IEnumerable<WorkingSetTemplateEntity> srcWorkingSets,
             TrainingVolumeParametersValue volume, TrainingDensityParametersValue density, TrainingIntensityParametersValue intensity, TrainingEffortTypeEnum mainEffortType = null)
         {
             TrainingEffortValue avgEffort = null;
@@ -344,9 +344,9 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static void CheckWorkUnitSets(WorkUnitTemplate wu, IEnumerable<WorkingSetTemplate> ws, bool isTransient, TrainingEffortTypeEnum effortType, bool wsFullCheck = true)
+        internal static void CheckWorkUnitSets(WorkUnitTemplateEntity wu, IEnumerable<WorkingSetTemplateEntity> ws, bool isTransient, TrainingEffortTypeEnum effortType, bool wsFullCheck = true)
         {
-            foreach (WorkingSetTemplate wsCheck in ws)
+            foreach (WorkingSetTemplateEntity wsCheck in ws)
             {
                 if(!isTransient)
                     Assert.Contains(wsCheck, wu.WorkingSets);
@@ -358,7 +358,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static void CheckWorkingSet(WorkingSetTemplate left, WorkingSetTemplate right, bool isTransient, WorkUnitTemplate wunit = null)
+        internal static void CheckWorkingSet(WorkingSetTemplateEntity left, WorkingSetTemplateEntity right, bool isTransient, WorkUnitTemplateEntity wunit = null)
         {
             if (!isTransient)
                 Assert.Equal(left.Id, right.Id);
@@ -390,7 +390,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static void CheckWorkUnitChanges(WorkoutTemplate workout, WorkUnitTemplate workUnit, bool isTransient)
+        internal static void CheckWorkUnitChanges(WorkoutTemplateRoot workout, WorkUnitTemplateEntity workUnit, bool isTransient)
         {
             int excerciseIdMin = 1, excerciseIdMax = 200;
             int intTechniqueIdMin = 1, intTechniqueIdMax = 1000;
@@ -402,8 +402,8 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             // Need to clone the WU after every change
-            WorkUnitTemplate toCheck;
-            WorkingSetTemplate toAdd;
+            WorkUnitTemplateEntity toCheck;
+            WorkingSetTemplateEntity toAdd;
 
             IdTypeValue newExcerciseId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax));
             IdTypeValue newNoteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
@@ -436,7 +436,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(srcIntensityTechniquesNum + 1, toCheck.IntensityTechniquesIds.Count);
             Assert.Contains(newIntTechnique, toCheck.IntensityTechniquesIds);
 
-            foreach (WorkingSetTemplate workingSet in toCheck.WorkingSets)
+            foreach (WorkingSetTemplateEntity workingSet in toCheck.WorkingSets)
                 Assert.Contains(newIntTechnique, workingSet.IntensityTechniqueIds);
 
 
@@ -449,7 +449,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(srcIntensityTechniquesNum, toCheck.IntensityTechniquesIds.Count);
             Assert.DoesNotContain(removedIntTechnique, toCheck.IntensityTechniquesIds);
 
-            foreach (WorkingSetTemplate wset in toCheck.WorkingSets)
+            foreach (WorkingSetTemplateEntity wset in toCheck.WorkingSets)
                 Assert.DoesNotContain(removedIntTechnique, wset.IntensityTechniqueIds);
 
 
@@ -462,8 +462,8 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Null(toCheck.OwnerNoteId);
 
             // Remove WSs
-            List<WorkingSetTemplate> originalSets = toCheck.WorkingSets.ToList();
-            List<WorkingSetTemplate> finalSets = toCheck.WorkingSets.ToList();
+            List<WorkingSetTemplateEntity> originalSets = toCheck.WorkingSets.ToList();
+            List<WorkingSetTemplateEntity> finalSets = toCheck.WorkingSets.ToList();
             int wsRemoveCounter = 0;
 
             for (int iws = 0; iws < wsToRemoveNum; iws++)
@@ -473,7 +473,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else
                 {
                     uint pnumToRemove = RandomFieldGenerator.ChooseAmong(toCheck.WorkingSets.Select(x => x.ProgressiveNumber).ToList());
-                    WorkingSetTemplate removed = workout.CloneWorkingSet(toCheck.ProgressiveNumber, pnumToRemove);
+                    WorkingSetTemplateEntity removed = workout.CloneWorkingSet(toCheck.ProgressiveNumber, pnumToRemove);
 
                     if (toCheck.WorkingSets.Count > 1)
                     {
@@ -483,7 +483,7 @@ namespace GymProject.Domain.Test.UnitTest
                         Assert.Equal(originalSets.Count - ++wsRemoveCounter, toCheck.WorkingSets.Count);
                         Assert.DoesNotContain(removed, toCheck.WorkingSets);
 
-                        IEnumerable<WorkingSetTemplate> wsRemoved = originalSets.Where(x => x.ProgressiveNumber == pnumToRemove);
+                        IEnumerable<WorkingSetTemplateEntity> wsRemoved = originalSets.Where(x => x.ProgressiveNumber == pnumToRemove);
 
                         finalSets = StaticUtils.ForceConsecutiveProgressiveNumbers(
                             finalSets.Where(x => x.ProgressiveNumber != pnumToRemove)).ToList();
@@ -549,7 +549,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static void CheckWorkUnit(WorkUnitTemplate workUnit, WorkoutTemplate workout, bool isTransient)
+        internal static void CheckWorkUnit(WorkUnitTemplateEntity workUnit, WorkoutTemplateRoot workout, bool isTransient)
         {
             uint workUnitPnum = workUnit.ProgressiveNumber;
 
@@ -562,7 +562,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(workUnitPnum, workout.CloneWorkUnit(workUnitPnum).ProgressiveNumber);
 
             // Check WSs
-            foreach (WorkingSetTemplate iws in workUnit.WorkingSets)
+            foreach (WorkingSetTemplateEntity iws in workUnit.WorkingSets)
             {
                 CheckWorkingSet(iws, workout.CloneWorkingSet(workUnitPnum, iws.ProgressiveNumber), isTransient);
                 CheckWorkingSet(iws, workout.CloneWorkUnit(workUnit.ProgressiveNumber).CloneWorkingSet(iws.ProgressiveNumber), isTransient);
@@ -573,7 +573,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static void CheckWorkUnitsBasicCompare(WorkUnitTemplate left, WorkUnitTemplate right, bool isTransient)
+        internal static void CheckWorkUnitsBasicCompare(WorkUnitTemplateEntity left, WorkUnitTemplateEntity right, bool isTransient)
         {
             if (!isTransient)
                 Assert.Equal(left.Id, right.Id);
@@ -584,9 +584,9 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(left.ProgressiveNumber, right.ProgressiveNumber);
 
             // Check WSs
-            foreach (WorkingSetTemplate leftWs in left.WorkingSets)
+            foreach (WorkingSetTemplateEntity leftWs in left.WorkingSets)
             {
-                WorkingSetTemplate rightWs = right.CloneWorkingSet(leftWs.ProgressiveNumber);
+                WorkingSetTemplateEntity rightWs = right.CloneWorkingSet(leftWs.ProgressiveNumber);
 
                 if (!isTransient)
                     Assert.Equal(leftWs.Id, rightWs.Id);

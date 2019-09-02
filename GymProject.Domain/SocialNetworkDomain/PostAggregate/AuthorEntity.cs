@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Author : Entity<IdTypeValue>
+    public class AuthorEntity : Entity<IdTypeValue>
     {
 
 
@@ -16,16 +16,16 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         public ProfilePictureValue ProfileImage { get; private set; }
 
 
-        private Author(string username, string imageProfileUrl) : base(null)
+        private AuthorEntity(string username, string imageProfileUrl) : base(null)
         {
             Username = UsernameValue.Register(username);
             ProfileImage = ProfilePictureValue.Link(UrlValue.CreateLink(imageProfileUrl));
         }
 
 
-        public static Author Register(string username, string imageprofile)
+        public static AuthorEntity Register(string username, string imageprofile)
         {
-            return new Author(username, imageprofile);
+            return new AuthorEntity(username, imageprofile);
         }
 
     }

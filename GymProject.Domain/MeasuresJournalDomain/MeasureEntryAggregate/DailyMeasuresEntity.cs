@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 {
-    public class MeasuresEntry : Entity<IdTypeValue>, IAggregateRoot
+    public class DailyMeasuresEntity : Entity<IdTypeValue>, IAggregateRoot
     {
 
 
@@ -53,7 +53,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// Reference to the one who performed the measures check
         /// </summary>
-        public Owner Owner { get; private set; }
+        public OwnerEntity Owner { get; private set; }
 
         #endregion
 
@@ -61,7 +61,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
 
         #region Ctors
 
-        private MeasuresEntry(DateTime date, RatingValue rating, string ownerNote, Owner owner) : base(null)
+        private DailyMeasuresEntity(DateTime date, RatingValue rating, string ownerNote, OwnerEntity owner) : base(null)
         {
             EntryDate = date;
             Rating = rating;
@@ -71,7 +71,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         }
 
 
-        private MeasuresEntry(DateTime date, RatingValue rating) : base(null)
+        private DailyMeasuresEntity(DateTime date, RatingValue rating) : base(null)
         {
             EntryDate = date;
             Rating = rating;
@@ -90,8 +90,8 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <param name="dayDate">The date of the day to be tracked</param>
         /// <param name="rating">The rating</param>
         /// <returns>The new FitnessDay instance</returns>
-        public static MeasuresEntry StartTrackingMeasures(DateTime dayDate, RatingValue rating = null)
-            => new MeasuresEntry(dayDate, rating);
+        public static DailyMeasuresEntity StartTrackingMeasures(DateTime dayDate, RatingValue rating = null)
+            => new DailyMeasuresEntity(dayDate, rating);
 
         #endregion
 
@@ -136,7 +136,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// Changes the owner
         /// </summary>
         /// <param name="newOwner">The new owner</param>
-        public void RegisterOwner(Owner newOwner)
+        public void RegisterOwner(OwnerEntity newOwner)
         {
             Owner = newOwner;
             AddDomainEvent(new MeasuresChangedDomainEvent(this, PostId));

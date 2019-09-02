@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class Picture : Entity<IdTypeValue>
+    public class PictureEntity : Entity<IdTypeValue>
     {
 
 
@@ -17,13 +17,13 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         #region Ctors
 
 
-        private Picture(UrlValue url) : base(null)
+        private PictureEntity(UrlValue url) : base(null)
         {
             PictureUrl = url;
         }
 
 
-        private Picture(string url) : base(null)
+        private PictureEntity(string url) : base(null)
         {
             PictureUrl = UrlValue.CreateLink(url);
         }
@@ -37,9 +37,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="url">The picture url</param>
         /// <returns>The Picture to be attached</returns>
-        public static Picture Attach(UrlValue url)
+        public static PictureEntity Attach(UrlValue url)
         {
-            return new Picture(url);
+            return new PictureEntity(url);
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// </summary>
         /// <param name="url">The picture url</param>
         /// <returns>The Picture to be attached</returns>
-        public static Picture Attach(string url)
+        public static PictureEntity Attach(string url)
         {
-            return new Picture(url);
+            return new PictureEntity(url);
         }
         #endregion
     }

@@ -65,9 +65,9 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="workingSets">The working sets</param>
         /// <exception cref="ArgumentNullException">Thrown if input contains NULL elements</exception>
         /// <returns>The TrainingVolumeValue instance</returns>
-        public static TrainingVolumeParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets)
+        public static TrainingVolumeParametersValue ComputeFromWorkingSets(IEnumerable<ITrainingLoadTrackableSet> workingSets)
         {
-            List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
+            List<ITrainingLoadTrackableSet> wsCopy = workingSets?.Clone().ToList() ?? new List<ITrainingLoadTrackableSet>();
 
             if (wsCopy.Count() == 0)
                 return InitEmpty();
@@ -121,7 +121,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="toAdd">The working set to be added</param>
         /// <returns>The new TrainingVolumeValue instance</returns>
-        public TrainingVolumeParametersValue AddWorkingSet(IWorkingSet toAdd)
+        public TrainingVolumeParametersValue AddWorkingSet(ITrainingLoadTrackableSet toAdd)
 
             => SetTrainingVolume(
                 (uint)(TotalReps + toAdd.ToRepetitions()),
@@ -134,7 +134,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workingSetList">The list of the working sets to be added</param>
         /// <returns>The new TrainingVolumeValue instance</returns>
-        public TrainingVolumeParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        public TrainingVolumeParametersValue AddWorkingSets(IEnumerable<ITrainingLoadTrackableSet> workingSetList)
         {
             int wsTotalReps = workingSetList.Sum(x => x.ToRepetitions());
             int wsTotalNumber = workingSetList.Count();
@@ -153,7 +153,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="toRemove">The working set to be removed</param>
         /// <exception cref="ArgumentException">Thrown when the WS can't be removed</exception>
         /// <returns>The new TrainingVolumeValue instance</returns>
-        public TrainingVolumeParametersValue RemoveWorkingSet(IWorkingSet toRemove)
+        public TrainingVolumeParametersValue RemoveWorkingSet(ITrainingLoadTrackableSet toRemove)
         {
             if (TotalWorkingSets == 0)
                 throw new ArgumentException($"Trying to remove a WorkingSet when no one has been added.");
@@ -170,7 +170,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workingSetList">The list of the working sets to be removed</param>
         /// <returns>The new TrainingVolumeValue instance</returns>
-        public TrainingVolumeParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        public TrainingVolumeParametersValue RemoveWorkingSets(IEnumerable<ITrainingLoadTrackableSet> workingSetList)
         {
             int wsTotalReps = workingSetList.Sum(x => x.ToRepetitions());
             int wsTotalNumber = workingSetList.Count();

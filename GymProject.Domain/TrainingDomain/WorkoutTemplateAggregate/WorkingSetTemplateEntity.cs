@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkingSetTemplateEntity : Entity<IdTypeValue>, IWorkingSet, ICloneable
+    public class WorkingSetTemplateEntity : Entity<IdTypeValue>, IFullWorkingSet, ICloneable
     {
 
 

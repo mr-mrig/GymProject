@@ -94,7 +94,7 @@ namespace GymProject.Domain.Test.Util
         /// <param name="workingSets">The input working sets</param>
         /// <param name="mainEffortType">The main effort type of the WSs as the most used one - optional</param>
         /// <returns>The average effort value</returns>
-        internal static TrainingEffortValue ComputeAverageEffort(IEnumerable<IWorkingSet> workingSets, TrainingEffortTypeEnum mainEffortType = null)
+        internal static TrainingEffortValue ComputeAverageEffort(IEnumerable<IFullWorkingSet> workingSets, TrainingEffortTypeEnum mainEffortType = null)
         {
             TrainingEffortValue result = null;
             WSRepetitionsValue avgReps;
@@ -113,7 +113,7 @@ namespace GymProject.Domain.Test.Util
 
             if (mainEffortType == TrainingEffortTypeEnum.RM)
             {
-                IEnumerable<IWorkingSet> rpeSets = workingSets.Where(x => x.Effort.IsRPE());
+                IEnumerable<IFullWorkingSet> rpeSets = workingSets.Where(x => x.Effort.IsRPE());
 
                 if (rpeSets.Count() == 0)
                     avgReps = null;
@@ -130,14 +130,14 @@ namespace GymProject.Domain.Test.Util
                 WSRepetitionsValue avgRepsInt;
                 WSRepetitionsValue avgRepsRM;
 
-                IEnumerable<IWorkingSet> intSets = workingSets.Where(x => x.Effort.IsIntensityPercentage());
+                IEnumerable<IFullWorkingSet> intSets = workingSets.Where(x => x.Effort.IsIntensityPercentage());
 
                 if (intSets.Count() == 0)
                     avgRepsInt = null;
                 else
                     avgRepsInt = WSRepetitionsValue.TrackRepetitionSerie((uint)intSets.Average(x => x.ToRepetitions()));
 
-                IEnumerable<IWorkingSet> rmSets = workingSets.Where(x => x.Effort.IsRM());
+                IEnumerable<IFullWorkingSet> rmSets = workingSets.Where(x => x.Effort.IsRM());
 
                 if (rmSets.Count() == 0)
                     avgRepsRM = null;
@@ -152,7 +152,7 @@ namespace GymProject.Domain.Test.Util
 
             else if (mainEffortType == TrainingEffortTypeEnum.IntensityPerc)
             {
-                IEnumerable<IWorkingSet> rpeSets = workingSets.Where(x => x.Effort.IsRPE());
+                IEnumerable<IFullWorkingSet> rpeSets = workingSets.Where(x => x.Effort.IsRPE());
 
                 if (rpeSets.Count() == 0)
                     avgReps = null;

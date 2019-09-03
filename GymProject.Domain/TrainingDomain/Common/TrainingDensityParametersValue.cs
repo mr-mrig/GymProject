@@ -64,9 +64,9 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="workingSets">The working sets</param>
         /// <exception cref="ArgumentNullException">Thrown if input contains NULL elements</exception>
         /// <returns>The TrainingDensityValue instance</returns>
-        public static TrainingDensityParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets)
+        public static TrainingDensityParametersValue ComputeFromWorkingSets(IEnumerable<IFullWorkingSet> workingSets)
         {
-            List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
+            List<IFullWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IFullWorkingSet>();
 
             if (wsCopy.Count() == 0)
                 return InitEmpty();
@@ -122,7 +122,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="toAdd">The working set to be added</param>
         /// <returns>The new TrainingDensityValue instance</returns>
-        public TrainingDensityParametersValue AddWorkingSet(IWorkingSet toAdd)
+        public TrainingDensityParametersValue AddWorkingSet(IFullWorkingSet toAdd)
 
             => SetTrainingDensity(
                 TotalSecondsUnderTension + toAdd.ToSecondsUnderTension(),
@@ -135,7 +135,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workingSetList">The list of the working sets to be added</param>
         /// <returns>The new TrainingVolumeValue instance</returns>
-        public TrainingDensityParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        public TrainingDensityParametersValue AddWorkingSets(IEnumerable<IFullWorkingSet> workingSetList)
         {
             int wsTotalTut = workingSetList.Sum(x => x.ToSecondsUnderTension());
             int wsTotalRest = workingSetList.Sum(x => x.ToRest());
@@ -154,7 +154,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="toRemove">The working set to be removed</param>
         /// <exception cref="ArgumentException">Thrown when the WS can't be removed</exception>
         /// <returns>The new TrainingDensityValue instance</returns>
-        public TrainingDensityParametersValue RemoveWorkingSet(IWorkingSet toRemove)
+        public TrainingDensityParametersValue RemoveWorkingSet(IFullWorkingSet toRemove)
         {
             if (_totalWorkingSets == 0)
                 throw new ArgumentException($"Trying to remove a WorkingSet when no one has been added.");
@@ -171,7 +171,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <param name="workingSetList">The list of the working sets to be removed</param>
         /// <returns>The new TrainingVolumeValue instance</returns>
-        public TrainingDensityParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
+        public TrainingDensityParametersValue RemoveWorkingSets(IEnumerable<IFullWorkingSet> workingSetList)
         {
             int wsTotalTut = workingSetList.Sum(x => x.ToSecondsUnderTension());
             int wsTotalRest = workingSetList.Sum(x => x.ToRest());

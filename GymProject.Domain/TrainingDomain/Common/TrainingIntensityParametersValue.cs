@@ -69,17 +69,17 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="effortType">The effort type - DefaultEffortType if left null</param>
         /// <exception cref="ArgumentNullException">Thrown if input contains NULL elements</exception>
         /// <returns>The TrainingDensityValue instance</returns>
-        public static TrainingIntensityParametersValue ComputeFromWorkingSets(IEnumerable<IWorkingSet> workingSets, TrainingEffortTypeEnum effortType = null)
+        public static TrainingIntensityParametersValue ComputeFromWorkingSets(IEnumerable<IFullWorkingSet> workingSets, TrainingEffortTypeEnum effortType = null)
         {
             TrainingEffortTypeEnum toEffortType = effortType ?? DefaultEffortType;
 
-            List<IWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IWorkingSet>();
+            List<IFullWorkingSet> wsCopy = workingSets?.Clone().ToList() ?? new List<IFullWorkingSet>();
 
             if (wsCopy.Count() == 0)
                 return InitEmpty(effortType);
 
 
-            foreach (IWorkingSet ws in wsCopy)
+            foreach (IFullWorkingSet ws in wsCopy)
             {
                 // Exception or exclude from computation?
                 if (ws == null)
@@ -153,7 +153,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="effortType">The effort type to convert to</param>
         /// <exception cref="ArgumentNullException">Thrown when input WS is null</exception>
         /// <returns>The new TrainingDensityValue instance</returns>
-        public TrainingIntensityParametersValue AddWorkingSet(IWorkingSet toAdd)
+        public TrainingIntensityParametersValue AddWorkingSet(IFullWorkingSet toAdd)
         {
             if (toAdd == null)
                 throw new ArgumentNullException($"Trying to add a NULL working set.");
@@ -185,7 +185,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <param name="toRemove">The working set to be removed</param>
         /// <exception cref="ArgumentException">Thrown when the WS can't be removed</exception>
         /// <returns>The new TrainingDensityValue instance</returns>
-        public TrainingIntensityParametersValue RemoveWorkingSet(IWorkingSet toRemove)
+        public TrainingIntensityParametersValue RemoveWorkingSet(IFullWorkingSet toRemove)
         {
             if (_totalWorkingSets == 0)
                 throw new ArgumentException($"Trying to remove a WorkingSet when no one has been added.");

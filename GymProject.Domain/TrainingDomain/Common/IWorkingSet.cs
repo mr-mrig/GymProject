@@ -2,13 +2,10 @@
 
 namespace GymProject.Domain.TrainingDomain.Common
 {
-    public interface IWorkingSet : ITrainingWork
+    public interface IFullWorkingSet : ITrainingLoadTrackableSet
     {
 
-        /// <summary>
-        /// The rest between the working set and the following
-        /// </summary>
-        RestPeriodValue Rest { get; }
+
 
         /// <summary>
         /// The effort of the WS
@@ -17,24 +14,10 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         /// <summary>
-        /// Get the number of repetitions
-        /// </summary>
-        /// <returns>The number of repetitions</returns>
-        int ToRepetitions();
-
-
-        /// <summary>
         /// Get the duration of the WS [s]
         /// </summary>
         /// <returns>The number of seconds under tension</returns>
         int ToSecondsUnderTension();
-
-
-        /// <summary>
-        /// Get the workload as repetitions number * weight lifted
-        /// </summary>
-        /// <returns>The workload [Kg/lbs]</returns>
-        WeightPlatesValue ToWorkload();
 
 
         /// <summary>

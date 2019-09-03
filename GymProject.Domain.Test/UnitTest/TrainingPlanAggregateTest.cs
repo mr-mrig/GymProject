@@ -18,7 +18,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
 
-        public const int ntests = 100;
+        public const int ntests = 20;
 
         private readonly ITestOutputHelper output;
 
@@ -569,16 +569,16 @@ namespace GymProject.Domain.Test.UnitTest
 
                 #region Check Modifications Fails
 
-                Assert.Throws<ArgumentNullException>(() => rootPlan.AddHashtag(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.LinkTargetPhase(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.TagAs(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.TagPhase(null));
                 Assert.Throws<ArgumentNullException>(() => rootPlan.LinkTargetProficiency(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.GiveFocusToMuscle(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.FocusOnMuscle(null));
                 Assert.Throws<ArgumentNullException>(() => rootPlan.ScheduleTraining(null));
 
-                Assert.Throws<ArgumentNullException>(() => rootPlan.RemoveHashtag(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.UnlinkTargetPhase(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.Untag(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.UntagPhase(null));
                 Assert.Throws<ArgumentNullException>(() => rootPlan.UnlinkTargetProficiency(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.RemoveFocusToMuscle(null));
+                Assert.Throws<ArgumentNullException>(() => rootPlan.UnfocusMuscle(null));
 
                 Assert.Throws<ArgumentNullException>(() => rootPlan.PlanFullRestWeek(null));
                 Assert.Throws<ArgumentException>(() => rootPlan.PlanFullRestWeek(
@@ -1198,7 +1198,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Empty(plan.TrainingPhaseIds);
                 Assert.Empty(plan.TrainingProficiencyIds);
                 Assert.Empty(plan.MuscleFocusIds);
-                Assert.Empty(plan.Hashtags);
+                Assert.Empty(plan.HashtagIds);
                 Assert.Empty(plan.ChildTrainingPlanIds);
                 Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
             }
@@ -1226,7 +1226,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Equal(phaseIds, plan.TrainingPhaseIds);
                 Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
                 Assert.Equal(focusIds, plan.MuscleFocusIds);
-                Assert.Equal(hashtagIds, plan.Hashtags);
+                Assert.Equal(hashtagIds, plan.HashtagIds);
                 Assert.Empty(plan.ChildTrainingPlanIds);
             }
 
@@ -1247,7 +1247,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Equal(phaseIds, plan.TrainingPhaseIds);
                 Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
                 Assert.Equal(focusIds, plan.MuscleFocusIds);
-                Assert.Equal(hashtagIds, plan.Hashtags);
+                Assert.Equal(hashtagIds, plan.HashtagIds);
                 Assert.Equal(childPlanIds, plan.ChildTrainingPlanIds);
             }
 
@@ -1291,7 +1291,7 @@ namespace GymProject.Domain.Test.UnitTest
             IdTypeValue scheduleId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.TrainingScheduleIds.Select(x => (int)x.Id)));
             IdTypeValue phaseId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.TrainingPhaseIds.Select(x => (int)x.Id)));
             IdTypeValue proficiencyId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.TrainingProficiencyIds.Select(x => (int)x.Id)));
-            IdTypeValue hashtagId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.Hashtags.Select(x => (int)x.Id)));
+            IdTypeValue hashtagId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.HashtagIds.Select(x => (int)x.Id)));
             IdTypeValue focusId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.MuscleFocusIds.Select(x => (int)x.Id)));
             IdTypeValue childPlanId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax,
                 plan.ChildTrainingPlanIds.Select(x => (int)x.Id).Union(new List<int>() { (int)plan.Id.Id } )));
@@ -1304,13 +1304,13 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(noteId, plan.PersonalNoteId);
 
             // Add IDs
-            plan.AddHashtag(hashtagId);
-            plan.LinkTargetPhase(phaseId);
+            plan.TagAs(hashtagId);
+            plan.TagPhase(phaseId);
             plan.LinkTargetProficiency(proficiencyId);
-            plan.GiveFocusToMuscle(focusId);
+            plan.FocusOnMuscle(focusId);
 
-            Assert.Contains(hashtagId, plan.Hashtags);
-            Assert.Equal(planCopy.Hashtags.Count + 1, plan.Hashtags.Count);
+            Assert.Contains(hashtagId, plan.HashtagIds);
+            Assert.Equal(planCopy.HashtagIds.Count + 1, plan.HashtagIds.Count);
             Assert.Contains(phaseId, plan.TrainingPhaseIds);
             Assert.Equal(planCopy.TrainingPhaseIds.Count + 1, plan.TrainingPhaseIds.Count);
             Assert.Contains(proficiencyId, plan.TrainingProficiencyIds);
@@ -1320,7 +1320,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Add with logic
             plan.ChangeBookmarkedFlag(isBookmarked);
-            plan.AttachChildToTemplatePlan(childPlanId);
+            plan.AttachChildPlan(childPlanId);
             plan.ScheduleTraining(scheduleId);
 
             Assert.Equal(isBookmarked, plan.IsBookmarked);
@@ -1336,14 +1336,14 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             // Duplicate Add -> No change
-            if (plan.Hashtags.Count > 0)
+            if (plan.HashtagIds.Count > 0)
             {
-                plan.AddHashtag(RandomFieldGenerator.ChooseAmong(plan.Hashtags.ToList()));
-                Assert.Equal(planCopy.Hashtags.Count, plan.Hashtags.Count);
+                plan.TagAs(RandomFieldGenerator.ChooseAmong(plan.HashtagIds.ToList()));
+                Assert.Equal(planCopy.HashtagIds.Count, plan.HashtagIds.Count);
             }
             if (plan.TrainingPhaseIds.Count > 0)
             {
-                plan.LinkTargetPhase(RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds.ToList()));
+                plan.TagPhase(RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds.ToList()));
                 Assert.Equal(planCopy.TrainingPhaseIds.Count, plan.TrainingPhaseIds.Count);
             }
             if (plan.TrainingProficiencyIds.Count > 0)
@@ -1353,7 +1353,7 @@ namespace GymProject.Domain.Test.UnitTest
             }
             if (plan.MuscleFocusIds.Count > 0)
             {
-                plan.GiveFocusToMuscle(RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds.ToList()));
+                plan.FocusOnMuscle(RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds.ToList()));
                 Assert.Equal(planCopy.MuscleFocusIds.Count, plan.MuscleFocusIds.Count);
             }
             if (plan.ChildTrainingPlanIds.Count > 0)
@@ -1373,15 +1373,15 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Null(plan.PersonalNoteId);
 
             // Remove Hashtags
-            toRemove = RandomFieldGenerator.RandomInt(1, plan.Hashtags.Count);
+            toRemove = RandomFieldGenerator.RandomInt(1, plan.HashtagIds.Count);
 
             for (int i = 0; i < toRemove; i++)
             {
-                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.Hashtags.ToList());
-                plan.RemoveHashtag(idToRemove);
+                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.HashtagIds.ToList());
+                plan.Untag(idToRemove);
 
-                Assert.Equal(planCopy.Hashtags.Count - i - 1, plan.Hashtags.Count);
-                Assert.DoesNotContain(idToRemove, plan.Hashtags.ToList());
+                Assert.Equal(planCopy.HashtagIds.Count - i - 1, plan.HashtagIds.Count);
+                Assert.DoesNotContain(idToRemove, plan.HashtagIds.ToList());
             }
             //StaticUtils.CheckRemoveFromIdsCollection(plan.Hashtags.ToList(), RandomFieldGenerator.RandomInt(1, plan.Hashtags.Count), plan.RemoveHashtag);
 
@@ -1391,7 +1391,7 @@ namespace GymProject.Domain.Test.UnitTest
             for (int i = 0; i < toRemove; i++)
             {
                 IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds.ToList());
-                plan.UnlinkTargetPhase(idToRemove);
+                plan.UntagPhase(idToRemove);
 
                 Assert.Equal(planCopy.TrainingPhaseIds.Count - i - 1, plan.TrainingPhaseIds.Count);
                 Assert.DoesNotContain(idToRemove, plan.TrainingPhaseIds.ToList());
@@ -1415,7 +1415,7 @@ namespace GymProject.Domain.Test.UnitTest
             for (int i = 0; i < toRemove; i++)
             {
                 IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds.ToList());
-                plan.RemoveFocusToMuscle(idToRemove);
+                plan.UnfocusMuscle(idToRemove);
 
                 Assert.Equal(planCopy.MuscleFocusIds.Count - i - 1, plan.MuscleFocusIds.Count);
                 Assert.DoesNotContain(idToRemove, plan.MuscleFocusIds.ToList());
@@ -1427,7 +1427,7 @@ namespace GymProject.Domain.Test.UnitTest
             for (int i = 0; i < toRemove; i++)
             {
                 IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.ChildTrainingPlanIds.ToList());
-                plan.DetachChildToTemplatePlan(idToRemove);
+                plan.DetachChildPlan(idToRemove);
 
                 Assert.Equal(planCopy.ChildTrainingPlanIds.Count - i - 1, plan.ChildTrainingPlanIds.Count);
                 Assert.DoesNotContain(idToRemove, plan.ChildTrainingPlanIds.ToList());

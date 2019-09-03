@@ -10,17 +10,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext
     public partial class GymContext : DbContext
     {
 
-        //        ((IObjectContextAdapter)this).ObjectContext
-        //  .ObjectMaterialized += (sender, args) =>
-        // {
-        //  var entity = args.Entity as IObjectWithState;
-        //  if (entity != null)
-        //  {
-        //   entity.State = State.Unchanged;
-        //  }
-        //};
-
-
         public const string DefaultSchema = "GymApp";
 
 

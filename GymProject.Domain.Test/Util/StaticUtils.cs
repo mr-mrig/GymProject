@@ -190,16 +190,30 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static ICollection<IdTypeValue> BuildIdsCollection(int minNumber, int maxNumber)
+        internal static ICollection<IdTypeValue> BuildIdsCollection(int minCollectionSize, int maxCollectionSize,
+            int minId = 1, int maxId = 99999)
         {
-            int nElments = RandomFieldGenerator.RandomInt(minNumber, maxNumber);
+            int nElments = RandomFieldGenerator.RandomInt(minCollectionSize, maxCollectionSize);
             List<IdTypeValue> result = new List<IdTypeValue>();
 
             for (int iel = 0; iel < nElments; iel++)
-                result.Add(IdTypeValue.Create(iel + 1));
+                //result.Add(IdTypeValue.Create(iel + 1));
+                result.Add(IdTypeValue.Create(RandomFieldGenerator.RandomInt(minId, maxId)));
 
             return result;
         }
+
+
+        //internal static ICollection<IdTypeValue> BuildRandomIdsCollection(int minNumber, int maxNumber)
+        //{
+        //    int nElments = RandomFieldGenerator.RandomInt(minNumber, maxNumber);
+        //    List<IdTypeValue> result = new List<IdTypeValue>();
+
+        //    for (int iel = 0; iel < nElments; iel++)
+        //        result.Add(IdTypeValue.Create(iel + 1));
+
+        //    return result;
+        //}
 
 
         internal static void RemoveFromIdsCollection(ICollection<IdTypeValue> inputIds, int numberOfElemntsToRemove, Action<IdTypeValue> removeFunction)

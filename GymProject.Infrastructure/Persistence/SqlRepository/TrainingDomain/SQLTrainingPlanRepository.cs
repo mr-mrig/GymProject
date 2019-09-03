@@ -43,12 +43,7 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public TrainingPlanRoot Modify(TrainingPlanRoot aggregateRoot)
         {
-
-            foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
-            {
-                //if(week.State == Modified)
-                    // Change it
-            }
+            _gymContext.Update(aggregateRoot);
 
             throw new NotImplementedException();
         }

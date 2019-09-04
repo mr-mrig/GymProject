@@ -44,13 +44,13 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
         #region Ctors
 
-        private UserPhaseRoot(IdTypeValue phaseId, OwnerEntity owner, DateRangeValue period, EntryStatusTypeEnum status, PersonalNoteValue note) : base(null)
+        private UserPhaseRoot(IdTypeValue phaseId, OwnerEntity owner, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue note) 
+            : base(null, entryStatus)
         {
             PhaseId = phaseId;
             Owner = owner;
             Period = period;
             OwnerNote = note;
-            EntryStatusType = status;
 
             CreatedOn = DateTime.UtcNow;
 

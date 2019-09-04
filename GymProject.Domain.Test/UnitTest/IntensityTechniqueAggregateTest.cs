@@ -139,7 +139,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                 technique.ChangeEntryStatus(newStatus);
 
-                Assert.Equal(newStatus, technique.EntryStatusType);
+                Assert.Equal(newStatus, technique.EntryStatus);
             }
         }
 

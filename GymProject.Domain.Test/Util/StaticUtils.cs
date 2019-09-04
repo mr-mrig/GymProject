@@ -327,14 +327,14 @@ namespace GymProject.Domain.Test.Util
 
                 return WorkoutTemplateRoot.PlanTransientWorkout(
                     workUnits: workUnits,
-                    workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
+                    workoutName: RandomFieldGenerator.RandomTextValue(4, 5, true, 0.05f),
                     weekday: specificDay
                     );
             else
                 return WorkoutTemplateRoot.PlanWorkout(
                     id: IdTypeValue.Create(id),
                     workUnits: workUnits,
-                    workoutName: RandomFieldGenerator.RandomTextValue(4, 5, 0.05f),
+                    workoutName: RandomFieldGenerator.RandomTextValue(4, 5, true, 0.05f),
                     weekday: specificDay
                     );
         }
@@ -555,6 +555,46 @@ namespace GymProject.Domain.Test.Util
             return result;
         }
 
+        internal static ICollection<TrainingPlanRelation> BuildTrainingPlanRelations(IdTypeValue parentId)
+        {
+            int childsMin = 1, childsMax = 10;
+            int childIdsMin = 1, childIdsMax = 4574678;
+            int childPlansNumber = RandomFieldGenerator.RandomInt(childsMin, childsMax);
+
+            List<TrainingPlanRelation> ret = new List<TrainingPlanRelation>();
+            List<int> childIds = new List<int>();
+
+            for (int irel = 0; irel < childPlansNumber; irel++)
+            {
+                TrainingPlanRelation relation = BuildTrainingPlanRelation(parentId,
+                    IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(childIdsMin, childIdsMax, childIds)));
+
+                ret.Add(relation);
+                childIds.Add((int)relation.ChildPlanId.Id);
+            }
+
+            return ret;
+        }
+
+
+        internal static TrainingPlanRelation BuildTrainingPlanRelation(IdTypeValue parentId, IdTypeValue childId = null, TrainingPlanTypeEnum relationType = null, IdTypeValue messageId = null)
+        {
+            int childIdMin = 1, childIdMax = 5555;
+            int messageIdMin = 1, messageIdMax = 3;
+
+            relationType = relationType ?? TrainingPlanTypeEnum.From(RandomFieldGenerator.RandomInt(1, 2));
+
+            if (messageId == 0)
+            {
+                messageId = relationType == TrainingPlanTypeEnum.Inherited
+                ? IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax))
+                : null;
+            }
+            childId = childId ?? IdTypeValue.Create(
+                RandomFieldGenerator.RandomIntValueExcluded(childIdMin, childIdMax, (int)parentId.Id));
+
+            return TrainingPlanRelation.EnstablishRelation(parentId, childId, relationType, messageId);
+        }
 
     }
 }

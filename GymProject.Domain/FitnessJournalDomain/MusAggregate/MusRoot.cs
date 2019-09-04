@@ -18,7 +18,10 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 
         #region Ctors
 
-        private MusRoot(string name, string description = null) : base(null)
+        private MusRoot() : base(null, null) { }
+
+        private MusRoot(string name, string description = null, EntryStatusTypeEnum status = null) 
+            : base(null, status ?? EntryStatusTypeEnum.NotSet)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new FitnessJournalDomainInvariantViolationException($"Trying to create a Mus with blank name");
@@ -36,10 +39,11 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
         /// </summary>
         /// <param name="name">MUS name - cannot be empty</param>
         /// <param name="description">MUS description</param>
+        /// <param name="entryStatus">The status of the entry</param>
         /// <returns>The new Mus object</returns>
-        public static MusRoot Diagnose(string name, string description = null)
+        public static MusRoot Diagnose(string name, string description = null, EntryStatusTypeEnum entryStatus = null)
         {
-            return new MusRoot(name, description);
+            return new MusRoot(name, description, entryStatus ?? EntryStatusTypeEnum.NotSet);
         }
         #endregion
 

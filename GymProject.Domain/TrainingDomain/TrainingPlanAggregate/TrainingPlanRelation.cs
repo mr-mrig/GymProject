@@ -48,11 +48,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         }
 
-        private TrainingPlanRelation(IdTypeValue parentPlanId, IdTypeValue childPlanId, IdTypeValue relationTypeId, IdTypeValue messageId = null)
+        private TrainingPlanRelation(IdTypeValue parentPlanId, IdTypeValue childPlanId, TrainingPlanTypeEnum relationType, IdTypeValue messageId = null)
         {
             ParentPlanId = parentPlanId;
             ChildPlanId = childPlanId;
-            ChildPlanType = TrainingPlanTypeEnum.From((int)relationTypeId.Id);
+            //ChildPlanType = TrainingPlanTypeEnum.From((int)relationTypeId.Id);
+            ChildPlanType = relationType;
             MessageId = MessageId;
 
             TestBusinessRules();
@@ -68,12 +69,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="parentPlanId">The ID of the parent Training Plan</param>
         /// <param name="childPlanId">The ID of the child Training Plan</param>
-        /// <param name="relationTypeId">The ID fo the relation that exists between the parent and the child plan</param>
+        /// <param name="relationType">The relation that exists between the parent and the child plan</param>
         /// <param name="messageId">The ID of the message attached</param>
         /// <returns>The TrainingPlanRelationRoot instance</returns>
-        public static TrainingPlanRelation EnstablishRelation(IdTypeValue parentPlanId, IdTypeValue childPlanId, IdTypeValue relationTypeId, IdTypeValue messageId = null)
+        public static TrainingPlanRelation EnstablishRelation(IdTypeValue parentPlanId, IdTypeValue childPlanId, TrainingPlanTypeEnum relationType, IdTypeValue messageId = null)
 
-            => new TrainingPlanRelation(parentPlanId, childPlanId, relationTypeId, messageId);
+            => new TrainingPlanRelation(parentPlanId, childPlanId, relationType, messageId);
 
         #endregion
 

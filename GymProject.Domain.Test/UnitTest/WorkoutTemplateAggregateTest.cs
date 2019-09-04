@@ -153,7 +153,7 @@ namespace GymProject.Domain.Test.UnitTest
                     CheckWorkUnit(iwu, workout, isTransient);
 
                 // Modify WO
-                string newName = RandomFieldGenerator.RandomTextValue(woNameLengthMin, woNameLengthMax, 0.05f);
+                string newName = RandomFieldGenerator.RandomTextValue(woNameLengthMin, woNameLengthMax, true, 0.05f);
                 uint newPnum = (uint)RandomFieldGenerator.RandomInt(pnumMin, pnumMax);
                 WeekdayEnum newDay = WeekdayEnum.From(RandomFieldGenerator.RandomInt(0, WeekdayEnum.AllTheWeek));
 

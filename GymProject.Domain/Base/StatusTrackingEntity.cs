@@ -7,15 +7,15 @@ namespace GymProject.Domain.Base
     {
 
 
-        public virtual EntryStatusTypeEnum EntryStatusType { get; protected set; }
+        public virtual EntryStatusTypeEnum EntryStatus { get; protected set; }
 
 
 
         #region Ctors
 
-        public StatusTrackingEntity(IdType id) : base(id)
+        public StatusTrackingEntity(IdType id, EntryStatusTypeEnum status) : base(id)
         {
-
+            EntryStatus = status;
         }
         #endregion
 
@@ -27,7 +27,7 @@ namespace GymProject.Domain.Base
         /// <param name="moderator">The moderator who changed the status</param>
         public virtual void ModerateEntryStatus(EntryStatusTypeEnum newStatus, Moderator moderator = null)
         {
-            EntryStatusType = newStatus ?? EntryStatusTypeEnum.NotSet;
+            EntryStatus = newStatus ?? EntryStatusTypeEnum.NotSet;
             TestEntryStatusBusinessRules();
         }
 
@@ -38,17 +38,17 @@ namespace GymProject.Domain.Base
         /// <param name="newStatus">The new status</param>
         public virtual void ChangeEntryStatus(EntryStatusTypeEnum newStatus)
         {
-            EntryStatusType = newStatus ?? EntryStatusTypeEnum.NotSet;
+            EntryStatus = newStatus ?? EntryStatusTypeEnum.NotSet;
             TestEntryStatusBusinessRules();
         }
 
         /// <summary>
         /// Tests that all the business rules are met and manages invalid states
         /// </summary>
-        /// <exception cref="Exception">Thrown if business rules violation</exception>
+        /// <exception cref="InvalidOperationException">Thrown if business rules violation</exception>
         protected virtual void TestEntryStatusBusinessRules()
         {
-            if (EntryStatusType == null || EntryStatusType == EntryStatusTypeEnum.NotSet)
+            if (EntryStatus == null || EntryStatus == EntryStatusTypeEnum.NotSet)
                 throw new InvalidOperationException($"The Entry Status must be valid.");
         }
     }

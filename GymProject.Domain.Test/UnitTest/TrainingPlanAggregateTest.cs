@@ -361,8 +361,6 @@ namespace GymProject.Domain.Test.UnitTest
 
             IdTypeValue planId = IdTypeValue.Create(17);
             IdTypeValue inheritedPlanScheduleId = null;
-            TrainingPlanRoot plan = null;
-            int constructorType;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -371,7 +369,6 @@ namespace GymProject.Domain.Test.UnitTest
                 bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
                 string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
                 bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
-                bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
 
                 IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
                 IdTypeValue messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
@@ -382,27 +379,22 @@ namespace GymProject.Domain.Test.UnitTest
                 List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
                 List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
                 List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-                List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
 
                 float testCaseProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
-                float constructorTypeProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
-
-
-                TrainingPlanTypeEnum planType = RandomFieldGenerator.RollEventWithProbability(0.1f)
-                    ? null
-                    : TrainingPlanTypeEnum.From(
-                        RandomFieldGenerator.RandomInt(TrainingPlanTypeEnum.NotSet.Id, TrainingPlanTypeEnum.Inherited.Id));
-
-                TrainingPlanTypeEnum rootPlanType = planType;
 
                 int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
 
                 for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
                     weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
 
-                // Root plan - just in case it will be needed
-                TrainingPlanRoot rootPlan = TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, rootPlanType, noteId, null, weeks,
-                                    scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds);
+                List<TrainingPlanRelation> childPlansRelations = StaticUtils.BuildTrainingPlanRelations(planId).ToList();
+
+                IdTypeValue validChildId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 99999,
+                            childPlansRelations.Select(x => (int)x.ChildPlanId.Id).Union(new List<int>() { (int)planId.Id })));
+
+                TrainingPlanRoot validPlan = TrainingPlanRoot.CreateTrainingPlan(
+                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations);
+
 
                 #region Check Creation Fails
                 switch (testCaseProbability)
@@ -413,61 +405,26 @@ namespace GymProject.Domain.Test.UnitTest
                         StaticUtils.InsertRandomNullElements(weeks);
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
-                            scheduleIds, phaseIds, proficiencyIds, focusIds, childPlanIds));
-
-                        // Cannot test non-template plans: rootPlan would have raised the esception if it had null weeks
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Null owner
                     case var _ when testCaseProbability < 0.1f:
 
-                        constructorType = constructorTypeProbability < 0.5f ? 0 : 1;
-                        ownerId = null;
-
-                        switch (constructorType)
-                        {
-                            case 0:
-
-                                Assert.Throws<TrainingDomainInvariantViolationException>(()
-                                    => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                                    null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
-                                break;
-
-                            default:
-
-                                inheritedPlanScheduleId = scheduleIds.Count > 0 ? scheduleIds[0] : null;
-
-                                Assert.Throws<TrainingDomainInvariantViolationException>(()
-                                    => TrainingPlanRoot.SendInheritedTrainingPlan(planId, rootPlan, ownerId, messageId, inheritedPlanScheduleId));
-                                break;
-                        }
-
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, null, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Null Schedules
                     case var _ when testCaseProbability < 0.2f:
 
-                        constructorType = constructorTypeProbability < 0.5f ? 0 : 1;
-                        ownerId = null;
+                        StaticUtils.InsertRandomNullElements(scheduleIds);
 
-                        switch (constructorType)
-                        {
-                            case 0:
-
-                                Assert.Throws<TrainingDomainInvariantViolationException>(()
-                                    => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                                    null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
-                                break;
-
-                            default:
-
-                                inheritedPlanScheduleId = scheduleIds.Count > 0 ? scheduleIds[0] : null;
-
-                                Assert.Throws<TrainingDomainInvariantViolationException>(()
-                                    => TrainingPlanRoot.SendInheritedTrainingPlan(planId, rootPlan, ownerId, messageId, inheritedPlanScheduleId));
-                                break;
-                        }
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
 
                         break;
 
@@ -477,52 +434,78 @@ namespace GymProject.Domain.Test.UnitTest
                         StaticUtils.InsertRandomNullElements(phaseIds);
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                            null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Null Proficiencies
-                    case var _ when testCaseProbability < 0.35f:
+                    case var _ when testCaseProbability < 0.3f:
 
                         StaticUtils.InsertRandomNullElements(proficiencyIds);
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                            null, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Null Childs
-                    case var _ when testCaseProbability < 0.45f:
+                    case var _ when testCaseProbability < 0.35f:
 
-                        StaticUtils.InsertRandomNullElements(childPlanIds);
+                        StaticUtils.InsertRandomNullElements(childPlansRelations);
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
-                            scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
-
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Null focus
-                    case var _ when testCaseProbability < 0.55f:
+                    case var _ when testCaseProbability < 0.45f:
 
                         StaticUtils.InsertRandomNullElements(focusIds);
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null, weeks,
-                            scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
+                        break;
 
+                    // Duplicate relations
+                    case var _ when testCaseProbability < 0.65f:
+
+                        int duplicatesNumber = RandomFieldGenerator.RandomInt(1, childPlansRelations.Count);
+
+                        for (int irel = 0; irel < duplicatesNumber; irel++)
+                            childPlansRelations.Add(StaticUtils.BuildTrainingPlanRelation(planId, 
+                                RandomFieldGenerator.ChooseAmong(childPlansRelations.Select(x => x.ChildPlanId))));
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Non inherited with message attached
                     case var _ when testCaseProbability < 0.65f:
 
-                        planType = RandomFieldGenerator.RollEventWithProbability(0.5f)
-                            ? TrainingPlanTypeEnum.NotSet : TrainingPlanTypeEnum.Variant;
+                        TrainingPlanTypeEnum childType = RandomFieldGenerator.RollEventWithProbability(0.5f)
+                            ? TrainingPlanTypeEnum.NotSet 
+                            : TrainingPlanTypeEnum.Variant;
+
+                        childPlansRelations.Add(StaticUtils.BuildTrainingPlanRelation(planId, validChildId, childType, messageId));
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, messageId,
-                            weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
+                        break;
 
+                    // Parent plan different from the current one
+                    case var _ when testCaseProbability < 0.75f:
+
+                        IdTypeValue fakeId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 9999, (int)planId.Id));
+
+                        childPlansRelations.Add(StaticUtils.BuildTrainingPlanRelation(fakeId, validChildId));
+
+                        Assert.Throws<TrainingDomainInvariantViolationException>(()
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
                         break;
 
                     // Non Consecutive Numbers
@@ -548,20 +531,15 @@ namespace GymProject.Domain.Test.UnitTest
                             weeks.Add(StaticUtils.BuildRandomTrainingWeek(1, trainingWeeksNumber * 3, isTransient));
 
                         Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
-                            weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                            => TrainingPlanRoot.CreateTrainingPlan(
+                                    planId, name, isBookmarked, ownerId, noteId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations));
 
                         break;
 
                     // Child Plan same as Root Plan
                     default:
 
-                        // Violate rule for Template plans
-                        childPlanIds.Add(planId);
-
-                        Assert.Throws<TrainingDomainInvariantViolationException>(()
-                            => TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId, null,
-                            weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds));
+                        Assert.Throws<TrainingDomainInvariantViolationException>(() => StaticUtils.BuildTrainingPlanRelation(planId, planId));
                         break;
                 }
                 #endregion
@@ -569,24 +547,24 @@ namespace GymProject.Domain.Test.UnitTest
 
                 #region Check Modifications Fails
 
-                Assert.Throws<ArgumentNullException>(() => rootPlan.TagAs(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.TagPhase(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.LinkTargetProficiency(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.FocusOnMuscle(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.ScheduleTraining(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.TagAs(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.TagPhase(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.LinkTargetProficiency(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.FocusOnMuscle(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.ScheduleTraining(null));
 
-                Assert.Throws<ArgumentNullException>(() => rootPlan.Untag(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.UntagPhase(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.UnlinkTargetProficiency(null));
-                Assert.Throws<ArgumentNullException>(() => rootPlan.UnfocusMuscle(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.Untag(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.UntagPhase(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.UnlinkTargetProficiency(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.UnfocusMuscle(null));
 
-                Assert.Throws<ArgumentNullException>(() => rootPlan.PlanFullRestWeek(null));
-                Assert.Throws<ArgumentException>(() => rootPlan.PlanFullRestWeek(
+                Assert.Throws<ArgumentNullException>(() => validPlan.PlanFullRestWeek(null));
+                Assert.Throws<ArgumentException>(() => validPlan.PlanFullRestWeek(
                     StaticUtils.BuildRandomTrainingWeek(1, 0, isTransient, weekType: TrainingWeekTypeEnum.Generic)));
 
-                Assert.Throws<ArgumentNullException>(() => rootPlan.PlanTrainingWeek(null));
+                Assert.Throws<ArgumentNullException>(() => validPlan.PlanTrainingWeek(null));
 
-                Assert.Throws<ArgumentException>(() => rootPlan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.FullRest
+                Assert.Throws<ArgumentException>(() => validPlan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.FullRest
                     , new List<WorkoutTemplateReferenceValue>() { WorkoutTemplateReferenceValue.BuildLinkToWorkout(0, null) }));
 
                 //Assert.Throws<ArgumentException>(() => rootPlan.RemoveHashtag(IdTypeValue.Create(
@@ -601,8 +579,8 @@ namespace GymProject.Domain.Test.UnitTest
                 //Assert.Throws<ArgumentException>(() => rootPlan.RemoveFocusToMuscle(IdTypeValue.Create(
                 //    RandomFieldGenerator.RandomIntValueExcluded(1, 10000, rootPlan.MuscleFocusIds.Select(x => (int)x.Id)))));
 
-                if(rootPlanType != null && rootPlanType != TrainingPlanTypeEnum.Variant && rootPlanType != TrainingPlanTypeEnum.NotSet)
-                    Assert.Throws<InvalidOperationException>(() => rootPlan.MarkAsVariant());
+                //if(rootPlanType != null && rootPlanType != TrainingPlanTypeEnum.Variant && rootPlanType != TrainingPlanTypeEnum.NotSet)
+                //    Assert.Throws<InvalidOperationException>(() => plan.MarkAsVariant());
                 #endregion
             }
         }
@@ -642,7 +620,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else
                     planType = TrainingPlanTypeEnum.NotSet;
 
-                TrainingPlanRoot plan = BuildAndCheckRandomTrainingPlan(planId, isTransient, planType);
+                TrainingPlanRoot plan = BuildAndCheckRandomTrainingPlan(planId, isTransient);
 
                 // Change Plan
                 CheckTrainingPlanChanges(plan);
@@ -1119,8 +1097,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static TrainingPlanRoot BuildAndCheckRandomTrainingPlan(
-            long planIdNum, bool isTransient, TrainingPlanTypeEnum planType = null, IList<TrainingWeekEntity> weeks = null)
+        internal static TrainingPlanRoot BuildAndCheckRandomTrainingPlan(long planIdNum, bool isTransient, IList<TrainingWeekEntity> weeks = null)
         {
             int planNameLengthMin = 10, planNameLengthMax = 100;
             int ownerIdMin = 50000, ownerIdMax = 55555;
@@ -1129,15 +1106,12 @@ namespace GymProject.Domain.Test.UnitTest
             int messageIdMin = 6881, messageIdMax = 22441;
             int trainingWeeksMin = 0, trainingWeeksMax = 10;
 
-            float alternativeConstructorProbabilty = 0.25f;
-
-            IdTypeValue planId = IdTypeValue.Create(planIdNum);
-            TrainingPlanRoot plan;
+            //float alternativeConstructorProbabilty = 0.25f;
 
             string name = RandomFieldGenerator.RandomTextValue(planNameLengthMin, planNameLengthMax);
             bool isBookmarked = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
-            bool isTemplate = RandomFieldGenerator.RandomBoolWithProbability(0.5f);
 
+            IdTypeValue planId = IdTypeValue.Create(planIdNum);
             IdTypeValue noteId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
             IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(ownerIdMin, ownerIdMax));
 
@@ -1146,15 +1120,6 @@ namespace GymProject.Domain.Test.UnitTest
             List<IdTypeValue> proficiencyIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
             List<IdTypeValue> hashtagIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
             List<IdTypeValue> focusIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-            List<IdTypeValue> childPlanIds = StaticUtils.BuildIdsCollection(idsSizeMin, idsSizeMax).ToList();
-
-            if (planType == null)
-            {
-                planType = RandomFieldGenerator.RollEventWithProbability(0.1f)
-                    ? null
-                    : TrainingPlanTypeEnum.From(
-                        RandomFieldGenerator.RandomInt(TrainingPlanTypeEnum.NotSet.Id, TrainingPlanTypeEnum.Inherited.Id));
-            }
 
             int trainingWeeksNumber = RandomFieldGenerator.RandomInt(trainingWeeksMin, trainingWeeksMax);
 
@@ -1166,97 +1131,69 @@ namespace GymProject.Domain.Test.UnitTest
                     weeks.Add(StaticUtils.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
             }
 
-            IdTypeValue messageId = null;
+
+            //if (planType == TrainingPlanTypeEnum.Inherited)
+            //{
+            //    IdTypeValue traineeId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+            //    IdTypeValue scheduleId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+
+            //    TrainingPlanRoot rootPlan = TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
+            //        messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
+
+            //    messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
+
+            //    if(RandomFieldGenerator.RollEventWithProbability(alternativeConstructorProbabilty))
+            //        plan = TrainingPlanRoot.CreateTrainingPlan(planId, name, false, false, traineeId, planType, null,
+            //            messageId, weeks, new List<IdTypeValue>() { scheduleId });
+            //    else
+            //        plan = TrainingPlanRoot.SendInheritedTrainingPlan(planId, rootPlan, traineeId, messageId, scheduleId);
+
+            //    Assert.Equal(planId, plan.Id);
+            //    Assert.Equal(name, plan.Name);
+            //    Assert.False(plan.IsBookmarked);
+            //    Assert.False(plan.IsTemplate);
+            //    Assert.Equal(traineeId, plan.OwnerId);
+            //    Assert.Equal(planType, plan.TrainingPlanType);
+            //    Assert.Null(plan.PersonalNoteId);
+            //    Assert.Equal(messageId, plan.AttachedMessageId);
+            //    Assert.Single(plan.TrainingScheduleIds);
+            //    Assert.Contains(scheduleId, plan.TrainingScheduleIds);
+            //    Assert.Empty(plan.TrainingPhaseIds);
+            //    Assert.Empty(plan.TrainingProficiencyIds);
+            //    Assert.Empty(plan.MuscleFocusIds);
+            //    Assert.Empty(plan.HashtagIds);
+            //    Assert.Empty(plan.ChildTrainingPlanIds);
+            //    Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
+            //}
 
 
-            if (planType == TrainingPlanTypeEnum.Inherited)
-            {
-                IdTypeValue traineeId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
-                IdTypeValue scheduleId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+            List<TrainingPlanRelation> childPlansRelations = StaticUtils.BuildTrainingPlanRelations(planId).ToList();
 
-                TrainingPlanRoot rootPlan = TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                    messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
+            TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, ownerId, noteId,
+                weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlansRelations);
 
-                messageId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax));
+            Assert.Equal(planId, plan.Id);
+            Assert.Equal(name, plan.Name);
+            Assert.Equal(isBookmarked, plan.IsBookmarked);
+            Assert.Equal(childPlansRelations.Count(x => x.ChildPlanType == TrainingPlanTypeEnum.Variant) > 0, plan.IsTemplate);
+            Assert.Equal(ownerId, plan.OwnerId);
+            Assert.Equal(noteId, plan.PersonalNoteId);
 
-                if(RandomFieldGenerator.RollEventWithProbability(alternativeConstructorProbabilty))
-                    plan = TrainingPlanRoot.CreateTrainingPlan(planId, name, false, false, traineeId, planType, null,
-                        messageId, weeks, new List<IdTypeValue>() { scheduleId });
-                else
-                    plan = TrainingPlanRoot.SendInheritedTrainingPlan(planId, rootPlan, traineeId, messageId, scheduleId);
-
-                Assert.Equal(planId, plan.Id);
-                Assert.Equal(name, plan.Name);
-                Assert.False(plan.IsBookmarked);
-                Assert.False(plan.IsTemplate);
-                Assert.Equal(traineeId, plan.OwnerId);
-                Assert.Equal(planType, plan.TrainingPlanType);
-                Assert.Null(plan.PersonalNoteId);
-                Assert.Equal(messageId, plan.AttachedMessageId);
-                Assert.Single(plan.TrainingScheduleIds);
-                Assert.Contains(scheduleId, plan.TrainingScheduleIds);
-                Assert.Empty(plan.TrainingPhaseIds);
-                Assert.Empty(plan.TrainingProficiencyIds);
-                Assert.Empty(plan.MuscleFocusIds);
-                Assert.Empty(plan.HashtagIds);
-                Assert.Empty(plan.ChildTrainingPlanIds);
-                Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
-            }
-
-            else if(planType == TrainingPlanTypeEnum.Variant)
-            {
-                TrainingPlanRoot rootPlan = TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                    messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
-
-                if (RandomFieldGenerator.RollEventWithProbability(alternativeConstructorProbabilty))
-                    plan = TrainingPlanRoot.CreateTrainingPlan(planId, name, false, false, ownerId, planType, null,
-                        messageId, weeks, null, phaseIds, proficiencyIds, focusIds, hashtagIds);
-                else
-                    plan = TrainingPlanRoot.CreateVariantTrainingPlan(planId, rootPlan);
-
-                Assert.Equal(planId, plan.Id);
-                Assert.Equal(name, plan.Name);
-                Assert.False(plan.IsBookmarked);
-                Assert.False(plan.IsTemplate);
-                Assert.Equal(ownerId, plan.OwnerId);
-                Assert.Equal(planType, plan.TrainingPlanType);
-                Assert.Null(plan.PersonalNoteId);
-                Assert.Equal(messageId, plan.AttachedMessageId);
-                Assert.Empty(plan.TrainingScheduleIds);
-                Assert.Equal(phaseIds, plan.TrainingPhaseIds);
-                Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
-                Assert.Equal(focusIds, plan.MuscleFocusIds);
-                Assert.Equal(hashtagIds, plan.HashtagIds);
-                Assert.Empty(plan.ChildTrainingPlanIds);
-            }
-
-            else
-            {
-                plan = TrainingPlanRoot.CreateTrainingPlan(planId, name, isBookmarked, isTemplate, ownerId, planType, noteId,
-                    messageId, weeks, scheduleIds, phaseIds, proficiencyIds, focusIds, hashtagIds, childPlanIds);
-
-                Assert.Equal(planId, plan.Id);
-                Assert.Equal(name, plan.Name);
-                Assert.Equal(isBookmarked, plan.IsBookmarked);
-                Assert.Equal(isTemplate, plan.IsTemplate);
-                Assert.Equal(ownerId, plan.OwnerId);
-                Assert.Equal(planType ?? TrainingPlanTypeEnum.NotSet, plan.TrainingPlanType);
-                Assert.Equal(noteId, plan.PersonalNoteId);
-                Assert.Equal(messageId, plan.AttachedMessageId);
-                Assert.Equal(scheduleIds, plan.TrainingScheduleIds);
-                Assert.Equal(phaseIds, plan.TrainingPhaseIds);
-                Assert.Equal(proficiencyIds, plan.TrainingProficiencyIds);
-                Assert.Equal(focusIds, plan.MuscleFocusIds);
-                Assert.Equal(hashtagIds, plan.HashtagIds);
-                Assert.Equal(childPlanIds, plan.ChildTrainingPlanIds);
-            }
+            Assert.True(scheduleIds.SequenceEqual(plan.TrainingScheduleIds));
+            Assert.True(phaseIds.SequenceEqual(plan.TrainingPhaseIds));
+            Assert.True(proficiencyIds.SequenceEqual(plan.TrainingProficiencyIds));
+            Assert.True(focusIds.SequenceEqual(plan.MuscleFocusIds));
+            Assert.True(hashtagIds.SequenceEqual(plan.HashtagIds));
+            Assert.True(childPlansRelations.SequenceEqual(plan.RelationsWithChildPlans));
 
             Assert.True(Enumerable.Range(0, weeks.Count).SequenceEqual(plan.TrainingWeeks.Select(x => (int)x.ProgressiveNumber)));
 
             Assert.Equal((float)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Average(x => x?.Workouts.Count ?? 0)
                 , plan.GetAverageWorkoutsPerWeek(), 1);
+
             Assert.Equal((int)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Min(x => x?.Workouts.Count ?? 0)
                 , plan.GetMinimumWorkoutsPerWeek());
+
             Assert.Equal((int)weeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Max(x => x?.Workouts.Count ?? 0)
                 , plan.GetMaximumWorkoutsPerWeek());
 
@@ -1275,7 +1212,6 @@ namespace GymProject.Domain.Test.UnitTest
             int ownerIdMin = 50000, ownerIdMax = 55555;
             int idsMin = 1, idsMax = 999999;
             int noteIdMin = 7000, noteIdMax = 12999;
-            int messageIdMin = 6881, messageIdMax = 22441;
             int toRemove;
 
             TrainingPlanRoot planCopy = plan.Clone() as TrainingPlanRoot ??
@@ -1293,8 +1229,11 @@ namespace GymProject.Domain.Test.UnitTest
             IdTypeValue proficiencyId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.TrainingProficiencyIds.Select(x => (int)x.Id)));
             IdTypeValue hashtagId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.HashtagIds.Select(x => (int)x.Id)));
             IdTypeValue focusId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, plan.MuscleFocusIds.Select(x => (int)x.Id)));
-            IdTypeValue childPlanId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax,
-                plan.ChildTrainingPlanIds.Select(x => (int)x.Id).Union(new List<int>() { (int)plan.Id.Id } )));
+            IdTypeValue childId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(idsMin, idsMax, 
+                plan.RelationsWithChildPlans.Select(x => (int)x.ChildPlanId.Id).Union(new List<int>() { (int)plan.Id.Id })));
+
+            TrainingPlanRelation childPlanRelation = StaticUtils.BuildTrainingPlanRelation(plan.Id, childId);
+
 
             // Change simple fields
             plan.GiveName(name);
@@ -1320,13 +1259,13 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Add with logic
             plan.ChangeBookmarkedFlag(isBookmarked);
-            plan.AttachChildPlan(childPlanId);
+            plan.AttachChildPlan(childId, childPlanRelation.ChildPlanType, childPlanRelation.MessageId);
             plan.ScheduleTraining(scheduleId);
 
             Assert.Equal(isBookmarked, plan.IsBookmarked);
-            Assert.True(plan.IsTemplate);
-            Assert.Contains(childPlanId, plan.ChildTrainingPlanIds);
-            Assert.Equal(planCopy.ChildTrainingPlanIds.Count + 1, plan.ChildTrainingPlanIds.Count);
+            Assert.Equal(plan.RelationsWithChildPlans.Count(x => x.ChildPlanType == TrainingPlanTypeEnum.Variant) > 0, plan.IsTemplate);
+            Assert.Contains(childPlanRelation, plan.RelationsWithChildPlans);
+            Assert.Equal(planCopy.RelationsWithChildPlans.Count + 1, plan.RelationsWithChildPlans.Count);
             Assert.Contains(scheduleId, plan.TrainingScheduleIds);
             Assert.Equal(planCopy.TrainingScheduleIds.Count + 1, plan.TrainingScheduleIds.Count);
 
@@ -1338,32 +1277,34 @@ namespace GymProject.Domain.Test.UnitTest
             // Duplicate Add -> No change
             if (plan.HashtagIds.Count > 0)
             {
-                plan.TagAs(RandomFieldGenerator.ChooseAmong(plan.HashtagIds.ToList()));
+                plan.TagAs(RandomFieldGenerator.ChooseAmong(plan.HashtagIds));
                 Assert.Equal(planCopy.HashtagIds.Count, plan.HashtagIds.Count);
             }
             if (plan.TrainingPhaseIds.Count > 0)
             {
-                plan.TagPhase(RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds.ToList()));
+                plan.TagPhase(RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds));
                 Assert.Equal(planCopy.TrainingPhaseIds.Count, plan.TrainingPhaseIds.Count);
             }
             if (plan.TrainingProficiencyIds.Count > 0)
             {
-                plan.LinkTargetProficiency(RandomFieldGenerator.ChooseAmong(plan.TrainingProficiencyIds.ToList()));
+                plan.LinkTargetProficiency(RandomFieldGenerator.ChooseAmong(plan.TrainingProficiencyIds));
                 Assert.Equal(planCopy.TrainingProficiencyIds.Count, plan.TrainingProficiencyIds.Count);
             }
             if (plan.MuscleFocusIds.Count > 0)
             {
-                plan.FocusOnMuscle(RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds.ToList()));
+                plan.FocusOnMuscle(RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds));
                 Assert.Equal(planCopy.MuscleFocusIds.Count, plan.MuscleFocusIds.Count);
             }
-            if (plan.ChildTrainingPlanIds.Count > 0)
+            if (plan.RelationsWithChildPlans.Count > 0)
             {
-                plan.AttachChildToTemplatePlan(RandomFieldGenerator.ChooseAmong(plan.ChildTrainingPlanIds.ToList()));
-                Assert.Equal(planCopy.ChildTrainingPlanIds.Count, plan.ChildTrainingPlanIds.Count);
+                TrainingPlanTypeEnum relationType = TrainingPlanTypeEnum.From(RandomFieldGenerator.RandomInt(1, 2));
+
+                plan.AttachChildPlan(RandomFieldGenerator.ChooseAmong(plan.RelationsWithChildPlans.Select(x => x.ChildPlanId)),  relationType);
+                Assert.Equal(planCopy.RelationsWithChildPlans.Count, plan.RelationsWithChildPlans.Count);
             }
             if (plan.TrainingScheduleIds.Count > 0)
             {
-                plan.ScheduleTraining(RandomFieldGenerator.ChooseAmong(plan.TrainingScheduleIds.ToList()));
+                plan.ScheduleTraining(RandomFieldGenerator.ChooseAmong(plan.TrainingScheduleIds));
                 Assert.Equal(planCopy.TrainingScheduleIds.Count, plan.TrainingScheduleIds.Count);
             }
 
@@ -1377,24 +1318,23 @@ namespace GymProject.Domain.Test.UnitTest
 
             for (int i = 0; i < toRemove; i++)
             {
-                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.HashtagIds.ToList());
+                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.HashtagIds);
                 plan.Untag(idToRemove);
 
                 Assert.Equal(planCopy.HashtagIds.Count - i - 1, plan.HashtagIds.Count);
-                Assert.DoesNotContain(idToRemove, plan.HashtagIds.ToList());
+                Assert.DoesNotContain(idToRemove, plan.HashtagIds);
             }
-            //StaticUtils.CheckRemoveFromIdsCollection(plan.Hashtags.ToList(), RandomFieldGenerator.RandomInt(1, plan.Hashtags.Count), plan.RemoveHashtag);
 
             // Remove Phases
             toRemove = RandomFieldGenerator.RandomInt(1, plan.TrainingPhaseIds.Count);
 
             for (int i = 0; i < toRemove; i++)
             {
-                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds.ToList());
+                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.TrainingPhaseIds);
                 plan.UntagPhase(idToRemove);
 
                 Assert.Equal(planCopy.TrainingPhaseIds.Count - i - 1, plan.TrainingPhaseIds.Count);
-                Assert.DoesNotContain(idToRemove, plan.TrainingPhaseIds.ToList());
+                Assert.DoesNotContain(idToRemove, plan.TrainingPhaseIds);
             }
 
             // Remove Proficiencies
@@ -1402,11 +1342,11 @@ namespace GymProject.Domain.Test.UnitTest
 
             for (int i = 0; i < toRemove; i++)
             {
-                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.TrainingProficiencyIds.ToList());
+                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.TrainingProficiencyIds);
                 plan.UnlinkTargetProficiency(idToRemove);
 
                 Assert.Equal(planCopy.TrainingProficiencyIds.Count - i - 1, plan.TrainingProficiencyIds.Count);
-                Assert.DoesNotContain(idToRemove, plan.TrainingProficiencyIds.ToList());
+                Assert.DoesNotContain(idToRemove, plan.TrainingProficiencyIds);
             }
 
             // Remove Focus
@@ -1414,36 +1354,27 @@ namespace GymProject.Domain.Test.UnitTest
 
             for (int i = 0; i < toRemove; i++)
             {
-                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds.ToList());
+                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.MuscleFocusIds);
                 plan.UnfocusMuscle(idToRemove);
 
                 Assert.Equal(planCopy.MuscleFocusIds.Count - i - 1, plan.MuscleFocusIds.Count);
-                Assert.DoesNotContain(idToRemove, plan.MuscleFocusIds.ToList());
+                Assert.DoesNotContain(idToRemove, plan.MuscleFocusIds);
             }
 
             // Remove Child Plan
-            toRemove = RandomFieldGenerator.RandomInt(1, plan.ChildTrainingPlanIds.Count);
+            toRemove = RandomFieldGenerator.RandomInt(1, plan.RelationsWithChildPlans.Count);
 
             for (int i = 0; i < toRemove; i++)
             {
-                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.ChildTrainingPlanIds.ToList());
+                IdTypeValue idToRemove = RandomFieldGenerator.ChooseAmong(plan.RelationsWithChildPlans.Select(x => x.ChildPlanId));
                 plan.DetachChildPlan(idToRemove);
 
-                Assert.Equal(planCopy.ChildTrainingPlanIds.Count - i - 1, plan.ChildTrainingPlanIds.Count);
-                Assert.DoesNotContain(idToRemove, plan.ChildTrainingPlanIds.ToList());
+                Assert.Equal(planCopy.RelationsWithChildPlans.Count - i - 1, plan.RelationsWithChildPlans.Count);
+                Assert.DoesNotContain(idToRemove, plan.RelationsWithChildPlans.Select(x => x.ChildPlanId));
             }
 
-            if (plan.ChildTrainingPlanIds.Count == 0)
+            if (plan.RelationsWithChildPlans.Count == 0)
                 Assert.False(plan.IsTemplate);
-
-            if (plan.TrainingPlanType == TrainingPlanTypeEnum.NotSet && plan.TrainingPlanType == TrainingPlanTypeEnum.Variant)
-            {
-                if(RandomFieldGenerator.RollEventWithProbability(0.5f))
-                {
-                    plan.MarkAsVariant();
-                    Assert.Equal(TrainingPlanTypeEnum.Variant, plan.TrainingPlanType);
-                }
-            }
         }
 
 

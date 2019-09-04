@@ -24,6 +24,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
+        private TrainingPlanTypeEnum() : base(0, null) { }
+
         public TrainingPlanTypeEnum(int id, string name, string description) : base(id, name)
         {
             Description = description;

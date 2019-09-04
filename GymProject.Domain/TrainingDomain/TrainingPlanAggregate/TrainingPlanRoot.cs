@@ -163,14 +163,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
+
+        private TrainingPlanRoot() : base(null) { }
+
+
         private TrainingPlanRoot(
             IdTypeValue id,
             string name,
             bool isBookmarked,
             IdTypeValue ownerId,
-            //TrainingPlanTypeEnum trainingPlanType = null,
             IdTypeValue personalNoteId = null,
-            IList<TrainingWeekEntity> trainingWeeks = null,
+            IEnumerable<TrainingWeekEntity> trainingWeeks = null,
             IEnumerable<IdTypeValue> trainingScheduleIds = null,
             IEnumerable<IdTypeValue> trainingPhaseIds = null,
             IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
@@ -238,10 +241,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             IdTypeValue id,
             string name,
             bool isBookmarked,
-            bool isTemplate,
             IdTypeValue ownerId,
             IdTypeValue personalNoteId = null,
-            IList<TrainingWeekEntity> trainingWeeks = null,
+            IEnumerable<TrainingWeekEntity> trainingWeeks = null,
             IEnumerable<IdTypeValue> trainingScheduleIds = null,
             IEnumerable<IdTypeValue> trainingPhaseIds = null,
             IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
@@ -389,10 +391,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 throw new ArgumentNullException($"Child Plan ID must be non-NULL when attaching it to the Training Plan", nameof(childPlanId));
 
 
-            if (FindRelationByChildIdOrDefault(childPlanId) == default)
+            if (FindRelationByChildIdOrDefault(childPlanId) != default)
                 return;
 
-            _relationsWithChildPlans.Add(childPlanId);
+            _relationsWithChildPlans.Add(
+                TrainingPlanRelation.EnstablishRelation(Id, childPlanId, childPlanType, messageId));
 
             TestBusinessRules();
         }
@@ -413,7 +416,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             TrainingPlanRelation relationEntry = FindRelationByChildIdOrDefault(childPlanId);
 
-            if(relationEntry == null)
+            if(relationEntry == default)
                 throw new ArgumentException(nameof(childPlanId), $"Child Plan ID could not be found.");
 
             else
@@ -1140,6 +1143,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
+        /// The Training Plan must be the parent of the Relation.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool TrainingPlanIsParentOnly()
+
+            => _relationsWithChildPlans.All(x => x?.ParentPlanId == Id);
+            //=> _relationsWithChildPlans.All(x => x?.ChildPlanId != Id) && _relationsWithChildPlans.All(x => x?.ParentPlanId == Id);
+
+
+        /// <summary>
+        /// No duplicate relations between the Parent Plan and the same Child.
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool OnlyOneRelationPerEachChild() => !_relationsWithChildPlans.ContainsDuplicates();
+
+
+        /// <summary>
         /// Training Weeks of the same Training Plan must have consecutive progressive numbers.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -1198,6 +1218,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!NoNullMuscleFocus())
                 throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Muscle Focus entries.");
 
+            if (!TrainingPlanIsParentOnly())
+                throw new TrainingDomainInvariantViolationException($"The Training Plan must be the parent of the Relation.");
+
+            if (!OnlyOneRelationPerEachChild())
+                throw new TrainingDomainInvariantViolationException($"No duplicate relations between the Parent Plan and the same Child.");
+
             //if (!NameIsNotEmpty())
             //    throw new TrainingDomainInvariantViolationException($"The Training Plan must have a valid name.");
 
@@ -1212,9 +1238,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         public object Clone()
 
-            => CreateTrainingPlan(Id, Name, IsBookmarked, IsTemplate, OwnerId, PersonalNoteId,
-                TrainingWeeks.ToList(), TrainingScheduleIds.ToList(), TrainingPhaseIds.ToList(), TrainingProficiencyIds.ToList(), MuscleFocusIds.ToList(),
-                HashtagIds.ToList(), RelationsWithChildPlans.ToList());
+            => CreateTrainingPlan(
+                    Id, Name, IsBookmarked, OwnerId, PersonalNoteId, TrainingWeeks, TrainingScheduleIds, 
+                        TrainingPhaseIds, TrainingProficiencyIds, MuscleFocusIds, HashtagIds, RelationsWithChildPlans);
 
         #endregion
     }

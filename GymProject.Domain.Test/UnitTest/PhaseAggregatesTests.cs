@@ -36,7 +36,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.NotNull(phase);
             Assert.Equal(phaseName, phase.Name);
-            Assert.Equal(EntryStatusTypeEnum.Private, phase.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Private, phase.EntryStatus);
         }
 
 
@@ -49,7 +49,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.NotNull(phase);
             Assert.Equal(phaseName, phase.Name);
-            Assert.Equal(EntryStatusTypeEnum.Pending, phase.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Pending, phase.EntryStatus);
         }
 
 
@@ -62,7 +62,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.NotNull(phase);
             Assert.Equal(phaseName, phase.Name);
-            Assert.Equal(EntryStatusTypeEnum.Native, phase.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Native, phase.EntryStatus);
         }
 
 
@@ -129,7 +129,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(owner, phasePrivate.Owner);
             Assert.Equal(phaseId, phasePrivate.PhaseId);
             Assert.Equal(period, phasePrivate.Period);
-            Assert.Equal(EntryStatusTypeEnum.Private, phasePrivate.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Private, phasePrivate.EntryStatus);
             Assert.Null(phasePrivate.OwnerNote);
 
             phasePrivate.WriteNote(note.Body);
@@ -141,7 +141,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(owner, phasePublic.Owner);
             Assert.Equal(phaseId, phasePublic.PhaseId);
             Assert.Equal(period, phasePublic.Period);
-            Assert.Equal(EntryStatusTypeEnum.Pending, phasePublic.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Pending, phasePublic.EntryStatus);
             Assert.Equal(note, phasePublic.OwnerNote);
         }
 
@@ -162,7 +162,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(phaseId, phasePrivate.PhaseId);
             Assert.Equal(startDate, phasePrivate.Period.Start);
             Assert.False(phasePrivate.Period.IsRightBounded());
-            Assert.Equal(EntryStatusTypeEnum.Private, phasePrivate.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Private, phasePrivate.EntryStatus);
             Assert.Null(phasePrivate.OwnerNote);
 
             phasePrivate.WriteNote(note.Body);
@@ -175,7 +175,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(phaseId, phasePublic.PhaseId);
             Assert.Equal(startDate, phasePublic.Period.Start);
             Assert.False(phasePublic.Period.IsRightBounded());
-            Assert.Equal(EntryStatusTypeEnum.Pending, phasePublic.EntryStatusType);
+            Assert.Equal(EntryStatusTypeEnum.Pending, phasePublic.EntryStatus);
             Assert.Equal(note, phasePublic.OwnerNote);
         }
 

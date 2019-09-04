@@ -60,6 +60,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
+        private TrainingWeekEntity() : base(null) {}
+
         private TrainingWeekEntity(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;

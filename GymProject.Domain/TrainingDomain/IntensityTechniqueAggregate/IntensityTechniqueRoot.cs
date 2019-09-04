@@ -45,15 +45,19 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
 
         #region Ctors
 
-        private IntensityTechniqueRoot(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus) : base(id)
+        private IntensityTechniqueRoot() : base(null, null)
+        {
+                
+        }
+
+        private IntensityTechniqueRoot(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus) 
+            : base(id, entryStatus)
         {
             Name = name?.Trim() ?? string.Empty;
             OwnerId = ownerId;
             Abbreviation = abbreviation.Trim();
             Description = description;
             IsLinkingTechnique = isLinkingTechnique;
-
-            EntryStatusType = entryStatus;
 
             TestBusinessRules();
         }

@@ -9,6 +9,7 @@ namespace GymProject.Domain.Test.Util
 
         #region consts
         public const string Alphabet = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        public const string AlphabetWithSpaces = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
         #endregion
 
 
@@ -99,13 +100,24 @@ namespace GymProject.Domain.Test.Util
         /// <param name="length">The legth of the string to be generated</param>
         /// <param name="prob">Probability of null being returned</param>
         /// <returns>A pseudo-random string.</returns>
-        public static string RandomTextValue(int length, float prob = 0)
+        public static string RandomTextValue(int length, bool areSpacesAllowed = false, float prob = 0)
         {
             if (RandomDouble(0, 1) < prob)
                 return null;
 
-            var chars = Enumerable.Range(0, length)
-                .Select(x => Alphabet[Rand.Next(0, Alphabet.Length)]);
+            IEnumerable<char> chars;
+
+            if (areSpacesAllowed)
+            {
+                chars = Enumerable.Range(0, length)
+                    .Select(x => AlphabetWithSpaces[Rand.Next(0, Alphabet.Length)]);
+            }
+            else
+            {
+                chars = Enumerable.Range(0, length)
+                    .Select(x => Alphabet[Rand.Next(0, Alphabet.Length)]);
+            }
+
 
             return new string(chars.ToArray());
         }
@@ -119,13 +131,23 @@ namespace GymProject.Domain.Test.Util
         /// <param name="lengthMax">The maximum legth of the string to be generated</param>
         /// <param name="prob">Probability of null being returned</param>
         /// <returns>A pseudo-random string.</returns>
-        public static string RandomTextValue(int lengthMin, int lengthMax, float prob = 0)
+        public static string RandomTextValue(int lengthMin, int lengthMax, bool areSpacesAllowed = false, float prob = 0)
         {
             if (RandomDouble(0, 1) < prob)
                 return null;
 
-            var chars = Enumerable.Range(0, RandomInt(lengthMin, lengthMax))
-                .Select(x => Alphabet[Rand.Next(0, Alphabet.Length)]);
+            IEnumerable<char> chars;
+
+            if (areSpacesAllowed)
+            {
+                chars = Enumerable.Range(0, RandomInt(lengthMin, lengthMax))
+                    .Select(x => AlphabetWithSpaces[Rand.Next(0, Alphabet.Length)]);
+            }
+            else
+            {
+                chars = Enumerable.Range(0, RandomInt(lengthMin, lengthMax))
+                    .Select(x => Alphabet[Rand.Next(0, Alphabet.Length)]);
+            }
 
             return new string(chars.ToArray());
         }

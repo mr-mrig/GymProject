@@ -291,8 +291,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// Remove the Working Set from the Work Unit
         /// </summary>
         /// <param name="toRemove">The WS to be removed</param>
-        /// <exception cref="ArgumentException">If the WS could not be found</exception>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <returns>True if remove successful</returns>
         public void RemoveWorkingSet(WorkingSetTemplateEntity toRemove)
         {

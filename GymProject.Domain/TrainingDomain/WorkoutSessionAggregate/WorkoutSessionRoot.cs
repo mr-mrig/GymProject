@@ -2,63 +2,70 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
+using GymProject.Domain.Utils;
 using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 
-namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
+namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 {
-    public class WorkoutTemplateRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
+
+    public class WorkoutSessionRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
     {
 
 
-        ///// <summary>
-        ///// The progressive number of the Workout - Starts from 0
-        ///// </summary>
-        //public uint ProgressiveNumber { get; private set; } = 0;
+
+
 
 
         /// <summary>
-        /// The Workout name - Unique among the WOs of the Training Week
+        /// The date the Workout has been planned at
         /// </summary>
-        public string Name { get; private set; } = string.Empty;
+        public DateTime? PlannedDate { get; private set; }
 
 
         /// <summary>
-        /// The week day the Workout is scheduled to - if any
+        /// The Workout starting hour
         /// </summary>
-        public WeekdayEnum SpecificWeekday { get; private set; } = null;
+        public DateTime? StartTime { get; private set; }
 
 
         /// <summary>
-        /// The training volume parameters, as the sum of the params of the single WUs
+        /// The Workout end time
+        /// </summary>
+        public DateTime? EndTime { get; private set; }
+
+
+        /// <summary>
+        /// The Rating the user gave to the performance of the Session
+        /// </summary>
+        public RatingValue UserRating { get; private set; }
+
+
+        /// <summary>
+        /// The training volume parameters, as the sum of the params of the single WSs
         /// </summary>
         public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
 
 
         /// <summary>
-        /// The training effort, as the average of the single WUs efforts
+        /// FK to the Workout Template - Optional in order to allow On-the-Fly sessions
         /// </summary>
-        public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
+        public IdTypeValue WorkoutTemplateId { get; private set; } = null;
 
+
+        private IList<WorkUnitEntity> _workUnits = new List<WorkUnitEntity>();
 
         /// <summary>
-        /// The training density parameters, as the sum of the params of the single WUs
-        /// </summary>
-        public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
-
-
-        private IList<WorkUnitTemplateEntity> _workUnits = new List<WorkUnitTemplateEntity>();
-
-        /// <summary>
-        /// The WUs belonging to the WorkOut
+        /// The WUs belonging to the Workout
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<WorkUnitTemplateEntity> WorkUnits
+        public IReadOnlyCollection<WorkUnitEntity> WorkUnits
         {
-            get => _workUnits?.Clone().ToList().AsReadOnly() ?? new List<WorkUnitTemplateEntity>().AsReadOnly();
+            get => _workUnits?.Clone().ToList().AsReadOnly() 
+                ?? new List<WorkUnitEntity>().AsReadOnly();
         }
 
 
@@ -66,18 +73,20 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkoutTemplateRoot(IdTypeValue id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
+        private WorkoutSessionRoot(IdTypeValue id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, RatingValue userRating, 
+            IdTypeValue workoutTemplateId, IEnumerable<WorkUnitEntity> workUnits) : base(id)
         {
-            Name = workoutName ?? string.Empty;
-            SpecificWeekday = weekday ?? WeekdayEnum.Generic;
+            StartTime = startTime;
+            EndTime = endTime;
+            PlannedDate = plannedDate;
+            UserRating = userRating;
+            WorkoutTemplateId = workoutTemplateId;
 
-            _workUnits = workUnits?.Clone().ToList() ?? new List<WorkUnitTemplateEntity>();
+            _workUnits = workUnits?.Clone().ToList() ?? new List<WorkUnitEntity>();
 
             TestBusinessRules();
 
             TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
         #endregion
 
@@ -86,28 +95,66 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method - Create a transient Workout
+        /// Factory method Transient - Start trcking a workout
         /// </summary>
-        /// <param name="weekday">The week day the Workout is scheduled to - if any</param>
-        /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
-        /// <param name="workUnits">The work unit list - cannot be empty or null</param>
-        /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplateRoot PlanTransientWorkout(IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
+        /// <param name="startTime">The Session start time</param>
+        /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
+        /// <returns>The WorkoutSessionRoot instance</returns>
+        public static WorkoutSessionRoot BeginWorkout(DateTime? startTime, IdTypeValue workoutTemplateId = null)
 
-            => PlanWorkout(null, workUnits, workoutName, weekday);
+            => TrackWorkout(null, startTime, null, null, null, workoutTemplateId, null);
+
+
+        /// <summary>
+        /// Factory method- Start trcking a workout
+        /// </summary>
+        /// <param name="id">The ID of the WU</param>
+        /// <param name="startTime">The Session start time</param>
+        /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
+        /// <returns>The WorkoutSessionRoot instance</returns>
+        public static WorkoutSessionRoot BeginWorkout(IdTypeValue id, DateTime? startTime, IdTypeValue workoutTemplateId = null)
+
+            => TrackWorkout(id, startTime, null, null, null, workoutTemplateId, null);
+
+
+        /// <summary>
+        /// Factory method - Schedule the workout
+        /// </summary>
+        /// <param name="id">The ID of the WU</param>
+        /// <param name="plannedDate">The date which the workout has been scheduled to</param>
+        /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
+        /// <returns>The WorkoutSessionRoot instance</returns>
+        public static WorkoutSessionRoot ScheduleWorkout(IdTypeValue id, DateTime? plannedDate, IdTypeValue workoutTemplateId)
+
+            => TrackWorkout(id, null, null, plannedDate, null, workoutTemplateId, null);
+
+
+        /// <summary>
+        /// Factory method Transient - Schedule the workout
+        /// </summary>
+        /// <param name="plannedDate">The date which the workout has been scheduled to</param>
+        /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
+        /// <returns>The WorkoutSessionRoot instance</returns>
+        public static WorkoutSessionRoot ScheduleWorkout(DateTime? plannedDate, IdTypeValue workoutTemplateId)
+
+            => TrackWorkout(null, null, null, plannedDate, null, workoutTemplateId, null);
 
 
         /// <summary>
         /// Factory method - Load a persisted Workout
         /// </summary>
         /// <param name="id">The ID of the WU</param>
-        /// <param name="weekday">The week day the Workout is scheduled to - if any</param>
-        /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
-        /// <param name="workUnits">The work unit list - cannot be empty or null</param>
-        /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplateRoot PlanWorkout(IdTypeValue id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
+        /// <param name="startTime">The Session start time</param>
+        /// <param name="endTime">The Session end time</param>
+        /// <param name="plannedDate">The date which the workout has been scheduled to</param>
+        /// <param name="userRating">The rating the user gave after the Session</param>
+        /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
+        /// <param name="workUnits">The work unit list</param>
+        /// <returns>The WorkoutSessionRoot instance</returns>
+        public static WorkoutSessionRoot TrackWorkout(
+            IdTypeValue id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, RatingValue userRating, IdTypeValue workoutTemplateId = null, IEnumerable<WorkUnitEntity> workUnits = null)
 
-            => new WorkoutTemplateRoot(id, workUnits, workoutName, weekday);
+            => new WorkoutSessionRoot(id, startTime, endTime, plannedDate, userRating, workoutTemplateId, workUnits);
 
         #endregion
 
@@ -116,95 +163,23 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         #region Public Methods
 
         /// <summary>
-        /// Change the name of the WO
+        /// Schedule the Workout to a specific day
         /// </summary>
-        /// <param name="newName">The new name</param>
-        public void GiveName(string newName)
+        /// <param name="plannedDate">The date which the workout has been scheduled to - must be in the future</param>
+        /// <exception cref="InvalidOperationException">If the specified date belongs to the past</exception>
+        public void ScheduleToDate(DateTime plannedDate)
         {
-            Name = newName;
-        }
+            PlannedDate = plannedDate;
 
-
-        /// <summary>
-        /// Assign a specific day to the WO
-        /// </summary>
-        /// <param name="newDay">The specific day to schedule the workout</param>
-        public void ScheduleToSpecificDay(WeekdayEnum newDay)
-        {
-            SpecificWeekday = newDay ?? WeekdayEnum.Generic;
+            if (PlannedDate < DateTime.Today)
+                throw new InvalidOperationException("Cannot schedule a Workout Session in the past");
         }
 
 
         /// <summary>
         /// Mark the WO as 'not scheduled to specific day'
         /// </summary>
-        public void UnscheduleSpecificDay()
-        {
-            ScheduleToSpecificDay(WeekdayEnum.Generic);
-        }
-
-
-        ///// <summary>
-        ///// Find the WorkUnit with the ID specified
-        ///// </summary>
-        ///// <param name="id">The Id to be found</param>
-        ///// <exception cref="ArgumentException">If ID could not be found</exception>
-        ///// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        ///// <returns>The WorkingSetTemplate object/returns>
-        //public WorkUnitTemplate FindWorkUnitById(IdTypeValue id)
-        //{
-        //    if (id == null)
-        //        throw new ArgumentNullException($"Cannot find a WS with NULL id");
-
-        //    WorkUnitTemplate ws = _workUnits.Where(x => x.Id == id).FirstOrDefault();
-
-        //    if (ws == default)
-        //        throw new ArgumentException($"Work Unit with Id {id.ToString()} could not be found");
-
-        //    return ws;
-        //}
-
-
-        ///// <summary>
-        ///// Find the Working Unit which the WS belongs
-        ///// </summary>
-        ///// <param name="wsId">The WS ID to be found</param>
-        ///// <exception cref="ArgumentException">If ID could not be found</exception>
-        ///// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        ///// <returns>The WorkUnitTemplate object/returns>
-        //public WorkUnitTemplate FindWorkUnitByWorkingSetId(IdTypeValue wsId)
-        //{
-        //    if (wsId == null)
-        //        throw new ArgumentNullException($"Cannot find a WS with NULL id");
-
-        //    WorkUnitTemplate result = _workUnits.SingleOrDefault(wu => wu.WorkingSets.SingleOrDefault(ws => ws.Id == wsId) != default);
-
-        //    if (result == default)
-        //        throw new ArgumentException($"Working Set with Id {wsId.ToString()} could not be found");
-
-        //    return result;
-        //}
-
-
-        ///// <summary>
-        ///// Find the Working Set with the ID specified
-        ///// </summary>
-        ///// <param name="id">The Id to be found</param>
-        ///// <exception cref="ArgumentException">If ID could not be found</exception>
-        ///// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        ///// <returns>The WorkingSetTemplate object/returns>
-        //public WorkingSetTemplate FindWorkingSetById(IdTypeValue id)
-        //{
-        //    if (id == null)
-        //        throw new ArgumentNullException($"Cannot find a WS with NULL id");
-
-        //    WorkingSetTemplate result = CloneAllWorkingSets().Where(x => x.Id == id).FirstOrDefault();
-
-        //    if (result == default)
-        //        throw new ArgumentException($"Working Set with Id {id.ToString()} could not be found");
-
-        //    return result;
-        //}
+        public void Unschedule() => PlannedDate = null;
 
 
 
@@ -214,9 +189,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The progressive number to be found</param>
         /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
-        public WorkUnitTemplateEntity CloneWorkUnit(uint workingSetPnum)
+        public WorkUnitEntity CloneWorkUnit(uint workingSetPnum)
 
-            => FindWorkUnitOrDefault(workingSetPnum)?.Clone() as WorkUnitTemplateEntity;
+            => FindWorkUnitOrDefault(workingSetPnum)?.Clone() as WorkUnitEntity;
 
 
         /// <summary>
@@ -226,28 +201,26 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The WS Progressive Number to be found</param>
         /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
-        public WorkingSetTemplateEntity CloneWorkingSet(uint workUnitPnum, uint workingSetPnum)
+        public WorkingSetEntity CloneWorkingSet(uint workUnitPnum, uint workingSetPnum)
 
-            => CloneWorkUnit(workUnitPnum)?.CloneWorkingSet(workingSetPnum) as WorkingSetTemplateEntity;
+            => CloneWorkUnit(workUnitPnum)?.CloneWorkingSet(workingSetPnum) as WorkingSetEntity;
 
 
         /// <summary>
         /// Add the Working Unit (as a copy) to the Workout - if not already present
         /// </summary>
-        /// <param name="toAdd">The Work Unit to be added</param>
+        /// <param name="workUnit">The Work Unit to be added</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
         /// <exception cref="ArgumentException">If Work Unit already present</exception>
-        public void PlanExcercise(WorkUnitTemplateEntity toAdd)
+        public void PerformExcercise(WorkUnitEntity workUnit)
         {
-            if (_workUnits.Contains(toAdd))
-                throw new ArgumentException("Trying to add a duplicate Work Unit", nameof(toAdd));
+            if (_workUnits.Contains(workUnit))
+                throw new ArgumentException("Trying to add a duplicate Work Unit", nameof(workUnit));
 
-            _workUnits.Add(toAdd.Clone() as WorkUnitTemplateEntity);
+            _workUnits.Add(workUnit.Clone() as WorkUnitEntity);
 
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-            TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.WorkingSets);
-            TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.WorkingSets);
-  
+            TrainingVolume = TrainingVolume.AddWorkingSets(workUnit.WorkingSets);
+
             TestBusinessRules();
         }
 
@@ -260,7 +233,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The WS which the WU is made up of</param>
         /// <param name="workUnitIntensityTechniquesIds">The IDs of the WS intensity techniques</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void PlanTransientExcercise(IdTypeValue excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniquesIds = null, IdTypeValue ownerNoteId = null)
+        public void PerformTransientExcercise(IdTypeValue excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniquesIds = null, IdTypeValue ownerNoteId = null)
         {
             WorkUnitTemplateEntity toAdd = WorkUnitTemplateEntity.PlanTransientWorkUnit(
                 BuildWorkUnitProgressiveNumber(),
@@ -286,12 +259,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
         /// <exception cref="ArgumentException">If the Work Unit could not be found</exception>
         /// <returns>True if remove successful</returns>
-        public void UnplanExcercise(WorkUnitTemplateEntity toRemove)
+        public void RemoveWorkUnit(WorkUnitTemplateEntity toRemove)
         {
             if (toRemove == null)
                 return;
 
-            UnplanExcercise(toRemove.ProgressiveNumber);
+            RemoveWorkUnit(toRemove.ProgressiveNumber);
         }
 
 
@@ -302,13 +275,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="toRemovePnum">The Progressive Number of the WU to be removed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
         /// <exception cref="InvalidOperationException">If no Work Units or more than one with the specified Progressive Number</exception>
-        public void UnplanExcercise(uint toRemovePnum)
+        public void RemoveWorkUnit(uint toRemovePnum)
         {
             WorkUnitTemplateEntity toBeRemoved = FindWorkUnit(toRemovePnum);
 
             bool removed = _workUnits.Remove(toBeRemoved);
 
-            if(removed)
+            if (removed)
             {
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
                 TrainingVolume = TrainingVolume.RemoveWorkingSets(toBeRemoved.WorkingSets);
@@ -319,33 +292,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             }
         }
 
-
-        ///// <summary>
-        ///// Remove the Working Unit from the Workout
-        ///// </summary>
-        ///// <param name="toRemoveId">The Id of the WU to be removed</param>
-        ///// <exception cref="ArgumentException">If ID could not be found</exception>
-        ///// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        //public void RemoveWorkUnit(IdTypeValue toRemoveId)
-        //{
-        //    WorkUnitTemplate toBeRemoved = FindWorkUnitById(toRemoveId);
-
-        //    _workUnits.Remove(toBeRemoved);
-
-        //    TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-        //    TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-        //    TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-
-        //    ForceConsecutiveWorkUnitProgressiveNumbers();
-        //    TestBusinessRules();
-        //}
-
-
         /// <summary>
         /// Get a copy of the WSs of all the Work Units belonging to the Workout
         /// </summary>
         /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkingSetTemplateEntity> CloneAllWorkingSets()
+        public IEnumerable<WorkingSetEntity> CloneAllWorkingSets()
 
              => _workUnits.SelectMany(x => x.WorkingSets).Clone();
 
@@ -365,7 +316,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                      }).OrderByDescending(x => x.Counter).First().EffortType;
 
 
-        [Obsolete("To be removed: this should be a presentation/application logic task",true)]
+        [Obsolete("To be removed: this should be a presentation/application logic task", true)]
         /// <summary>
         /// Get the Intensity parameters computed over the specified excercises
         /// </summary>
@@ -499,7 +450,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="intensityTechniqueIds">The ids of the WS intensity techniques</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionsValue repetitions, 
+        public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionsValue repetitions,
             RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
         {
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(workUnitPnum);
@@ -556,7 +507,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (workingSet == null)
                 return;
 
-            if(workingSet.IsTransient())
+            if (workingSet.IsTransient())
                 throw new InvalidOperationException($"Cannot remove transient Working Sets");
 
             WorkUnitTemplateEntity parentWorkUnit = _workUnits.Single(x => x.WorkingSets.Contains(workingSet));
@@ -628,7 +579,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             WorkUnitTemplateEntity parent = FindWorkUnit(parentWorkUnitPnum);
 
             parent.MoveWorkingSetToNewProgressiveNumber(srcPnum, destPnum);
-   
+
         }
 
 
@@ -719,8 +670,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// To be used before adding the WS to the list
         /// </summary>
         /// <returns>The WS Progressive Number</returns>
-        private uint BuildWorkUnitProgressiveNumber() 
-            
+        private uint BuildWorkUnitProgressiveNumber()
+
             => (uint)_workUnits.Count();
 
 
@@ -774,8 +725,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workUnitPnum">The progressive number to be found</param>
         /// <exception cref="InvalidOperationException">If more Work Units with the specified Progressive Number</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found/returns>
-        private WorkUnitTemplateEntity FindWorkUnitOrDefault(uint workUnitPnum)
-        
+        private WorkUnitEntity FindWorkUnitOrDefault(uint workUnitPnum)
+
             => _workUnits.SingleOrDefault(x => x.ProgressiveNumber == workUnitPnum);
 
 
@@ -827,7 +778,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <returns>True if business rule is met</returns>
         private bool NoNullWorkunits() => _workUnits.All(x => x != null);
-
+        
 
         /// <summary>
         /// Work Units of the same Workout must have consecutive progressive numbers.

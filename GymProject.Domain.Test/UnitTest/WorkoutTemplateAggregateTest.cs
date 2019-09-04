@@ -136,9 +136,9 @@ namespace GymProject.Domain.Test.UnitTest
                     wu = StaticUtils.BuildRandomWorkUnit(wuIds.Last().Id, pnum++, isTransient);
 
                     if (isTransient)
-                        workout.AddTransientWorkUnit(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.OwnerNoteId);
+                        workout.PlanTransientExcercise(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.OwnerNoteId);
                     else
-                        workout.AddWorkUnit(wu);
+                        workout.PlanExcercise(wu);
 
                     wus.Add(wu);
                 }
@@ -201,7 +201,7 @@ namespace GymProject.Domain.Test.UnitTest
                     uint toRemovePnum = RandomFieldGenerator.ChooseAmong(workout.WorkUnits.Select(x => x.ProgressiveNumber).ToList());
                     WorkUnitTemplateEntity removed = workout.CloneWorkUnit(toRemovePnum);
 
-                    workout.RemoveWorkUnit(toRemovePnum);
+                    workout.UnplanExcercise(toRemovePnum);
 
                     Assert.Equal(nWorkUnits - iwu - 1, workout.WorkUnits.Count);
 
@@ -235,7 +235,7 @@ namespace GymProject.Domain.Test.UnitTest
                     {
                         wasAdded = true;
                         toAdd = StaticUtils.BuildRandomWorkUnit(1, workout.WorkUnits.Count, isTransient);
-                        workout.AddTransientWorkUnit(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.OwnerNoteId);
+                        workout.PlanTransientExcercise(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.OwnerNoteId);
                     }
                     else
                     {
@@ -248,7 +248,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
                             toAdd = StaticUtils.BuildRandomWorkUnit(toAddId, workout.WorkUnits.Count, isTransient);
-                            Assert.Throws<ArgumentException>(() => workout.AddWorkUnit(toAdd));
+                            Assert.Throws<ArgumentException>(() => workout.PlanExcercise(toAdd));
                         }
                         else
                         {
@@ -258,7 +258,7 @@ namespace GymProject.Domain.Test.UnitTest
                                 workout.WorkUnits.Select(x => (int)x.Id.Id).ToList());
 
                             toAdd = StaticUtils.BuildRandomWorkUnit(toAddId, workout.WorkUnits.Count, isTransient);
-                            workout.AddWorkUnit(toAdd);
+                            workout.PlanExcercise(toAdd);
                         }
                     }
 

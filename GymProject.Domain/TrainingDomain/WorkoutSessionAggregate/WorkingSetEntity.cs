@@ -112,6 +112,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         public void WriteNote(IdTypeValue noteId) => NoteId = noteId;
 
 
+
+        /// <summary>
+        /// Change the progressive number
+        /// </summary>
+        /// <param name="newNumber">The new value - PNums must be consecutive</param>
+        public void MoveToNewProgressiveNumber(uint newNumber)
+        {
+            ProgressiveNumber = newNumber;
+        }
+
+
         /// <summary>
         /// Remove the training note 
         /// </summary>

@@ -38,23 +38,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// The Working Sets belonging to the WU, sorted by Progressive Numbers.
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<WorkingSetEntity> WorkingSets
-        {
-            get => _workingSets?.Clone().ToList().AsReadOnly()
-                ?? new List<WorkingSetEntity>().AsReadOnly();  // Objects are not referencally equal
-        }
+        public IEnumerable<WorkingSetEntity> WorkingSets => _workingSets.ToList() ?? new List<WorkingSetEntity>();
 
 
         /// <summary>
         /// FK to the Excercise Aggregate
         /// </summary>
         public IdTypeValue ExcerciseId { get; private set; } = null;
-
-
-        /// <summary>
-        /// FK to the Work Unit Note Aggregate
-        /// </summary>
-        public IdTypeValue NoteId { get; private set; } = null;
 
 
 
@@ -65,11 +55,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         private WorkUnitEntity() : base(null) { }
 
 
-        private WorkUnitEntity(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, RatingValue rating,
-            IEnumerable<WorkingSetEntity> workingSets, IdTypeValue noteId = null) : base(id)
+        private WorkUnitEntity(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, RatingValue rating, IEnumerable<WorkingSetEntity> workingSets) 
+            : base(id)
         {
             ProgressiveNumber = progressiveNumber;
-            NoteId = noteId;
             ExcerciseId = excerciseId;
             UserRating = rating;
 
@@ -90,14 +79,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// </summary>
         /// <param name="excerciseId">The ID of the excercise which the WU consists of</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
-        /// <param name="noteId">The ID of the user note</param>
-        /// <param name="workingSets">The working sets list - cannot be empty or null</param>
-        /// <param name="userRating">The rate the user gave to the Work Unit</param>
         /// <returns>The WorkUnitEntity instance</returns>
-        public static WorkUnitEntity PlanTransientWorkUnit(uint progressiveNumber, IdTypeValue excerciseId, RatingValue userRating,
-            IEnumerable<WorkingSetEntity> workingSets, IdTypeValue noteId = null)
+        public static WorkUnitEntity StartExcercise(uint progressiveNumber, IdTypeValue excerciseId)
 
-            => new WorkUnitEntity(null, progressiveNumber, excerciseId, userRating, workingSets, noteId);
+            => TrackExcercise(null, progressiveNumber, excerciseId, null, null);
 
 
         /// <summary>
@@ -106,14 +91,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="id">The Work Unit ID</param>
         /// <param name="excerciseId">The ID of the excercise which the WU consists of</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
-        /// <param name="noteId">The ID of the user note</param>
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <param name="userRating">The rate the user gave to the Work Unit</param>
         /// <returns>The WorkUnitEntity instance</returns>
-        public static WorkUnitEntity PlanWorkUnit(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, RatingValue userRating,
-            IEnumerable<WorkingSetEntity> workingSets, IdTypeValue noteId = null)
+        public static WorkUnitEntity TrackExcercise(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, RatingValue userRating,
+            IEnumerable<WorkingSetEntity> workingSets)
 
-            => new WorkUnitEntity(id, progressiveNumber, excerciseId, userRating, workingSets, noteId);
+            => new WorkUnitEntity(id, progressiveNumber, excerciseId, userRating, workingSets);
 
         #endregion
 
@@ -121,24 +105,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 
         #region Public Methods
 
-        /// <summary>
-        /// Attach a note to the WU, or repleace it if already present
-        /// </summary>
-        /// <param name="noteId">The ID of the note to be attached</param>
-        public void WriteNote(IdTypeValue noteId) => NoteId = noteId;
-
 
         /// <summary>
-        /// Remove the Owner's note
+        /// Give a rating to the Performance when the Work Unit has been completed
         /// </summary>
-        public void ClearNote() => NoteId = null;
-
-
-        /// <summary>
-        /// Assign an excercise to the Work Unit
-        /// </summary>
-        /// <param name="excerciseId">The ID of the excercise</param>
-        public void AssignExcercise(IdTypeValue excerciseId) => ExcerciseId = excerciseId;
+        /// <param name="userRating">The rating</param>
+        public void RatePerformance(RatingValue userRating) => UserRating = userRating;
 
 
         /// <summary>
@@ -156,14 +128,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 
         #region Working Sets Methods
 
-
-
         /// <summary>
         /// Add the Working Set to the Work Unit
         /// </summary>
         /// <param name="toAdd">The WS to be added</param>
         /// <exception cref="ArgumentException">If Working Set already present</exception>
-        public void PerformWorkingSet(WorkingSetEntity toAdd)
+        public void TrackWorkingSet(WorkingSetEntity toAdd)
         {
             WorkingSetEntity copy = toAdd.Clone() as WorkingSetEntity;
 
@@ -182,14 +152,14 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// </summary>
         /// <param name="repetitions">The WS repetitions</param>
         /// <param name="load">The Weight used</param>
-        public void PerformTransientWorkingSet(WSRepetitionsValue repetitions, WeightPlatesValue load, IdTypeValue workingSetNoteId = null)
+        public void TrackWorkingSet(WSRepetitionsValue repetitions, WeightPlatesValue load)
         {
 
             WorkingSetEntity toAdd = WorkingSetEntity.TrackTransientWorkingSet(
                     BuildWorkingSetProgressiveNumber(),
                     repetitions,
                     load,
-                    workingSetNoteId
+                    null
                 );
 
             _workingSets.Add(toAdd);
@@ -237,14 +207,38 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <summary>
         /// Change the repetitions
         /// </summary>
-        /// <param name="newReps">The new target repetitions</param>
+        /// <param name="newReps">The new repetitions</param>
         /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void TrackWorkingSetRepetitions(uint workingSetPnum, WSRepetitionsValue newReps)
+        public void ReviseWorkingSetRepetitions(uint workingSetPnum, WSRepetitionsValue newReps)
         {
             WorkingSetEntity ws = FindWorkingSet(workingSetPnum);
+
+            TrainingVolume = TrainingVolume.RemoveWorkingSet(ws);
+
             ws.TrackRepetitions(newReps);
+
+            TrainingVolume = TrainingVolume.AddWorkingSet(ws);
+        }
+
+
+        /// <summary>
+        /// Change the load
+        /// </summary>
+        /// <param name="newLoad">The new load</param>
+        /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
+        public void ReviseWorkingSetLoad(uint workingSetPnum, WeightPlatesValue newLoad)
+        {
+            WorkingSetEntity ws = FindWorkingSet(workingSetPnum);
+
+            TrainingVolume = TrainingVolume.RemoveWorkingSet(ws);
+
+            ws.TrackLoad(newLoad);
+
+            TrainingVolume = TrainingVolume.AddWorkingSet(ws);
         }
 
 
@@ -391,7 +385,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 
         public object Clone()
 
-            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, UserRating, WorkingSets.ToList(), NoteId);
+            => TrackExcercise(Id, ProgressiveNumber, ExcerciseId, UserRating, WorkingSets.ToList());
 
         #endregion
     }

@@ -546,6 +546,11 @@ namespace GymProject.Domain.Test.UnitTest
                     CheckWorkUnitSets(toCheck, finalSets, isTransient, toCheck.TrainingIntensity.AverageIntensity.EffortType, false);
                 }
             }
+
+            // Change Working Sets
+            throw new NotImplementedException();
+            wGQBQREBE
+
         }
 
 

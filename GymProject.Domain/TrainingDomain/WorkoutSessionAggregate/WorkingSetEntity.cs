@@ -29,6 +29,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         public WeightPlatesValue Load { get; private set; } = null;
 
 
+        /// <summary>
+        /// FK to the Working Set Note Aggregate
+        /// </summary>
         public IdTypeValue NoteId { get; private set; } = null;
 
 
@@ -105,13 +108,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
             TestBusinessRules();
         }
 
-        /// <summary>
-        /// Write the training note
-        /// </summary>
-        /// <param name="noteId">The id of the note to be added</param>
-        public void WriteNote(IdTypeValue noteId) => NoteId = noteId;
-
-
 
         /// <summary>
         /// Change the progressive number
@@ -121,6 +117,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         {
             ProgressiveNumber = newNumber;
         }
+
+
+        /// <summary>
+        /// Write the training note
+        /// </summary>
+        /// <param name="noteId">The id of the note to be added</param>
+        public void WriteNote(IdTypeValue noteId) => NoteId = noteId;
 
 
         /// <summary>

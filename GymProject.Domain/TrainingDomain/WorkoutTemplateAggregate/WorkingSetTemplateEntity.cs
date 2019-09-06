@@ -125,7 +125,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="newReps">The new target repetitions</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void ChangeRepetitions(WSRepetitionsValue newReps)
+        public void ReviseRepetitions(WSRepetitionsValue newReps)
         {
             Repetitions = newReps;
             TestBusinessRules();
@@ -137,7 +137,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="newEffort">The new value</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void ChangeEffort(TrainingEffortValue newEffort)
+        public void ReviseEffort(TrainingEffortValue newEffort)
         {
             Effort = newEffort ?? TrainingEffortValue.DefaultEffort;
             TestBusinessRules();
@@ -149,7 +149,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="newRest">The new value</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void ChangeRestPeriod(RestPeriodValue newRest)
+        public void ReviseRestPeriod(RestPeriodValue newRest)
         {
             Rest = newRest;
             TestBusinessRules();
@@ -161,7 +161,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="newReps">The new value</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void ChangeLiftingTempo(TUTValue newTempo)
+        public void ReviseLiftingTempo(TUTValue newTempo)
         {
             Tempo = newTempo;
             TestBusinessRules();

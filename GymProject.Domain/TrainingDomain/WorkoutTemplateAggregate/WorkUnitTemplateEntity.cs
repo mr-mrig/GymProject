@@ -416,10 +416,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void ChangeWorkingSetRepetitions(uint workingSetPnum, WSRepetitionsValue newReps)
+        public void ReviseWorkingSetRepetitions(uint workingSetPnum, WSRepetitionsValue newReps)
         {
             WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
-            ws.ChangeRepetitions(newReps);
+            ws.ReviseRepetitions(newReps);
         }
 
 
@@ -430,10 +430,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void ChangeWorkingSetEffort(uint workingSetPnum, TrainingEffortValue newEffort)
+        public void ReviseWorkingSetEffort(uint workingSetPnum, TrainingEffortValue newEffort)
         {
             WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
-            ws.ChangeEffort(newEffort);
+            ws.ReviseEffort(newEffort);
         }
 
 
@@ -444,10 +444,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void ChangeWorkingSetRestPeriod(uint workingSetPnum, RestPeriodValue newRest)
+        public void ReviseWorkingSetRestPeriod(uint workingSetPnum, RestPeriodValue newRest)
         {
             WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
-            ws.ChangeRestPeriod(newRest);
+            ws.ReviseRestPeriod(newRest);
         }
 
 
@@ -458,10 +458,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSetPnum">The Progressive Number of the WS to be changed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void ChangeWorkingSetLiftingTempo(uint workingSetPnum, TUTValue newTempo)
+        public void ReviseWorkingSetLiftingTempo(uint workingSetPnum, TUTValue newTempo)
         {
             WorkingSetTemplateEntity ws = FindWorkingSet(workingSetPnum);
-            ws.ChangeLiftingTempo(newTempo);
+            ws.ReviseLiftingTempo(newTempo);
         }
 
 

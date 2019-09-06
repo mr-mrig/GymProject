@@ -1,12 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations;
-using GymProject.Infrastructure.Persistence.EFContext.Model;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Domain.SharedKernel;
 
@@ -32,8 +27,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         #region Entites
 
         public virtual DbSet<TrainingPlanRoot> TrainingPlans { get; set; }
-        //public virtual DbSet<TrainingPlanTypeEnum> TrainingPlanTypes { get; set; }
-        //public virtual DbSet<TrainingPlanRelation> TrainingPlanRelations { get; set; }
+        public virtual DbSet<TrainingPlanRelation> TrainingPlanRelations { get; set; }
+        public virtual DbSet<TrainingPlanTypeEnum> TrainingPlanTypes { get; set; }
+        
+
         //public virtual DbSet<TrainingWeekEntity> TrainingWeeks  { get; set; }
         //public virtual DbSet<TrainingWeekTypeEnum> TrainingWeekTypes  { get; set; }
         //public virtual DbSet<TrainingPlanPhaseRelation> TrainingPlanPhases  { get; set; }
@@ -49,13 +46,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(@"DataSource=test.db;");
+            optionsBuilder.UseSqlite(@"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new EntryStatusEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new TrainingPlanRelationEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new TrainingPlanTypeEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanHashtagEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
         }

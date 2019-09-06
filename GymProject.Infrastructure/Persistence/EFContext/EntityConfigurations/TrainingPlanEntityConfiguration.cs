@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 {
@@ -18,6 +20,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             builder.Property(plan => plan.Id)
                 .HasConversion(new IdTypeValueConverter())
                 .ValueGeneratedOnAdd();
+
 
             builder.Ignore(plan => plan.DomainEvents);
             builder.Ignore(plan => plan.TrainingVolume);
@@ -49,7 +52,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
                 .HasColumnType("TEXT")
                 .IsRequired();
 
-            
+
 
             //builder.HasMany(plan => plan.TrainingWeeks)
             //    .WithOne()
@@ -61,6 +64,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             //    .HasForeignKey(sched => sched);
 
             //builder.HasIndex(plan => new { plan.OwnerId, plan.PersonalNoteId });
+
+
+
+            //builder.Metadata.FindNavigation(nameof(TrainingPlanRoot.RelationsWithChildPlans))
+            //    .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            //builder.Metadata
+            //    .FindNavigation(nameof(TrainingPlanRoot.RelationsWithParentPlans))
+            //    .SetPropertyAccessMode(PropertyAccessMode.Field);
         }
 
     }

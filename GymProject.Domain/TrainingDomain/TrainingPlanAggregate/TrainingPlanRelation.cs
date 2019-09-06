@@ -30,6 +30,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
+        /// The Child Plan of the relation - EF Core navigation property
+        /// </summary>
+        public TrainingPlanRoot ChildPlan { get; private set; }
+
+
+
+        /// <summary>
         /// FK to the Training Plan Message, when sent to another user -> Only Inherited Plans can have it
         /// </summary>
         public IdTypeValue MessageId { get; private set; } = null;

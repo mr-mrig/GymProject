@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingPlanRoot : Entity<IdTypeValue>, IAggregateRoot , ICloneable
+    public class TrainingPlanRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
     {
 
 
@@ -31,7 +31,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// A Training Plan is marked as 'Template' if exists at least one variant plan created from it. Derived property.
         /// </summary>
-        public bool IsTemplate 
+        public bool IsTemplate
             => _relationsWithChildPlans.Count(x => x?.ChildPlanId != null && x?.ChildPlanType == TrainingPlanTypeEnum.Variant) > 0;
 
 
@@ -95,16 +95,56 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private ICollection<TrainingPlanRelation> _relationsWithChildPlans = null;
+        private readonly List<TrainingPlanRelation> _relationsWithChildPlans = null;
+
+        ///// <summary>
+        ///// Get the relations which occur with the child plans - if any - of this one
+        ///// </summary>
+        //public IReadOnlyCollection<TrainingPlanRelation> RelationsWithChildPlans
+        //{
+        //    get => _relationsWithChildPlans?.ToList().AsReadOnly() 
+        //        ?? new List<TrainingPlanRelation>().AsReadOnly();
+        //}
+
 
         /// <summary>
         /// Get the relations which occur with the child plans - if any - of this one
         /// </summary>
-        public IReadOnlyCollection<TrainingPlanRelation> RelationsWithChildPlans
-        {
-            get => _relationsWithChildPlans?.ToList().AsReadOnly() 
-                ?? new List<TrainingPlanRelation>().AsReadOnly();
-        }
+        public IEnumerable<TrainingPlanRelation> RelationsWithChildPlans => _relationsWithChildPlans.ToList();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private readonly List<TrainingPlanRelation> _relationsWithParentPlans = null;
+
+        ///// <summary>
+        ///// Get the relations which occur with the child plans - if any - of this one
+        ///// </summary>
+        //public IReadOnlyCollection<TrainingPlanRelation> RelationsWithParentPlans
+        //{
+        //    get => _relationsWithParentPlans?.ToList().AsReadOnly()
+        //        ?? new List<TrainingPlanRelation>().AsReadOnly();
+        //}
+        /// <summary>
+        /// Get the relations which occur with the child plans - if any - of this one
+        /// </summary>
+        public IEnumerable<TrainingPlanRelation> RelationsWithParentPlans => _relationsWithParentPlans.ToList();
+
+
+
+
+
+
 
         private ICollection<TrainingPlanPhaseRelation> _trainingPlanPhases = null;
 
@@ -153,7 +193,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         public IReadOnlyCollection<IdTypeValue> HashtagIds
         {
-            get => _trainingPlanHashtags?.Select(x => x.HashtagId).ToList().AsReadOnly() 
+            get => _trainingPlanHashtags?.Select(x => x.HashtagId).ToList().AsReadOnly()
                 ?? new List<IdTypeValue>().AsReadOnly();
         }
 
@@ -179,7 +219,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
             IEnumerable<IdTypeValue> trainingMuscleFocusIds = null,
             IEnumerable<IdTypeValue> hashtags = null,
-            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null)   : base(id)
+            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null,
+            IEnumerable<TrainingPlanRelation> relationsWithParentPlans = null) : base(id)
         {
             Name = name ?? string.Empty;
             IsBookmarked = isBookmarked;
@@ -190,6 +231,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<IdTypeValue>();
             _relationsWithChildPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
+            _relationsWithParentPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
 
             _trainingPlanHashtags = new List<TrainingPlanHashtagRelation>();
             _trainingPlanMuscleFocusIds = new List<TrainingPlanMuscleFocusRelation>();
@@ -197,7 +239,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
 
             // Build  many-to-many relations
-            foreach (IdTypeValue hashtag in hashtags ?? new List<IdTypeValue>() )
+            foreach (IdTypeValue hashtag in hashtags ?? new List<IdTypeValue>())
                 _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtag));
 
             foreach (IdTypeValue muscle in trainingMuscleFocusIds ?? new List<IdTypeValue>())
@@ -222,6 +264,40 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Factories
 
+
+        /// <summary>
+        /// Factory method - Transient
+        /// </summary>
+        /// <param name="trainingWeeks">The Training Weeks which the Training Plan is made up of</param>
+        /// <param name="name">The name of the Training Plan</param>
+        /// <param name="isBookmarked">The Training Plan has been flagged as Bookmarked</param>
+        /// <param name="ownerId">The ID of the owner of the plan</param>
+        /// <param name="personalNoteId">The ID of the note</param>
+        /// <param name="relationsWithChildPlans">The list of the relations among the plan and its child ones (Variant, Inherited etc.)</param>
+        /// <param name="relationsWithParentPlans">The list of the relations among the plan and its parent ones (Variant, Inherited etc.)</param>
+        /// <param name="hashtagIds">The list of the IDS of the Hashtags which the Training Plan has been tagged with</param>
+        /// <param name="trainingPhaseIds">The list of the IDs of the Training Phases which the Training Plan has been tagged with</param>
+        /// <param name="trainingPlanProficiencyIds">The list of the  IDs of the Training Proficiencies which the Training Plan has been tagged with</param>
+        /// <param name="trainingMuscleFocusIds">The list of the  IDs of the Muscles which the Training Plan focuses on</param>
+        /// <param name="trainingScheduleIds">The list of the IDs of the Training Schedules which the Training Plan has been scheduled to</param>
+        public static TrainingPlanRoot CreateTrainingPlan(
+            string name,
+            bool isBookmarked,
+            IdTypeValue ownerId,
+            IdTypeValue personalNoteId = null,
+            IEnumerable<TrainingWeekEntity> trainingWeeks = null,
+            IEnumerable<IdTypeValue> trainingScheduleIds = null,
+            IEnumerable<IdTypeValue> trainingPhaseIds = null,
+            IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
+            IEnumerable<IdTypeValue> trainingMuscleFocusIds = null,
+            IEnumerable<IdTypeValue> hashtagIds = null,
+            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null,
+            IEnumerable<TrainingPlanRelation> relationsWithParentPlans = null)
+
+            => CreateTrainingPlan(null, name, isBookmarked, ownerId, personalNoteId, trainingWeeks,
+                trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds, relationsWithChildPlans, relationsWithParentPlans);
+
+
         /// <summary>
         /// Factory method
         /// </summary>
@@ -232,6 +308,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="ownerId">The ID of the owner of the plan</param>
         /// <param name="personalNoteId">The ID of the note</param>
         /// <param name="relationsWithChildPlans">The list of the relations among the plan and its child ones (Variant, Inherited etc.)</param>
+        /// <param name="relationsWithParentPlans">The list of the relations among the plan and its parent ones (Variant, Inherited etc.)</param>
         /// <param name="hashtagIds">The list of the IDS of the Hashtags which the Training Plan has been tagged with</param>
         /// <param name="trainingPhaseIds">The list of the IDs of the Training Phases which the Training Plan has been tagged with</param>
         /// <param name="trainingPlanProficiencyIds">The list of the  IDs of the Training Proficiencies which the Training Plan has been tagged with</param>
@@ -249,10 +326,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
             IEnumerable<IdTypeValue> trainingMuscleFocusIds = null,
             IEnumerable<IdTypeValue> hashtagIds = null,
-            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null)
+            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null,
+            IEnumerable<TrainingPlanRelation> relationsWithParentPlans = null)
 
             => new TrainingPlanRoot(id, name, isBookmarked, ownerId, personalNoteId, trainingWeeks,
-                trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds, relationsWithChildPlans);
+                trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds, relationsWithChildPlans, relationsWithParentPlans);
 
 
         ///// <summary>
@@ -416,15 +494,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             TrainingPlanRelation relationEntry = FindRelationByChildIdOrDefault(childPlanId);
 
-            if(relationEntry == default)
+            if (relationEntry == default)
                 throw new ArgumentException(nameof(childPlanId), $"Child Plan ID could not be found.");
 
             else
             {
-                if(_relationsWithChildPlans.Remove(relationEntry))
+                if (_relationsWithChildPlans.Remove(relationEntry))
                     TestBusinessRules();
             }
         }
+
 
         /// <summary>
         /// Schedule the Training Plan by assigning a Schedule ID
@@ -451,7 +530,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0 
+            => _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0
 
                 ? TrainingEffortTypeEnum.IntensityPerc
                 : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
@@ -469,7 +548,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workoutPnum">The Progressive Number of the Workout</param>
         /// <returns>The list of the Working Sets</returns>
         public WorkoutTemplateReferenceValue CloneWorkout(uint weekPnum, uint workoutPnum)
-        
+
             => FindTrainingWeekByProgressiveNumber((int)weekPnum).CloneWorkout(workoutPnum);
 
 
@@ -688,7 +767,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (trainingWeek == null)
                 throw new ArgumentNullException(nameof(trainingWeek), "Null input when trying to create a new Training Week.");
 
-            if(_trainingWeeks.Contains(trainingWeek))
+            if (_trainingWeeks.Contains(trainingWeek))
                 throw new ArgumentException("The Training Week has already been added.", nameof(trainingWeek));
 
             if (trainingWeek.IsFullRestWeek())
@@ -1036,8 +1115,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// To be used before adding the Training Week to the list
         /// </summary>
         /// <returns>The Training Week Progressive Number</returns>
-        private uint BuildTrainingWeekProgressiveNumber() 
-            
+        private uint BuildTrainingWeekProgressiveNumber()
+
             => (uint)_trainingWeeks.Count();
 
 
@@ -1149,7 +1228,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private bool TrainingPlanIsParentOnly()
 
             => _relationsWithChildPlans.All(x => x?.ParentPlanId == Id);
-            //=> _relationsWithChildPlans.All(x => x?.ChildPlanId != Id) && _relationsWithChildPlans.All(x => x?.ParentPlanId == Id);
+        //=> _relationsWithChildPlans.All(x => x?.ChildPlanId != Id) && _relationsWithChildPlans.All(x => x?.ParentPlanId == Id);
 
 
         /// <summary>
@@ -1239,7 +1318,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public object Clone()
 
             => CreateTrainingPlan(
-                    Id, Name, IsBookmarked, OwnerId, PersonalNoteId, TrainingWeeks, TrainingScheduleIds, 
+                    Id, Name, IsBookmarked, OwnerId, PersonalNoteId, TrainingWeeks, TrainingScheduleIds,
                         TrainingPhaseIds, TrainingProficiencyIds, MuscleFocusIds, HashtagIds, RelationsWithChildPlans);
 
         #endregion

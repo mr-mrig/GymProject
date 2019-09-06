@@ -1,7 +1,6 @@
 ﻿using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 {
@@ -21,6 +20,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 
             builder.Ignore(hashtag => hashtag.DomainEvents);
 
+
+            builder.OwnsOne(hashtag => hashtag.Hashtag, hh =>
+            {
+                hh.Property(p => p.Body)
+                    .HasColumnName("Body")
+                    .HasColumnType("TEXT")
+                    .IsRequired();
+            });
 
             builder.HasOne(hashtag => hashtag.EntryStatus)
                 .WithMany();

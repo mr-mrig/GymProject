@@ -24,8 +24,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
                 .WithMany("_trainingPlanHashtags")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(rel => rel.HashtagId)
-                .WithMany();
+            //builder.HasOne(rel => rel.HashtagId)
+            //    .WithMany();
         }
 
     }

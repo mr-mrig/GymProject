@@ -1,5 +1,6 @@
 ﻿using GymProject.Domain.Base;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -10,7 +11,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             (
                 id => id.Id,
                 value => IdTypeValue.Create(value),
-                mappingHints
+                 mappingHints
             )
         {
 

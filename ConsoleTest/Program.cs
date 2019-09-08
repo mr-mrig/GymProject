@@ -15,14 +15,14 @@ namespace ConsoleTest
             using(GymContext context = new GymContext())
             {
 
-                TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(11), "Test plan", true, IdTypeValue.Create(363678));
-                TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(1999), "Variant 1", false, IdTypeValue.Create(363678));
-                TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(19999), "Variant 2", false, IdTypeValue.Create(363678));
+                TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan((uint?)(11), "Test plan", true, (uint?)(363678));
+                TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan((uint?)(1999), "Variant 1", false, (uint?)(363678));
+                TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan((uint?)(19999), "Variant 2", false, (uint?)(363678));
 
 
-                //TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan("Test plan", true, IdTypeValue.Create(363678));
-                //TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan("Variant 1", false, IdTypeValue.Create(363678));
-                //TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Variant 2", false, IdTypeValue.Create(363678));
+                //TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan("Test plan", true, (uint?)(363678));
+                //TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan("Variant 1", false, (uint?)(363678));
+                //TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Variant 2", false, (uint?)(363678));
 
 
                 plan.AttachChildPlan(plan2.Id, TrainingPlanTypeEnum.Variant);

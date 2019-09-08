@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// /// The Training Plan ID
         /// </summary>
-        public IdTypeValue TrainingPlanId { get; private set; } = null;
+        public uint? TrainingPlanId { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Training Plan
@@ -21,7 +21,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Navigation Property to the Hashtag
         /// </summary>
-        public IdTypeValue HashtagId{ get; private set; } = null;
+        public uint? HashtagId{ get; private set; } = null;
 
 
 
@@ -31,7 +31,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private TrainingPlanHashtagRelation() { }
 
 
-        private TrainingPlanHashtagRelation(TrainingPlanRoot trainingPlan, IdTypeValue hashtagId)
+        private TrainingPlanHashtagRelation(TrainingPlanRoot trainingPlan, uint? hashtagId)
         {
             TrainingPlan = trainingPlan;
             HashtagId = hashtagId;
@@ -49,7 +49,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingPlan">The left entity</param>
         /// <param name="hashtagId">Tha right entity</param>
         /// <returns>The TrainingPlanHashtag isntance</returns>
-        public static TrainingPlanHashtagRelation BuildLink(TrainingPlanRoot trainingPlan, IdTypeValue hashtagId)
+        public static TrainingPlanHashtagRelation BuildLink(TrainingPlanRoot trainingPlan, uint? hashtagId)
 
             => new TrainingPlanHashtagRelation(trainingPlan, hashtagId);
 

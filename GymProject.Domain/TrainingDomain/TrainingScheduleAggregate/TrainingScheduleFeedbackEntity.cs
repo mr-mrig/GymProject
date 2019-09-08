@@ -6,7 +6,7 @@ using System;
 namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 {
 
-    public class TrainingScheduleFeedbackEntity : Entity<IdTypeValue>, ICloneable
+    public class TrainingScheduleFeedbackEntity : Entity<uint?>, ICloneable
     {
 
 
@@ -25,7 +25,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <summary>
         /// FK to the author of the Feedback
         /// </summary>
-        public IdTypeValue UserId { get; private set; } = null;
+        public uint? UserId { get; private set; } = null;
 
 
 
@@ -33,7 +33,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
-        private TrainingScheduleFeedbackEntity(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
+        private TrainingScheduleFeedbackEntity(uint? id, uint? authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
         {
             Comment = comment ?? PersonalNoteValue.Write("");
             Rating = rating;
@@ -54,7 +54,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedbackEntity ProvideTransientFeedback(IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
+        public static TrainingScheduleFeedbackEntity ProvideTransientFeedback(uint? authorId, RatingValue rating, PersonalNoteValue comment)
 
             => ProvideFeedback(null, authorId, rating, comment);
 
@@ -66,7 +66,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedbackEntity ProvideFeedback(IdTypeValue id, IdTypeValue authorId, RatingValue rating, PersonalNoteValue comment)
+        public static TrainingScheduleFeedbackEntity ProvideFeedback(uint? id, uint? authorId, RatingValue rating, PersonalNoteValue comment)
 
             => new TrainingScheduleFeedbackEntity(id, authorId, rating, comment);
 

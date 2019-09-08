@@ -16,7 +16,7 @@ namespace GymProject.Infrastructure.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
 
-            modelBuilder.Entity("GymProject.Domain.Base.IdTypeValue", b =>
+            modelBuilder.Entity("GymProject.Domain.Base.uint?", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
@@ -27,7 +27,7 @@ namespace GymProject.Infrastructure.Migrations
 
                     b.HasIndex("TrainingPlanRootId");
 
-                    b.ToTable("IdTypeValue");
+                    b.ToTable("uint?");
                 });
 
             modelBuilder.Entity("GymProject.Domain.SharedKernel.EntryStatusTypeEnum", b =>
@@ -126,7 +126,7 @@ namespace GymProject.Infrastructure.Migrations
                     b.ToTable("TrainingPlanType","GymApp");
                 });
 
-            modelBuilder.Entity("GymProject.Domain.Base.IdTypeValue", b =>
+            modelBuilder.Entity("GymProject.Domain.Base.uint?", b =>
                 {
                     b.HasOne("GymProject.Domain.TrainingDomain.TrainingPlanAggregate.TrainingPlanRoot")
                         .WithMany("MuscleFocusIds")

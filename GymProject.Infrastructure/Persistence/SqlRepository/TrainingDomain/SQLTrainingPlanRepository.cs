@@ -32,7 +32,7 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
             _gymContext.Add(aggregateRoot);
 
 
-            _gymContext.Add(TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(1), "", true, null));
+            _gymContext.Add(TrainingPlanRoot.CreateTrainingPlan(1, "", true, null));
 
             foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
                 _gymContext.Add(week);
@@ -55,7 +55,7 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public TrainingPlanRoot WithId(IdTypeValue id)
+        public TrainingPlanRoot WithId(uint? id)
         {
             throw new NotImplementedException();
         }

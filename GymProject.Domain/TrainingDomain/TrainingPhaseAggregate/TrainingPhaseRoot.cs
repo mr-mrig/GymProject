@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 {
-    public class TrainingPhaseRoot : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
+    public class TrainingPhaseRoot : StatusTrackingEntity<uint?>, IAggregateRoot
     {
 
 

@@ -4,7 +4,7 @@ using GymProject.Domain.SocialNetworkDomain.Common;
 
 namespace GymProject.Domain.SocialNetworkDomain.ImageAggregate
 {
-    public class PictureEntity : Entity<IdTypeValue>, IAggregateRoot
+    public class PictureEntity : Entity<uint?>, IAggregateRoot
     {
 
         /// <summary>

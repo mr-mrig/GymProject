@@ -18,7 +18,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             builder.HasKey(plan => plan.Id);
 
             builder.Property(plan => plan.Id)
-                .HasConversion(new IdTypeValueConverter())
                 .ValueGeneratedOnAdd();
 
 

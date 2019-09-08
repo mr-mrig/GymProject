@@ -51,12 +51,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new EntryStatusEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanRelationEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanTypeEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanHashtagEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new EntryStatusEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanRelationEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanTypeEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanHashtagEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
         }
     }
 }

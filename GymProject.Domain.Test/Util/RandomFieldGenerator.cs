@@ -257,7 +257,7 @@ namespace GymProject.Domain.Test.Util
         /// </summary>
         /// <param name="probabilityToOccur">The probability for the event to happen</param>
         /// <returns>True if the event occurs, false otherwise</returns>
-        public static bool RollEventWithProbability(double probabilityToOccur)
+        public static bool RollEventWithProbability(double probabilityToOccur = 0.5f)
 
             => RandomDouble(0, 1) < probabilityToOccur;
 

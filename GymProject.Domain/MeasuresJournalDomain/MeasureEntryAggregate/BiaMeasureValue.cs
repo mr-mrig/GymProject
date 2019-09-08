@@ -99,7 +99,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         /// FK to the BIA device
         /// </summary>
-        public IdTypeValue BiaDeviceId { get; private set; } 
+        public uint? BiaDeviceId { get; private set; } 
 
 
         #region Ctors

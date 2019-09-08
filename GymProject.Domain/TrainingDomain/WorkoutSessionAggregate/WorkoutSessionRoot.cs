@@ -12,7 +12,7 @@ using System.Linq;
 namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 {
 
-    public class WorkoutSessionRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
+    public class WorkoutSessionRoot : Entity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -47,7 +47,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <summary>
         /// FK to the Workout Template - Optional in order to allow On-the-Fly sessions
         /// </summary>
-        public IdTypeValue WorkoutTemplateId { get; private set; } = null;
+        public uint? WorkoutTemplateId { get; private set; } = null;
 
 
         private IList<WorkUnitEntity> _workUnits = new List<WorkUnitEntity>();
@@ -56,15 +56,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// The WUs belonging to the Workout
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IEnumerable<WorkUnitEntity> WorkUnits => _workUnits?.ToList() ?? new List<WorkUnitEntity>();
-        
-
+        public IReadOnlyCollection<WorkUnitEntity> WorkUnits
+        {
+            get => _workUnits?.ToList().AsReadOnly()
+                ?? new List<WorkUnitEntity>().AsReadOnly();
+        }
 
 
 
         #region Ctors
 
-        private WorkoutSessionRoot(IdTypeValue id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, IdTypeValue workoutTemplateId, IEnumerable<WorkUnitEntity> workUnits) 
+        private WorkoutSessionRoot(uint? id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, uint? workoutTemplateId, IEnumerable<WorkUnitEntity> workUnits) 
             : base(id)
         {
             StartTime = startTime;
@@ -90,7 +92,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="startTime">The Session start time</param>
         /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
         /// <returns>The WorkoutSessionRoot instance</returns>
-        public static WorkoutSessionRoot BeginWorkout(DateTime? startTime, IdTypeValue workoutTemplateId = null)
+        public static WorkoutSessionRoot BeginWorkout(DateTime? startTime, uint? workoutTemplateId = null)
 
             => TrackWorkout(null, startTime, null, null, workoutTemplateId, null);
 
@@ -102,7 +104,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="startTime">The Session start time</param>
         /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
         /// <returns>The WorkoutSessionRoot instance</returns>
-        public static WorkoutSessionRoot BeginWorkout(IdTypeValue id, DateTime? startTime, IdTypeValue workoutTemplateId = null)
+        public static WorkoutSessionRoot BeginWorkout(uint? id, DateTime? startTime, uint? workoutTemplateId = null)
 
             => TrackWorkout(id, startTime, null, null, workoutTemplateId, null);
 
@@ -114,7 +116,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="plannedDate">The date which the workout has been scheduled to</param>
         /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
         /// <returns>The WorkoutSessionRoot instance</returns>
-        public static WorkoutSessionRoot ScheduleWorkout(IdTypeValue id, DateTime? plannedDate, IdTypeValue workoutTemplateId)
+        public static WorkoutSessionRoot ScheduleWorkout(uint? id, DateTime? plannedDate, uint? workoutTemplateId)
 
             => TrackWorkout(id, null, null, plannedDate, workoutTemplateId, null);
 
@@ -125,7 +127,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="plannedDate">The date which the workout has been scheduled to</param>
         /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
         /// <returns>The WorkoutSessionRoot instance</returns>
-        public static WorkoutSessionRoot ScheduleWorkout(DateTime? plannedDate, IdTypeValue workoutTemplateId)
+        public static WorkoutSessionRoot ScheduleWorkout(DateTime? plannedDate, uint? workoutTemplateId)
 
             => TrackWorkout(null, null, null, plannedDate, workoutTemplateId, null);
 
@@ -137,12 +139,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="startTime">The Session start time</param>
         /// <param name="endTime">The Session end time</param>
         /// <param name="plannedDate">The date which the workout has been scheduled to</param>
-        /// <param name="userRating">The rating the user gave after the Session</param>
         /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
         /// <param name="workUnits">The work unit list</param>
         /// <returns>The WorkoutSessionRoot instance</returns>
         public static WorkoutSessionRoot TrackWorkout(
-            IdTypeValue id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, IdTypeValue workoutTemplateId = null, IEnumerable<WorkUnitEntity> workUnits = null)
+            uint? id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, uint? workoutTemplateId = null, IEnumerable<WorkUnitEntity> workUnits = null)
 
             => new WorkoutSessionRoot(id, startTime, endTime, plannedDate, workoutTemplateId, workUnits);
 
@@ -213,7 +214,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// </summary>
         /// <param name="excerciseId">The ID of the excercise of the WU</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void StartTrackingExcercise(IdTypeValue excerciseId)
+        public void StartTrackingExcercise(uint? excerciseId)
         {
             WorkUnitEntity toAdd = WorkUnitEntity.StartExcercise(
                 BuildWorkUnitProgressiveNumber(),
@@ -326,8 +327,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
                 weightLifted
             );
 
-            WorkingSetEntity added = WorkingSetEntity.TrackTransientWorkingSet
-                (0, repetitionsPerformed, weightLifted);
+            WorkingSetEntity added = WorkingSetEntity.CompleteWorkingSet(0, repetitionsPerformed, weightLifted);
 
             TrainingVolume = TrainingVolume.AddWorkingSet(added);
         }
@@ -393,7 +393,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="parentWorkUnitPnum">The WU Progressive Number</param>
         /// <param name="workingSetPnum">The Progressive Number of the Working Set</param>
         /// <param name="noteId">The ID of the Note to be attached</param>
-        public void WriteWorkingSetNote(uint parentWorkUnitPnum, uint workingSetPnum, IdTypeValue noteId)
+        public void WriteWorkingSetNote(uint parentWorkUnitPnum, uint workingSetPnum, uint? noteId)
         {
             WorkUnitEntity parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
             WorkingSetEntity toChange = parentWorkUnit.CloneWorkingSet(workingSetPnum);

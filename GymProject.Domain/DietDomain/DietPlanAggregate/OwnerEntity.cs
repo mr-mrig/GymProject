@@ -3,7 +3,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class OwnerEntity : Entity<IdTypeValue>
+    public class OwnerEntity : Entity<uint?>
     {
 
 

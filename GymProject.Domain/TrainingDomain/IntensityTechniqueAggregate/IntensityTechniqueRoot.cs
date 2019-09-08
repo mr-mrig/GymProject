@@ -4,7 +4,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
 {
-    public class IntensityTechniqueRoot : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
+    public class IntensityTechniqueRoot : StatusTrackingEntity<uint?>, IAggregateRoot
     {
 
 
@@ -37,7 +37,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <summary>
         /// FK to the User who created the Intensity Technique entry
         /// </summary>
-        public IdTypeValue OwnerId { get; private set; }
+        public uint? OwnerId { get; private set; }
 
 
 
@@ -50,7 +50,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
                 
         }
 
-        private IntensityTechniqueRoot(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus) 
+        private IntensityTechniqueRoot(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus) 
             : base(id, entryStatus)
         {
             Name = name?.Trim() ?? string.Empty;
@@ -79,7 +79,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <param name="id">The ID of the Intensity Technique</param>
         /// <param name="entryStatus">The status of the entry</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        protected static IntensityTechniqueRoot CreateIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus)
+        protected static IntensityTechniqueRoot CreateIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus)
 
             => new IntensityTechniqueRoot(id, ownerId, name, abbreviation, description, isLinkingTechnique, entryStatus);
 
@@ -94,7 +94,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
         /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechniqueRoot CreatePrivateIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
+        public static IntensityTechniqueRoot CreatePrivateIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
             => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Private);
 
@@ -109,7 +109,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
         /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechniqueRoot CreateNativeIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
+        public static IntensityTechniqueRoot CreateNativeIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
             => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Native);
 
@@ -124,7 +124,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
         /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechniqueRoot CreatePublicIntensityTechnique(IdTypeValue id, IdTypeValue ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
+        public static IntensityTechniqueRoot CreatePublicIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
             => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Pending);
 

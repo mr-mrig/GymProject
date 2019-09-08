@@ -4,7 +4,7 @@ using GymProject.Domain.SharedKernel;
 
 namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
 {
-    public class TrainingHashtagRoot : StatusTrackingEntity<IdTypeValue>, IAggregateRoot, ICloneable
+    public class TrainingHashtagRoot : StatusTrackingEntity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -23,7 +23,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
 
         }
 
-        private TrainingHashtagRoot(IdTypeValue id, GenericHashtagValue hashtag, EntryStatusTypeEnum status = null) : base(id, status)
+        private TrainingHashtagRoot(uint? id, GenericHashtagValue hashtag, EntryStatusTypeEnum status = null) : base(id, status)
         {
             Hashtag = hashtag;
             TestBusinessRules();
@@ -49,7 +49,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
         /// <param name="id">The ID of the entity</param>
         /// <param name="hashtag">The hashtag content</param>
         /// <returns>The TrainingHashtagRoot instance</returns>
-        public static TrainingHashtagRoot TagWith(IdTypeValue id, GenericHashtagValue hashtag)
+        public static TrainingHashtagRoot TagWith(uint? id, GenericHashtagValue hashtag)
 
             => TagWith(id, hashtag, EntryStatusTypeEnum.NotSet);
 
@@ -61,7 +61,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
         /// <param name="hashtag">The hashtag content</param>
         /// <param name="status">The Status of the entry</param>
         /// <returns>The TrainingHashtagRoot instance</returns>
-        public static TrainingHashtagRoot TagWith(IdTypeValue id, GenericHashtagValue hashtag, EntryStatusTypeEnum status)
+        public static TrainingHashtagRoot TagWith(uint? id, GenericHashtagValue hashtag, EntryStatusTypeEnum status)
 
             => new TrainingHashtagRoot(id, hashtag, status);
 

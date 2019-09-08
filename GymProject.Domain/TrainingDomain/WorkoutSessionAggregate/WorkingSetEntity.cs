@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 {
-    public class WorkingSetEntity : Entity<IdTypeValue>, ITrainingLoadTrackableSet, ICloneable
+    public class WorkingSetEntity : Entity<uint?>, ITrainingLoadTrackableSet, ICloneable
     {
 
 
@@ -32,7 +32,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <summary>
         /// FK to the Working Set Note Aggregate
         /// </summary>
-        public IdTypeValue NoteId { get; private set; } = null;
+        public uint? NoteId { get; private set; } = null;
 
 
 
@@ -43,7 +43,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         private WorkingSetEntity() : base(null) {   }
 
 
-        private WorkingSetEntity(IdTypeValue id, uint progressiveNumber, WSRepetitionsValue repetitions, WeightPlatesValue load = null, IdTypeValue trainingNoteId = null) : base(id)
+        private WorkingSetEntity(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, WeightPlatesValue load = null, uint? trainingNoteId = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
@@ -59,17 +59,28 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method - Creates a transient Working Set
+        /// Factory method - Track the working set before starting it
+        /// </summary>
+        /// <param name="progressiveNumber">The progressive number of the WS</param>
+        /// <param name="targetRepetitions">The target repetitions as per Training Plan</param>
+        /// <returns>The WorkingSet instance</returns>
+        public static WorkingSetEntity StartWorkingSet(uint progressiveNumber, WSRepetitionsValue targetRepetitions = null)
+
+            => TrackWorkingSet(null, progressiveNumber, targetRepetitions, null, null);
+
+
+        /// <summary>
+        /// Factory method - Track the working set after it has been completed
         /// </summary>
         /// <param name="load">The lifted load - Might be null according to the performance type</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <param name="repetitions">The repetitions performed</param>
         /// <param name="load">The load used in the Working Set - if applicable according to the work type</param>
-        /// <param name="trainingNoteId">The ID of the Working Set Note - if any</param>
-        /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetEntity TrackTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, WeightPlatesValue load = null, IdTypeValue trainingNoteId = null)
+        /// <returns>The WorkingSet instance</returns>
+        public static WorkingSetEntity CompleteWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, WeightPlatesValue load = null)
 
-            => TrackWorkingSet(null, progressiveNumber, repetitions, load, trainingNoteId);
+            => TrackWorkingSet(null, progressiveNumber, repetitions, load, null);
+
 
         /// <summary>
         /// Factory method
@@ -79,8 +90,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="repetitions">The repetitions performed</param>
         /// <param name="id">The ID of the Working Set</param>
         /// <param name="trainingNoteId">The ID of the Working Set Note</param>
-        /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetEntity TrackWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionsValue repetitions, WeightPlatesValue load = null, IdTypeValue trainingNoteId = null)
+        /// <returns>The WorkingSet instance</returns>
+        public static WorkingSetEntity TrackWorkingSet(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, WeightPlatesValue load = null, uint? trainingNoteId = null)
 
             => new WorkingSetEntity(id, progressiveNumber, repetitions, load, trainingNoteId);
 
@@ -123,7 +134,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// Write the training note
         /// </summary>
         /// <param name="noteId">The id of the note to be added</param>
-        public void WriteNote(IdTypeValue noteId) => NoteId = noteId;
+        public void WriteNote(uint? noteId) => NoteId = noteId;
 
 
         /// <summary>

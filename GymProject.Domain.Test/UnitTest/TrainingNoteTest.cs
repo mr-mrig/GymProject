@@ -24,7 +24,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             WorkingSetNoteRoot note;
             PersonalNoteValue body;
-            IdTypeValue id;
+            uint? id;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -35,7 +35,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
 
                     // NULL Body
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = null;
 
                     Assert.Throws<TrainingDomainInvariantViolationException>(()
@@ -44,7 +44,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else
                 {
                     // Valid fields
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
                     if (isTransient)
@@ -71,7 +71,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             WorkUnitTemplateNoteRoot note;
             PersonalNoteValue body;
-            IdTypeValue id;
+            uint? id;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -82,7 +82,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
 
                     // NULL Body
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = null;
 
                     Assert.Throws<TrainingDomainInvariantViolationException>(()
@@ -91,7 +91,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else
                 {
                     // Valid fields
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
                     if (isTransient)
@@ -118,7 +118,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             TrainingPlanMessageRoot note;
             PersonalNoteValue body;
-            IdTypeValue id;
+            uint? id;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -129,7 +129,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
 
                     // NULL Body
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = null;
 
                     Assert.Throws<TrainingDomainInvariantViolationException>(()
@@ -138,7 +138,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else
                 {
                     // Valid fields
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
                     if (isTransient)
@@ -165,7 +165,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             TrainingPlanNoteRoot note;
             PersonalNoteValue body;
-            IdTypeValue id;
+            uint? id;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -176,7 +176,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
 
                     // NULL Body
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = null;
 
                     Assert.Throws<TrainingDomainInvariantViolationException>(()
@@ -185,7 +185,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else
                 {
                     // Valid fields
-                    id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 10000));
+                    id = (uint?)(RandomFieldGenerator.RandomInt(1, 10000));
                     body = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
                     if (isTransient)

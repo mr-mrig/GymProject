@@ -49,7 +49,7 @@ namespace GymProject.Domain.SharedKernel
             if (left == null || right == null)
                 return false;
 
-            return left.Id == right.Id;
+            return left == right;
         }
 
 
@@ -58,7 +58,7 @@ namespace GymProject.Domain.SharedKernel
             if (left == null || right == null)
                 return false;
 
-            return left.Id != right.Id;
+            return left != right;
         }
 
 

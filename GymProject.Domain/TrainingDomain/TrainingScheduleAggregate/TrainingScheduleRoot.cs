@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 {
-    public class TrainingScheduleRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
+    public class TrainingScheduleRoot : Entity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -24,7 +24,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <summary>
         /// FK to the Training Plan
         /// </summary>
-        public IdTypeValue TrainingPlanId { get; private set; } = null;
+        public uint? TrainingPlanId { get; private set; } = null;
 
 
 
@@ -42,7 +42,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
-        private TrainingScheduleRoot(IdTypeValue id, IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks) : base(id)
+        private TrainingScheduleRoot(uint? id, uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks) : base(id)
         {
             ScheduledPeriod = scheduledPeriod;
             TrainingPlanId = trainingPlanId;
@@ -65,7 +65,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="scheduledPeriod">The training plan scheduled duration</param>
         /// <param name="feedbacks">The Feedbacks list</param>
         /// <returns>The TrainingSchedule instance</returns>
-        public static TrainingScheduleRoot ScheduleTrainingPlan(IdTypeValue id, IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
+        public static TrainingScheduleRoot ScheduleTrainingPlan(uint? id, uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
 
             => new TrainingScheduleRoot(id, trainingPlanId, scheduledPeriod, feedbacks);
 
@@ -77,7 +77,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="scheduledPeriod">The training plan scheduled duration</param>
         /// <param name="feedbacks">The Feedbacks list</param>
         /// <returns>The TrainingSchedule instance</returns>
-        public static TrainingScheduleRoot ScheduleTrainingPlanTransient(IdTypeValue trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
+        public static TrainingScheduleRoot ScheduleTrainingPlanTransient(uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
 
             => ScheduleTrainingPlan(null, trainingPlanId, scheduledPeriod, feedbacks);
 
@@ -131,7 +131,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">If business rules not met</exception>
         /// <exception cref="ArgumentNullException">If Owner ID is null</exception>
         /// <exception cref="InvalidOperationException">If the Feedback with the specified User couldn't be found</exception>
-        public void ChangeFeedback(IdTypeValue userId, RatingValue newRating, string newComment)
+        public void ChangeFeedback(uint? userId, RatingValue newRating, string newComment)
         {
             if (userId == null)
                 throw new ArgumentNullException(nameof(userId), $"Trying to change the Feedback of a NULL User.");
@@ -181,7 +181,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
                 throw new ArgumentNullException(nameof(feedback), $"Trying to add a NULL Feedback.");
 
             if (_feedbacks.Contains(feedback))
-                throw new ArgumentException($"The Training Schedule Feedback (Id = {feedback.Id.ToString()}) is already present in the list", nameof(feedback));
+                throw new ArgumentException($"The Training Schedule Feedback (Id = {feedback.ToString()}) is already present in the list", nameof(feedback));
 
             _feedbacks.Add(feedback.Clone() as TrainingScheduleFeedbackEntity);
 
@@ -215,7 +215,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
         /// <exception cref="InvalidOperationException">If the input Feedback is already present in the list</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void RemoveFeedback(IdTypeValue userId)
+        public void RemoveFeedback(uint? userId)
         {
             if (userId == null)
                 throw new ArgumentNullException(nameof(userId), $"Trying to remove a Feedback of a NULL Author.");
@@ -236,7 +236,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="authorId">The ID of the author of the Feedback</param>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <returns>A copy of the TrainingScheduleFeedback object/returns>
-        public TrainingScheduleFeedbackEntity CloneFeedback(IdTypeValue authorId)
+        public TrainingScheduleFeedbackEntity CloneFeedback(uint? authorId)
 
             => _feedbacks.Single(x => x.UserId == authorId)?.Clone() as TrainingScheduleFeedbackEntity;
 
@@ -251,7 +251,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="authorId">The ID of the author of the Feedback</param>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <returns>The TrainingScheduleFeedback object/returns>
-        private TrainingScheduleFeedbackEntity FindUserFeedback(IdTypeValue authorId)
+        private TrainingScheduleFeedbackEntity FindUserFeedback(uint? authorId)
 
             => _feedbacks.Single(x => x.UserId == authorId);
 
@@ -261,7 +261,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// </summary>
         /// <param name="authorId">The ID of the author of the Feedback</param>
         /// <returns>The TrainingScheduleFeedback object or NULL/returns>
-        private TrainingScheduleFeedbackEntity FindUserFeedbackOrDefault(IdTypeValue authorId)
+        private TrainingScheduleFeedbackEntity FindUserFeedbackOrDefault(uint? authorId)
 
             => _feedbacks.SingleOrDefault(x => x.UserId == authorId);
 

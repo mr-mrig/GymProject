@@ -4,7 +4,7 @@ using GymProject.Domain.TrainingDomain.Exceptions;
 
 namespace GymProject.Domain.TrainingDomain.Common
 {
-    public class TrainingNoteEntity : Entity<IdTypeValue>
+    public class TrainingNoteEntity : Entity<uint?>
     {
 
 
@@ -15,7 +15,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Ctors
 
-        protected TrainingNoteEntity(IdTypeValue id, PersonalNoteValue body) : base(id)
+        protected TrainingNoteEntity(uint? id, PersonalNoteValue body) : base(id)
         {
             Body = body;
             TestBusinessRules();
@@ -40,7 +40,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         ///// <param name="body">The body fo the Note</param>
         ///// <param name="id">The Id of the Note instance</param>
         ///// <returns>The TrainingNoteEntity instance</returns>
-        //public virtual TrainingNoteEntity Write(IdTypeValue id, PersonalNoteValue body)
+        //public virtual TrainingNoteEntity Write(uint? id, PersonalNoteValue body)
 
         //    => new TrainingNoteEntity(id, body);
 

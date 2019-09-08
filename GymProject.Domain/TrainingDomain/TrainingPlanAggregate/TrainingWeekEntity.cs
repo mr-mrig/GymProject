@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingWeekEntity : Entity<IdTypeValue>, ICloneable
+    public class TrainingWeekEntity : Entity<uint?>, ICloneable
     {
 
 
@@ -62,7 +62,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         private TrainingWeekEntity() : base(null) {}
 
-        private TrainingWeekEntity(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
+        private TrainingWeekEntity(uint? id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             TrainingWeekType = weekType ?? TrainingWeekTypeEnum.Generic;
@@ -89,7 +89,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekEntity PlanTrainingWeek(IdTypeValue id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekEntity PlanTrainingWeek(uint? id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
 
             => new TrainingWeekEntity(id, progressiveNumber, workouts, weekType);
 
@@ -122,7 +122,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="id">The ID of the Training Week</param>
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekEntity PlanFullRestWeek(IdTypeValue id, uint progressiveNumber)
+        public static TrainingWeekEntity PlanFullRestWeek(uint? id, uint progressiveNumber)
 
             => new TrainingWeekEntity(id, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
 

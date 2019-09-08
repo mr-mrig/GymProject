@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class CommentEntity : ChangeTrackingEntity<IdTypeValue>, ICloneable
+    public class CommentEntity : ChangeTrackingEntity<uint?>, ICloneable
     {
 
 
@@ -17,7 +17,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 
         #region Ctors
 
-        protected CommentEntity(IdTypeValue id, AuthorEntity author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null) : base(id)
+        protected CommentEntity(uint? id, AuthorEntity author, string body, DateTime? createdOn = null, DateTime? lastUpdate = null) : base(id)
         {
             if (author == null)
                 throw new ArgumentNullException("author", "Cannot create a Comment with no author");
@@ -42,7 +42,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="comment">The body of the comment</param>
         /// <param name="id">The Id of the Comment</param>
         /// <returns>The Comment instance</returns>
-        public static CommentEntity Write(IdTypeValue id, AuthorEntity author, string comment)
+        public static CommentEntity Write(uint? id, AuthorEntity author, string comment)
         {
             return new CommentEntity(id, author, comment);
         }
@@ -57,7 +57,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="createdOn">The date which the comment has been created on</param>
         /// <param name="lastUpdate">The date which the comment has been lastly updated on</param>
         /// <returns>The Comment instance</returns>
-        public static CommentEntity Copy(IdTypeValue id, AuthorEntity author, string comment, DateTime createdOn, DateTime lastUpdate)
+        public static CommentEntity Copy(uint? id, AuthorEntity author, string comment, DateTime createdOn, DateTime lastUpdate)
         {
             return new CommentEntity(id, author, comment, (DateTime?)createdOn, (DateTime?)lastUpdate);
         }

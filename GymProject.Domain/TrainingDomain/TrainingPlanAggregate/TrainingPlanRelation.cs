@@ -19,14 +19,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// The ID of the Parent Training Plan
         /// </summary>
-        public IdTypeValue ParentPlanId { get; private set; } = null;
+        public uint? ParentPlanId { get; private set; } = null;
 
 
         /// <summary>
         /// The ID of the Child Training Plan - 
         /// Must be considered as another Aggregate Root, since deleting the Parent must not entail the deletion of the child
         /// </summary>
-        public IdTypeValue ChildPlanId { get; private set; } = null;
+        public uint? ChildPlanId { get; private set; } = null;
 
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// FK to the Training Plan Message, when sent to another user -> Only Inherited Plans can have it
         /// </summary>
-        public IdTypeValue MessageId { get; private set; } = null;
+        public uint? MessageId { get; private set; } = null;
 
         /// <summary>
         /// The type of the Child Plan
@@ -55,11 +55,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         }
 
-        private TrainingPlanRelation(IdTypeValue parentPlanId, IdTypeValue childPlanId, TrainingPlanTypeEnum relationType, IdTypeValue messageId = null)
+        private TrainingPlanRelation(uint? parentPlanId, uint? childPlanId, TrainingPlanTypeEnum relationType, uint? messageId = null)
         {
             ParentPlanId = parentPlanId;
             ChildPlanId = childPlanId;
-            //ChildPlanType = TrainingPlanTypeEnum.From((int)relationTypeId.Id);
+            //ChildPlanType = TrainingPlanTypeEnum.From((int)relationTypeId);
             ChildPlanType = relationType;
             MessageId = MessageId;
 
@@ -79,7 +79,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="relationType">The relation that exists between the parent and the child plan</param>
         /// <param name="messageId">The ID of the message attached</param>
         /// <returns>The TrainingPlanRelationRoot instance</returns>
-        public static TrainingPlanRelation EnstablishRelation(IdTypeValue parentPlanId, IdTypeValue childPlanId, TrainingPlanTypeEnum relationType, IdTypeValue messageId = null)
+        public static TrainingPlanRelation EnstablishRelation(uint? parentPlanId, uint? childPlanId, TrainingPlanTypeEnum relationType, uint? messageId = null)
 
             => new TrainingPlanRelation(parentPlanId, childPlanId, relationType, messageId);
 

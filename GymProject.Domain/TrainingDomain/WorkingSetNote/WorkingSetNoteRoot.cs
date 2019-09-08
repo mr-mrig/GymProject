@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.WorkingSetNote
 
         #region Ctors
 
-        private WorkingSetNoteRoot(IdTypeValue id, PersonalNoteValue note) : base(id, note)
+        private WorkingSetNoteRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 
         }
@@ -24,7 +24,7 @@ namespace GymProject.Domain.TrainingDomain.WorkingSetNote
 
             => Write(null, note);
 
-        public static WorkingSetNoteRoot Write(IdTypeValue id, PersonalNoteValue note)
+        public static WorkingSetNoteRoot Write(uint? id, PersonalNoteValue note)
 
             => new WorkingSetNoteRoot(id, note);
 

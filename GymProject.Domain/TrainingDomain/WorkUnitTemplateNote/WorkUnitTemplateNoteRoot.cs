@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.WorkUnitTemplateNote
 
         #region Ctors
 
-        private WorkUnitTemplateNoteRoot(IdTypeValue id, PersonalNoteValue note) : base(id, note)
+        private WorkUnitTemplateNoteRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 
         }
@@ -24,7 +24,7 @@ namespace GymProject.Domain.TrainingDomain.WorkUnitTemplateNote
 
             => Write(null, note);
 
-        public static WorkUnitTemplateNoteRoot Write(IdTypeValue id, PersonalNoteValue note)
+        public static WorkUnitTemplateNoteRoot Write(uint? id, PersonalNoteValue note)
 
             => new WorkUnitTemplateNoteRoot(id, note);
 

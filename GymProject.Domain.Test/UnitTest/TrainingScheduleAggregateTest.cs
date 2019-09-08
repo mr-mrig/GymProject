@@ -53,18 +53,18 @@ namespace GymProject.Domain.Test.UnitTest
                         // Double user
                         Assert.Throws<TrainingDomainInvariantViolationException>(() => schedule.ProvideFeedback(
                             TrainingScheduleFeedbackEntity.ProvideFeedback(
-                                IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 100000, (int)firstElement.Id.Id)),
+                                (uint?)(RandomFieldGenerator.RandomIntValueExcluded(1, 100000, (int)firstElement.Id.Value)),
                                 firstElement.UserId, RatingValue.Rate(3), null)));
                     }
                 }
 
                 // Remove Feedback
                 TrainingScheduleFeedbackEntity toRemove = null;
-                IdTypeValue idToRemove = null;
-                IdTypeValue fakeUserId = IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 10000, schedule.Feedbacks.Select(x => (int)x.UserId.Id)));
-                long fakeFeedbackId = isTransient
+                uint? idToRemove = null;
+                uint? fakeUserId = (uint?)(RandomFieldGenerator.RandomIntValueExcluded(1, 10000, schedule.Feedbacks.Select(x => (int)x.UserId.Value)));
+                uint fakeFeedbackId = isTransient
                     ? 1
-                    : RandomFieldGenerator.RandomIntValueExcluded(1, 10000, schedule.Feedbacks.Select(x => (int)x.Id.Id));
+                    : (uint)RandomFieldGenerator.RandomIntValueExcluded(1, 10000, schedule.Feedbacks.Select(x => (int)x.Id.Value));
 
                 // Remove NULLs
                 Assert.Throws<ArgumentNullException>(() => schedule.RemoveFeedback(toRemove));
@@ -74,11 +74,11 @@ namespace GymProject.Domain.Test.UnitTest
                 if (!isTransient)
                 {
                     toRemove = StaticUtils.BuildRandomFeedback(
-                        RandomFieldGenerator.RandomIntValueExcluded(1, 10000, schedule.Feedbacks.Select(x => (int)x.Id.Id)), isTransient, fakeUserId);
+                        (uint)RandomFieldGenerator.RandomIntValueExcluded(1, 10000, schedule.Feedbacks.Select(x => (int)x.Id.Value)), isTransient, fakeUserId);
 
                     Assert.Throws<InvalidOperationException>(() => schedule.RemoveFeedback(toRemove));
 
-                    idToRemove = IdTypeValue.Create(fakeFeedbackId);
+                    idToRemove = (uint?)(fakeFeedbackId);
 
                     Assert.Throws<InvalidOperationException>(() => schedule.RemoveFeedback(idToRemove));
                 }
@@ -100,13 +100,12 @@ namespace GymProject.Domain.Test.UnitTest
         {
             int addFeedbacksMin = 1, addFeedbacksMax = 3;
             int changeFeedbacksMin = 1, changeFeedbacksMax = 3;
-            int removeFeedbacksMin = 1, removeFeedbacksMax = 3;
 
             float isTransientProbability = 0.1f;
 
             List<TrainingScheduleFeedbackEntity> feedbacks;
-            List<IdTypeValue> feedbacksIds;
-            List<IdTypeValue> feedbacksUserIds;
+            List<uint?> feedbacksIds;
+            List<uint?> feedbacksUserIds;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -146,8 +145,8 @@ namespace GymProject.Domain.Test.UnitTest
                 for (int ifeed = 0; ifeed < addFeedbacksNumber; ifeed++)
                 {
                     TrainingScheduleFeedbackEntity toAdd = StaticUtils.BuildRandomFeedback(
-                        RandomFieldGenerator.RandomIntValueExcluded(1, 999999, 
-                        feedbacksIds.Select(x => (int)(x?.Id ?? 1))), isTransient, userIdsToExclude: feedbacksUserIds);
+                        (uint)RandomFieldGenerator.RandomIntValueExcluded(1, 999999, 
+                        feedbacksIds.Select(x => (int)(x ?? 1))), isTransient, userIdsToExclude: feedbacksUserIds);
 
                     feedbacksIds.Add(toAdd?.Id);
                     feedbacksUserIds.Add(toAdd?.UserId);
@@ -165,7 +164,7 @@ namespace GymProject.Domain.Test.UnitTest
                 for (int ifeed = 0; ifeed < changeFeedbacksNumber; ifeed++)
                 {
                     TrainingScheduleFeedbackEntity toChange;
-                    IdTypeValue userId = RandomFieldGenerator.ChooseAmong(feedbacks.Select(x => x.UserId));
+                    uint? userId = RandomFieldGenerator.ChooseAmong(feedbacks.Select(x => x.UserId));
                     TrainingScheduleFeedbackEntity originalFeedback = schedule.CloneFeedback(userId);
 
 
@@ -180,7 +179,7 @@ namespace GymProject.Domain.Test.UnitTest
                     }
                     else
                     {
-                        toChange = StaticUtils.BuildRandomFeedback(originalFeedback.Id.Id, isTransient, originalFeedback.UserId);
+                        toChange = StaticUtils.BuildRandomFeedback(originalFeedback.Id.Value, isTransient, originalFeedback.UserId);
 
                         schedule.ChangeFeedback(toChange);
                     }
@@ -194,7 +193,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                 for (int ifeed = 0; ifeed < removeeFeedbacksNumber; ifeed++)
                 {
-                    IdTypeValue userId = RandomFieldGenerator.ChooseAmong(feedbacks.Select(x => x.UserId));
+                    uint? userId = RandomFieldGenerator.ChooseAmong(feedbacks.Select(x => x.UserId));
                     TrainingScheduleFeedbackEntity toRemove = schedule.CloneFeedback(userId);
 
                     if (RandomFieldGenerator.RollEventWithProbability(0.5f))
@@ -248,7 +247,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             RatingValue rating = RatingValue.Rate(RandomFieldGenerator.RandomFloat(0, 5));
             PersonalNoteValue commentBody = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
-            IdTypeValue userId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(0, 99999));
+            uint? userId = (uint?)(RandomFieldGenerator.RandomInt(0, 99999));
 
             if (isTransient)
             {
@@ -258,7 +257,7 @@ namespace GymProject.Domain.Test.UnitTest
             }
             else
             {
-                IdTypeValue feedbackId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(0, 99999));
+                uint? feedbackId = (uint?)(RandomFieldGenerator.RandomInt(0, 99999));
 
                 Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingScheduleFeedbackEntity.ProvideFeedback(feedbackId, null, rating, commentBody));
                 Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingScheduleFeedbackEntity.ProvideFeedback(feedbackId, userId, null, commentBody));
@@ -279,7 +278,7 @@ namespace GymProject.Domain.Test.UnitTest
             int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
 
             // Valid Feedbacks and Feedbacks with NULL values
-            for (int ifeed = 0; ifeed < feedbacksNumber; ifeed++)
+            for (uint ifeed = 0; ifeed < feedbacksNumber; ifeed++)
             {
                 if (RandomFieldGenerator.RollEventWithProbability(0.5f))
                 {
@@ -300,19 +299,19 @@ namespace GymProject.Domain.Test.UnitTest
 
             // More Feedbacks with the same owner
             if (feedbacksNumber > 0)
-                duplicateOwnerFeedbacks.Add(StaticUtils.BuildRandomFeedback(feedbacksNumber + 1, isTransient,
+                duplicateOwnerFeedbacks.Add(StaticUtils.BuildRandomFeedback((uint)feedbacksNumber + 1, isTransient,
                     duplicateOwnerFeedbacks[RandomFieldGenerator.RandomInt(0, feedbacksNumber - 1)].UserId));
 
             // Feedbacks with Duplicates
             if (!isTransient)
             {
-                for (int ifeed = 0; ifeed < feedbacksNumber; ifeed++)
+                for (uint ifeed = 0; ifeed < feedbacksNumber; ifeed++)
                 {
                     if (RandomFieldGenerator.RollEventWithProbability(0.5f))
                     {
                         if (ifeed > 0)
                             duplicateFeedbacks.Add(StaticUtils.BuildRandomFeedback(
-                                RandomFieldGenerator.ChooseAmong(duplicateFeedbacks.Select(x => x.Id.Id)), isTransient));
+                                RandomFieldGenerator.ChooseAmong(duplicateFeedbacks.Select(x => x.Id.Value)), isTransient));
                         else
                             duplicateFeedbacks.Add(StaticUtils.BuildRandomFeedback(1, isTransient));
                     }
@@ -322,7 +321,7 @@ namespace GymProject.Domain.Test.UnitTest
             }
 
             // Create the Schedule
-            IdTypeValue planId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 1000000));
+            uint? planId = (uint?)(RandomFieldGenerator.RandomInt(1, 1000000));
             DateRangeValue validPeriod = DateRangeValue.RangeBetween(DateTime.Now, DateTime.Now.AddDays(10));
             DateRangeValue fakePeriod = DateRangeValue.RangeUpTo(DateTime.Now);
 
@@ -341,7 +340,7 @@ namespace GymProject.Domain.Test.UnitTest
             }
             else
             {
-                IdTypeValue schedId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 1000000));
+                uint? schedId = (uint?)(RandomFieldGenerator.RandomInt(1, 1000000));
 
                 Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingScheduleRoot.ScheduleTrainingPlan(schedId, null, validPeriod, validFeedbacks));
                 Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingScheduleRoot.ScheduleTrainingPlan(schedId, planId, fakePeriod, validFeedbacks));

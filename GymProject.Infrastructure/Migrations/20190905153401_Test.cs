@@ -75,7 +75,7 @@ namespace GymProject.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "IdTypeValue",
+                name: "uint?",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
@@ -84,9 +84,9 @@ namespace GymProject.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IdTypeValue", x => x.Id);
+                    table.PrimaryKey("PK_uint?", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_IdTypeValue_TrainingPlan_TrainingPlanRootId",
+                        name: "FK_uint?_TrainingPlan_TrainingPlanRootId",
                         column: x => x.TrainingPlanRootId,
                         principalSchema: "GymApp",
                         principalTable: "TrainingPlan",
@@ -150,8 +150,8 @@ namespace GymProject.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_IdTypeValue_TrainingPlanRootId",
-                table: "IdTypeValue",
+                name: "IX_uint?_TrainingPlanRootId",
+                table: "uint?",
                 column: "TrainingPlanRootId");
 
             migrationBuilder.CreateIndex(
@@ -176,7 +176,7 @@ namespace GymProject.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "IdTypeValue");
+                name: "uint?");
 
             migrationBuilder.DropTable(
                 name: "TrainingHashtag",

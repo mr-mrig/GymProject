@@ -9,7 +9,7 @@ using GymProject.Domain.Utils.Extensions;
 
 namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
 {
-    public class PostEntity : ChangeTrackingEntity<IdTypeValue>, IAggregateRoot, ICloneable
+    public class PostEntity : ChangeTrackingEntity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -198,7 +198,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="newCommentText">The comment text</param>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
-        public void ModifyComment(IdTypeValue commentId, string newCommentText)
+        public void ModifyComment(uint? commentId, string newCommentText)
         {
             // Check for comment not found
             CommentEntity srcComment = FindCommentById(commentId);
@@ -228,7 +228,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <param name="id">The ID of the comment to be moderated</param>
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
-        public void RemoveComment(IdTypeValue id)
+        public void RemoveComment(uint? id)
         {
             // Check for Comment not found
             CommentEntity toBeRemoved = FindCommentById(id);
@@ -246,7 +246,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The Like object/returns>
-        public LikeEntity FindLikeById(IdTypeValue id)
+        public LikeEntity FindLikeById(uint? id)
         {
             if (id == null)
                 throw new ArgumentNullException($"Cannot find a Like with NULL id");
@@ -275,7 +275,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
             LikeEntity result = _likes.Where(x => x.LikeAuthor == author).FirstOrDefault();
 
             if (result == default)
-                throw new ArgumentException($"The Like with AuthorId {author.Id.ToString()} could not be found");
+                throw new ArgumentException($"The Like with AuthorId {author.ToString()} could not be found");
 
             return result;
         }
@@ -288,7 +288,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// <exception cref="ArgumentNullException">If ID is NULL</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The Comment object/returns>
-        public CommentEntity FindCommentById(IdTypeValue id)
+        public CommentEntity FindCommentById(uint? id)
         {
             if (id == null)
                 throw new ArgumentNullException($"Cannot find a Comment with NULL id");
@@ -338,7 +338,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Unlike the Post
         /// </summary>
         /// <param name="likeId">The Id of the like to be removed</param>
-        public void Unlike(IdTypeValue likeId)
+        public void Unlike(uint? likeId)
         {
             LikeEntity srcLike = FindLikeById(likeId);
 
@@ -360,10 +360,10 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Build the next valid id
         /// </summary>
         /// <returns>The WS Id</returns>
-        private IdTypeValue BuildLikeId()
+        private uint? BuildLikeId()
         {
             if (_likes.Count == 0)
-                return IdTypeValue.Create(1);
+                return 1;
 
             else
                 return _likes.Last().Id + 1;
@@ -374,10 +374,10 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         /// Build the next valid id
         /// </summary>
         /// <returns>The WS Id</returns>
-        private IdTypeValue BuildCommentId()
+        private uint? BuildCommentId()
         {
             if (_comments.Count == 0)
-                return IdTypeValue.Create(1);
+                return 1;
 
             else
                 return _comments.Last().Id + 1;
@@ -394,7 +394,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         private void EditComment(CommentEntity srcComment, string commentText)
         {
             if (srcComment == default)
-                throw new SocialNetworkGenericException($"The selected Comment - Id={srcComment.Id.ToString()} - could not be found in this Post - Id={Id.ToString()}");
+                throw new SocialNetworkGenericException($"The selected Comment - Id={srcComment.ToString()} - could not be found in this Post - Id={Id.ToString()}");
 
             else
                 srcComment.ModifyComment(commentText);
@@ -412,7 +412,7 @@ namespace GymProject.Domain.SocialNetworkDomain.PostAggregate
         private void DeleteComment(CommentEntity toBeRemoved)
         {
             if(!_comments.Remove(toBeRemoved))
-                throw new SocialNetworkGenericException($"The selected Comment - Id={toBeRemoved.Id.ToString()} - could not be found in this Post - Id={Id.ToString()}");
+                throw new SocialNetworkGenericException($"The selected Comment - Id={toBeRemoved.ToString()} - could not be found in this Post - Id={Id.ToString()}");
         }
 
         #endregion

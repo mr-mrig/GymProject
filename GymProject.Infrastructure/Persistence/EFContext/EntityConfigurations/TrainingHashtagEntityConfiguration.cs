@@ -15,7 +15,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             builder.HasKey(hashtag => hashtag.Id);
 
             builder.Property(hashtag => hashtag.Id)
-                .HasConversion(new IdTypeValueConverter())
                 .ValueGeneratedOnAdd();
 
             builder.Ignore(hashtag => hashtag.DomainEvents);

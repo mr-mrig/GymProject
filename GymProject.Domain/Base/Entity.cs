@@ -66,7 +66,7 @@ namespace GymProject.Domain.Base
         #region Methods
         public bool IsTransient()
         {
-            //return this.Id == default(TId);
+            //return this == default(TId);
             return Equals(Id, default(TId));
         }
 

@@ -11,8 +11,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingPlanRoot : /*Entity<uint>, IAggregateRoot, ICloneable*/
-     IAggregateRoot, ICloneable
+    public class TrainingPlanRoot : Entity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -65,7 +64,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// FK to the Training Plan note - Optional
         /// </summary>
-        public uint PersonalNoteId { get; private set; }
+        public uint? PersonalNoteId { get; private set; } = null;
 
 
         private  IList<TrainingWeekEntity> _trainingWeeks = new List<TrainingWeekEntity>();
@@ -84,7 +83,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// FK to the owner of the Training Plan - The author or the receiver if Inherited Training Plan
         /// </summary>
-        public uint OwnerId { get; private set; }
+        public uint? OwnerId { get; private set; } = null;
 
 
         private ICollection<uint> _trainingScheduleIds = new List<uint>();
@@ -93,10 +92,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// FK to the Training Schedules
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<uint> TrainingScheduleIds
+        public IReadOnlyCollection<uint?> TrainingScheduleIds
         {
-            get => _trainingScheduleIds?.ToList().AsReadOnly() 
-                ?? new List<uint>().AsReadOnly();
+            get => _trainingScheduleIds?.ToList().AsReadOnly() ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -130,10 +128,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// FK to the Training Plan target Phases
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<uint> TrainingPhaseIds
+        public IReadOnlyCollection<uint?> TrainingPhaseIds
         {
             get => _trainingPlanPhases?.Select(x => x.TrainingPhaseId).ToList().AsReadOnly()
-                ?? new List<uint>().AsReadOnly();
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -143,10 +141,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// FK to the Training target Proficiencies
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<uint> TrainingProficiencyIds
+        public IReadOnlyCollection<uint?> TrainingProficiencyIds
         {
             get => _trainingPlanProficiencies?.Select(x => x.TrainingProficiencyId).ToList().AsReadOnly()
-                ?? new List<uint>().AsReadOnly();
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -156,10 +154,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// FK to the Training Muscle focus
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<uint> MuscleFocusIds
+        public IReadOnlyCollection<uint?> MuscleFocusIds
         {
             get => _trainingPlanMuscleFocusIds?.Select(x => x.MuscleId).ToList().AsReadOnly()
-                ?? new List<uint>().AsReadOnly();
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -169,10 +167,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// FK to the Training Hashtags
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<uint> HashtagIds
+        public IReadOnlyCollection<uint?> HashtagIds
         {
             get => _trainingPlanHashtags?.Select(x => x.HashtagId).ToList().AsReadOnly()
-                ?? new List<uint>().AsReadOnly();
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -186,20 +184,19 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         private TrainingPlanRoot(
-            uint id,
+            uint? id,
             string name,
             bool isBookmarked,
-            uint ownerId,
-            uint personalNoteId = default,
+            uint? ownerId,
+            uint? personalNoteId = null,
             IEnumerable<TrainingWeekEntity> trainingWeeks = null,
-            IEnumerable<uint> trainingScheduleIds = null,
-            IEnumerable<uint> trainingPhaseIds = null,
-            IEnumerable<uint> trainingPlanProficiencyIds = null,
-            IEnumerable<uint> trainingMuscleFocusIds = null,
-            IEnumerable<uint> hashtags = null,
-            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null) //: base(id)
+            IEnumerable<uint?> trainingScheduleIds = null,
+            IEnumerable<uint?> trainingPhaseIds = null,
+            IEnumerable<uint?> trainingPlanProficiencyIds = null,
+            IEnumerable<uint?> trainingMuscleFocusIds = null,
+            IEnumerable<uint?> hashtags = null,
+            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null) : base(id)
         {
-            Id = id;
             Name = name ?? string.Empty;
             IsBookmarked = isBookmarked;
             OwnerId = ownerId;
@@ -207,7 +204,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             _trainingWeeks = trainingWeeks?.Clone().ToList() ?? new List<TrainingWeekEntity>();
 
-            _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<uint>();
+            _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<uint?>();
             _relationsWithChildPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
             //_relationsWithParentPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();        // Not Supported yet
 
@@ -217,10 +214,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
 
             // Build  many-to-many relations
-            foreach (uint hashtag in hashtags ?? new List<uint>())
+            foreach (uint? hashtag in hashtags ?? new List<uint?>())
                 _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtag));
 
-            foreach (uint muscle in trainingMuscleFocusIds ?? new List<uint>())
+            foreach (uint? muscle in trainingMuscleFocusIds ?? new List<uint?>())
                 _trainingPlanMuscleFocusIds.Add(TrainingPlanMuscleFocusRelation.BuildLink(this, muscle));
 
             foreach (uint proficiency in trainingPlanProficiencyIds ?? new List<uint>())
@@ -278,7 +275,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             foreach (uint proficiency in trainingPlanProficiencyIds ?? new List<uint>())
                 _trainingPlanProficiencies.Add(TrainingPlanProficiencyRelation.BuildLink(this, proficiency));
 
-            foreach (uint phase in trainingPhaseIds ?? new List<uint>())
+            foreach (uint? phase in trainingPhaseIds ?? new List<uint?>())
                 _trainingPlanPhases.Add(TrainingPlanPhaseRelation.BuildLink(this, phase));
 
             TestBusinessRules();
@@ -322,14 +319,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public static TrainingPlanRoot CreateTrainingPlan(
             string name,
             bool isBookmarked,
-            uint ownerId,
-            uint personalNoteId = default,
+            uint? ownerId,
+            uint? personalNoteId = null,
             IEnumerable<TrainingWeekEntity> trainingWeeks = null,
-            IEnumerable<uint> trainingScheduleIds = null,
-            IEnumerable<uint> trainingPhaseIds = null,
-            IEnumerable<uint> trainingPlanProficiencyIds = null,
-            IEnumerable<uint> trainingMuscleFocusIds = null,
-            IEnumerable<uint> hashtagIds = null,
+            IEnumerable<uint?> trainingScheduleIds = null,
+            IEnumerable<uint?> trainingPhaseIds = null,
+            IEnumerable<uint?> trainingPlanProficiencyIds = null,
+            IEnumerable<uint?> trainingMuscleFocusIds = null,
+            IEnumerable<uint?> hashtagIds = null,
             IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null)
 
             => new TrainingPlanRoot(name, isBookmarked, ownerId, personalNoteId, trainingWeeks,
@@ -353,17 +350,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingScheduleIds">The list of the IDs of the Training Schedules which the Training Plan has been scheduled to</param>
         /// <returns>The TrainingPlanRoot instance</returns>
         public static TrainingPlanRoot CreateTrainingPlan(
-            uint id,
+            uint? id,
             string name,
             bool isBookmarked,
-            uint ownerId,
-            uint personalNoteId = default,
+            uint? ownerId,
+            uint? personalNoteId = null,
             IEnumerable<TrainingWeekEntity> trainingWeeks = null,
-            IEnumerable<uint> trainingScheduleIds = null,
-            IEnumerable<uint> trainingPhaseIds = null,
-            IEnumerable<uint> trainingPlanProficiencyIds = null,
-            IEnumerable<uint> trainingMuscleFocusIds = null,
-            IEnumerable<uint> hashtagIds = null,
+            IEnumerable<uint?> trainingScheduleIds = null,
+            IEnumerable<uint?> trainingPhaseIds = null,
+            IEnumerable<uint?> trainingPlanProficiencyIds = null,
+            IEnumerable<uint?> trainingMuscleFocusIds = null,
+            IEnumerable<uint?> hashtagIds = null,
             IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null)
 
             => new TrainingPlanRoot(id, name, isBookmarked, ownerId, personalNoteId, trainingWeeks,
@@ -379,10 +376,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         ///// <param name="trainingScheduleId">The ID of the Training Schedule for this Plan - Optional</param>
         ///// <returns></returns>
         //public static TrainingPlanRoot SendInheritedTrainingPlan(
-        //    uint id,
+        //    uint? id,
         //    TrainingPlanRoot rootPlan,
-        //    uint destinationUserId,
-        //    uint trainingScheduleId = null)
+        //    uint? destinationUserId,
+        //    uint? trainingScheduleId = null)
 
         //    => CreateTrainingPlan(
         //        id: id,
@@ -393,7 +390,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         //        trainingPlanType: TrainingPlanTypeEnum.Inherited,
         //        personalNoteId: null,
         //        trainingWeeks: rootPlan.TrainingWeeks.ToList(),
-        //        trainingScheduleIds: new List<uint>() { trainingScheduleId });
+        //        trainingScheduleIds: new List<uint?>() { trainingScheduleId });
 
 
         ///// <summary>
@@ -403,7 +400,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         ///// <param name="rootPlan">The Training Plan to create a Varaint of</param>
         ///// <returns></returns>
         //public static TrainingPlanRoot CreateVariantTrainingPlan(
-        //    uint id,
+        //    uint? id,
         //    TrainingPlanRoot rootPlan)
 
         //    => CreateTrainingPlan(
@@ -483,7 +480,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Assign the Training Plan Note ID
         /// </summary>
         /// <param name="trainingPlanNoteId">The note ID</param>
-        public void WriteNote(uint trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
+        public void WriteNote(uint? trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
 
 
         /// <summary>
@@ -498,9 +495,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="childPlanId">The Training Plan ID to be added to the child ones</param>
         /// <param name="childPlanType">The type of the training plan in relation to the parent one</param>
         /// <param name="messageId">The ID of the message to be attached - optional, valid for Inherited Plans only</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void AttachChildPlan(uint childPlanId, TrainingPlanTypeEnum childPlanType, uint messageId = default)
+        public void AttachChildPlan(uint? childPlanId, TrainingPlanTypeEnum childPlanType, uint? messageId = null)
         {
+            if (childPlanId == null)
+                throw new ArgumentNullException($"Child Plan ID must be non-NULL when attaching it to the Training Plan", nameof(childPlanId));
+
+
             if (FindRelationByChildIdOrDefault(childPlanId) != default)
                 return;
 
@@ -516,10 +518,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// If no child left, then mark the plan as 'Not Template'
         /// </summary>
         /// <param name="childPlanId">The Training Plan ID to be removed from the child ones</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="ArgumentException">If the ID not found</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void DetachChildPlan(uint childPlanId)
+        public void DetachChildPlan(uint? childPlanId)
         {
+            if (childPlanId == null)
+                throw new ArgumentNullException($"Child Plan ID must be non-NULL when detaching it from the Training Plan", nameof(childPlanId));
+
             TrainingPlanRelation relationEntry = FindRelationByChildIdOrDefault(childPlanId);
 
             if (relationEntry == default)
@@ -537,9 +543,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Schedule the Training Plan by assigning a Schedule ID
         /// </summary>
         /// <param name="scheduleId">The Schedule ID to be added</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ScheduleTraining(uint scheduleId)
+        public void ScheduleTraining(uint? scheduleId)
         {
+            if (scheduleId == null)
+                throw new ArgumentNullException($"Schedule ID must be non-NULL when tagging the Training Plan", nameof(scheduleId));
+
             if (_trainingScheduleIds.Contains(scheduleId))
                 return;
 
@@ -593,9 +603,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Add the Hastag to the Training Plan
         /// </summary>
         /// <param name="hashtagId">The Hashtag ID to be added</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void TagAs(uint hashtagId)
+        public void TagAs(uint? hashtagId)
         {
+            if (hashtagId == null)
+                throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
+
             if (IsTaggedAs(hashtagId))
                 return;
 
@@ -608,9 +622,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Remove the Hastag from the Training Plan
         /// </summary>
         /// <param name="hashtagId">The Hashtag ID to be removed</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void Untag(uint hashtagId)
+        public void Untag(uint? hashtagId)
         {
+            if (hashtagId == null)
+                throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
+
             if (_trainingPlanHashtags.Remove(TrainingPlanHashtagRelation.BuildLink(this, hashtagId)))
                 TestBusinessRules();
         }
@@ -620,9 +638,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Link the Phase to the Training Plan
         /// </summary>
         /// <param name="phaseId">The Phase ID to be added</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void TagPhase(uint phaseId)
+        public void TagPhase(uint? phaseId)
         {
+            if (phaseId == null)
+                throw new ArgumentNullException(nameof(phaseId), $"Non-NULL Phase ID is required when tagging to it");
+
             if (HasTargetPhase(phaseId))
                 return;
 
@@ -635,9 +657,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Unlink the Phase from the Training Plan
         /// </summary>
         /// <param name="phaseId">The Hashtag ID to be removed</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UntagPhase(uint phaseId)
+        public void UntagPhase(uint? phaseId)
         {
+            if (phaseId == null)
+                throw new ArgumentNullException(nameof(phaseId), $"Non-NULL Phase ID is required when untagging it");
+
             if (_trainingPlanPhases.Remove(TrainingPlanPhaseRelation.BuildLink(this, phaseId)))
                 TestBusinessRules();
         }
@@ -647,9 +673,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Link the Proficiency to the Training Plan
         /// </summary>
         /// <param name="proficiencyId">The Proficiency ID to be added</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void LinkTargetProficiency(uint proficiencyId)
+        public void LinkTargetProficiency(uint? proficiencyId)
         {
+            if (proficiencyId == null)
+                throw new ArgumentNullException(nameof(proficiencyId), $"Non-NULL Proficiency ID is required when tagging to it");
+
             if (HasTargetProficiency(proficiencyId))
                 return;
 
@@ -662,9 +692,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Unlink the Proficiency from the Training Plan
         /// </summary>
         /// <param name="proficiencyId">The Proficiency ID to be removed</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnlinkTargetProficiency(uint proficiencyId)
+        public void UnlinkTargetProficiency(uint? proficiencyId)
         {
+            if (proficiencyId == null)
+                throw new ArgumentNullException(nameof(proficiencyId), $"Non-NULL Proficiency ID is required when untagging it");
+
             if (_trainingPlanProficiencies.Remove(TrainingPlanProficiencyRelation.BuildLink(this, proficiencyId)))
                 TestBusinessRules();
         }
@@ -674,9 +708,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Give focus to the Muscle
         /// </summary>
         /// <param name="muscleId">The Muscle ID to be added</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void FocusOnMuscle(uint muscleId)
+        public void FocusOnMuscle(uint? muscleId)
         {
+            if (muscleId == null)
+                throw new ArgumentNullException(nameof(muscleId), $"Non-NULL Muscle ID is required when giving focus to it");
+
             if (DoesFocusOn(muscleId))
                 return;
 
@@ -689,9 +727,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Remove the focus to the Muscle
         /// </summary>
         /// <param name="muscleId">The Muscle ID to be removed</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnfocusMuscle(uint muscleId)
+        public void UnfocusMuscle(uint? muscleId)
         {
+            if (muscleId == null)
+                throw new ArgumentNullException(nameof(muscleId), $"Non-NULL Muscle ID is required when removing focus to it");
+
             if (_trainingPlanMuscleFocusIds.Remove(TrainingPlanMuscleFocusRelation.BuildLink(this, muscleId)))
                 TestBusinessRules();
         }
@@ -703,7 +745,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="hashtagId">The Id of the Hashtag to seek for</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Hashtag/returns>
-        public bool IsTaggedAs(uint hashtagId)
+        public bool IsTaggedAs(uint? hashtagId)
 
             => _trainingPlanHashtags.SingleOrDefault(x => x.HashtagId == hashtagId) != default;
 
@@ -714,7 +756,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="muscleId">The Id of the Muscle to seek for</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Muscle Focus/returns>
-        public bool DoesFocusOn(uint muscleId)
+        public bool DoesFocusOn(uint? muscleId)
 
             => _trainingPlanMuscleFocusIds.SingleOrDefault(x => x.MuscleId == muscleId) != default;
 
@@ -725,7 +767,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="proficiencyId">The Id of the Proficiency to seek for</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Training Proficiency/returns>
-        public bool HasTargetProficiency(uint proficiencyId)
+        public bool HasTargetProficiency(uint? proficiencyId)
 
             => _trainingPlanProficiencies.SingleOrDefault(x => x.TrainingProficiencyId == proficiencyId) != default;
 
@@ -736,7 +778,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="phaseId">The Id of the Phase to seek for</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Training Phase/returns>
-        public bool HasTargetPhase(uint phaseId)
+        public bool HasTargetPhase(uint? phaseId)
 
             => _trainingPlanPhases.SingleOrDefault(x => x.TrainingPhaseId == phaseId) != default;
 
@@ -833,7 +875,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             //_trainingWeeks.Add(
             //    TrainingWeekTemplate.PlanFullRestWeek(
-            //        restWeek.Id,
+            //        restWeek,
             //        BuildTrainingWeekProgressiveNumber()));
 
             _trainingWeeks.Add(restWeek.Clone() as TrainingWeekEntity);
@@ -1047,10 +1089,18 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="childPlanId">The Id to be found</param>
         /// <returns>The TrainingPlanRelation object/returns>
-        private TrainingPlanRelation FindRelationByChildIdOrDefault(uint childPlanId)
-        
-            => _relationsWithChildPlans?.SingleOrDefault(x => x.ChildPlanId == childPlanId);
+        private TrainingPlanRelation FindRelationByChildIdOrDefault(uint? childPlanId)
+        {
+            if (childPlanId == null)
+                throw new ArgumentNullException(nameof(childPlanId), $"Cannot find a Child Plan with NULL id");
 
+            TrainingPlanRelation child = _relationsWithChildPlans.SingleOrDefault(x => x.ChildPlanId == childPlanId);
+
+            //if (child == default)
+            //    throw new ArgumentException($"Child Plan with Id {childPlanId.ToString()} could not be found", nameof(childPlanId));
+
+            return child;
+        }
 
 
         /// <summary>
@@ -1060,9 +1110,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentNullException">If null ID</exception>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>The TrainingWeekEntity object/returns>
-        private TrainingWeekEntity FindTrainingWeekById(uint id)
+        private TrainingWeekEntity FindTrainingWeekById(uint? id)
         {
-            TrainingWeekEntity week = _trainingWeeks?.SingleOrDefault(x => x.Id == id);
+            if (id == null)
+                throw new ArgumentNullException(nameof(id), $"Cannot find a Training Week with NULL id");
+
+            TrainingWeekEntity week = _trainingWeeks.SingleOrDefault(x => x.Id == id);
 
             if (week == default)
                 throw new ArgumentException($"Training Week with Id {id.ToString()} could not be found", nameof(id));

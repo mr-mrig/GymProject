@@ -6,12 +6,8 @@ using System;
 namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 {
 
-    public class TrainingScheduleFeedbackEntity //: Entity<uint>, ICloneable
-        : ICloneable
+    public class TrainingScheduleFeedbackEntity : Entity<uint?>, ICloneable
     {
-
-
-        public uint Id { get; private set; }
 
 
         /// <summary>
@@ -29,7 +25,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <summary>
         /// FK to the author of the Feedback
         /// </summary>
-        public uint UserId { get; private set; }
+        public uint? UserId { get; private set; } = null;
 
 
 
@@ -37,12 +33,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
-        private TrainingScheduleFeedbackEntity()
-        {
-
-        }
-
-        private TrainingScheduleFeedbackEntity(uint id, uint authorId, RatingValue rating, PersonalNoteValue comment)
+        private TrainingScheduleFeedbackEntity(uint? id, uint? authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
         {
             Comment = comment ?? PersonalNoteValue.Write("");
             Rating = rating;
@@ -63,9 +54,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedbackEntity ProvideTransientFeedback(uint authorId, RatingValue rating, PersonalNoteValue comment)
+        public static TrainingScheduleFeedbackEntity ProvideTransientFeedback(uint? authorId, RatingValue rating, PersonalNoteValue comment)
 
-            => ProvideFeedback(default, authorId, rating, comment);
+            => ProvideFeedback(null, authorId, rating, comment);
 
         /// <summary>
         /// Factory method - Loads the object with the specified ID
@@ -75,7 +66,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="rating">The rating provided</param>
         /// <param name="comment">The attached comment body</param>
         /// <returns>The TrainingScheduleFeedback instance</returns>
-        public static TrainingScheduleFeedbackEntity ProvideFeedback(uint id, uint authorId, RatingValue rating, PersonalNoteValue comment)
+        public static TrainingScheduleFeedbackEntity ProvideFeedback(uint? id, uint? authorId, RatingValue rating, PersonalNoteValue comment)
 
             => new TrainingScheduleFeedbackEntity(id, authorId, rating, comment);
 

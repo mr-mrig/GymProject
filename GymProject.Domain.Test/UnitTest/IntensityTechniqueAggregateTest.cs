@@ -32,7 +32,7 @@ namespace GymProject.Domain.Test.UnitTest
                 string name = RandomFieldGenerator.RandomTextValue(1, 20);
                 string abbreviation = RandomFieldGenerator.RandomTextValue(2, 5);
                 bool isLinkingTechnique = RandomFieldGenerator.RollEventWithProbability(0.5f);
-                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 999999));
+                uint? ownerId = (uint?)(RandomFieldGenerator.RandomInt(1, 999999));
                 PersonalNoteValue description = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
                 float constructorProbability = RandomFieldGenerator.RandomFloat(0, 1);
@@ -61,7 +61,7 @@ namespace GymProject.Domain.Test.UnitTest
                         break;
                 }
 
-                IdTypeValue id = IdTypeValue.Create(1);
+                uint? id = 1;
 
                 IntensityTechniqueRoot tech = IntensityTechniqueRoot.CreateNativeIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
                 Assert.Throws<InvalidOperationException>(() => tech.ModerateEntryStatus(EntryStatusTypeEnum.NotSet));
@@ -81,9 +81,9 @@ namespace GymProject.Domain.Test.UnitTest
                 string name = RandomFieldGenerator.RandomTextValue(1, 20);
                 string abbreviation = RandomFieldGenerator.RandomTextValue(2, 5);
                 bool isLinkingTechnique = RandomFieldGenerator.RollEventWithProbability(0.5f);
-                IdTypeValue ownerId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 999999));
+                uint? ownerId = (uint?)(RandomFieldGenerator.RandomInt(1, 999999));
                 PersonalNoteValue description = PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
-                IdTypeValue id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 999999));
+                uint? id = (uint?)(RandomFieldGenerator.RandomInt(1, 999999));
 
                 // Pad with spaces
                 if(RandomFieldGenerator.RollEventWithProbability(0.05f))

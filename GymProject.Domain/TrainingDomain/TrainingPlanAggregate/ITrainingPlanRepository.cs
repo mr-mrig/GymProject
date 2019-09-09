@@ -14,7 +14,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="id">The ID to be fetched</param>
         /// <returns>The Aggregate</returns>
-        TrainingPlanRoot WithId(IdTypeValue id);
+        TrainingPlanRoot WithId(uint? id);
 
     }
 }

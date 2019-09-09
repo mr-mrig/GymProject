@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate
 
         #region Ctors
 
-        private TrainingPlanNoteRoot(IdTypeValue id, PersonalNoteValue note) : base(id, note)
+        private TrainingPlanNoteRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 
         }
@@ -24,7 +24,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate
 
             => Write(null, note);
 
-        public static TrainingPlanNoteRoot Write(IdTypeValue id, PersonalNoteValue note)
+        public static TrainingPlanNoteRoot Write(uint? id, PersonalNoteValue note)
 
             => new TrainingPlanNoteRoot(id, note);
 

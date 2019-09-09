@@ -103,7 +103,7 @@ namespace GymProject.Domain.SharedKernel
         /// <returns>The PictureType object instance</returns>
         public static WeekdayEnum From(int id)
         {
-            return List().SingleOrDefault(s => s.Id == id);
+            return List().SingleOrDefault(s => s.Id== id);
         }
         #endregion
 

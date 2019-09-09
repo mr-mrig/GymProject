@@ -27,7 +27,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             for (int itest = 0; itest < ntests; itest++)
             {
-                IdTypeValue id = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 99999));
+                uint? id = (uint?)(RandomFieldGenerator.RandomInt(1, 99999));
 
                 bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.2f);
                 bool setStatus = RandomFieldGenerator.RollEventWithProbability(0.5f);

@@ -11,7 +11,7 @@
 
 //namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 //{
-//    public class TrainingPlanRoot : Entity<IdTypeValue>, IAggregateRoot , ICloneable
+//    public class TrainingPlanRoot : Entity<uint?>, IAggregateRoot , ICloneable
 //    {
 
 
@@ -43,7 +43,7 @@
 //        /// <summary>
 //        /// FK to the Training Plan Message, when sent to another user -> Only Inherited Plans can have it
 //        /// </summary>
-//        public IdTypeValue MessageId { get; private set; } = null;
+//        public uint? MessageId { get; private set; } = null;
 
 
 //        /// <summary>
@@ -67,7 +67,7 @@
 //        /// <summary>
 //        /// FK to the Training Plan note - Optional
 //        /// </summary>
-//        public IdTypeValue PersonalNoteId { get; private set; } = null;
+//        public uint? PersonalNoteId { get; private set; } = null;
 
 
 //        private IList<TrainingWeekEntity> _trainingWeeks = new List<TrainingWeekEntity>();
@@ -85,18 +85,18 @@
 //        /// <summary>
 //        /// FK to the owner of the Training Plan - The author or the receiver if Inherited Training Plan
 //        /// </summary>
-//        public IdTypeValue OwnerId { get; private set; } = null;
+//        public uint? OwnerId { get; private set; } = null;
 
 
-//        private ICollection<IdTypeValue> _trainingScheduleIds = null;
+//        private ICollection<uint?> _trainingScheduleIds = null;
 
 //        /// <summary>
 //        /// FK to the Training Schedules
 //        /// Provides a value copy: the instance fields must be modified through the instance methods
 //        /// </summary>
-//        public IReadOnlyCollection<IdTypeValue> TrainingScheduleIds
+//        public IReadOnlyCollection<uint?> TrainingScheduleIds
 //        {
-//            get => _trainingScheduleIds?.ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
+//            get => _trainingScheduleIds?.ToList().AsReadOnly() ?? new List<uint?>().AsReadOnly();
 //        }
 
 
@@ -107,10 +107,10 @@
 //        /// FK to the Training Plan target Phases
 //        /// Provides a value copy: the instance fields must be modified through the instance methods
 //        /// </summary>
-//        public IReadOnlyCollection<IdTypeValue> TrainingPhaseIds
+//        public IReadOnlyCollection<uint?> TrainingPhaseIds
 //        {
 //            get => _trainingPlanPhases?.Select(x => x.TrainingPhaseId).ToList().AsReadOnly()
-//                ?? new List<IdTypeValue>().AsReadOnly();
+//                ?? new List<uint?>().AsReadOnly();
 //        }
 
 
@@ -120,10 +120,10 @@
 //        /// FK to the Training target Proficiencies
 //        /// Provides a value copy: the instance fields must be modified through the instance methods
 //        /// </summary>
-//        public IReadOnlyCollection<IdTypeValue> TrainingProficiencyIds
+//        public IReadOnlyCollection<uint?> TrainingProficiencyIds
 //        {
 //            get => _trainingPlanProficiencies?.Select(x => x.TrainingProficiencyId).ToList().AsReadOnly()
-//                ?? new List<IdTypeValue>().AsReadOnly();
+//                ?? new List<uint?>().AsReadOnly();
 //        }
 
 
@@ -133,10 +133,10 @@
 //        /// FK to the Training Muscle focus
 //        /// Provides a value copy: the instance fields must be modified through the instance methods
 //        /// </summary>
-//        public IReadOnlyCollection<IdTypeValue> MuscleFocusIds
+//        public IReadOnlyCollection<uint?> MuscleFocusIds
 //        {
 //            get => _trainingPlanMuscleFocusIds?.Select(x => x.MuscleId).ToList().AsReadOnly()
-//                ?? new List<IdTypeValue>().AsReadOnly();
+//                ?? new List<uint?>().AsReadOnly();
 //        }
 
 
@@ -146,10 +146,10 @@
 //        /// FK to the Training Hashtags
 //        /// Provides a value copy: the instance fields must be modified through the instance methods
 //        /// </summary>
-//        public IReadOnlyCollection<IdTypeValue> HashtagIds
+//        public IReadOnlyCollection<uint?> HashtagIds
 //        {
 //            get => _trainingPlanHashtags?.Select(x => x.HashtagId).ToList().AsReadOnly() 
-//                ?? new List<IdTypeValue>().AsReadOnly();
+//                ?? new List<uint?>().AsReadOnly();
 //        }
 
 
@@ -163,17 +163,17 @@
 
 
 //        private TrainingPlanRoot(
-//            IdTypeValue id,
+//            uint? id,
 //            string name,
 //            bool isBookmarked,
-//            IdTypeValue ownerId,
-//            IdTypeValue personalNoteId = null,
+//            uint? ownerId,
+//            uint? personalNoteId = null,
 //            IEnumerable<TrainingWeekEntity> trainingWeeks = null,
-//            IEnumerable<IdTypeValue> trainingScheduleIds = null,
-//            IEnumerable<IdTypeValue> trainingPhaseIds = null,
-//            IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
-//            IEnumerable<IdTypeValue> trainingMuscleFocusIds = null,
-//            IEnumerable<IdTypeValue> hashtags = null,
+//            IEnumerable<uint?> trainingScheduleIds = null,
+//            IEnumerable<uint?> trainingPhaseIds = null,
+//            IEnumerable<uint?> trainingPlanProficiencyIds = null,
+//            IEnumerable<uint?> trainingMuscleFocusIds = null,
+//            IEnumerable<uint?> hashtags = null,
 //            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null,
 //            IEnumerable<TrainingPlanRelation> relationsWithParentPlans = null)   : base(id)
 //        {
@@ -184,7 +184,7 @@
 
 //            _trainingWeeks = trainingWeeks?.Clone().ToList() ?? new List<TrainingWeekEntity>();
 
-//            _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<IdTypeValue>();
+//            _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<uint?>();
 //            _relationsWithChildPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
 //            _relationsWithParentPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
 
@@ -194,16 +194,16 @@
 //            _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
 
 //            // Build  many-to-many relations
-//            foreach (IdTypeValue hashtag in hashtags ?? new List<IdTypeValue>() )
+//            foreach (uint? hashtag in hashtags ?? new List<uint?>() )
 //                _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtag));
 
-//            foreach (IdTypeValue muscle in trainingMuscleFocusIds ?? new List<IdTypeValue>())
+//            foreach (uint? muscle in trainingMuscleFocusIds ?? new List<uint?>())
 //                _trainingPlanMuscleFocusIds.Add(TrainingPlanMuscleFocusRelation.BuildLink(this, muscle));
 
-//            foreach (IdTypeValue proficiency in trainingPlanProficiencyIds ?? new List<IdTypeValue>())
+//            foreach (uint? proficiency in trainingPlanProficiencyIds ?? new List<uint?>())
 //                _trainingPlanProficiencies.Add(TrainingPlanProficiencyRelation.BuildLink(this, proficiency));
 
-//            foreach (IdTypeValue phase in trainingPhaseIds ?? new List<IdTypeValue>())
+//            foreach (uint? phase in trainingPhaseIds ?? new List<uint?>())
 //                _trainingPlanPhases.Add(TrainingPlanPhaseRelation.BuildLink(this, phase));
 
 //            TestBusinessRules();
@@ -236,17 +236,17 @@
 //        /// <param name="trainingMuscleFocusIds">The list of the  IDs of the Muscles which the Training Plan focuses on</param>
 //        /// <param name="trainingScheduleIds">The list of the IDs of the Training Schedules which the Training Plan has been scheduled to</param>
 //        public static TrainingPlanRoot CreateTrainingPlan(
-//            IdTypeValue id,
+//            uint? id,
 //            string name,
 //            bool isBookmarked,
-//            IdTypeValue ownerId,
-//            IdTypeValue personalNoteId = null,
+//            uint? ownerId,
+//            uint? personalNoteId = null,
 //            IEnumerable<TrainingWeekEntity> trainingWeeks = null,
-//            IEnumerable<IdTypeValue> trainingScheduleIds = null,
-//            IEnumerable<IdTypeValue> trainingPhaseIds = null,
-//            IEnumerable<IdTypeValue> trainingPlanProficiencyIds = null,
-//            IEnumerable<IdTypeValue> trainingMuscleFocusIds = null,
-//            IEnumerable<IdTypeValue> hashtagIds = null,
+//            IEnumerable<uint?> trainingScheduleIds = null,
+//            IEnumerable<uint?> trainingPhaseIds = null,
+//            IEnumerable<uint?> trainingPlanProficiencyIds = null,
+//            IEnumerable<uint?> trainingMuscleFocusIds = null,
+//            IEnumerable<uint?> hashtagIds = null,
 //            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null,
 //            IEnumerable<TrainingPlanRelation> relationsWithParentPlans = null)
 
@@ -263,10 +263,10 @@
 //        ///// <param name="trainingScheduleId">The ID of the Training Schedule for this Plan - Optional</param>
 //        ///// <returns></returns>
 //        //public static TrainingPlanRoot SendInheritedTrainingPlan(
-//        //    IdTypeValue id,
+//        //    uint? id,
 //        //    TrainingPlanRoot rootPlan,
-//        //    IdTypeValue destinationUserId,
-//        //    IdTypeValue trainingScheduleId = null)
+//        //    uint? destinationUserId,
+//        //    uint? trainingScheduleId = null)
 
 //        //    => CreateTrainingPlan(
 //        //        id: id,
@@ -277,7 +277,7 @@
 //        //        trainingPlanType: TrainingPlanTypeEnum.Inherited,
 //        //        personalNoteId: null,
 //        //        trainingWeeks: rootPlan.TrainingWeeks.ToList(),
-//        //        trainingScheduleIds: new List<IdTypeValue>() { trainingScheduleId });
+//        //        trainingScheduleIds: new List<uint?>() { trainingScheduleId });
 
 
 //        ///// <summary>
@@ -287,7 +287,7 @@
 //        ///// <param name="rootPlan">The Training Plan to create a Varaint of</param>
 //        ///// <returns></returns>
 //        //public static TrainingPlanRoot CreateVariantTrainingPlan(
-//        //    IdTypeValue id,
+//        //    uint? id,
 //        //    TrainingPlanRoot rootPlan)
 
 //        //    => CreateTrainingPlan(
@@ -367,7 +367,7 @@
 //        /// Assign the Training Plan Note ID
 //        /// </summary>
 //        /// <param name="trainingPlanNoteId">The note ID</param>
-//        public void WriteNote(IdTypeValue trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
+//        public void WriteNote(uint? trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
 
 
 //        /// <summary>
@@ -384,7 +384,7 @@
 //        /// <param name="messageId">The ID of the message to be attached - optional, valid for Inherited Plans only</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void AttachChildPlan(IdTypeValue childPlanId, TrainingPlanTypeEnum childPlanType, IdTypeValue messageId = null)
+//        public void AttachChildPlan(uint? childPlanId, TrainingPlanTypeEnum childPlanType, uint? messageId = null)
 //        {
 //            if (childPlanId == null)
 //                throw new ArgumentNullException($"Child Plan ID must be non-NULL when attaching it to the Training Plan", nameof(childPlanId));
@@ -407,7 +407,7 @@
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="ArgumentException">If the ID not found</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void AttachParentPlan(IdTypeValue parentPlanId, TrainingPlanTypeEnum planType, IdTypeValue messageId = null)
+//        public void AttachParentPlan(uint? parentPlanId, TrainingPlanTypeEnum planType, uint? messageId = null)
 //        {
 //            if (parentPlanId == null)
 //                throw new ArgumentNullException($"Parent Plan ID must be non-NULL when attaching it to the Training Plan", nameof(parentPlanId));
@@ -424,7 +424,7 @@
 //        /// <param name="parentPlanId">The Training Plan ID to be added to the parent ones</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void DetachParentPlan(IdTypeValue parentPlanId)
+//        public void DetachParentPlan(uint? parentPlanId)
 //        {
 //            if (parentPlanId == null)
 //                throw new ArgumentNullException($"Parent Plan ID must be non-NULL when detaching it to the Training Plan", nameof(parentPlanId));
@@ -450,7 +450,7 @@
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="ArgumentException">If the ID not found</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void DetachChildPlan(IdTypeValue childPlanId)
+//        public void DetachChildPlan(uint? childPlanId)
 //        {
 //            if (childPlanId == null)
 //                throw new ArgumentNullException($"Child Plan ID must be non-NULL when detaching it from the Training Plan", nameof(childPlanId));
@@ -474,7 +474,7 @@
 //        /// <param name="scheduleId">The Schedule ID to be added</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void ScheduleTraining(IdTypeValue scheduleId)
+//        public void ScheduleTraining(uint? scheduleId)
 //        {
 //            if (scheduleId == null)
 //                throw new ArgumentNullException($"Schedule ID must be non-NULL when tagging the Training Plan", nameof(scheduleId));
@@ -534,7 +534,7 @@
 //        /// <param name="hashtagId">The Hashtag ID to be added</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void TagAs(IdTypeValue hashtagId)
+//        public void TagAs(uint? hashtagId)
 //        {
 //            if (hashtagId == null)
 //                throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
@@ -553,7 +553,7 @@
 //        /// <param name="hashtagId">The Hashtag ID to be removed</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void Untag(IdTypeValue hashtagId)
+//        public void Untag(uint? hashtagId)
 //        {
 //            if (hashtagId == null)
 //                throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
@@ -569,7 +569,7 @@
 //        /// <param name="phaseId">The Phase ID to be added</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void TagPhase(IdTypeValue phaseId)
+//        public void TagPhase(uint? phaseId)
 //        {
 //            if (phaseId == null)
 //                throw new ArgumentNullException(nameof(phaseId), $"Non-NULL Phase ID is required when tagging to it");
@@ -588,7 +588,7 @@
 //        /// <param name="phaseId">The Hashtag ID to be removed</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void UntagPhase(IdTypeValue phaseId)
+//        public void UntagPhase(uint? phaseId)
 //        {
 //            if (phaseId == null)
 //                throw new ArgumentNullException(nameof(phaseId), $"Non-NULL Phase ID is required when untagging it");
@@ -604,7 +604,7 @@
 //        /// <param name="proficiencyId">The Proficiency ID to be added</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void LinkTargetProficiency(IdTypeValue proficiencyId)
+//        public void LinkTargetProficiency(uint? proficiencyId)
 //        {
 //            if (proficiencyId == null)
 //                throw new ArgumentNullException(nameof(proficiencyId), $"Non-NULL Proficiency ID is required when tagging to it");
@@ -623,7 +623,7 @@
 //        /// <param name="proficiencyId">The Proficiency ID to be removed</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void UnlinkTargetProficiency(IdTypeValue proficiencyId)
+//        public void UnlinkTargetProficiency(uint? proficiencyId)
 //        {
 //            if (proficiencyId == null)
 //                throw new ArgumentNullException(nameof(proficiencyId), $"Non-NULL Proficiency ID is required when untagging it");
@@ -639,7 +639,7 @@
 //        /// <param name="muscleId">The Muscle ID to be added</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void FocusOnMuscle(IdTypeValue muscleId)
+//        public void FocusOnMuscle(uint? muscleId)
 //        {
 //            if (muscleId == null)
 //                throw new ArgumentNullException(nameof(muscleId), $"Non-NULL Muscle ID is required when giving focus to it");
@@ -658,7 +658,7 @@
 //        /// <param name="muscleId">The Muscle ID to be removed</param>
 //        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
 //        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-//        public void UnfocusMuscle(IdTypeValue muscleId)
+//        public void UnfocusMuscle(uint? muscleId)
 //        {
 //            if (muscleId == null)
 //                throw new ArgumentNullException(nameof(muscleId), $"Non-NULL Muscle ID is required when removing focus to it");
@@ -674,7 +674,7 @@
 //        /// <param name="hashtagId">The Id of the Hashtag to seek for</param>
 //        /// <exception cref="ArgumentException">If ID could not be found</exception>
 //        /// <returns>True if the the plan is tagged with the Hashtag/returns>
-//        public bool IsTaggedAs(IdTypeValue hashtagId)
+//        public bool IsTaggedAs(uint? hashtagId)
 
 //            => _trainingPlanHashtags.SingleOrDefault(x => x.HashtagId == hashtagId) != default;
 
@@ -685,7 +685,7 @@
 //        /// <param name="muscleId">The Id of the Muscle to seek for</param>
 //        /// <exception cref="ArgumentException">If ID could not be found</exception>
 //        /// <returns>True if the the plan is tagged with the Muscle Focus/returns>
-//        public bool DoesFocusOn(IdTypeValue muscleId)
+//        public bool DoesFocusOn(uint? muscleId)
 
 //            => _trainingPlanMuscleFocusIds.SingleOrDefault(x => x.MuscleId == muscleId) != default;
 
@@ -696,7 +696,7 @@
 //        /// <param name="proficiencyId">The Id of the Proficiency to seek for</param>
 //        /// <exception cref="ArgumentException">If ID could not be found</exception>
 //        /// <returns>True if the the plan is tagged with the Training Proficiency/returns>
-//        public bool HasTargetProficiency(IdTypeValue proficiencyId)
+//        public bool HasTargetProficiency(uint? proficiencyId)
 
 //            => _trainingPlanProficiencies.SingleOrDefault(x => x.TrainingProficiencyId == proficiencyId) != default;
 
@@ -707,7 +707,7 @@
 //        /// <param name="phaseId">The Id of the Phase to seek for</param>
 //        /// <exception cref="ArgumentException">If ID could not be found</exception>
 //        /// <returns>True if the the plan is tagged with the Training Phase/returns>
-//        public bool HasTargetPhase(IdTypeValue phaseId)
+//        public bool HasTargetPhase(uint? phaseId)
 
 //            => _trainingPlanPhases.SingleOrDefault(x => x.TrainingPhaseId == phaseId) != default;
 
@@ -806,7 +806,7 @@
 
 //            //_trainingWeeks.Add(
 //            //    TrainingWeekTemplate.PlanFullRestWeek(
-//            //        restWeek.Id,
+//            //        restWeek,
 //            //        BuildTrainingWeekProgressiveNumber()));
 
 //            _trainingWeeks.Add(restWeek.Clone() as TrainingWeekEntity);
@@ -1021,7 +1021,7 @@
 //        /// <param name="childPlanId">The Id to be found</param>
 //        /// <exception cref="ArgumentNullException">If null ID</exception>
 //        /// <returns>The TrainingPlanRelation object/returns>
-//        private TrainingPlanRelation FindRelationByChildIdOrDefault(IdTypeValue childPlanId)
+//        private TrainingPlanRelation FindRelationByChildIdOrDefault(uint? childPlanId)
 //        {
 //            if (childPlanId == null)
 //                throw new ArgumentNullException(nameof(childPlanId), $"Cannot find a Child Plan with NULL id");
@@ -1042,12 +1042,12 @@
 //        /// <exception cref="ArgumentNullException">If null ID</exception>
 //        /// <exception cref="ArgumentException">If ID could not be found</exception>
 //        /// <returns>The TrainingWeekEntity object/returns>
-//        private TrainingWeekEntity FindTrainingWeekById(IdTypeValue id)
+//        private TrainingWeekEntity FindTrainingWeekById(uint? id)
 //        {
 //            if (id == null)
 //                throw new ArgumentNullException(nameof(id), $"Cannot find a Training Week with NULL id");
 
-//            TrainingWeekEntity week = _trainingWeeks.SingleOrDefault(x => x.Id == id);
+//            TrainingWeekEntity week = _trainingWeeks.SingleOrDefault(x => x == id);
 
 //            if (week == default)
 //                throw new ArgumentException($"Training Week with Id {id.ToString()} could not be found", nameof(id));

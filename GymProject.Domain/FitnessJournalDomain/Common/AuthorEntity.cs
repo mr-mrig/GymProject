@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GymProject.Domain.FitnessJournalDomain.Common
 {
-    public class AuthorEntity : Entity<IdTypeValue>
+    public class AuthorEntity : Entity<uint?>
     {
 
         public UsernameValue Username { get; private set; }

@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkoutTemplateRoot : Entity<IdTypeValue>, IAggregateRoot, ICloneable
+    public class WorkoutTemplateRoot : Entity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -67,7 +67,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         }
 
-        private WorkoutTemplateRoot(IdTypeValue id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
+        private WorkoutTemplateRoot(uint? id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
         {
             Name = workoutName ?? string.Empty;
             SpecificWeekday = weekday ?? WeekdayEnum.Generic;
@@ -106,7 +106,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkUnitTemplate instance</returns>
-        public static WorkoutTemplateRoot PlanWorkout(IdTypeValue id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplateRoot PlanWorkout(uint? id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
 
             => new WorkoutTemplateRoot(id, workUnits, workoutName, weekday);
 
@@ -197,7 +197,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workingSets">The WS which the WU is made up of</param>
         /// <param name="workUnitIntensityTechniquesIds">The IDs of the WS intensity techniques</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void PlanTransientExcercise(IdTypeValue excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<IdTypeValue> workUnitIntensityTechniquesIds = null, IdTypeValue ownerNoteId = null)
+        public void PlanTransientExcercise(uint? excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<uint?> workUnitIntensityTechniquesIds = null, uint? ownerNoteId = null)
         {
             WorkUnitTemplateEntity toAdd = WorkUnitTemplateEntity.PlanTransientWorkUnit(
                 BuildWorkUnitProgressiveNumber(),
@@ -287,7 +287,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="excerciseIdsList">The list of the IDs of the excercises</param>
         /// <returns>The training Intensity Parameters for the specified excercises</returns>
-        public TrainingIntensityParametersValue GetIntensityByExcercises(IEnumerable<IdTypeValue> excerciseIdsList)
+        public TrainingIntensityParametersValue GetIntensityByExcercises(IEnumerable<uint?> excerciseIdsList)
 
             => TrainingIntensityParametersValue.ComputeFromWorkingSets(
                 _workUnits.Where(x => excerciseIdsList.Contains(x.ExcerciseId)).SelectMany(x => x.WorkingSets));
@@ -306,7 +306,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="intensityTechniqueId">The ID of the intensity technique</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void AddWorkUnitIntensityTechnique(uint workUnitPnum, IdTypeValue intensityTechniqueId)
+        public void AddWorkUnitIntensityTechnique(uint workUnitPnum, uint? intensityTechniqueId)
         {
             WorkUnitTemplateEntity toBeModified = FindWorkUnit(workUnitPnum);
 
@@ -322,7 +322,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
         /// <returns>True if remove successfull</returns>
-        public void RemoveWorkUnitIntensityTechnique(uint workUnitPnum, IdTypeValue intensityTechniqueId)
+        public void RemoveWorkUnitIntensityTechnique(uint workUnitPnum, uint? intensityTechniqueId)
         {
             WorkUnitTemplateEntity toBeModified = FindWorkUnit(workUnitPnum);
 
@@ -336,7 +336,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workUnitPnum">The Progressive Number of the Work Unit to be modified</param>
         /// <param name="newNoteId">The ID of the note to be attached</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void AssignWorkUnitNote(uint workUnitPnum, IdTypeValue newNoteId)
+        public void AssignWorkUnitNote(uint workUnitPnum, uint? newNoteId)
 
             => FindWorkUnit(workUnitPnum)?.AssignNote(newNoteId);
 
@@ -356,7 +356,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="workUnitPnum">The Progressive Number of the Work Unit to be modified</param>
         /// <param name="newExcerciseId">The ID of the excercise to be attached</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void AssignWorkUnitExcercise(uint workUnitPnum, IdTypeValue newExcerciseId)
+        public void AssignWorkUnitExcercise(uint workUnitPnum, uint? newExcerciseId)
 
             => FindWorkUnit(workUnitPnum)?.AssignExcercise(newExcerciseId);
 
@@ -398,7 +398,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
         public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionsValue repetitions, 
-            RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+            RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null)
         {
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(workUnitPnum);
 
@@ -490,7 +490,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="toAddId">The ID of the Intensity Technique to be added</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void AddWorkingSetIntensityTechnique(uint parentWorkUnitPnum, uint workingSetPnum, IdTypeValue toAddId)
+        public void AddWorkingSetIntensityTechnique(uint parentWorkUnitPnum, uint workingSetPnum, uint? toAddId)
         {
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
             parentWorkUnit.AddWorkingSetIntensityTechnique(workingSetPnum, toAddId);
@@ -505,7 +505,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="toRemoveId">The id to be removed</param>
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void RemoveWorkingSetIntensityTechnique(uint parentWorkUnitPnum, uint workingSetPnum, IdTypeValue toRemoveId)
+        public void RemoveWorkingSetIntensityTechnique(uint parentWorkUnitPnum, uint workingSetPnum, uint? toRemoveId)
         {
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
 

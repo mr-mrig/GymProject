@@ -5,7 +5,7 @@ using GymProject.Domain.FitnessJournalDomain.Exceptions;
 
 namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
 {
-    public class MusRoot : StatusTrackingEntity<IdTypeValue>, IAggregateRoot
+    public class MusRoot : StatusTrackingEntity<uint?>, IAggregateRoot
     {
 
 

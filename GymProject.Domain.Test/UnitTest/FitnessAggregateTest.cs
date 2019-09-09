@@ -214,7 +214,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             List<MusReference> muses = new List<MusReference>()
             {
-                MusReference.MusLink(IdTypeValue.Create(12), "insomnia"),
+                MusReference.MusLink(12, "insomnia"),
             };
 
 
@@ -247,13 +247,13 @@ namespace GymProject.Domain.Test.UnitTest
 
             List<MusReference> muses = new List<MusReference>()
             {
-                MusReference.MusLink(IdTypeValue.Create(12), "insomnia"),
+                MusReference.MusLink((uint?)(12), "insomnia"),
             };
 
             RatingValue rating = RatingValue.Rate(4.2f);
             DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWellnessDay(celsius, musList: muses);
-            fd.DiagnoseMus(MusReference.MusLink(IdTypeValue.Create(500), "Added"));
+            fd.DiagnoseMus(MusReference.MusLink((uint?)(500), "Added"));
 
             Assert.NotNull(fd);
             Assert.Equal(DateTime.Today, fd.DayDate);
@@ -352,23 +352,23 @@ namespace GymProject.Domain.Test.UnitTest
 
             List<MusReference> muses = new List<MusReference>()
             {
-                MusReference.MusLink(IdTypeValue.Create(12), "insomnia"),           // One
+                MusReference.MusLink((uint?)(12), "insomnia"),           // One
             };
 
             RatingValue rating = RatingValue.Rate(4.2f);
             DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(DateTime.Today, rating);
             fd.TrackWellnessDay(celsius, musList: muses);
 
-            MusReference fakeMus = MusReference.MusLink(IdTypeValue.Create(1000), "WillBeRemoved");
-            MusReference fakeMus2 = MusReference.MusLink(IdTypeValue.Create(1001), "WillBeRemoved2");
+            MusReference fakeMus = MusReference.MusLink((uint?)(1000), "WillBeRemoved");
+            MusReference fakeMus2 = MusReference.MusLink((uint?)(1001), "WillBeRemoved2");
 
             fd.DiagnoseMus(fakeMus);
-            fd.DiagnoseMus(MusReference.MusLink(IdTypeValue.Create(500), "Added1"));    // Two
+            fd.DiagnoseMus(MusReference.MusLink((uint?)(500), "Added1"));    // Two
             fd.UndiagnoseMus(fakeMus);
 
-            fd.DiagnoseMus(MusReference.MusLink(IdTypeValue.Create(501), "Added2"));    // Three
+            fd.DiagnoseMus(MusReference.MusLink((uint?)(501), "Added2"));    // Three
             fd.DiagnoseMus(fakeMus2);
-            fd.UndiagnoseMus(IdTypeValue.Create(1001));
+            fd.UndiagnoseMus((uint?)(1001));
 
             Assert.Equal(3, fd.DailyWellness.MusList.Count);
             Assert.DoesNotContain(fakeMus, fd.DailyWellness.MusList);
@@ -412,11 +412,11 @@ namespace GymProject.Domain.Test.UnitTest
 
             DailyFitnessRoot fd = DailyFitnessRoot.StartTrackingDay(date, rating);
 
-            fd.LinkToPost(IdTypeValue.Create(postId));
+            fd.LinkToPost((uint?)(postId));
 
             Assert.Equal(rating, fd.Rating);
             Assert.Equal(date, fd.DayDate);
-            Assert.Equal(postId, fd.PostId.Id);
+            Assert.Equal(postId, (int)fd.PostId.Value);
             Assert.Null(fd.DomainEvents);
         }
 

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkingSetTemplateEntity : Entity<IdTypeValue>, IFullWorkingSet, ICloneable
+    public class WorkingSetTemplateEntity : Entity<uint?>, IFullWorkingSet, ICloneable
     {
 
 
@@ -42,15 +42,16 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingEffortValue Effort { get; private set; } = null;
 
 
-        private IList<IdTypeValue> _intensityTechniquesIds = new List<IdTypeValue>();
+        private IList<uint?> _intensityTechniquesIds = new List<uint?>();
 
         /// <summary>
         /// FK to the Intensity Techniques - Optional
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<IdTypeValue> IntensityTechniqueIds
+        public IReadOnlyCollection<uint?> IntensityTechniqueIds
         {
-            get => _intensityTechniquesIds?.ToList().AsReadOnly() ?? new List<IdTypeValue>().AsReadOnly();
+            get => _intensityTechniquesIds?.ToList().AsReadOnly() 
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -59,7 +60,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
-        private WorkingSetTemplateEntity(IdTypeValue id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null) : base(id)
+        private WorkingSetTemplateEntity(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
@@ -67,8 +68,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             Tempo = tempo ?? TUTValue.SetGenericTUT();
             Effort = effort?? TrainingEffortValue.DefaultEffort;
 
-            //_intensityTechniqueIds = intensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<IdTypeValue>();
-            _intensityTechniquesIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds)?.ToList() ?? new List<IdTypeValue>();
+            //_intensityTechniqueIds = intensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<uint?>();
+            _intensityTechniquesIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds)?.ToList() ?? new List<uint?>();
 
             TestBusinessRules();
         }
@@ -88,7 +89,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null)
 
             => new WorkingSetTemplateEntity(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -103,7 +104,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplateEntity PlanWorkingSet(IdTypeValue id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<IdTypeValue> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanWorkingSet(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null)
 
             => new WorkingSetTemplateEntity(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -174,7 +175,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="toAddId">The id to be added</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         /// <exception cref="ArgumentNullException">If the ID is null</exception>
-        public void AddIntensityTechnique(IdTypeValue toAddId)
+        public void AddIntensityTechnique(uint? toAddId)
         {
             if (toAddId == null)
                 throw new ArgumentNullException($"Intensity Technique ID must be valid when adding a technique to the Working Set", nameof(toAddId));
@@ -192,7 +193,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="toRemoveId">The id to be removed</param>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        public void RemoveIntensityTechnique(IdTypeValue toRemoveId)
+        public void RemoveIntensityTechnique(uint? toRemoveId)
         {
             bool removed = _intensityTechniquesIds.Remove(toRemoveId);
 

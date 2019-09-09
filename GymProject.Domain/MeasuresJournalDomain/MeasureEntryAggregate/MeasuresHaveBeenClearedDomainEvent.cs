@@ -15,7 +15,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// <summary>
         ///  The destination of the event
         /// </summary>
-        public IdTypeValue PostId { get; private set; }
+        public uint? PostId { get; private set; }
 
 
 
@@ -24,7 +24,7 @@ namespace GymProject.Domain.MeasuresJournalDomain.MeasureEntryAggregate
         /// </summary>
         /// <param name="measuresEntry">The measure entry</param>
         /// <param name="postId">The parent Post Id</param>
-        public MeasuresHaveBeenClearedDomainEvent(DailyMeasuresEntity measuresEntry, IdTypeValue postId)
+        public MeasuresHaveBeenClearedDomainEvent(DailyMeasuresEntity measuresEntry, uint? postId)
         {
             MeasuresEntry = measuresEntry;
             PostId = postId;

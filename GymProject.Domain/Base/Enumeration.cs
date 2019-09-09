@@ -56,7 +56,7 @@ namespace GymProject.Domain.Base
         public override string ToString() => Name;
 
 
-        public int CompareTo(object other) => Id.CompareTo(((Enumeration)other).Id);
+        public int CompareTo(object other) => Id.CompareTo((((Enumeration)other).Id));
 
         public override int GetHashCode()
         {

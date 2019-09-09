@@ -10,7 +10,7 @@ using System.Text;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 {
-    public class WorkUnitEntity : Entity<IdTypeValue>, ICloneable
+    public class WorkUnitEntity : Entity<uint?>, ICloneable
     {
 
 
@@ -38,13 +38,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// The Working Sets belonging to the WU, sorted by Progressive Numbers.
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IEnumerable<WorkingSetEntity> WorkingSets => _workingSets.ToList() ?? new List<WorkingSetEntity>();
+        public IReadOnlyCollection<WorkingSetEntity> WorkingSets
+        {
+            get => _workingSets?.ToList().AsReadOnly()
+                ?? new List<WorkingSetEntity>().AsReadOnly();
+        }
 
 
         /// <summary>
         /// FK to the Excercise Aggregate
         /// </summary>
-        public IdTypeValue ExcerciseId { get; private set; } = null;
+        public uint? ExcerciseId { get; private set; } = null;
 
 
 
@@ -55,7 +59,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         private WorkUnitEntity() : base(null) { }
 
 
-        private WorkUnitEntity(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, RatingValue rating, IEnumerable<WorkingSetEntity> workingSets) 
+        private WorkUnitEntity(uint? id, uint progressiveNumber, uint? excerciseId, RatingValue rating, IEnumerable<WorkingSetEntity> workingSets) 
             : base(id)
         {
             ProgressiveNumber = progressiveNumber;
@@ -80,7 +84,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="excerciseId">The ID of the excercise which the WU consists of</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <returns>The WorkUnitEntity instance</returns>
-        public static WorkUnitEntity StartExcercise(uint progressiveNumber, IdTypeValue excerciseId)
+        public static WorkUnitEntity StartExcercise(uint progressiveNumber, uint? excerciseId)
 
             => TrackExcercise(null, progressiveNumber, excerciseId, null, null);
 
@@ -94,8 +98,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
         /// <param name="userRating">The rate the user gave to the Work Unit</param>
         /// <returns>The WorkUnitEntity instance</returns>
-        public static WorkUnitEntity TrackExcercise(IdTypeValue id, uint progressiveNumber, IdTypeValue excerciseId, RatingValue userRating,
-            IEnumerable<WorkingSetEntity> workingSets)
+        public static WorkUnitEntity TrackExcercise(uint? id, uint progressiveNumber, uint? excerciseId, IEnumerable<WorkingSetEntity> workingSets = null, RatingValue userRating = null)
 
             => new WorkUnitEntity(id, progressiveNumber, excerciseId, userRating, workingSets);
 
@@ -133,8 +136,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// </summary>
         /// <param name="toAdd">The WS to be added</param>
         /// <exception cref="ArgumentException">If Working Set already present</exception>
+        /// <exception cref="ArgumentNullException">If NULL input</exception>
         public void TrackWorkingSet(WorkingSetEntity toAdd)
         {
+            if (toAdd == null)
+                throw new ArgumentNullException(nameof(toAdd), $"Trying to add a NULL Working Set");
+
             WorkingSetEntity copy = toAdd.Clone() as WorkingSetEntity;
 
             if (_workingSets.Contains(copy))
@@ -155,11 +162,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         public void TrackWorkingSet(WSRepetitionsValue repetitions, WeightPlatesValue load)
         {
 
-            WorkingSetEntity toAdd = WorkingSetEntity.TrackTransientWorkingSet(
+            WorkingSetEntity toAdd = WorkingSetEntity.CompleteWorkingSet(
                     BuildWorkingSetProgressiveNumber(),
                     repetitions,
-                    load,
-                    null
+                    load
                 );
 
             _workingSets.Add(toAdd);
@@ -371,8 +377,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
             if (!ExcerciseSpecified())
                 throw new TrainingDomainInvariantViolationException($"The Work Unit must be linked to an excercise.");
 
-            if (!AtLeastOneWorkingSet())
-                throw new TrainingDomainInvariantViolationException($"Cannot create a Work Unit without any WS.");
+            //if (!AtLeastOneWorkingSet())
+            //    throw new TrainingDomainInvariantViolationException($"Cannot create a Work Unit without any WS.");
 
             if (!WorkingSetsWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Working Sets of the same Work Unit must have consecutive progressive numbers.");
@@ -385,7 +391,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 
         public object Clone()
 
-            => TrackExcercise(Id, ProgressiveNumber, ExcerciseId, UserRating, WorkingSets.ToList());
+            => TrackExcercise(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), UserRating);
 
         #endregion
     }

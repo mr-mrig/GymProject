@@ -191,7 +191,7 @@ namespace GymProject.Domain.Test.UnitTest
         public void WorkoutSessionFullTest()
         {
             bool isTransient;
-            float fakeChance = 0.2f;
+            float fakeChance = 0.1f;
 
             int workUnitsToAddNumber = 2;
             int workUnitsToRemoveNumber = 2;
@@ -201,6 +201,8 @@ namespace GymProject.Domain.Test.UnitTest
             WorkoutSessionRoot workout;
             WorkUnitEntity toAdd;
             WorkUnitEntity workUnitAdded;
+
+            DateTime planned;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -220,11 +222,18 @@ namespace GymProject.Domain.Test.UnitTest
                         => workout.ScheduleToDate(RandomFieldGenerator.RandomDate(DateTime.Now.AddYears(-1), 100)));
                 else
                 {
-                    DateTime planned = RandomFieldGenerator.RandomDate(DateTime.Now, 100);
-                    workout.ScheduleToDate(planned);
-                    Assert.Equal(planned, workout.PlannedDate);
+                    if(RandomFieldGenerator.RollEventWithProbability(fakeChance))
+                    {
+                        planned = RandomFieldGenerator.RandomDate(DateTime.Now.AddDays(-500), DateTime.Now.AddDays(-1));
+                        Assert.Throws<InvalidOperationException>(() => workout.ScheduleToDate(planned));
+                    }
+                    else
+                    {
+                        planned = RandomFieldGenerator.RandomDate(DateTime.Now.AddDays(-1), DateTime.Now.AddDays(300));
+                        workout.ScheduleToDate(planned);
+                        Assert.Equal(planned, workout.PlannedDate);
+                    }
                 }
-
 
                 DateTime end = RandomFieldGenerator.RandomDate(DateTime.Now.AddDays(-30), 50);
                 workout.Unschedule();
@@ -289,26 +298,57 @@ namespace GymProject.Domain.Test.UnitTest
                 // Revise Work Units
                 for (int iwu = 0; iwu < workUnitsToChangeNumber; iwu++)
                 {
-                    uint pnumToChange = (uint)RandomFieldGenerator.RandomInt(0, workout.WorkUnits.Count);
-                    uint destPnum = (uint)RandomFieldGenerator.RandomInt(0, workout.WorkUnits.Count);
+                    uint pnumToChange = (uint)RandomFieldGenerator.RandomInt(0, workout.WorkUnits.Count - 1);
+                    uint destPnum = (uint)RandomFieldGenerator.RandomInt(0, workout.WorkUnits.Count - 1);
 
                     RatingValue rating = RatingValue.Rate(RandomFieldGenerator.RandomFloat(0, 5, 1));
                     workout.RatePerformance(pnumToChange, rating);
                     Assert.Equal(rating, workout.CloneWorkUnit(pnumToChange).UserRating);
 
-                    WorkUnitEntity originalWorkUnit = workout.CloneWorkUnit(pnumToChange);
-
                     int newWorkingSetNum = RandomFieldGenerator.RandomInt(1, 3);
+                    WorkingSetEntity ws;
+                    uint wsId;
 
-                    //for (int iws = 0; iws < newWorkingSetNum; iws++)
-                    //{
-                    //    WorkingSetEntity ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet();
-                    //    workout.TrackWorkingSet(pnumToChange, ws);
+                    for (int iws = 0; iws < newWorkingSetNum; iws++)
+                    {
+                        WorkUnitEntity originalWorkUnit = workout.CloneWorkUnit(pnumToChange);
 
-                    //    CheckWorkUnit(workout.CloneWorkUnit(pnumToChange), originalWorkUnit, isTransient);
-                    //    CheckWorkingSets(originalWorkUnit.WorkingSets.Union(new List<WorkingSetEntity>() { ws }),
-                    //        workout.CloneWorkUnit(pnumToChange).WorkingSets, isTransient);
-                    //}
+                        if (RandomFieldGenerator.RollEventWithProbability(fakeChance))
+                        {
+                            // Duplicate Id
+                            if(!isTransient)
+                            {
+                                wsId = (uint)RandomFieldGenerator.ChooseAmong(originalWorkUnit.WorkingSets.Where(x => x.Id.HasValue).Select(x => (int?)x.Id));
+
+                                ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet(wsId, originalWorkUnit.WorkingSets.Count, isTransient);
+                                Assert.Throws<ArgumentException>(() => workout.TrackWorkingSet(pnumToChange, ws));
+                            }
+
+                            // Non consecutive PNums
+                            wsId = (uint)RandomFieldGenerator.RandomIntValueExcluded(1, 999999, originalWorkUnit.WorkingSets.Select(x => (int)(x.Id ?? 1)));
+
+                            ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet(wsId, originalWorkUnit.WorkingSets.Count * 10, isTransient);
+                            Assert.Throws<TrainingDomainInvariantViolationException>(() => workout.TrackWorkingSet(pnumToChange, ws));
+
+                            // Null input
+                            Assert.Throws<ArgumentNullException>(() => workout.TrackWorkingSet(pnumToChange, null));
+
+                            // Skip next iterations to avoid further Invariant Violations
+                            iwu = workUnitsToChangeNumber;
+                            break;
+                        }
+                        else
+                        {
+                            // Valid Id
+                            wsId = (uint)RandomFieldGenerator.RandomIntValueExcluded(1, 999999, originalWorkUnit.WorkingSets.Select(x => (int)(x.Id ?? 1)));
+
+                            ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet(wsId, originalWorkUnit.WorkingSets.Count, isTransient);
+                            workout.TrackWorkingSet(pnumToChange, ws);
+
+                            CheckWorkingSets(originalWorkUnit.WorkingSets.Union(new List<WorkingSetEntity>() { ws }),
+                                workout.CloneWorkUnit(pnumToChange).WorkingSets, isTransient);
+                        }
+                    }
 
                     //workout.UntrackWorkingSet();
                     //workout.WriteWorkingSetNote();
@@ -319,7 +359,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                     //workout.MoveWorkUnitToNewProgressiveNumber(pnumToChange, destPnum);
 
-                    throw new NotImplementedException();
+                    //throw new NotImplementedException();
                 }
 
                 // Remove Work Units
@@ -383,22 +423,20 @@ namespace GymProject.Domain.Test.UnitTest
 
         internal static void CheckWorkingSets(IEnumerable<WorkingSetEntity> left, IEnumerable<WorkingSetEntity> right, bool isTransient)
         {
-            if (isTransient)
-            {
-                Assert.True(left.Select(x => x.NoteId)
-                    .SequenceEqual(right.Select(x => x.NoteId)));
+            if (!isTransient)
+                Assert.True(left.Select(x => x.Id).SequenceEqual(right.Select(x => x.Id)));
 
-                Assert.True(left.Select(x => x.ProgressiveNumber)
-                    .SequenceEqual(right.Select(x => x.ProgressiveNumber)));
+            Assert.True(left.Select(x => x.NoteId)
+                .SequenceEqual(right.Select(x => x.NoteId)));
 
-                Assert.True(left.Select(x => x.Load)
-                    .SequenceEqual(right.Select(x => x.Load)));
+            Assert.True(left.Select(x => x.ProgressiveNumber)
+                .SequenceEqual(right.Select(x => x.ProgressiveNumber)));
 
-                Assert.True(left.Select(x => x.Repetitions)
-                    .SequenceEqual(right.Select(x => x.Repetitions)));
-            }
-            else
-                Assert.True(left.SequenceEqual(right));
+            Assert.True(left.Select(x => x.Load)
+                .SequenceEqual(right.Select(x => x.Load)));
+
+            Assert.True(left.Select(x => x.Repetitions)
+                .SequenceEqual(right.Select(x => x.Repetitions)));
         }
 
 

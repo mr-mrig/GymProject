@@ -368,8 +368,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
                 throw new InvalidOperationException($"Cannot remove transient Working Sets");
 
             WorkUnitEntity parentWorkUnit = _workUnits.Single(x => x.WorkingSets.Contains(workingSet));
-
-            UntrackWorkingSet(parentWorkUnit.ProgressiveNumber, workingSet.ProgressiveNumber);
         }
 
         /// <summary>

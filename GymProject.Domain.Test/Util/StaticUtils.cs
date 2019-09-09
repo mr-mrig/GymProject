@@ -485,116 +485,116 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static TrainingScheduleFeedbackEntity BuildRandomFeedback(long id, bool isTransient, IdTypeValue userId = null,
-            RatingValue rating = null, PersonalNoteValue commentBody = null, IEnumerable<IdTypeValue> userIdsToExclude = null)
-        {
-            // Used to avoid collision -> ensure the Business Rule is always met
-            IEnumerable<int> userIdNumbersToExclude = userIdsToExclude?.Select(x => (int)(x?.Id ?? 0)) ?? new List<int>();
+        //internal static TrainingScheduleFeedbackEntity BuildRandomFeedback(long id, bool isTransient, IdTypeValue userId = null,
+        //    RatingValue rating = null, PersonalNoteValue commentBody = null, IEnumerable<IdTypeValue> userIdsToExclude = null)
+        //{
+        //    // Used to avoid collision -> ensure the Business Rule is always met
+        //    IEnumerable<int> userIdNumbersToExclude = userIdsToExclude?.Select(x => (int)(x?.Id ?? 0)) ?? new List<int>();
 
-            userId = userId ?? IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 99999, userIdNumbersToExclude));
-            rating = rating ?? RatingValue.Rate(RandomFieldGenerator.RandomFloat(0, 5));
-            commentBody = commentBody ?? PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
+        //    userId = userId ?? IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(1, 99999, userIdNumbersToExclude));
+        //    rating = rating ?? RatingValue.Rate(RandomFieldGenerator.RandomFloat(0, 5));
+        //    commentBody = commentBody ?? PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
-            return isTransient 
-                ? TrainingScheduleFeedbackEntity.ProvideTransientFeedback(userId, rating, commentBody)
-                : TrainingScheduleFeedbackEntity.ProvideFeedback(IdTypeValue.Create(id), userId, rating, commentBody);
-        }
+        //    return isTransient 
+        //        ? TrainingScheduleFeedbackEntity.ProvideTransientFeedback(userId, rating, commentBody)
+        //        : TrainingScheduleFeedbackEntity.ProvideFeedback(IdTypeValue.Create(id), userId, rating, commentBody);
+        //}
 
 
-        internal static TrainingScheduleRoot BuildRandomSchedule(long id, bool isTransient, bool checkAsserts = true)
-        {
-            TrainingScheduleRoot result;
-            int feedbacksMin = 0, feedbacksMax = 5;
+        //internal static TrainingScheduleRoot BuildRandomSchedule(long id, bool isTransient, bool checkAsserts = true)
+        //{
+        //    TrainingScheduleRoot result;
+        //    int feedbacksMin = 0, feedbacksMax = 5;
 
-            float rightUnboundedScheduleProbability = 0.5f;
+        //    float rightUnboundedScheduleProbability = 0.5f;
 
-            int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
+        //    int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
 
-            List<TrainingScheduleFeedbackEntity> initialFeedbacks = new List<TrainingScheduleFeedbackEntity>();
+        //    List<TrainingScheduleFeedbackEntity> initialFeedbacks = new List<TrainingScheduleFeedbackEntity>();
 
-            // Init Feedbacks
-            if (RandomFieldGenerator.RollEventWithProbability(0.1f))
-                initialFeedbacks = null;
-            else
-            {
-                for (int ifeed = 0; ifeed < feedbacksNumber; ifeed++)
-                    initialFeedbacks.Add(BuildRandomFeedback(ifeed + 1, isTransient));
-            }
+        //    // Init Feedbacks
+        //    if (RandomFieldGenerator.RollEventWithProbability(0.1f))
+        //        initialFeedbacks = null;
+        //    else
+        //    {
+        //        for (int ifeed = 0; ifeed < feedbacksNumber; ifeed++)
+        //            initialFeedbacks.Add(BuildRandomFeedback(ifeed + 1, isTransient));
+        //    }
 
-            // Create the Schedule
-            IdTypeValue planId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 1000000));
+        //    // Create the Schedule
+        //    IdTypeValue planId = IdTypeValue.Create(RandomFieldGenerator.RandomInt(1, 1000000));
 
-            DateTime startDate = RandomFieldGenerator.RandomDate(1000);
+        //    DateTime startDate = RandomFieldGenerator.RandomDate(1000);
 
-            DateRangeValue period = RandomFieldGenerator.RollEventWithProbability(rightUnboundedScheduleProbability)
-                ? DateRangeValue.RangeStartingFrom(startDate)
-                : DateRangeValue.RangeBetween(startDate, startDate.AddDays(RandomFieldGenerator.RandomInt(14, 100)));
+        //    DateRangeValue period = RandomFieldGenerator.RollEventWithProbability(rightUnboundedScheduleProbability)
+        //        ? DateRangeValue.RangeStartingFrom(startDate)
+        //        : DateRangeValue.RangeBetween(startDate, startDate.AddDays(RandomFieldGenerator.RandomInt(14, 100)));
                        
-            if (isTransient)
-                result = TrainingScheduleRoot.ScheduleTrainingPlanTransient(planId, period, initialFeedbacks);
-            else
-                result = TrainingScheduleRoot.ScheduleTrainingPlan(IdTypeValue.Create(id), planId, period, initialFeedbacks);
+        //    if (isTransient)
+        //        result = TrainingScheduleRoot.ScheduleTrainingPlanTransient(planId, period, initialFeedbacks);
+        //    else
+        //        result = TrainingScheduleRoot.ScheduleTrainingPlan(IdTypeValue.Create(id), planId, period, initialFeedbacks);
 
-            initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedbackEntity>();
+        //    initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedbackEntity>();
 
-            if (checkAsserts)
-            {
-                Assert.Equal(period, result.ScheduledPeriod);
-                Assert.Equal(planId, result.TrainingPlanId);
+        //    if (checkAsserts)
+        //    {
+        //        Assert.Equal(period, result.ScheduledPeriod);
+        //        Assert.Equal(planId, result.TrainingPlanId);
 
-                if(!isTransient)
-                    Assert.Equal(IdTypeValue.Create(id), result.Id);
+        //        if(!isTransient)
+        //            Assert.Equal(IdTypeValue.Create(id), result.Id);
 
-                TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, result.Feedbacks);
+        //        TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, result.Feedbacks);
 
-                TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, 
-                    result.Feedbacks.Select(x => result.CloneFeedback(x.UserId)));
-            }
-
-
-            return result;
-        }
-
-        internal static ICollection<TrainingPlanRelation> BuildTrainingPlanRelations(IdTypeValue parentId)
-        {
-            int childsMin = 1, childsMax = 10;
-            int childIdsMin = 1, childIdsMax = 4574678;
-            int childPlansNumber = RandomFieldGenerator.RandomInt(childsMin, childsMax);
-
-            List<TrainingPlanRelation> ret = new List<TrainingPlanRelation>();
-            List<int> childIds = new List<int>();
-
-            for (int irel = 0; irel < childPlansNumber; irel++)
-            {
-                TrainingPlanRelation relation = BuildTrainingPlanRelation(parentId,
-                    IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(childIdsMin, childIdsMax, childIds)));
-
-                ret.Add(relation);
-                childIds.Add((int)relation.ChildPlanId.Id);
-            }
-
-            return ret;
-        }
+        //        TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, 
+        //            result.Feedbacks.Select(x => result.CloneFeedback(x.UserId)));
+        //    }
 
 
-        internal static TrainingPlanRelation BuildTrainingPlanRelation(IdTypeValue parentId, IdTypeValue childId = null, TrainingPlanTypeEnum relationType = null, IdTypeValue messageId = null)
-        {
-            int childIdMin = 1, childIdMax = 5555;
-            int messageIdMin = 1, messageIdMax = 3;
+        //    return result;
+        //}
 
-            relationType = relationType ?? TrainingPlanTypeEnum.From(RandomFieldGenerator.RandomInt(1, 2));
+        //internal static ICollection<TrainingPlanRelation> BuildTrainingPlanRelations(IdTypeValue parentId)
+        //{
+        //    int childsMin = 1, childsMax = 10;
+        //    int childIdsMin = 1, childIdsMax = 4574678;
+        //    int childPlansNumber = RandomFieldGenerator.RandomInt(childsMin, childsMax);
 
-            if (messageId == 0)
-            {
-                messageId = relationType == TrainingPlanTypeEnum.Inherited
-                ? IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax))
-                : null;
-            }
-            childId = childId ?? IdTypeValue.Create(
-                RandomFieldGenerator.RandomIntValueExcluded(childIdMin, childIdMax, (int)parentId.Id));
+        //    List<TrainingPlanRelation> ret = new List<TrainingPlanRelation>();
+        //    List<int> childIds = new List<int>();
 
-            return TrainingPlanRelation.EnstablishRelation(parentId, childId, relationType, messageId);
-        }
+        //    for (int irel = 0; irel < childPlansNumber; irel++)
+        //    {
+        //        TrainingPlanRelation relation = BuildTrainingPlanRelation(parentId,
+        //            IdTypeValue.Create(RandomFieldGenerator.RandomIntValueExcluded(childIdsMin, childIdsMax, childIds)));
+
+        //        ret.Add(relation);
+        //        childIds.Add((int)relation.ChildPlanId);
+        //    }
+
+        //    return ret;
+        //}
+
+
+        //internal static TrainingPlanRelation BuildTrainingPlanRelation(IdTypeValue parentId, IdTypeValue childId = null, TrainingPlanTypeEnum relationType = null, IdTypeValue messageId = null)
+        //{
+        //    int childIdMin = 1, childIdMax = 5555;
+        //    int messageIdMin = 1, messageIdMax = 3;
+
+        //    relationType = relationType ?? TrainingPlanTypeEnum.From(RandomFieldGenerator.RandomInt(1, 2));
+
+        //    if (messageId == 0)
+        //    {
+        //        messageId = relationType == TrainingPlanTypeEnum.Inherited
+        //        ? IdTypeValue.Create(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax))
+        //        : null;
+        //    }
+        //    childId = childId ?? IdTypeValue.Create(
+        //        RandomFieldGenerator.RandomIntValueExcluded(childIdMin, childIdMax, (int)parentId.Id));
+
+        //    return TrainingPlanRelation.EnstablishRelation(parentId, childId, relationType, messageId);
+        //}
 
     }
 }

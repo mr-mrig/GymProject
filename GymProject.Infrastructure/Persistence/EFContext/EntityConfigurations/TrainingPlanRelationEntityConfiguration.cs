@@ -18,22 +18,22 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
                 r.ChildPlanId,
             });
 
-            builder.Property(r => r.ParentPlanId)
-                .HasConversion(new IdTypeValueConverter());
-
-            builder.Property(r => r.ChildPlanId)
-                .HasConversion(new IdTypeValueConverter());
+            builder.Property(r => r.ParentPlanId);
+            builder.Property(r => r.ChildPlanId);
 
             builder.HasOne(r => r.ChildPlanType)
                 .WithMany()
-                .IsRequired();
-
+                .IsRequired()
+                .HasForeignKey(x => x.ChildPlanTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
             builder.HasOne(r => r.ParentPlan)
                 .WithMany(x => x.RelationsWithChildPlans)
                 //.WithMany("_relationsWithChildPlans")
                 //.WithMany()
                 .IsRequired()
                 .HasForeignKey(x => x.ParentPlanId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne(r => r.ChildPlan)
@@ -41,9 +41,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
                 .WithMany(x => x.RelationsWithParentPlans)
                 .IsRequired()
                 .HasForeignKey(x => x.ChildPlanId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.Ignore(r => r.MessageId);
+            builder.Ignore(r => r.MessageId);       // TODO
         }
 
     }

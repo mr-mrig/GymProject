@@ -14,8 +14,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 
             builder.HasKey(rel => new { rel.TrainingPlanId, rel.HashtagId});
 
-            builder.Property(rel => rel.TrainingPlanId)
-                .HasConversion(new IdTypeValueConverter());
+            builder.Property(rel => rel.TrainingPlanId);
+                //.HasConversion(new IdTypeValueConverter());
 
             builder.Property(rel => rel.HashtagId)
                 .HasConversion(new IdTypeValueConverter());

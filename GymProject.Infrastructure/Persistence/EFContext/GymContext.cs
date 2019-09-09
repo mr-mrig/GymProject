@@ -4,6 +4,7 @@ using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Domain.SharedKernel;
+using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -29,16 +30,18 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public virtual DbSet<TrainingPlanRoot> TrainingPlans { get; set; }
         public virtual DbSet<TrainingPlanRelation> TrainingPlanRelations { get; set; }
         public virtual DbSet<TrainingPlanTypeEnum> TrainingPlanTypes { get; set; }
+        public virtual DbSet<TrainingScheduleRoot> TrainingSchedules { get; set; }
+        
         
 
         //public virtual DbSet<TrainingWeekEntity> TrainingWeeks  { get; set; }
         //public virtual DbSet<TrainingWeekTypeEnum> TrainingWeekTypes  { get; set; }
         //public virtual DbSet<TrainingPlanPhaseRelation> TrainingPlanPhases  { get; set; }
         //public virtual DbSet<TrainingPlanProficiencyRelation> TrainingPlanProficiencies  { get; set; }
-        public virtual DbSet<TrainingPlanHashtagRelation> TrainingPlanHashtags { get; set; }
+        //public virtual DbSet<TrainingPlanHashtagRelation> TrainingPlanHashtags { get; set; }
         //public virtual DbSet<TrainingPlanMuscleFocusRelation> TrainingPlanMuscleFocuses  { get; set; }
 
-        public virtual DbSet<TrainingHashtagRoot> TrainingHashtags { get; set; }
+        //public virtual DbSet<TrainingHashtagRoot> TrainingHashtags { get; set; }
 
         public virtual DbSet<EntryStatusTypeEnum> EntryStatusType { get; set; }
 
@@ -51,12 +54,17 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Training Plan Aggregate
             modelBuilder.ApplyConfiguration(new EntryStatusEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanRelationEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanTypeEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanHashtagEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanHashtagEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
+
+            // Training Schedule Aggregate
+            modelBuilder.ApplyConfiguration(new TrainingScheduleEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new TrainingFeedbackEntityConfiguration());
         }
     }
 }

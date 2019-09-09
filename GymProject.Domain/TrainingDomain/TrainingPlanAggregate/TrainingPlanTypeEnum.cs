@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
 
-        public static TrainingPlanTypeEnum NotSet = new TrainingPlanTypeEnum(0, "NotSet", "Not specified");
+        //public static TrainingPlanTypeEnum NotSet = new TrainingPlanTypeEnum(0, "NotSet", "Not specified");
         public static TrainingPlanTypeEnum Variant = new TrainingPlanTypeEnum(1, "Variant", "Variant of another plan");
         public static TrainingPlanTypeEnum Inherited = new TrainingPlanTypeEnum(2, "Inherited", "Received by another user");
         //public static TrainingPlanTypeEnum Template = new TrainingPlanTypeEnum(3, "Template", "Root for other Variant plans");
@@ -42,7 +42,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<TrainingPlanTypeEnum> List() =>
-            new[] { NotSet, /*Template,*/ Variant, Inherited, };
+            new[] { /*NotSet,*/ /*Template,*/ Variant, Inherited, };
 
 
         /// <summary>

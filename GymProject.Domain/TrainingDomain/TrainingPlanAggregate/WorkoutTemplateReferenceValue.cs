@@ -24,14 +24,15 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint ProgressiveNumber { get; private set; }
 
 
-        private ICollection<WorkingSetTemplateEntity> _workingSets;
+        private ICollection<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
 
         /// <summary>
         /// The Working Sets of the workout
         /// </summary>
         public IReadOnlyCollection<WorkingSetTemplateEntity> WorkingSets
         {
-            get => _workingSets?.Clone()?.ToList().AsReadOnly() ?? new List<WorkingSetTemplateEntity>().AsReadOnly();
+            get => _workingSets?.Clone()?.ToList().AsReadOnly() 
+                ?? new List<WorkingSetTemplateEntity>().AsReadOnly();
         }
 
 

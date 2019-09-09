@@ -15,18 +15,19 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 
             builder.Property(t => t.Id)
                 .ValueGeneratedNever()
-                .HasDefaultValue(1)
                 .IsRequired();
 
             builder.Property(t => t.Name)
                 .IsRequired()
                 .HasColumnType("TEXT");
 
-            //builder.HasAlternateKey(t => t.Name);
+            builder.HasAlternateKey(t => t.Name);
 
             builder.Property(t => t.Description)
                 .HasColumnType("TEXT");
 
+            // Data Seeding
+            builder.HasData(TrainingPlanTypeEnum.List());
         }
     }
 }

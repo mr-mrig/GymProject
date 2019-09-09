@@ -29,13 +29,13 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public TrainingPlanRoot Add(TrainingPlanRoot aggregateRoot)
         {
-            _gymContext.Add(aggregateRoot);
+            //_gymContext.Add(aggregateRoot);
 
 
-            _gymContext.Add(TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(1), "", true, null));
+            //_gymContext.Add(TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(1), "", true, null));
 
-            foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
-                _gymContext.Add(week);
+            //foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
+            //    _gymContext.Add(week);
 
             throw new NotImplementedException();
         }

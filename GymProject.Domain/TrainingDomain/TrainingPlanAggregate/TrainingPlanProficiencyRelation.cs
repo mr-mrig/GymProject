@@ -11,7 +11,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// The Training Plan ID
         /// </summary>
-        public IdTypeValue TrainingPlanId { get; private set; } = null;
+        public uint TrainingPlanId { get; private set; }
 
         /// <summary>
         /// Navigation Property to the Training Plan
@@ -21,7 +21,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Navigation Property to the Training Proficiency
         /// </summary>
-        public IdTypeValue TrainingProficiencyId { get; private set; } = null;
+        public uint TrainingProficiencyId { get; private set; }
 
 
 
@@ -31,7 +31,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private TrainingPlanProficiencyRelation() { }
 
 
-        private TrainingPlanProficiencyRelation(TrainingPlanRoot trainingPlan, IdTypeValue proficiencyId)
+        private TrainingPlanProficiencyRelation(TrainingPlanRoot trainingPlan, uint proficiencyId)
         {
             TrainingPlan = trainingPlan;
             TrainingProficiencyId = proficiencyId;
@@ -49,7 +49,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingPlan">The left entity</param>
         /// <param name="proficiencyId">Tha right entity</param>
         /// <returns>The TrainingPlanMuscleFocus isntance</returns>
-        public static TrainingPlanProficiencyRelation BuildLink(TrainingPlanRoot trainingPlan, IdTypeValue proficiencyId)
+        public static TrainingPlanProficiencyRelation BuildLink(TrainingPlanRoot trainingPlan, uint proficiencyId)
 
             => new TrainingPlanProficiencyRelation(trainingPlan, proficiencyId);
 

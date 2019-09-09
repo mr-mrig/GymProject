@@ -26,6 +26,12 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
+
+        private DateRangeValue()
+        {
+
+        }
+
         private DateRangeValue(DateTime startDate) : this((DateTime?)startDate, DateTime.MaxValue)
         {
         }

@@ -38,6 +38,11 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
+        private RatingValue()
+        {
+
+        }
+
         private RatingValue(float ratingValue)
         {
             Value = ratingValue;

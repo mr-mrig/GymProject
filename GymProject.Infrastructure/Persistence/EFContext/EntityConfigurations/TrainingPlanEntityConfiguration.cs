@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,11 +19,11 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             builder.HasKey(plan => plan.Id);
 
             builder.Property(plan => plan.Id)
-                .HasConversion(new IdTypeValueConverter())
+                //.HasConversion(new IdTypeValueConverter())
                 .ValueGeneratedOnAdd();
 
 
-            builder.Ignore(plan => plan.DomainEvents);
+            //builder.Ignore(plan => plan.DomainEvents);
             builder.Ignore(plan => plan.TrainingVolume);
             builder.Ignore(plan => plan.TrainingIntensity);
             builder.Ignore(plan => plan.TrainingDensity);
@@ -46,22 +47,23 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 
             builder.Property(plan => plan.IsBookmarked)
                 .HasColumnType("INTEGER")
+                //.IsRequired(false)
                 .HasConversion(new BoolToZeroOneConverter<int>());
 
             builder.Property(plan => plan.Name)
                 .HasColumnType("TEXT")
+                .IsRequired(false)
                 .IsRequired();
 
-
+            builder.HasMany<TrainingScheduleRoot>()
+                .WithOne()
+                .HasForeignKey(x => x.TrainingPlanId)
+                .IsRequired();
 
             //builder.HasMany(plan => plan.TrainingWeeks)
             //    .WithOne()
             //    .HasForeignKey(week => week)
             //    .OnDelete(DeleteBehavior.Cascade);
-
-            //builder.HasMany(plan => plan.TrainingScheduleIds)
-            //    .WithOne()
-            //    .HasForeignKey(sched => sched);
 
             //builder.HasIndex(plan => new { plan.OwnerId, plan.PersonalNoteId });
 

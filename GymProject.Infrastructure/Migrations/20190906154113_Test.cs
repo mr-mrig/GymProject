@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GymProject.Infrastructure.Migrations
 {
@@ -30,7 +31,8 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 columns: table => new
                 {
-                    Id = table.Column<long>(nullable: false),
+                    Id = table.Column<uint>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     IsBookmarked = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -44,69 +46,32 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false, defaultValue: 1),
+                    Id = table.Column<int>(nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TrainingPlanType", x => x.Id);
+                    table.UniqueConstraint("AK_TrainingPlanType_Name", x => x.Name);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TrainingHashtag",
+                name: "TrainingSchedule",
                 schema: "GymApp",
                 columns: table => new
                 {
-                    Id = table.Column<long>(nullable: false),
-                    EntryStatusId = table.Column<int>(nullable: true),
-                    Body = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TrainingHashtag", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TrainingHashtag_EntryStatusType_EntryStatusId",
-                        column: x => x.EntryStatusId,
-                        principalSchema: "GymApp",
-                        principalTable: "EntryStatusType",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "IdTypeValue",
-                columns: table => new
-                {
-                    Id = table.Column<long>(nullable: false)
+                    Id = table.Column<uint>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    TrainingPlanRootId = table.Column<long>(nullable: true)
+                    StartDate = table.Column<DateTime>(nullable: false),
+                    EndDate = table.Column<DateTime>(nullable: false),
+                    TrainingPlanId = table.Column<uint>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IdTypeValue", x => x.Id);
+                    table.PrimaryKey("PK_TrainingSchedule", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_IdTypeValue_TrainingPlan_TrainingPlanRootId",
-                        column: x => x.TrainingPlanRootId,
-                        principalSchema: "GymApp",
-                        principalTable: "TrainingPlan",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TrainingPlanHashtag",
-                schema: "GymApp",
-                columns: table => new
-                {
-                    TrainingPlanId = table.Column<long>(nullable: false),
-                    HashtagId = table.Column<long>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TrainingPlanHashtag", x => new { x.TrainingPlanId, x.HashtagId });
-                    table.ForeignKey(
-                        name: "FK_TrainingPlanHashtag_TrainingPlan_TrainingPlanId",
+                        name: "FK_TrainingSchedule_TrainingPlan_TrainingPlanId",
                         column: x => x.TrainingPlanId,
                         principalSchema: "GymApp",
                         principalTable: "TrainingPlan",
@@ -119,8 +84,8 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 columns: table => new
                 {
-                    ParentPlanId = table.Column<long>(nullable: false),
-                    ChildPlanId = table.Column<long>(nullable: false),
+                    ParentPlanId = table.Column<uint>(nullable: false),
+                    ChildPlanId = table.Column<uint>(nullable: false),
                     ChildPlanTypeId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -139,7 +104,7 @@ namespace GymProject.Infrastructure.Migrations
                         principalSchema: "GymApp",
                         principalTable: "TrainingPlanType",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_TrainingPlanRelation_TrainingPlan_ParentPlanId",
                         column: x => x.ParentPlanId,
@@ -149,16 +114,40 @@ namespace GymProject.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_IdTypeValue_TrainingPlanRootId",
-                table: "IdTypeValue",
-                column: "TrainingPlanRootId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TrainingHashtag_EntryStatusId",
+            migrationBuilder.CreateTable(
+                name: "TrainingScheduleFeedback",
                 schema: "GymApp",
-                table: "TrainingHashtag",
-                column: "EntryStatusId");
+                columns: table => new
+                {
+                    Id = table.Column<uint>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Comment = table.Column<string>(maxLength: 1000, nullable: true),
+                    Rating = table.Column<float>(nullable: false),
+                    TrainingScheduleId = table.Column<uint>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingScheduleFeedback", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainingScheduleFeedback_TrainingSchedule_TrainingScheduleId",
+                        column: x => x.TrainingScheduleId,
+                        principalSchema: "GymApp",
+                        principalTable: "TrainingSchedule",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingPlanType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 1, "Variant of another plan", "Variant" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingPlanType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 2, "Received by another user", "Inherited" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_TrainingPlanRelation_ChildPlanId",
@@ -171,19 +160,24 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "TrainingPlanRelation",
                 column: "ChildPlanTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingSchedule_TrainingPlanId",
+                schema: "GymApp",
+                table: "TrainingSchedule",
+                column: "TrainingPlanId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingScheduleFeedback_TrainingScheduleId",
+                schema: "GymApp",
+                table: "TrainingScheduleFeedback",
+                column: "TrainingScheduleId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "IdTypeValue");
-
-            migrationBuilder.DropTable(
-                name: "TrainingHashtag",
-                schema: "GymApp");
-
-            migrationBuilder.DropTable(
-                name: "TrainingPlanHashtag",
+                name: "EntryStatusType",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
@@ -191,15 +185,19 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
-                name: "EntryStatusType",
-                schema: "GymApp");
-
-            migrationBuilder.DropTable(
-                name: "TrainingPlan",
+                name: "TrainingScheduleFeedback",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
                 name: "TrainingPlanType",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "TrainingSchedule",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "TrainingPlan",
                 schema: "GymApp");
         }
     }

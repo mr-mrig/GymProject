@@ -43,7 +43,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
-        private TrainingScheduleRoot()
+        private TrainingScheduleRoot() : base(null)
         {
 
         }
@@ -281,15 +281,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <returns>The TrainingScheduleFeedback object/returns>
         private TrainingScheduleFeedbackEntity FindFeedback(TrainingScheduleFeedbackEntity feedback)
         {
-            throw new NotImplementedException("Need to implement Entity again to have access of IsTransient method");
-            //if (feedback.IsTransient())
+            if (feedback.IsTransient())
 
-            //    // Find by Author ID
-            //    return FindUserFeedback(feedback.UserId);
+                // Find by Author ID
+                return FindUserFeedback(feedback.UserId);
 
-            //else
-            //    // Find by ID
-            //    return _feedbacks.Single(x => x == feedback);
+            else
+                // Find by ID
+                return _feedbacks.Single(x => x == feedback);
         }
 
 

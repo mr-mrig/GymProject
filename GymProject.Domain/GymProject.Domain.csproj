@@ -14,7 +14,6 @@
     <Folder Include="DietDomain\HashtagAggregate\" />
     <Folder Include="MeasuresJournalDomain\BiaDevice\" />
     <Folder Include="SharedKernel\Specifications\" />
-    <Folder Include="UserAccountDomain\" />
   </ItemGroup>
 
 </Project>

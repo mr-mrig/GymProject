@@ -66,6 +66,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
 
         #region Ctors
 
+        private WorkoutSessionRoot() : base(null) { }
+
+
         private WorkoutSessionRoot(uint? id, DateTime? startTime, DateTime? endTime, DateTime? plannedDate, uint? workoutTemplateId, IEnumerable<WorkUnitEntity> workUnits) 
             : base(id)
         {

@@ -11,15 +11,30 @@ namespace GymProject.Domain.SharedKernel
     {
 
 
-        /// <summary>
-        /// The date range left boundary - might be not set, use IsLeftBounded()
-        /// </summary>
-        public DateTime Start { get; private set; }
+
+        private DateTime _start;
 
         /// <summary>
-        /// The date range right boundary - might be not set, use IsRightBounded()
+        /// The date range left boundary
+        /// If not set, DateTime.MinValue is used, hence no need to check for non-null properties
         /// </summary>
-        public DateTime End { get; private set; }
+        public DateTime? Start
+        {
+            get => _start;
+            private set => _start = value ?? DateTime.MinValue;     // This way the internal state will never be null
+        }
+
+        private DateTime _end;
+
+        /// <summary>
+        /// The date range right boundary
+        /// If not set, DateTime.MaxValue is used, hence no need to check for non-null properties
+        /// </summary>
+        public DateTime? End
+        {
+            get => _end;
+            private set => _end = value ?? DateTime.MaxValue;     // This way the internal state will never be null
+        }
 
 
 
@@ -32,15 +47,15 @@ namespace GymProject.Domain.SharedKernel
 
         }
 
-        private DateRangeValue(DateTime startDate) : this((DateTime?)startDate, DateTime.MaxValue)
+        private DateRangeValue(DateTime? startDate) : this(startDate, null)
         {
         }
 
 
-        private DateRangeValue(DateTime? startDate, DateTime endDate)
+        private DateRangeValue(DateTime? startDate, DateTime? endDate)
         {
-            Start = startDate == null ? DateTime.MinValue : startDate.Value;
-            End = endDate;
+            Start = startDate ?? DateTime.MinValue;
+            End = endDate ?? DateTime.MaxValue;
 
             if (!DateRangeValidChronologicalOrder())
                 throw new ValueObjectInvariantViolationException($"StartDate must happen prior to EndDate when creating a {GetType().Name} object");
@@ -60,7 +75,7 @@ namespace GymProject.Domain.SharedKernel
         /// <param name="startDate">The range starting date - must precide endDate</param>
         /// <param name="endDate">The range end date - must be after startDate</param>
         /// /// <returns>The DateRangeValue instance</returns>
-        public static DateRangeValue RangeBetween(DateTime startDate, DateTime endDate)
+        public static DateRangeValue RangeBetween(DateTime? startDate, DateTime? endDate)
             => new DateRangeValue(startDate, endDate);
 
 
@@ -70,7 +85,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="startDate">The range starting date - must precide endDate</param>
         /// /// <returns>The DateRangeValue instance</returns>
-        public static DateRangeValue RangeStartingFrom(DateTime startDate)
+        public static DateRangeValue RangeStartingFrom(DateTime? startDate)
             => new DateRangeValue(startDate);
 
 
@@ -79,7 +94,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="endDate">The range end date - must be after startDate</param>
         /// /// <returns>The DateRangeValue instance</returns>
-        public static DateRangeValue RangeUpTo(DateTime endDate)
+        public static DateRangeValue RangeUpTo(DateTime? endDate)
             => new DateRangeValue(null, endDate);
 
         #endregion
@@ -108,7 +123,7 @@ namespace GymProject.Domain.SharedKernel
         /// <param name="newStartDate">The new start date - null if not to be changed</param>
         /// <exception cref="ValueObjectInvariantViolationException">Thrown if invalid state</exception>
         /// <returns>The DateRangeValue object which is the extension of the current one</returns>
-        public DateRangeValue RescheduleStart(DateTime newStartDate)
+        public DateRangeValue RescheduleStart(DateTime? newStartDate)
         {
             return RangeBetween(newStartDate, End);     // Throws
         }
@@ -120,9 +135,9 @@ namespace GymProject.Domain.SharedKernel
         /// <param name="newEndDate">The new end date</param>
         /// <exception cref="ValueObjectInvariantViolationException">Thrown if invalid state</exception>
         /// <returns>The DateRangeValue object which is the extension of the current one</returns>
-        public DateRangeValue RescheduleEnd(DateTime newEndDate)
+        public DateRangeValue RescheduleEnd(DateTime? newEndDate)
         {
-            return DateRangeValue.RangeBetween(Start, newEndDate);
+            return RangeBetween(Start, newEndDate);
         }
 
 
@@ -131,20 +146,44 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="toCheck">The date to be checked</param>
         /// <returns>True if date inside DateRange boundaries</returns>
+        //public bool Includes(DateTime toCheck)
+        //{
+        //    if (Start == null)
+        //        return toCheck <= (End ?? toCheck);
+
+        //    if (End == null)
+        //        return toCheck >= (Start ?? toCheck);
+
+        //    return toCheck >= Start.Value && toCheck <= End.Value;
+        //}
         public bool Includes(DateTime toCheck)
         {
-            return toCheck >= Start && toCheck <= End;
+            return toCheck >= Start.Value && toCheck <= End.Value;
         }
-
 
         /// <summary>
         /// Checks wether the specified daterange is included in the range or not
         /// </summary>
         /// <param name="toCheck">The date range to be checked</param>
         /// <returns>True if the DateRange encloses the one specified</returns>
+        //public bool Includes(DateRangeValue toCheck)
+        //{
+        //    if(!toCheck.IsLeftBounded())
+        //    {
+        //        if (!toCheck.IsRightBounded())
+        //            return false;
+
+        //        return Includes(toCheck.End.Value);
+        //    }
+
+        //    if (!toCheck.IsRightBounded())
+        //        return Includes(toCheck.Start.Value);
+
+        //    return Includes(toCheck.Start.Value) && Includes(toCheck.End.Value);
+        //}
         public bool Includes(DateRangeValue toCheck)
         {
-            return Includes(toCheck.Start) && Includes(toCheck.End);
+            return Includes(toCheck.Start.Value) && Includes(toCheck.End.Value);
         }
 
 
@@ -154,9 +193,32 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="toCheck">The date range to be checked</param>
         /// <returns>True if the DetaRange objects are overlapping</returns>
+        //public bool Overlaps(DateRangeValue toCheck)
+        //{
+        //    if (!toCheck.IsLeftBounded())
+        //    {
+        //        if (!toCheck.IsRightBounded())
+        //            return true;
+
+        //        if (End.HasValue)
+        //            toCheck.Includes(End.Value);
+        //        else
+        //            return true;
+        //    }
+
+        //    if (!toCheck.IsRightBounded())
+        //    {
+        //        if (Start.HasValue)
+        //            toCheck.Includes(Start.Value);
+        //        else
+        //            return true;
+        //    }
+
+        //    return toCheck.Includes(Start.Value) || toCheck.Includes(End.Value) || Includes(toCheck);
+        //}
         public bool Overlaps(DateRangeValue toCheck)
         {
-            return toCheck.Includes(Start) || toCheck.Includes(End) || Includes(toCheck);
+            return toCheck.Includes(Start.Value) || toCheck.Includes(End.Value) || Includes(toCheck);
         }
 
 
@@ -168,9 +230,9 @@ namespace GymProject.Domain.SharedKernel
         public int CompareTo(DateRangeValue another)
         {
             if (!Start.Equals(another.Start))
-                return Start.CompareTo(another.Start);
+                return Start.Value.CompareTo(another.Start.Value);
 
-            return End.CompareTo(another.End);
+            return End.Value.CompareTo(another.End.Value);
         }
 
 
@@ -198,7 +260,7 @@ namespace GymProject.Domain.SharedKernel
                 higher = this;
             }
 
-            return RangeBetween(lower.End.AddDays(1), higher.Start.AddDays(-1));
+            return RangeBetween(lower.End.Value.AddDays(1), higher.Start.Value.AddDays(-1));
         }
 
 
@@ -222,7 +284,7 @@ namespace GymProject.Domain.SharedKernel
                 higher = this;
             }
 
-            if (higher.Start > lower.End.AddDays(1))
+            if (higher.Start > lower.End.Value.AddDays(1))
                 return null;
 
             return RangeBetween(lower.Start, higher.End);
@@ -233,7 +295,7 @@ namespace GymProject.Domain.SharedKernel
         /// Get the DateRange length [days, truncated]
         /// </summary>
         /// <returns>The days</returns>
-        public int GetLength() => (End.AddDays(1) - Start).Days;    // Boundaries included -> need for the +1day
+        public int GetLength() => (End.Value.AddDays(1) - Start.Value).Days;    // Boundaries included -> need for the +1day
 
         #endregion
 

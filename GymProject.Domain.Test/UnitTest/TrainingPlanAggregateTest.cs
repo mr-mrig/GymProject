@@ -485,7 +485,7 @@ namespace GymProject.Domain.Test.UnitTest
                     case var _ when testCaseProbability < 0.65f:
 
                         TrainingPlanTypeEnum childType = RandomFieldGenerator.RollEventWithProbability(0.5f)
-                            ? TrainingPlanTypeEnum.NotSet 
+                            ? null 
                             : TrainingPlanTypeEnum.Variant;
 
                         childPlansRelations.Add(StaticUtils.BuildTrainingPlanRelation(planId, validChildId, childType, messageId));
@@ -617,7 +617,7 @@ namespace GymProject.Domain.Test.UnitTest
                 else if (rolledChance <= variantPlanProbability)
                     planType = TrainingPlanTypeEnum.Variant;
                 else
-                    planType = TrainingPlanTypeEnum.NotSet;
+                    planType = null;
 
                 TrainingPlanRoot plan = BuildAndCheckRandomTrainingPlan(planId, isTransient);
 
@@ -1174,7 +1174,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(isBookmarked, plan.IsBookmarked);
             Assert.Equal(childPlansRelations.Count(x => x.ChildPlanType == TrainingPlanTypeEnum.Variant) > 0, plan.IsTemplate);
             Assert.Equal(ownerId, plan.OwnerId);
-            Assert.Equal(noteId, plan.PersonalNoteId);
+            Assert.Equal(noteId, plan.TrainingPlanNoteId);
 
             Assert.True(scheduleIds.SequenceEqual(plan.TrainingScheduleIds));
             Assert.True(phaseIds.SequenceEqual(plan.TrainingPhaseIds));
@@ -1237,7 +1237,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.WriteNote(noteId);
 
             Assert.Equal(name, plan.Name);
-            Assert.Equal(noteId, plan.PersonalNoteId);
+            Assert.Equal(noteId, plan.TrainingPlanNoteId);
 
             // Add IDs
             plan.TagAs(hashtagId);
@@ -1308,7 +1308,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Remove
             plan.CleanNote();
-            Assert.Null(plan.PersonalNoteId);
+            Assert.Null(plan.TrainingPlanNoteId);
 
             // Remove Hashtags
             toRemove = RandomFieldGenerator.RandomInt(1, plan.HashtagIds.Count);

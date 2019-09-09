@@ -55,7 +55,7 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public TrainingPlanRoot WithId(IdTypeValue id)
+        public TrainingPlanRoot WithId(uint? id)
         {
             throw new NotImplementedException();
         }

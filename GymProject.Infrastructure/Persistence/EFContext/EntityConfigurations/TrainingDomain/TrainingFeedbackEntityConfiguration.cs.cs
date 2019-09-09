@@ -1,11 +1,12 @@
 ﻿using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
+using GymProject.Domain.UserAccountDomain.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 
-namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
+namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
     internal class TrainingFeedbackEntityConfiguration : IEntityTypeConfiguration<TrainingScheduleFeedbackEntity>
     {
@@ -20,12 +21,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
             builder.Property(f => f.Id)
                 .ValueGeneratedOnAdd();
 
-
-            builder.Ignore(f => f.UserId);      // TODO
-
             builder.OwnsOne(f => f.Rating, 
                 r => r.Property(x => x.Value)
-                    //.IsRequired(false)
                     .HasColumnName("Rating"));
 
             builder.OwnsOne(f => f.Comment, 
@@ -39,6 +36,17 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
                 .IsRequired()
                 .HasForeignKey("TrainingScheduleId")
                 .OnDelete(DeleteBehavior.Cascade);
+
+
+            builder.HasOne<UserRoot>()
+                .WithMany()
+                .IsRequired()
+                .HasForeignKey(s => s.UserId);
+
+            builder.HasAlternateKey(
+                "TrainingScheduleId",
+                "UserId"
+            );
         }
 
     }

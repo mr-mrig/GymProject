@@ -14,9 +14,10 @@ namespace GymProject.Domain.TrainingDomain.Common
         #region Const
 
         /// <summary>
-        /// Value when no rest is specified
+        /// Values that identifies that an input value has not been specified
         /// </summary>
-        private const int NotSetValue = -1;
+        protected const int NotSpecifiedInput = -1;
+
 
         /// <summary>
         /// Value to be used when no rest is specified
@@ -40,7 +41,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <summary>
         /// The TUT as 4 values: concentric-stop-eccentric-stop 
         /// </summary>
-        public int Value { get; private set; } = NotSetValue;
+        public int Value { get; private set; } = NotSpecifiedInput;
 
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>The RestPeriodValue instance</returns>
         protected static RestPeriodValue SetRest(int restValue, TimeMeasureUnitEnum measUnit)
 
-            => new RestPeriodValue((int)restValue, measUnit);
+            => new RestPeriodValue(restValue, measUnit);
 
         /// <summary>
         /// Factory method
@@ -90,9 +91,9 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Factory method - When the rest is not specified - Default value is assumed in computations
         /// </summary>
         /// <returns>The RestPeriodValue instance</returns>
-        public static RestPeriodValue SetRestNotSpecified()
+        public static RestPeriodValue SetNotSpecifiedRest()
 
-            => SetRest(NotSetValue, TimeMeasureUnitEnum.Seconds);
+            => SetRest(NotSpecifiedInput, TimeMeasureUnitEnum.Seconds);
 
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Check whether the rest time has been specified or it has been left not set
         /// </summary>
         /// <returns>True if a valid rest time has been specified</returns>
-        public bool IsRestSpecified() => Value != NotSetValue;
+        public bool IsRestSpecified() => Value != NotSpecifiedInput;
 
 
         public override string ToString() => Value.ToString() + MeasureUnit.Abbreviation;
@@ -127,7 +128,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Rest period must be a non-negative number.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool IsValidNumber() => Value >= 0 || Value == NotSetValue;
+        private bool IsValidNumber() => Value >= 0 || Value == NotSpecifiedInput;
 
 
         /// <summary>

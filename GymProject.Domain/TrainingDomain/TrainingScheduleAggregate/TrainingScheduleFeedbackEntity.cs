@@ -33,6 +33,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         #region Ctors
 
+        private TrainingScheduleFeedbackEntity() : base(null)
+        {
+
+        }
+
+
         private TrainingScheduleFeedbackEntity(uint? id, uint? authorId, RatingValue rating, PersonalNoteValue comment) : base(id)
         {
             Comment = comment ?? PersonalNoteValue.Write("");

@@ -1,8 +1,9 @@
 ﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
+namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
     internal class TrainingPlanRelationEntityConfiguration : IEntityTypeConfiguration<TrainingPlanRelation>
     {
@@ -44,7 +45,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.Ignore(r => r.MessageId);       // TODO
+            builder.HasOne<TrainingPlanMessageRoot>()
+                .WithMany()
+                .HasForeignKey(r => r.MessageId)
+                .IsRequired(false);
         }
 
     }

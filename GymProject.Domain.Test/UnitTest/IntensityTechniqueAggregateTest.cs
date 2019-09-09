@@ -64,8 +64,8 @@ namespace GymProject.Domain.Test.UnitTest
                 uint? id = 1;
 
                 IntensityTechniqueRoot tech = IntensityTechniqueRoot.CreateNativeIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
-                Assert.Throws<InvalidOperationException>(() => tech.ModerateEntryStatus(EntryStatusTypeEnum.NotSet));
-                Assert.Throws<InvalidOperationException>(() => tech.ChangeEntryStatus(EntryStatusTypeEnum.NotSet));
+                Assert.Throws<InvalidOperationException>(() => tech.ModerateEntryStatus(null));
+                Assert.Throws<InvalidOperationException>(() => tech.ChangeEntryStatus(null));
             }
         }
 
@@ -135,7 +135,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Equal(description, technique.Description);
 
                 EntryStatusTypeEnum newStatus = RandomFieldGenerator.ChooseAmong(
-                    EntryStatusTypeEnum.List().Except(new List<EntryStatusTypeEnum>() { EntryStatusTypeEnum.NotSet }));
+                    EntryStatusTypeEnum.List().Except(new List<EntryStatusTypeEnum>() { null }));
 
                 technique.ChangeEntryStatus(newStatus);
 

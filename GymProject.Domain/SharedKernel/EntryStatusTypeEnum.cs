@@ -11,12 +11,12 @@ namespace GymProject.Domain.SharedKernel
 
 
         #region Class Enums
-        public static EntryStatusTypeEnum NotSet = new EntryStatusTypeEnum(0, "NotSet");
-        public static EntryStatusTypeEnum Private = new EntryStatusTypeEnum(1, "Private");
-        public static EntryStatusTypeEnum Pending = new EntryStatusTypeEnum(2, "Pending");
-        public static EntryStatusTypeEnum Approved = new EntryStatusTypeEnum(3, "Approved");
-        public static EntryStatusTypeEnum Banned = new EntryStatusTypeEnum(4, "Banned");
-        public static EntryStatusTypeEnum Native = new EntryStatusTypeEnum(5, "Native");
+        //public static EntryStatusTypeEnum NotSet = new EntryStatusTypeEnum(0, "NotSet");
+        public static EntryStatusTypeEnum Private = new EntryStatusTypeEnum(1, "Private", "The entry is visible only to the Owner");
+        public static EntryStatusTypeEnum Pending = new EntryStatusTypeEnum(2, "Pending", "Public entry waiting for approval");
+        public static EntryStatusTypeEnum Approved = new EntryStatusTypeEnum(3, "Approved", "Public entry visible to everyone");
+        public static EntryStatusTypeEnum Banned = new EntryStatusTypeEnum(4, "Banned", "Banned entry, visible to nobody");
+        public static EntryStatusTypeEnum Native = new EntryStatusTypeEnum(5, "Native", "Entry belonging to the DB release");
         #endregion
 
 
@@ -41,7 +41,7 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<EntryStatusTypeEnum> List() =>
-            new[] { NotSet, Private, Pending, Approved, Banned, Native,};
+            new[] { /*NotSet, */Private, Pending, Approved, Banned, Native,};
 
 
         /// <summary>

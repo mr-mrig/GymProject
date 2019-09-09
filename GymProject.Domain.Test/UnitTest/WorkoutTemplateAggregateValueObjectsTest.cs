@@ -28,7 +28,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             RestPeriodValue restVal1 = RestPeriodValue.SetRestSeconds((uint)rest1);
             RestPeriodValue restVal2 = RestPeriodValue.SetRestSeconds((uint)rest2);
-            RestPeriodValue restVal3 = RestPeriodValue.SetRestNotSpecified();
+            RestPeriodValue restVal3 = RestPeriodValue.SetNotSpecifiedRest();
             RestPeriodValue restVal4 = RestPeriodValue.SetFullRecoveryRest();
 
             Assert.Equal(rest1, restVal1.Value);
@@ -48,7 +48,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             int rest1 = 90, rest2 = (int)77.7f;
 
-            RestPeriodValue restVal1 = RestPeriodValue.SetRestNotSpecified();
+            RestPeriodValue restVal1 = RestPeriodValue.SetNotSpecifiedRest();
             RestPeriodValue sum = restVal1 + rest1;
             RestPeriodValue diff = sum - rest2;
 
@@ -125,7 +125,7 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(WSWorkTypeEnum.TimeBasedSerie, timed2.WorkType);
         }
 
-        
+
         [Fact]
         public void TUTPlanFail()
         {
@@ -529,7 +529,7 @@ namespace GymProject.Domain.Test.UnitTest
                         TrainingDensityParametersValue density = TrainingDensityParametersValue.ComputeFromWorkingSets(ws);
 
                         // Add sets to the parameters
-                        for(int iadditionalWs = 0; iadditionalWs < additionalSetsMax; iadditionalWs++)
+                        for (int iadditionalWs = 0; iadditionalWs < additionalSetsMax; iadditionalWs++)
                         {
                             uint? id = (uint?)(wsNumMax + iadditionalWs);
                             WSRepetitionsValue additionalWs = WSRepetitionsValue.TrackRepetitionSerie((uint)(ireps + 2)); // Higher reps

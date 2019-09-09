@@ -11,6 +11,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate
 
         #region Ctors
 
+        private TrainingPlanNoteRoot() : base(null, null) { }
+
+
         private TrainingPlanNoteRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 

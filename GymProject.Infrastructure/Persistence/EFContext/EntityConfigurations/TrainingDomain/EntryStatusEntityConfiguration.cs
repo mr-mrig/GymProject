@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
+namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
     internal class EntryStatusEntityConfiguration : IEntityTypeConfiguration<EntryStatusTypeEnum>
     {
@@ -25,6 +25,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
 
             builder.HasAlternateKey(e => e.Name);
 
+            // Data Seeding
+            builder.HasData(EntryStatusTypeEnum.List());
         }
 
     }

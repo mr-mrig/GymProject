@@ -876,9 +876,9 @@ namespace GymProject.Domain.Test.UnitTest
         //public void SortUnits()
         //{
         //    DateRangeValue range1 = DateRangeValue.RangeBetween(DateTime.Today, DateTime.Today.AddDays(5));        // 26/07 - 31/07
-        //    DateRangeValue range2 = DateRangeValue.RangeBetween(range1.End.AddDays(1), range1.End.AddDays(5));     // 01/08 - 06/08
-        //    DateRangeValue range3 = DateRangeValue.RangeBetween(range2.End.AddDays(-2), range2.End.AddDays(5));    // 04/08 - 09/08
-        //    DateRangeValue range4 = DateRangeValue.RangeBetween(range3.End.AddDays(-2), range3.End.AddDays(5));    // 07/08 - 12/08
+        //    DateRangeValue range2 = DateRangeValue.RangeBetween(range1.End.Value.AddDays(1), range1.End.Value.AddDays(5));     // 01/08 - 06/08
+        //    DateRangeValue range3 = DateRangeValue.RangeBetween(range2.End.Value.AddDays(-2), range2.End.Value.AddDays(5));    // 04/08 - 09/08
+        //    DateRangeValue range4 = DateRangeValue.RangeBetween(range3.End.Value.AddDays(-2), range3.End.Value.AddDays(5));    // 07/08 - 12/08
 
 
 
@@ -1127,12 +1127,12 @@ namespace GymProject.Domain.Test.UnitTest
             DietPlanRoot plan = DietPlanRoot.NewDraft(owner, dest);
 
             DateRangeValue range1 = DateRangeValue.RangeBetween(DateTime.Today, DateTime.Today.AddDays(10));
-            DateRangeValue range2 = DateRangeValue.RangeBetween(range1.End.AddDays(1), range1.End.AddDays(11));
+            DateRangeValue range2 = DateRangeValue.RangeBetween(range1.End.Value.AddDays(1), range1.End.Value.AddDays(11));
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
             plan.AppendDietPlanUnitDraft();
 
             Assert.Equal(range1, plan.PeriodScheduled);        // Not aligned as unit2 has no units -> draft
@@ -1149,7 +1149,7 @@ namespace GymProject.Domain.Test.UnitTest
                 plan.CloseDietPlanUnit(unitId, DateTime.Today, DateTime.Today.AddDays(20)));
 
             // Valid schedule
-            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(1), range1.End.AddDays(11));
+            plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(1), range1.End.Value.AddDays(11));
             Assert.Equal(range2.Join(range1), plan.PeriodScheduled);        // This time is equal
         }
 
@@ -1167,7 +1167,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
 
 
             unitId = unitId + 1;
@@ -1176,10 +1176,10 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
     weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(10));
+            plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(10));
 
-            Assert.Equal(range1.End.AddDays(10), plan.FindUnitById(unitId).PeriodScheduled.End);
-            Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(unitId).PeriodScheduled.Start);
+            Assert.Equal(range1.End.Value.AddDays(10), plan.FindUnitById(unitId).PeriodScheduled.End.Value);
+            Assert.Equal(range1.End.Value.AddDays(1), plan.FindUnitById(unitId).PeriodScheduled.Start.Value);
         }
 
 
@@ -1196,8 +1196,8 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            Assert.Throws<DietDomainIvariantViolationException>(() => plan.CloseDietPlanUnit(unitId, range1.End));
-            Assert.Throws<ArgumentException>(() => plan.CloseDietPlanUnit(unitId + 10, range1.Start, range1.End));
+            Assert.Throws<DietDomainIvariantViolationException>(() => plan.CloseDietPlanUnit(unitId, range1.End.Value));
+            Assert.Throws<ArgumentException>(() => plan.CloseDietPlanUnit(unitId + 10, range1.Start.Value, range1.End.Value));
         }
 
 
@@ -1210,12 +1210,12 @@ namespace GymProject.Domain.Test.UnitTest
             DietPlanRoot plan = DietPlanRoot.NewDraft(owner, dest);
 
             DateRangeValue range1 = DateRangeValue.RangeBetween(DateTime.Today, DateTime.Today.AddDays(10));
-            DateRangeValue range2 = DateRangeValue.RangeBetween(range1.End.AddDays(1), range1.End.AddDays(11));
+            DateRangeValue range2 = DateRangeValue.RangeBetween(range1.End.Value.AddDays(1), range1.End.Value.AddDays(11));
 
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
             plan.AppendDietPlanUnitDraft();
 
             Assert.Equal(range1, plan.PeriodScheduled);        // Not aligned as unit2 has no units -> draft
@@ -1229,10 +1229,10 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Invalid schedule -> Non contguous units
             Assert.Throws<DietDomainIvariantViolationException>(() =>
-                plan.CloseDietPlanUnit(unitId, range1.End.AddDays(+5), range1.End.AddDays(20)));
+                plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(+5), range1.End.Value.AddDays(20)));
 
             // Valid schedule
-            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(1), range1.End.AddDays(11));
+            plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(1), range1.End.Value.AddDays(11));
             Assert.Equal(range2.Join(range1), plan.PeriodScheduled);        // This time is equal
         }
 
@@ -1250,7 +1250,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
 
             // Unit2
             plan.AppendDietPlanUnitDraft();
@@ -1259,20 +1259,20 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnitToInfinite(unitId, range1.End.AddDays(1));
+            plan.CloseDietPlanUnitToInfinite(unitId, range1.End.Value.AddDays(1));
 
-            Assert.Equal(range1.Start, plan.PeriodScheduled.Start);
+            Assert.Equal(range1.Start.Value, plan.PeriodScheduled.Start.Value);
             Assert.False(plan.PeriodScheduled.IsRightBounded());
 
             //Close it
             int days = 10;
-            DateTime end = range1.End.AddDays(days);
+            DateTime end = range1.End.Value.AddDays(days);
             plan.CloseDietPlan(end);
 
-            Assert.Equal(range1.Start, plan.PeriodScheduled.Start);
-            Assert.Equal(end, plan.PeriodScheduled.End);
-            Assert.Equal(plan.FindUnitById(unitId - 1).PeriodScheduled.End.AddDays(1), plan.FindUnitById(unitId).PeriodScheduled.Start);    // Check contiguousness
-            Assert.Equal(end, plan.FindUnitById(unitId).PeriodScheduled.End);   // Unit 2 has been closed also
+            Assert.Equal(range1.Start.Value, plan.PeriodScheduled.Start.Value);
+            Assert.Equal(end, plan.PeriodScheduled.End.Value);
+            Assert.Equal(plan.FindUnitById(unitId - 1).PeriodScheduled.End.Value.AddDays(1), plan.FindUnitById(unitId).PeriodScheduled.Start.Value);    // Check contiguousness
+            Assert.Equal(end, plan.FindUnitById(unitId).PeriodScheduled.End.Value);   // Unit 2 has been closed also
         }
 
 
@@ -1286,8 +1286,8 @@ namespace GymProject.Domain.Test.UnitTest
 
             int fakeDays2 = 10, days2 = 20, days = 10;
             DateRangeValue range1 = DateRangeValue.RangeBetween(DateTime.Today, DateTime.Today.AddDays(days));
-            DateTime fakeEnd2 = range1.End.AddDays(fakeDays2);
-            DateTime end2 = range1.End.AddDays(days2);
+            DateTime fakeEnd2 = range1.End.Value.AddDays(fakeDays2);
+            DateTime end2 = range1.End.Value.AddDays(days2);
             DateTime fakeEnd3 = fakeEnd2.AddDays(days);
             DateTime end3 = end2.AddDays(days);
 
@@ -1295,7 +1295,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
 
             // Unit2
             plan.AppendDietPlanUnitDraft();
@@ -1317,23 +1317,23 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Check the units schedule is as expected
             uint? testUnitId = (uint?)(2);
-            Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
-            Assert.Equal(fakeEnd2, plan.FindUnitById(testUnitId).PeriodScheduled.End);
+            Assert.Equal(range1.End.Value.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start.Value);
+            Assert.Equal(fakeEnd2, plan.FindUnitById(testUnitId).PeriodScheduled.End.Value);
             testUnitId = (uint?)(3);
-            Assert.Equal(fakeEnd2.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
-            Assert.Equal(fakeEnd3, plan.FindUnitById(testUnitId).PeriodScheduled.End);
+            Assert.Equal(fakeEnd2.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start.Value);
+            Assert.Equal(fakeEnd3, plan.FindUnitById(testUnitId).PeriodScheduled.End.Value);
 
             // Extend the Unit2 to end2
             unitId = (uint?)(2);
-            plan.MoveDietPlanUnit(unitId, DateRangeValue.RangeBetween(plan.FindUnitById(unitId).PeriodScheduled.Start, end2));
+            plan.MoveDietPlanUnit(unitId, DateRangeValue.RangeBetween(plan.FindUnitById(unitId).PeriodScheduled.Start.Value, end2));
 
             // Check the units schedule is as expected
             testUnitId = (uint?)(2);
-            Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
-            Assert.Equal(end2, plan.FindUnitById(testUnitId).PeriodScheduled.End);
+            Assert.Equal(range1.End.Value.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start.Value);
+            Assert.Equal(end2, plan.FindUnitById(testUnitId).PeriodScheduled.End.Value);
             testUnitId = (uint?)(3);
-            Assert.Equal(end2.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
-            Assert.Equal(end3, plan.FindUnitById(testUnitId).PeriodScheduled.End);
+            Assert.Equal(end2.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start.Value);
+            Assert.Equal(end3, plan.FindUnitById(testUnitId).PeriodScheduled.End.Value);
 
             // Move Unit2 to a non-contiguous period
             unitId = (uint?)(2);
@@ -1342,13 +1342,13 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Check the units schedule is as expected
             //testUnitId = new IdType(1);
-            //Assert.Equal(range1.Start, plan.FindUnitById(testUnitId).PeriodScheduled.Start);
-            //Assert.Equal(newPeriod.Start.AddDays(-1), plan.FindUnitById(testUnitId).PeriodScheduled.End);
+            //Assert.Equal(range1.Start.Value, plan.FindUnitById(testUnitId).PeriodScheduled.Start.Value);
+            //Assert.Equal(newPeriod.Start.Value.AddDays(-1), plan.FindUnitById(testUnitId).PeriodScheduled.End.Value);
             testUnitId = (uint?)(2);
             Assert.Equal(newPeriod, plan.FindUnitById(testUnitId).PeriodScheduled);
             testUnitId = (uint?)(3);
-            Assert.Equal(range1.End.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start);
-            Assert.Equal(newPeriod.Start.AddDays(-1), plan.FindUnitById(testUnitId).PeriodScheduled.End);
+            Assert.Equal(range1.End.Value.AddDays(1), plan.FindUnitById(testUnitId).PeriodScheduled.Start.Value);
+            Assert.Equal(newPeriod.Start.Value.AddDays(-1), plan.FindUnitById(testUnitId).PeriodScheduled.End.Value);
         }
 
 
@@ -1379,7 +1379,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(5));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
 
             // Unit2
             plan.AppendDietPlanUnitDraft();
@@ -1399,13 +1399,13 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(5));
 
-            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(100));
+            plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(100));
 
             uint? removeUnitId = 1;
             uint? removeDayId = 1;
             plan.UnplanDietDay(removeUnitId, removeDayId);
 
-            Assert.Throws<DietDomainIvariantViolationException>(() => plan.CloseDietPlanUnit(removeUnitId, range1.Start, range1.End));
+            Assert.Throws<DietDomainIvariantViolationException>(() => plan.CloseDietPlanUnit(removeUnitId, range1.Start.Value, range1.End.Value));
         }
 
 
@@ -1436,7 +1436,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(5));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
 
             // Unit2
             plan.AppendDietPlanUnitDraft();
@@ -1456,7 +1456,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(5));
 
-            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(100));
+            plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(100));
 
             // Non existing day
             uint? removeUnitId = 1;
@@ -1498,7 +1498,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(5));
 
-            plan.CloseDietPlanUnit(unitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(unitId, range1.Start.Value, range1.End.Value);
 
             // Unit2
             plan.AppendDietPlanUnitDraft();
@@ -1520,7 +1520,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.PlanDietDay(unitId, MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(5));
 
-            plan.CloseDietPlanUnit(unitId, range1.End.AddDays(100));
+            plan.CloseDietPlanUnit(unitId, range1.End.Value.AddDays(100));
 
             uint? removeUnitId = 1;
             uint? removeDayId = 1;
@@ -1530,7 +1530,7 @@ namespace GymProject.Domain.Test.UnitTest
             plan.ChangeDietDay(removeUnitId, (uint?)(2), MacronutirentWeightValue.MeasureGrams(200), MacronutirentWeightValue.MeasureGrams(100), MacronutirentWeightValue.MeasureGrams(100),
                 weeklyOccurrances: WeeklyOccuranceValue.TrackOccurance(7));
 
-            plan.CloseDietPlanUnit(removeUnitId, range1.Start, range1.End);
+            plan.CloseDietPlanUnit(removeUnitId, range1.Start.Value, range1.End.Value);
 
             Assert.Single(plan.FindUnitById(removeUnitId).DietDays);
             Assert.Equal(1, (int)plan.FindUnitById(removeUnitId).Id.Value);

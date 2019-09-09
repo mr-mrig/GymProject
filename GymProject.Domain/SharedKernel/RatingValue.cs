@@ -2,7 +2,6 @@
 using GymProject.Domain.SharedKernel.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GymProject.Domain.SharedKernel
 {
@@ -56,12 +55,21 @@ namespace GymProject.Domain.SharedKernel
         #region Factories
 
         /// <summary>
-        /// Create a new Rating object with the specified value
+        /// Factory Method
         /// </summary>
         /// <param name="ratingValue">Rating value</param>
         /// <returns>The Rating object</returns>
         /// <exception cref="ValueObjectInvariantViolationException">If ratingValue out of boundaries</exception>
         public static RatingValue Rate(float ratingValue) => new RatingValue(FormatRating(ratingValue));
+
+
+        /// <summary>
+        /// Factory Method - NULL rating
+        /// </summary>
+        /// <param name="ratingValue">Rating value</param>
+        /// <returns>The Rating object</returns>
+        /// <exception cref="ValueObjectInvariantViolationException">If ratingValue out of boundaries</exception>
+        public static RatingValue RateNull() => new RatingValue();
 
         #endregion
 

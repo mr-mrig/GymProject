@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations
+namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
     internal class TrainingPlanTypeEntityConfiguration : IEntityTypeConfiguration<TrainingPlanTypeEnum>
     {

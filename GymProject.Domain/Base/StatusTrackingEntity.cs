@@ -27,7 +27,7 @@ namespace GymProject.Domain.Base
         /// <param name="moderator">The moderator who changed the status</param>
         public virtual void ModerateEntryStatus(EntryStatusTypeEnum newStatus, Moderator moderator = null)
         {
-            EntryStatus = newStatus ?? EntryStatusTypeEnum.NotSet;
+            EntryStatus = newStatus;
             TestEntryStatusBusinessRules();
         }
 
@@ -38,7 +38,7 @@ namespace GymProject.Domain.Base
         /// <param name="newStatus">The new status</param>
         public virtual void ChangeEntryStatus(EntryStatusTypeEnum newStatus)
         {
-            EntryStatus = newStatus ?? EntryStatusTypeEnum.NotSet;
+            EntryStatus = newStatus;
             TestEntryStatusBusinessRules();
         }
 
@@ -48,7 +48,7 @@ namespace GymProject.Domain.Base
         /// <exception cref="InvalidOperationException">Thrown if business rules violation</exception>
         protected virtual void TestEntryStatusBusinessRules()
         {
-            if (EntryStatus == null || EntryStatus == EntryStatusTypeEnum.NotSet)
+            if (EntryStatus == null /*|| EntryStatus == EntryStatusTypeEnum.NotSet*/)
                 throw new InvalidOperationException($"The Entry Status must be valid.");
         }
     }

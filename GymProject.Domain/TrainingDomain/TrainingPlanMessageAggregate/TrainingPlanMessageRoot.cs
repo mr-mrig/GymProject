@@ -11,6 +11,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate
 
         #region Ctors
 
+        private TrainingPlanMessageRoot() : base(null, null) { }
+
+
         private TrainingPlanMessageRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 

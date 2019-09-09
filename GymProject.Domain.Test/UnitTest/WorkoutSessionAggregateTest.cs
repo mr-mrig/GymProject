@@ -300,24 +300,26 @@ namespace GymProject.Domain.Test.UnitTest
 
                     int newWorkingSetNum = RandomFieldGenerator.RandomInt(1, 3);
 
-                    for (int iws = 0; iws < newWorkingSetNum; iws++)
-                    {
-                        WorkingSetEntity ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet();
-                        workout.TrackWorkingSet(pnumToChange, ws);
+                    //for (int iws = 0; iws < newWorkingSetNum; iws++)
+                    //{
+                    //    WorkingSetEntity ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet();
+                    //    workout.TrackWorkingSet(pnumToChange, ws);
 
-                        CheckWorkUnit(workout.CloneWorkUnit(pnumToChange), originalWorkUnit, isTransient);
-                        CheckWorkingSets(originalWorkUnit.WorkingSets.Union(new List<WorkingSetEntity>() { ws }),
-                            workout.CloneWorkUnit(pnumToChange).WorkingSets, isTransient);
-                    }
+                    //    CheckWorkUnit(workout.CloneWorkUnit(pnumToChange), originalWorkUnit, isTransient);
+                    //    CheckWorkingSets(originalWorkUnit.WorkingSets.Union(new List<WorkingSetEntity>() { ws }),
+                    //        workout.CloneWorkUnit(pnumToChange).WorkingSets, isTransient);
+                    //}
 
-                    workout.UntrackWorkingSet();
-                    workout.WriteWorkingSetNote();
-                    workout.ReviseWorkingSetLoad();
-                    workout.ReviseWorkingSetRepetitions();
+                    //workout.UntrackWorkingSet();
+                    //workout.WriteWorkingSetNote();
+                    //workout.ReviseWorkingSetLoad();
+                    //workout.ReviseWorkingSetRepetitions();
 
 
 
-                    workout.MoveWorkUnitToNewProgressiveNumber(pnumToChange, destPnum);
+                    //workout.MoveWorkUnitToNewProgressiveNumber(pnumToChange, destPnum);
+
+                    throw new NotImplementedException();
                 }
 
                 // Remove Work Units

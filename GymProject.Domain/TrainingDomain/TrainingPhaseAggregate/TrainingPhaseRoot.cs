@@ -31,7 +31,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         #region Ctors
 
         private TrainingPhaseRoot(string name, EntryStatusTypeEnum entryStatus) 
-            : base(null, entryStatus ?? EntryStatusTypeEnum.NotSet)
+            : base(null, entryStatus)
         {
             Name = name?.Trim() ?? string.Empty;
 
@@ -123,7 +123,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// The Training Phase requires the Entry Status to be set.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool ValidEntryStatus() => EntryStatus != EntryStatusTypeEnum.NotSet;
+        private bool ValidEntryStatus() => EntryStatus != null;
 
 
 

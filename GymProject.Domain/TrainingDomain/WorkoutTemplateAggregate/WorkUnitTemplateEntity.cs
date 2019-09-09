@@ -58,7 +58,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public uint? ExcerciseId { get; private set; } = null;
 
 
-        private ICollection<uint?> _intensityTechniquesIds = null;
+        private ICollection<uint?> _intensityTechniquesIds = new List<uint?>();
 
         /// <summary>
         /// The list of the IDs of the WU-wise Intensity Techniques - Will be applied to all the WSs
@@ -66,12 +66,19 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         public IReadOnlyCollection<uint?> IntensityTechniquesIds
         {
-            get => _intensityTechniquesIds.ToList().AsReadOnly() ?? new List<uint?>().AsReadOnly();
+            get => _intensityTechniquesIds.ToList().AsReadOnly() 
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
 
         #region Ctors
+
+        private WorkUnitTemplateEntity() : base(null)
+        {
+
+        }
+
 
         private WorkUnitTemplateEntity(uint? id, uint progressiveNumber, uint? excerciseId, 
             IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<uint?> workUnitIntensityTechniqueIds, uint? ownerNoteId = null) : base(id)

@@ -16,7 +16,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
 
-        public uint Id { get; private set; }
 
         /// <summary>
         /// The name of the Training Plan
@@ -64,7 +63,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// FK to the Training Plan note - Optional
         /// </summary>
-        public uint? PersonalNoteId { get; private set; } = null;
+        public uint? TrainingPlanNoteId { get; private set; } = null;
 
 
         private  IList<TrainingWeekEntity> _trainingWeeks = new List<TrainingWeekEntity>();
@@ -86,7 +85,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint? OwnerId { get; private set; } = null;
 
 
-        private ICollection<uint> _trainingScheduleIds = new List<uint>();
+        private ICollection<uint?> _trainingScheduleIds = new List<uint?>();
 
         /// <summary>
         /// FK to the Training Schedules
@@ -94,7 +93,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         public IReadOnlyCollection<uint?> TrainingScheduleIds
         {
-            get => _trainingScheduleIds?.ToList().AsReadOnly() ?? new List<uint?>().AsReadOnly();
+            get => _trainingScheduleIds?.ToList().AsReadOnly() 
+                ?? new List<uint?>().AsReadOnly();
         }
 
 
@@ -180,7 +180,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Ctors
 
 
-        private TrainingPlanRoot() { } //: base(null) { }
+        private TrainingPlanRoot() : base(null) { }
 
 
         private TrainingPlanRoot(
@@ -200,7 +200,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             Name = name ?? string.Empty;
             IsBookmarked = isBookmarked;
             OwnerId = ownerId;
-            PersonalNoteId = personalNoteId;
+            TrainingPlanNoteId = personalNoteId;
+            //Description = description;
 
             _trainingWeeks = trainingWeeks?.Clone().ToList() ?? new List<TrainingWeekEntity>();
 
@@ -220,59 +221,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             foreach (uint? muscle in trainingMuscleFocusIds ?? new List<uint?>())
                 _trainingPlanMuscleFocusIds.Add(TrainingPlanMuscleFocusRelation.BuildLink(this, muscle));
 
-            foreach (uint proficiency in trainingPlanProficiencyIds ?? new List<uint>())
-                _trainingPlanProficiencies.Add(TrainingPlanProficiencyRelation.BuildLink(this, proficiency));
-
-            foreach (uint phase in trainingPhaseIds ?? new List<uint>())
-                _trainingPlanPhases.Add(TrainingPlanPhaseRelation.BuildLink(this, phase));
-
-            TestBusinessRules();
-
-            // Training Parameters
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-        }
-
-
-
-        private TrainingPlanRoot(
-            string name,
-            bool isBookmarked,
-            uint ownerId,
-            uint personalNoteId = default,
-            IEnumerable<TrainingWeekEntity> trainingWeeks = null,
-            IEnumerable<uint> trainingScheduleIds = null,
-            IEnumerable<uint> trainingPhaseIds = null,
-            IEnumerable<uint> trainingPlanProficiencyIds = null,
-            IEnumerable<uint> trainingMuscleFocusIds = null,
-            IEnumerable<uint> hashtags = null,
-            IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null) //: base(id)
-        {
-            Name = name ?? string.Empty;
-            IsBookmarked = isBookmarked;
-            OwnerId = ownerId;
-            PersonalNoteId = personalNoteId;
-
-            _trainingWeeks = trainingWeeks?.Clone().ToList() ?? new List<TrainingWeekEntity>();
-
-            _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<uint>();
-            _relationsWithChildPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
-            //_relationsWithParentPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();    // Not supported yet
-
-            _trainingPlanHashtags = new List<TrainingPlanHashtagRelation>();
-            _trainingPlanMuscleFocusIds = new List<TrainingPlanMuscleFocusRelation>();
-            _trainingPlanProficiencies = new List<TrainingPlanProficiencyRelation>();
-            _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
-
-            // Build  many-to-many relations
-            foreach (uint hashtag in hashtags ?? new List<uint>())
-                _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtag));
-
-            foreach (uint muscle in trainingMuscleFocusIds ?? new List<uint>())
-                _trainingPlanMuscleFocusIds.Add(TrainingPlanMuscleFocusRelation.BuildLink(this, muscle));
-
-            foreach (uint proficiency in trainingPlanProficiencyIds ?? new List<uint>())
+            foreach (uint? proficiency in trainingPlanProficiencyIds ?? new List<uint?>())
                 _trainingPlanProficiencies.Add(TrainingPlanProficiencyRelation.BuildLink(this, proficiency));
 
             foreach (uint? phase in trainingPhaseIds ?? new List<uint?>())
@@ -285,6 +234,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
+
         #endregion
 
 
@@ -306,6 +256,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         /// <param name="trainingWeeks">The Training Weeks which the Training Plan is made up of</param>
         /// <param name="name">The name of the Training Plan</param>
+        /// <param name="description">The owner description of the Training Plan</param>
         /// <param name="isBookmarked">The Training Plan has been flagged as Bookmarked</param>
         /// <param name="ownerId">The ID of the owner of the plan</param>
         /// <param name="personalNoteId">The ID of the note</param>
@@ -329,7 +280,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             IEnumerable<uint?> hashtagIds = null,
             IEnumerable<TrainingPlanRelation> relationsWithChildPlans = null)
 
-            => new TrainingPlanRoot(name, isBookmarked, ownerId, personalNoteId, trainingWeeks,
+            => new TrainingPlanRoot(null, name, isBookmarked, ownerId, personalNoteId, trainingWeeks,
                 trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds, relationsWithChildPlans);
 
 
@@ -339,6 +290,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="id">The ID of the Training Plan</param>
         /// <param name="trainingWeeks">The Training Weeks which the Training Plan is made up of</param>
         /// <param name="name">The name of the Training Plan</param>
+        /// <param name="description">The owner description of the Training Plan</param>
         /// <param name="isBookmarked">The Training Plan has been flagged as Bookmarked</param>
         /// <param name="ownerId">The ID of the owner of the plan</param>
         /// <param name="personalNoteId">The ID of the note</param>
@@ -469,6 +421,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
+        ///// <summary>
+        ///// Attach a description to the Training Plan
+        ///// </summary>
+        ///// <param name="description">The Training Plan description</param>
+        //public void Writedescription(PersonalNoteValue description)
+        //{
+        //    Description = description;
+        //}
+
+
         /// <summary>
         /// Assign the IsBookmarked flag
         /// </summary>
@@ -480,13 +442,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Assign the Training Plan Note ID
         /// </summary>
         /// <param name="trainingPlanNoteId">The note ID</param>
-        public void WriteNote(uint? trainingPlanNoteId) => PersonalNoteId = trainingPlanNoteId;
+        public void WriteNote(uint? trainingPlanNoteId) => TrainingPlanNoteId = trainingPlanNoteId;
 
 
         /// <summary>
         /// Remove the Training Plan Note ID
         /// </summary>
-        public void CleanNote() => PersonalNoteId = default;
+        public void CleanNote() => TrainingPlanNoteId = default;
 
 
         /// <summary>
@@ -1349,7 +1311,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public object Clone()
 
             => CreateTrainingPlan(
-                    Id, Name, IsBookmarked, OwnerId, PersonalNoteId, TrainingWeeks, TrainingScheduleIds,
+                    Id, Name, IsBookmarked, OwnerId, TrainingPlanNoteId, TrainingWeeks, TrainingScheduleIds,
                         TrainingPhaseIds, TrainingProficiencyIds, MuscleFocusIds, HashtagIds, RelationsWithChildPlans);
 
         #endregion

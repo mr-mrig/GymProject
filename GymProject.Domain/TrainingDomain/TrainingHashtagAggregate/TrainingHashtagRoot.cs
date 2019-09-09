@@ -40,7 +40,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
         /// <returns>The TrainingHashtagRoot instance</returns>
         public static TrainingHashtagRoot TagWithTransient(GenericHashtagValue hashtag)
 
-            => TagWith(null, hashtag, EntryStatusTypeEnum.NotSet);
+            => TagWith(null, hashtag, null);
 
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
         /// <returns>The TrainingHashtagRoot instance</returns>
         public static TrainingHashtagRoot TagWith(uint? id, GenericHashtagValue hashtag)
 
-            => TagWith(id, hashtag, EntryStatusTypeEnum.NotSet);
+            => TagWith(id, hashtag, null);
 
 
         /// <summary>

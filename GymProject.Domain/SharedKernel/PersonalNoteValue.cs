@@ -28,6 +28,9 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
+        private PersonalNoteValue() { }
+
+
         private PersonalNoteValue(string body)
         {
             Body = body?.Trim() ?? string.Empty;

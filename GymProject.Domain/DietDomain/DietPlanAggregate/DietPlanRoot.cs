@@ -385,7 +385,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 throw new InvalidOperationException($"Can't add a new Diet Plan Unit before closing the previous one");
 
             _dietUnits.Add(
-                 DietPlanUnitEntity.NewScheduledDraft(newId, DateRangeValue.RangeBetween(PeriodScheduled.End.AddDays(1), upTo))
+                 DietPlanUnitEntity.NewScheduledDraft(newId, DateRangeValue.RangeBetween(PeriodScheduled.End.Value.AddDays(1), upTo))
                  );
 
             DietPlanUnitEntity previous = FindUnitById(newId - 1);
@@ -449,7 +449,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
             if (toBeScheduled?.PeriodScheduled?.Start == null)
                 throw new DietDomainIvariantViolationException($"Cannot close a DietPlanUnit which has no start period.");
 
-            CloseDietPlanUnit(planUnitId, toBeScheduled.PeriodScheduled.Start, upTo);
+            CloseDietPlanUnit(planUnitId, toBeScheduled.PeriodScheduled.Start.Value, upTo);
         } 
 
 
@@ -654,8 +654,8 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 DietPlanUnitEntity nextOne = sorted[i + 1];
 
                 nextOne.Reschedule(DateRangeValue.RangeBetween(
-                    current.PeriodScheduled.End.AddDays(1),
-                    current.PeriodScheduled.End.AddDays(nextOne.PeriodScheduled.GetLength())));
+                    current.PeriodScheduled.End.Value.AddDays(1),
+                    current.PeriodScheduled.End.Value.AddDays(nextOne.PeriodScheduled.GetLength())));
             }
 
             return units;
@@ -682,15 +682,15 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 {
                     // Reschedule the current one according to the next one
                     current.Reschedule(DateRangeValue.RangeBetween(
-                        current.PeriodScheduled.Start,
-                        nextOne.PeriodScheduled.Start.AddDays(-1)));
+                        current.PeriodScheduled.Start.Value,
+                        nextOne.PeriodScheduled.Start.Value.AddDays(-1)));
                 }
                 else
                 {
                     // Reschedule the next one according to the current one
                     nextOne.Reschedule(DateRangeValue.RangeBetween(
-                        current.PeriodScheduled.End.AddDays(1),
-                        current.PeriodScheduled.End.AddDays(nextOne.PeriodScheduled.GetLength())));
+                        current.PeriodScheduled.End.Value.AddDays(1),
+                        current.PeriodScheduled.End.Value.AddDays(nextOne.PeriodScheduled.GetLength())));
                 }
             }
 
@@ -753,7 +753,7 @@ namespace GymProject.Domain.DietDomain.DietPlanAggregate
                 DietPlanUnitEntity current = sorted[i];
                 DietPlanUnitEntity next = sorted[i + 1];
 
-                if (current.PeriodScheduled.End != next.PeriodScheduled.Start.AddDays(-1))
+                if (current.PeriodScheduled.End != next.PeriodScheduled.Start.Value.AddDays(-1))
                     return false;
             }
 

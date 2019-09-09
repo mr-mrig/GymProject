@@ -64,9 +64,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         {
             ParentPlanId = parentPlanId;
             ChildPlanId = childPlanId;
-            ChildPlanType = childRelationType;
+            ChildPlanType = relationType;
             MessageId = messageId;
-            ChildPlanTypeId = childRelationType.Id;
+            ChildPlanTypeId = relationType.Id;
 
             TestBusinessRules();
         }

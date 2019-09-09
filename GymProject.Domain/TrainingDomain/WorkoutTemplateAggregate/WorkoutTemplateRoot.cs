@@ -56,7 +56,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// The WUs belonging to the WorkOut
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IEnumerable<WorkUnitTemplateEntity> WorkUnits => _workUnits?.ToList() ?? new List<WorkUnitTemplateEntity>();
+        public IReadOnlyCollection<WorkUnitTemplateEntity> WorkUnits
+        {
+            get => _workUnits?.ToList().AsReadOnly()
+                ?? new List<WorkUnitTemplateEntity>().AsReadOnly();
+        }
+
 
 
 

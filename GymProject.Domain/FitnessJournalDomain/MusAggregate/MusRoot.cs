@@ -21,7 +21,7 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
         private MusRoot() : base(null, null) { }
 
         private MusRoot(string name, string description = null, EntryStatusTypeEnum status = null) 
-            : base(null, status ?? EntryStatusTypeEnum.NotSet)
+            : base(null, status)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new FitnessJournalDomainInvariantViolationException($"Trying to create a Mus with blank name");
@@ -43,7 +43,7 @@ namespace GymProject.Domain.FitnessJournalDomain.MusAggregate
         /// <returns>The new Mus object</returns>
         public static MusRoot Diagnose(string name, string description = null, EntryStatusTypeEnum entryStatus = null)
         {
-            return new MusRoot(name, description, entryStatus ?? EntryStatusTypeEnum.NotSet);
+            return new MusRoot(name, description, entryStatus);
         }
         #endregion
 

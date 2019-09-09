@@ -60,11 +60,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Ctors
 
+        private WorkingSetTemplateEntity() : base(null)
+        {
+
+        }
+
+
         private WorkingSetTemplateEntity(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
-            Rest = rest ?? RestPeriodValue.SetRestNotSpecified();
+            Rest = rest ?? RestPeriodValue.SetNotSpecifiedRest();
             Tempo = tempo ?? TUTValue.SetGenericTUT();
             Effort = effort?? TrainingEffortValue.DefaultEffort;
 

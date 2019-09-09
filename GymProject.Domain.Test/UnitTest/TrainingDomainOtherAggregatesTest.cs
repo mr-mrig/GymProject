@@ -44,7 +44,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
                     trainingHashtag = TrainingHashtagRoot.TagWithTransient(hashtag);
                     Assert.Null(trainingHashtag.Id);
-                    Assert.Equal(EntryStatusTypeEnum.NotSet, trainingHashtag.EntryStatus);
+                    Assert.Null(trainingHashtag.EntryStatus);
                 }
                 else
                 {
@@ -56,14 +56,14 @@ namespace GymProject.Domain.Test.UnitTest
                     else
                     {
                         trainingHashtag = TrainingHashtagRoot.TagWith(id, hashtag);
-                        Assert.Equal(EntryStatusTypeEnum.NotSet, trainingHashtag.EntryStatus);
+                        Assert.Null(trainingHashtag.EntryStatus);
                     }
                     Assert.Equal(id, trainingHashtag.Id);
                 }
 
                 status = EntryStatusTypeEnum.From(RandomFieldGenerator.RandomInt(0, 5));
 
-                if (status == EntryStatusTypeEnum.NotSet)
+                if (status == null)
                     Assert.Throws<InvalidOperationException>(() => trainingHashtag.ChangeEntryStatus(status));
                 else
                 {

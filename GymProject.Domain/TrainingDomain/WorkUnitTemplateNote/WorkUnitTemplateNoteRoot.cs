@@ -11,6 +11,9 @@ namespace GymProject.Domain.TrainingDomain.WorkUnitTemplateNote
 
         #region Ctors
 
+        private WorkUnitTemplateNoteRoot() : base (null, null) { }
+        
+
         private WorkUnitTemplateNoteRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 

@@ -47,6 +47,10 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Ctors
 
+
+        private TUTValue() { }
+
+
         private TUTValue(string tempo)
         {
             if (string.IsNullOrWhiteSpace(tempo))

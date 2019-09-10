@@ -40,6 +40,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
+        private WorkoutTemplateReferenceValue() { }
+
+
         private WorkoutTemplateReferenceValue(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             ProgressiveNumber = workoutProgressiveNumber;

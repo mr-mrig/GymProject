@@ -37,7 +37,6 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
 
-
         /// <summary>
         /// The TUT as 4 values: concentric-stop-eccentric-stop 
         /// </summary>
@@ -52,9 +51,13 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
 
+
         #region Ctors
 
-        private RestPeriodValue(int rest, TimeMeasureUnitEnum unit)
+        private RestPeriodValue() { }
+
+
+        private RestPeriodValue(int rest, TimeMeasureUnitEnum unit) 
         {
             Value = rest;
             MeasureUnit = unit;

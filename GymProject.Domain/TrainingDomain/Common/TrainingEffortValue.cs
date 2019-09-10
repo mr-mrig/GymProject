@@ -35,6 +35,9 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Ctors
 
+        private TrainingEffortValue() { }
+
+
         private TrainingEffortValue(float effortValue, TrainingEffortTypeEnum effortType)
         {
             Value = effortValue;
@@ -127,6 +130,13 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         #region Business Rules Validations
+
+
+        /// <summary>
+        /// The Effort Value must satisfy the boundaries according to its type
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        //private bool ValidEffortBoundaries() => EffortType.CheckEffortTypeConstraints(Value);        
 
 
         /// <summary>

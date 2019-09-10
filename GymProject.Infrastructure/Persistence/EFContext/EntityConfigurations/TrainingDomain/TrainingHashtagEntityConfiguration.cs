@@ -29,7 +29,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             });
 
             builder.HasOne(hashtag => hashtag.EntryStatus)
-                .WithMany();
+                .WithMany().IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
         }
 

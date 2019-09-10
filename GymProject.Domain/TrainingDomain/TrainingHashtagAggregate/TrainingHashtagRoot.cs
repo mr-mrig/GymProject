@@ -18,10 +18,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
 
         #region Ctors
 
-        private TrainingHashtagRoot() : base(null, null)
-        {
+        private TrainingHashtagRoot() : base(null, null) { }
 
-        }
 
         private TrainingHashtagRoot(uint? id, GenericHashtagValue hashtag, EntryStatusTypeEnum status = null) : base(id, status)
         {

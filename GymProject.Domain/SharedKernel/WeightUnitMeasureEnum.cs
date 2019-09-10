@@ -49,6 +49,10 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
+
+        private WeightUnitMeasureEnum() : base(0, null) { } 
+
+
         public WeightUnitMeasureEnum(int id, string name, string abbreviation, MeasurmentSystemEnum measSystem, Func<float, float> conversionFormula) : base(id, name)
         {
             Abbreviation = abbreviation;

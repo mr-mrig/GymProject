@@ -215,8 +215,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
 
             // Build  many-to-many relations
+            uint hashtagCounter = 0;
+
             foreach (uint? hashtag in hashtags ?? new List<uint?>())
-                _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtag));
+                _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtagCounter++, hashtag));
 
             foreach (uint? muscle in trainingMuscleFocusIds ?? new List<uint?>())
                 _trainingPlanMuscleFocusIds.Add(TrainingPlanMuscleFocusRelation.BuildLink(this, muscle));
@@ -575,7 +577,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (IsTaggedAs(hashtagId))
                 return;
 
-            _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, hashtagId));
+            _trainingPlanHashtags.Add(TrainingPlanHashtagRelation.BuildLink(this, (uint)_trainingPlanHashtags.Count, hashtagId));
             TestBusinessRules();
         }
 
@@ -583,7 +585,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Remove the Hastag from the Training Plan
         /// </summary>
-        /// <param name="hashtagId">The Hashtag ID to be removed</param>
+        /// <param name="hashtagId">The Hashtag ID to be removed - non NULL</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
         public void Untag(uint? hashtagId)
@@ -591,7 +593,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (hashtagId == null)
                 throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
 
-            if (_trainingPlanHashtags.Remove(TrainingPlanHashtagRelation.BuildLink(this, hashtagId)))
+            if (_trainingPlanHashtags.Remove(TrainingPlanHashtagRelation.BuildLink(this, 0, hashtagId)))
                 TestBusinessRules();
         }
 

@@ -5,27 +5,27 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
-    internal class TrainingPlanHashtagEntityConfiguration : IEntityTypeConfiguration<TrainingPlanHashtagRelation>
+    internal class TrainingPlanPhaseEntityConfiguration : IEntityTypeConfiguration<TrainingPlanPhaseRelation>
     {
 
 
-        public void Configure(EntityTypeBuilder<TrainingPlanHashtagRelation> builder)
+        public void Configure(EntityTypeBuilder<TrainingPlanPhaseRelation> builder)
         {
-            builder.ToTable("TrainingPlanHashtag", GymContext.DefaultSchema);
+            builder.ToTable("TrainingPlanPhase", GymContext.DefaultSchema);
 
-            builder.HasKey(rel => new { rel.TrainingPlanId, rel.HashtagId });
+            builder.HasKey(rel => new { rel.TrainingPlanId, rel.TrainingPhaseId });
 
             builder.Property(rel => rel.TrainingPlanId);
 
-            builder.Property(rel => rel.HashtagId);
+            builder.Property(rel => rel.TrainingPhaseId);
 
             builder.HasOne(rel => rel.TrainingPlan)
-                .WithMany("_trainingPlanHashtags")
+                .WithMany("_trainingPlanPhases")
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne<TrainingHashtagRoot>()
                 .WithMany()
-                .HasForeignKey(rel => rel.HashtagId)
+                .HasForeignKey(rel => rel.TrainingPhaseId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

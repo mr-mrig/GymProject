@@ -42,6 +42,9 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Ctors
 
+        private WSRepetitionsValue() { }
+
+
         private WSRepetitionsValue(int serieLength, WSWorkTypeEnum serieType)
         {
             Value = serieLength;

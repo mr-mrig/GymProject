@@ -1,5 +1,5 @@
 ﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
-using GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using GymProject.Domain.UserAccountDomain.UserAggregate;
 using Microsoft.EntityFrameworkCore;
@@ -27,13 +27,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Ignore(plan => plan.TrainingDensity);
             builder.Ignore(plan => plan.IsTemplate);
 
-
-            builder.Ignore(plan => plan.TrainingPhaseIds);
-            builder.Ignore(plan => plan.HashtagIds);
-            builder.Ignore(plan => plan.TrainingProficiencyIds);
-
-            builder.Ignore(plan => plan.TrainingWeeks);
-
             builder.Property(plan => plan.IsBookmarked)
                 .HasColumnType("INTEGER")
                 .HasDefaultValue(false)
@@ -55,22 +48,16 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasOne<TrainingPlanMessageRoot>()
+            builder.HasOne<TrainingPlanNoteRoot>()
                 .WithMany()
                 .HasForeignKey(plan => plan.TrainingPlanNoteId)
                 .IsRequired(false)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
-
-
-            //builder.HasMany(plan => plan.TrainingWeeks)
-            //    .WithOne()
-            //    .HasForeignKey(week => week)
-            //    .OnDelete(DeleteBehavior.Cascade);
-
-            //builder.HasIndex(plan => new { plan.OwnerId, plan.PersonalNoteId });
-
-
+            builder.HasMany(plan => plan.TrainingWeeks)
+                .WithOne()
+                .HasForeignKey("TrainingPlanId")
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(plan => new
             {

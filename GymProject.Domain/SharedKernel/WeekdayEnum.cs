@@ -34,6 +34,13 @@ namespace GymProject.Domain.SharedKernel
 
         #region Ctors
 
+
+        private WeekdayEnum() : base(0, null)
+        {
+
+        }
+
+
         public WeekdayEnum(int id, string name, string abbreviation) : base(id, name)
         {
             Abbreviation = abbreviation;

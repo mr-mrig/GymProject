@@ -2,9 +2,9 @@
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 
-namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
+namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
 {
-    public class TrainingPhaseRoot : StatusTrackingEntity<uint?>, IAggregateRoot
+    public class TrainingProficiencyRoot : StatusTrackingEntity<uint?>, IAggregateRoot
     {
 
 
@@ -14,6 +14,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// The identifying name
         /// </summary>
         public string Name { get; private set; } = string.Empty;
+
+
+        /// <summary>
+        /// The description
+        /// </summary>
+        public PersonalNoteValue Description { get; private set; } = null;
 
 
         ///// <summary>
@@ -26,11 +32,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
         #region Ctors
 
-        private TrainingPhaseRoot() : base(null, null) { }
+        private TrainingProficiencyRoot() : base(null, null) { }
 
-        private TrainingPhaseRoot(string name, EntryStatusTypeEnum entryStatus) : base(null, entryStatus)
+        private TrainingProficiencyRoot(uint? id, string name, PersonalNoteValue description, EntryStatusTypeEnum entryStatus) : base(id, entryStatus)
         {
             Name = name?.Trim() ?? string.Empty;
+            Description = description;
             //OwnerId = ownerId;
 
             TestBusinessRules();
@@ -43,51 +50,59 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method - PROTECTED
+        /// Factory method - For adding new objects
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="id">The object ID</param>
+        /// <param name="name">The identifying name</param>
+        /// <param name="description">The description</param>
         /// <param name="ownerId">The User which the phase was created by</param>
         /// <param name="entryStatus">TThe specified entry status</param>
-        /// <returns>A new TrainingPhase instance</returns>
-        protected static TrainingPhaseRoot CreateTrainingPhase
+        /// <returns>A new TrainingProficiency instance</returns>
+        protected static TrainingProficiencyRoot CreateTrainingProficiency
         (
+            uint? id,
             string name,
+            PersonalNoteValue description,
             EntryStatusTypeEnum entryStatus
         )
-            => new TrainingPhaseRoot(name, entryStatus);
+            => new TrainingProficiencyRoot(id, name, description, entryStatus);
 
 
         /// <summary>
-        /// Factory method fro private Phases
+        /// Factory method - Private
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="name">The identifying name</param>
+        /// <param name="description">The description</param>
         /// <param name="ownerId">The User which the phase was created by</param>
-        /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhaseRoot CreatePrivateTrainingPhase(string name)
+        /// <returns>A new TrainingProficiency instance</returns>
+        public static TrainingProficiencyRoot CreatePrivateTrainingProficiency(string name, PersonalNoteValue description)
 
-            => CreateTrainingPhase(name, EntryStatusTypeEnum.Private);
+            => CreateTrainingProficiency(null, name, description, EntryStatusTypeEnum.Private);
 
 
         /// <summary>
-        /// Factory method fro native Phases
+        /// Factory method - Public as pending before approval
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="name">The identifying name</param>
+        /// <param name="description">The description</param>
         /// <param name="ownerId">The User which the phase was created by</param>
-        /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhaseRoot CreateNativeTrainingPhase(string name)
+        /// <returns>A new TrainingProficiency instance</returns>
+        public static TrainingProficiencyRoot CreatePublicTrainingProficiency(string name, PersonalNoteValue description)
 
-            => CreateTrainingPhase(name, EntryStatusTypeEnum.Native);
+            => CreateTrainingProficiency(null, name, description, EntryStatusTypeEnum.Pending);
 
 
         /// <summary>
-        /// Factory method fro public Phases as pending before approval
+        /// Factory method- Native, require the ID to be set
         /// </summary>
-        /// <param name="name">The name of the phase</param>
+        /// <param name="id">The object ID</param>
+        /// <param name="name">The identifying name</param>
+        /// <param name="description">The description</param>
         /// <param name="ownerId">The User which the phase was created by</param>
-        /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhaseRoot CreatePublicTrainingPhase(string name)
+        /// <returns>A new TrainingProficiency instance</returns>
+        public static TrainingProficiencyRoot AddNativeTrainingProficiency(uint id, string name, PersonalNoteValue description)
 
-            => CreateTrainingPhase(name, EntryStatusTypeEnum.Pending);
+            => CreateTrainingProficiency(id, name, description, EntryStatusTypeEnum.Native);
 
         #endregion
 

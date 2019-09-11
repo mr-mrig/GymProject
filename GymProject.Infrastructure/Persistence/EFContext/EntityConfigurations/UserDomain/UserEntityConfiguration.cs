@@ -1,7 +1,7 @@
 ﻿using GymProject.Domain.UserAccountDomain.UserAggregate;
+using GymProject.Infrastructure.Persistence.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
@@ -16,7 +16,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.HasKey(u => u.Id);
 
             builder.Property(u => u.Id)
-                .ValueGeneratedNever();
+                .ValueGeneratedOnAdd();
 
             builder.Property(u => u.Email)
                 .IsRequired()
@@ -44,9 +44,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.Property(u => u.SubscriptionDate)
                 .IsRequired()
+                .HasConversion(new UnixTimestampValueConverter())
                 .HasColumnType("INTEGER")
                 .HasDefaultValueSql(@"strftime('%s', 'now')");
 
+            //// Data Seeding
+            //builder.HasData(DataSeeding.GetUserNativeEntries());
         }
 
     }

@@ -277,7 +277,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workUnits.Where(x => x != null).Count() == 0 ? TrainingEffortTypeEnum.IntensityPerc
+            => _workUnits.Count(x => x?.WorkingSets?.Count() > 0) == 0 ? TrainingEffortTypeEnum.IntensityPerc
                 : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {

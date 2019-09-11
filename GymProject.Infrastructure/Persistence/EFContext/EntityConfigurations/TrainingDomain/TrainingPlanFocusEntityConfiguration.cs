@@ -5,28 +5,28 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
-    internal class TrainingPlanHashtagEntityConfiguration : IEntityTypeConfiguration<TrainingPlanHashtagRelation>
+    internal class TrainingPlanFocusEntityConfiguration : IEntityTypeConfiguration<TrainingPlanMuscleFocusRelation>
     {
 
 
-        public void Configure(EntityTypeBuilder<TrainingPlanHashtagRelation> builder)
+        public void Configure(EntityTypeBuilder<TrainingPlanMuscleFocusRelation> builder)
         {
-            builder.ToTable("TrainingPlanHashtag", GymContext.DefaultSchema);
+            builder.ToTable("TrainingPlanMuscleFocus", GymContext.DefaultSchema);
 
-            builder.HasKey(rel => new { rel.TrainingPlanId, rel.HashtagId });
+            builder.HasKey(rel => new { rel.TrainingPlanId, rel.MuscleGroupId });
 
             builder.Property(rel => rel.TrainingPlanId);
 
-            builder.Property(rel => rel.HashtagId);
+            builder.Property(rel => rel.MuscleGroupId);
 
             builder.HasOne(rel => rel.TrainingPlan)
-                .WithMany("_trainingPlanHashtags")
+                .WithMany("_trainingPlanMuscleFocusIds")
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne<TrainingHashtagRoot>()
                 .WithMany()
-                .HasForeignKey(rel => rel.HashtagId)
+                .HasForeignKey(rel => rel.MuscleGroupId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

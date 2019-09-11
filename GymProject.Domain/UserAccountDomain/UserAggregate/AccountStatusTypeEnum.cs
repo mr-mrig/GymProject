@@ -13,6 +13,7 @@ namespace GymProject.Domain.UserAccountDomain.UserAggregate
         public static AccountStatusTypeEnum Active = new AccountStatusTypeEnum(1, "Active");
         public static AccountStatusTypeEnum Inactive = new AccountStatusTypeEnum(2, "Inactive");
         public static AccountStatusTypeEnum Banned = new AccountStatusTypeEnum(3, "Banned");
+        public static AccountStatusTypeEnum Super = new AccountStatusTypeEnum(4, "Super");
 
 
 
@@ -34,7 +35,7 @@ namespace GymProject.Domain.UserAccountDomain.UserAggregate
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<AccountStatusTypeEnum> List() =>
-            new[] { Active, Inactive, Banned, };
+            new[] { Active, Inactive, Banned, Super, };
 
 
         /// <summary>

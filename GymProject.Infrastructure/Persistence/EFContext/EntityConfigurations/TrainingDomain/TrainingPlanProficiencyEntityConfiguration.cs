@@ -21,7 +21,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.HasOne(rel => rel.TrainingPlan)
                 .WithMany("_trainingPlanProficiencies")
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade)
+                .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne<TrainingProficiencyRoot>()
                 .WithMany()

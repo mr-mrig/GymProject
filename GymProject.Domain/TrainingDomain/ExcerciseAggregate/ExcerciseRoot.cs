@@ -54,7 +54,7 @@ namespace GymProject.Domain.TrainingDomain.ExcerciseAggregate
         /// <param name="ownerId">The User which the phase was created by</param>
         /// <param name="entryStatus">TThe specified entry status</param>
         /// <returns>The Excercise instance</returns>
-        public static ExcerciseRoot CreateExcercise
+        public static ExcerciseRoot AddToExcerciseLibrary
         (
             uint? id,
             string name,

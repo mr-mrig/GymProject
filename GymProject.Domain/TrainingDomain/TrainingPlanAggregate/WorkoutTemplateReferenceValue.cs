@@ -16,6 +16,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
 
+        private uint? _id;
+
 
 
         /// <summary>

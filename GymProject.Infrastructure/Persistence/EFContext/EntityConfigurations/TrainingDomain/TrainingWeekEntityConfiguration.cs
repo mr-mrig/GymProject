@@ -32,11 +32,20 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasMany(w => w.Workouts)
-                .WithOne()
-                .HasForeignKey("TrainingWeekId")
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property<uint>("TrainingPlanId")
+                .IsRequired();
+
+            //builder.HasOne<TrainingPlanRoot>()
+            //    .WithMany()
+            //    .HasForeignKey("TrainingPlanId")
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Ignore(x => x.Workouts);
+            //builder.HasMany(w => w.Workouts)
+            //    .WithOne()
+            //    .HasForeignKey("TrainingWeekId")
+            //    .IsRequired()
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasAlternateKey
             (

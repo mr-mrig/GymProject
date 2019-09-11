@@ -58,7 +58,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
         /// <param name="ownerId">The User which the phase was created by</param>
         /// <param name="entryStatus">TThe specified entry status</param>
         /// <returns>A new TrainingProficiency instance</returns>
-        protected static TrainingProficiencyRoot CreateTrainingProficiency
+        public static TrainingProficiencyRoot CreateTrainingProficiency
         (
             uint? id,
             string name,

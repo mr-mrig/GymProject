@@ -2,7 +2,7 @@
 //using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 
-//namespace GymProject.Infrastructure.Persistence.EFContext
+//namespace GymProject.Infrastructure.Persistence.Converters.EFContext
 //{
 //    public class IdTypeValueConverter : ValueConverter<IdTypeValue, long>
 //    {

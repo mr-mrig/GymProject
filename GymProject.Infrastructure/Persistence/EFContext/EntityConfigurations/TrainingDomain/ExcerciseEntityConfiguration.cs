@@ -31,12 +31,17 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                     .HasColumnType("TEXT")
                     .IsRequired(false);
             });
+            //.HasData(NativeExcerciseSeed.GetDataSeedOwnedEntity());
 
             builder.HasOne(e => e.EntryStatus)
-                .WithMany().IsRequired()
+                .WithMany()
+                .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasAlternateKey(e => e.Name);
+
+            // Data Seeding
+            //builder.HasData(DataSeeding.GetExcerciseNativeEntries());
         }
 
     }

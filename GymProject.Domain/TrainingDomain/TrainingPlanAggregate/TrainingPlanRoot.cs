@@ -66,7 +66,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint? TrainingPlanNoteId { get; private set; } = null;
 
 
-        private  IList<TrainingWeekEntity> _trainingWeeks = new List<TrainingWeekEntity>();
+        private List<TrainingWeekEntity> _trainingWeeks = new List<TrainingWeekEntity>();
 
         /// <summary>
         /// The Training Weeks which the Training Plan is scheduled to
@@ -74,7 +74,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         public IReadOnlyCollection<TrainingWeekEntity> TrainingWeeks
         {
-            get => _trainingWeeks?.Clone().ToList().AsReadOnly() 
+            get => _trainingWeeks?.Clone().ToList().AsReadOnly()
                 ?? new List<TrainingWeekEntity>().AsReadOnly();
         }
 
@@ -156,7 +156,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         public IReadOnlyCollection<uint?> MuscleFocusIds
         {
-            get => _trainingPlanMuscleFocusIds?.Select(x => x.MuscleId).ToList().AsReadOnly()
+            get => _trainingPlanMuscleFocusIds?.Select(x => x.MuscleGroupId).ToList().AsReadOnly()
                 ?? new List<uint?>().AsReadOnly();
         }
 
@@ -203,7 +203,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TrainingPlanNoteId = personalNoteId;
             //Description = description;
 
-            _trainingWeeks = trainingWeeks?.Clone().ToList() ?? new List<TrainingWeekEntity>();
+            _trainingWeeks = trainingWeeks?.Clone().ToList()
+                ?? new List<TrainingWeekEntity>()
+                    {
+                        TrainingWeekEntity.PlanTrainingWeek(null, 0)
+                    };
 
             _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<uint?>();
             _relationsWithChildPlans = relationsWithChildPlans?.ToList() ?? new List<TrainingPlanRelation>();
@@ -722,7 +726,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>True if the the plan is tagged with the Muscle Focus/returns>
         public bool DoesFocusOn(uint? muscleId)
 
-            => _trainingPlanMuscleFocusIds.SingleOrDefault(x => x.MuscleId == muscleId) != default;
+            => _trainingPlanMuscleFocusIds.SingleOrDefault(x => x.MuscleGroupId == muscleId) != default;
 
 
         /// <summary>
@@ -1213,7 +1217,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// The Training Plan must have no NULL Muscle Focus entries.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool NoNullMuscleFocus() => _trainingPlanMuscleFocusIds.All(x => x?.MuscleId != null);
+        private bool NoNullMuscleFocus() => _trainingPlanMuscleFocusIds.All(x => x?.MuscleGroupId != null);
 
 
         /// <summary>

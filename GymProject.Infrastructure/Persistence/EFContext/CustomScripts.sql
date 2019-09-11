@@ -15,6 +15,8 @@
 
 --TrainingProficiency -> Data Seeding
 
+-- WorkingSetTemplate -> Rename column "Effort_EffortTypeId"
+
 --All the Many-to-Many relations -> Redundant indexes, should be removed
 
 -- Training Week -> Redundant index, should be removed

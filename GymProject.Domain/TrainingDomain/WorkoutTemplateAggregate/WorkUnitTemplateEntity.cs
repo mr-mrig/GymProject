@@ -49,7 +49,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                 ?? new List<WorkingSetTemplateEntity>().AsReadOnly();  // Objects are not referencally equal
         }
         /// </summary>
-        public uint? OwnerNoteId { get; private set; } = null;
+        public uint? WorkUnitNoteId { get; private set; } = null;
 
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<uint?> workUnitIntensityTechniqueIds, uint? ownerNoteId = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
-            OwnerNoteId = ownerNoteId;
+            WorkUnitNoteId = ownerNoteId;
             ExcerciseId = excerciseId;
 
             _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplateEntity>();
@@ -206,7 +206,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="newNoteId">The ID of the note to be attached</param>
         public void AssignNote(uint? newNoteId)
         {
-            OwnerNoteId = newNoteId;
+            WorkUnitNoteId = newNoteId;
         }
 
 
@@ -811,8 +811,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (!ExcerciseSpecified())
                 throw new TrainingDomainInvariantViolationException($"The Work Unit must be linked to an excercise.");
 
-            if (!AtLeastOneWorkingSet())
-                throw new TrainingDomainInvariantViolationException($"Cannot create a Work Unit without any WS.");
+            //if (!AtLeastOneWorkingSet())
+            //    throw new TrainingDomainInvariantViolationException($"Cannot create a Work Unit without any WS.");
 
             if (!AllWorkingSetsHaveWorkUnitWiseIntensityTechniques())
                 throw new TrainingDomainInvariantViolationException($"Working sets must have all the work unit intensity techniques.");
@@ -828,7 +828,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), _intensityTechniquesIds, OwnerNoteId);
+            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), _intensityTechniquesIds, WorkUnitNoteId);
 
         #endregion
     }

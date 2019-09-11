@@ -135,7 +135,7 @@ namespace GymProject.Domain.Test.UnitTest
                     wu = WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(wuIds.Last().Value, pnum++, isTransient);
 
                     if (isTransient)
-                        workout.PlanTransientExcercise(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.OwnerNoteId);
+                        workout.PlanTransientExcercise(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.WorkUnitNoteId);
                     else
                         workout.PlanExcercise(wu);
 
@@ -234,7 +234,7 @@ namespace GymProject.Domain.Test.UnitTest
                     {
                         wasAdded = true;
                         toAdd = WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(1, (uint)workout.WorkUnits.Count(), isTransient);
-                        workout.PlanTransientExcercise(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.OwnerNoteId);
+                        workout.PlanTransientExcercise(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.WorkUnitNoteId);
                     }
                     else
                     {
@@ -453,12 +453,12 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             // Check WU changes
-            Assert.Equal(newNoteId, toCheck.OwnerNoteId);
+            Assert.Equal(newNoteId, toCheck.WorkUnitNoteId);
             Assert.Equal(newExcerciseId, toCheck.ExcerciseId);
 
             workout.RemoveWorkUnitNote(toCheck.ProgressiveNumber);
             toCheck = workout.CloneWorkUnit(workUnit.ProgressiveNumber);
-            Assert.Null(toCheck.OwnerNoteId);
+            Assert.Null(toCheck.WorkUnitNoteId);
 
             // Remove WSs
             List<WorkingSetTemplateEntity> originalSets = toCheck.WorkingSets.ToList();
@@ -581,7 +581,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Equal(workUnit, workout.CloneWorkUnit(workUnitPnum));
             Assert.Equal(workUnit.ExcerciseId, workout.CloneWorkUnit(workUnitPnum).ExcerciseId);
             Assert.Equal(workUnit.IntensityTechniquesIds, workout.CloneWorkUnit(workUnitPnum).IntensityTechniquesIds);
-            Assert.Equal(workUnit.OwnerNoteId, workout.CloneWorkUnit(workUnitPnum).OwnerNoteId);
+            Assert.Equal(workUnit.WorkUnitNoteId, workout.CloneWorkUnit(workUnitPnum).WorkUnitNoteId);
             Assert.Equal(workUnitPnum, workout.CloneWorkUnit(workUnitPnum).ProgressiveNumber);
 
             // Check WSs
@@ -603,7 +603,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Equal(left.ExcerciseId, right.ExcerciseId);
             Assert.Equal(left.IntensityTechniquesIds, right.IntensityTechniquesIds);
-            Assert.Equal(left.OwnerNoteId, right.OwnerNoteId);
+            Assert.Equal(left.WorkUnitNoteId, right.WorkUnitNoteId);
             Assert.Equal(left.ProgressiveNumber, right.ProgressiveNumber);
 
             // Check WSs

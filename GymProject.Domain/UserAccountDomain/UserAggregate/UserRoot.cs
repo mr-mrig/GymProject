@@ -130,7 +130,7 @@ namespace GymProject.Domain.UserAccountDomain.UserAggregate
 
         #region Public Methods
 
-        
+
         #endregion
 
 

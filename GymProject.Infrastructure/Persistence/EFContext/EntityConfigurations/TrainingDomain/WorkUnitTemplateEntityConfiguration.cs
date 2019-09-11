@@ -28,6 +28,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasColumnType("INTEGER")
                 .IsRequired();
 
+            //builder.Property<uint?>("WorkUnitTemplateNoteId").IsRequired(false);
+
             builder.HasOne<ExcerciseRoot>()
                 .WithMany()
                 .HasForeignKey(wu => wu.ExcerciseId)
@@ -36,7 +38,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.HasOne<WorkUnitTemplateNoteRoot>()
                 .WithMany()
-                .HasForeignKey(wu => wu.OwnerNoteId)
+                .HasForeignKey(wu => wu.WorkUnitNoteId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.NoAction);
 

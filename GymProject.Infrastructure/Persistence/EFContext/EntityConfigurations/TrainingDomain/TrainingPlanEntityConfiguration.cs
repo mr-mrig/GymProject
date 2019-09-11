@@ -59,6 +59,9 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasForeignKey("TrainingPlanId")
                 .OnDelete(DeleteBehavior.Cascade);
 
+            var navigation = builder.Metadata.FindNavigation(nameof(TrainingPlanRoot.TrainingWeeks));
+            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasIndex(plan => new
             {
                 plan.OwnerId,

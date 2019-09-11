@@ -21,7 +21,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Navigation Property to the Muscle
         /// </summary>
-        public uint? MuscleId { get; private set; } = null;
+        public uint? MuscleGroupId { get; private set; } = null;
 
 
 
@@ -34,7 +34,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private TrainingPlanMuscleFocusRelation(TrainingPlanRoot trainingPlan, uint? muscleId)
         {
             TrainingPlan = trainingPlan;
-            MuscleId = muscleId;
+            MuscleGroupId = muscleId;
             TrainingPlanId = trainingPlan.Id;
         }
 
@@ -60,7 +60,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         protected override IEnumerable<object> GetAtomicValues()
         {
             yield return TrainingPlan;
-            yield return MuscleId;
+            yield return MuscleGroupId;
             //yield return TrainingPlanId;  // Not necessary
         }
     }

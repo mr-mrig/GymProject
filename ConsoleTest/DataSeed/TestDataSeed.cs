@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.SharedKernel;
+using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
@@ -85,6 +86,24 @@ namespace ConsoleTest.DataSeed
                 context.SaveChanges();
             }
         }
+
+
+        internal static void ExcerciseDataSeed()
+        {
+            using (GymContext context = new GymContext())
+            {
+                EntryStatusTypeEnum native = context.EntryStatusTypes.Single(x => x.Id == EntryStatusTypeEnum.Native.Id);
+                ExcerciseRoot entry;
+
+                for (uint i = 0; i < 20; i++)
+                {
+                    entry = ExcerciseRoot.AddToExcerciseLibrary(i, $"Excercise {i.ToString()}", PersonalNoteValue.Write("Dummy"), native);
+                    context.Add(entry);
+                    context.SaveChanges();
+                }
+            }
+        }
+
 
 
     }

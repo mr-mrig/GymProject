@@ -14,8 +14,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.HasKey(wo => wo.Id);
 
-            builder.Property(wo => wo.Id)
-                .ValueGeneratedOnAdd();
+            //builder.Property(wo => wo.Id)
+            //    .ValueGeneratedOnAdd();
 
             builder.Ignore(wo => wo.DomainEvents);
             builder.Ignore(wo => wo.TrainingVolume);
@@ -37,11 +37,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                         .Ignore(p => p.Abbreviation);
                 });
 
-            builder.HasMany(wo => wo.WorkUnits)
+            builder.HasMany(w => w.WorkUnits)
                 .WithOne()
                 .HasForeignKey("WorkoutTemplateId")
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            var navigation = builder.Metadata.FindNavigation(nameof(WorkoutTemplateRoot.WorkUnits));
+            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+
         }
 
     }

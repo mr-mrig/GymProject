@@ -37,7 +37,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
-        private IList<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
+        private List<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
 
         /// <summary>
         /// The Working Sets belonging to the WU, sorted by Progressive Numbers.
@@ -382,7 +382,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workingSets.Where(x => x != null).Count() == 0 ? TrainingEffortTypeEnum.IntensityPerc
+            => _workingSets.Count(x => x?.Effort != null) == 0 ? TrainingEffortTypeEnum.IntensityPerc
                 : _workingSets.GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {

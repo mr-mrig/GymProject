@@ -1,4 +1,11 @@
-﻿# To Add custom SQL script to migrations:
+﻿
+# PRELIMINARY STEP:
+# Before Code-first DB
+# Move to the project to be built
+cd .\GymProject.Infrastructure
+
+
+# To Add custom SQL script to migrations:
 
 1. dotnet ef migrations add Test
 

@@ -11,12 +11,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
 
 
-    public class WorkoutTemplateReferenceValue : ValueObject, ICloneable
+    public class WorkoutTemplateReferenceEntity : Entity<uint?>, ICloneable
     {
-
-
-
-        private uint? _id;
 
 
 
@@ -26,7 +22,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint ProgressiveNumber { get; private set; }
 
 
-        private ICollection<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
+        private List<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
 
         /// <summary>
         /// The Working Sets of the workout
@@ -42,10 +38,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         #region Ctors
 
-        private WorkoutTemplateReferenceValue() { }
+        private WorkoutTemplateReferenceEntity() : base(null) { }
 
 
-        private WorkoutTemplateReferenceValue(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workingSets)
+        private WorkoutTemplateReferenceEntity(uint? id, uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workingSets) : base(id)
         {
             ProgressiveNumber = workoutProgressiveNumber;
             _workingSets = workingSets?.Clone()?.ToList() ?? new List<WorkingSetTemplateEntity>();
@@ -65,10 +61,20 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workoutProgressiveNumber">The Progressive Number of the workout</param>
         /// <param name="workoutWorkingSets">The list of the Workout Working Sets</param>
         /// <returns>The WorkoutTemplateReferenceValue instance</returns>
-        public static WorkoutTemplateReferenceValue BuildLinkToWorkout(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workoutWorkingSets)
+        public static WorkoutTemplateReferenceEntity BuildLinkToWorkout(uint workoutProgressiveNumber, IEnumerable<WorkingSetTemplateEntity> workoutWorkingSets)
 
-            => new WorkoutTemplateReferenceValue(workoutProgressiveNumber, workoutWorkingSets);
+            => new WorkoutTemplateReferenceEntity(null, workoutProgressiveNumber, workoutWorkingSets);
 
+
+        /// <summary>
+        /// Build a WorkoutReference link from the Workout input object
+        /// </summary>
+        /// <param name="workout">The workout to be linked</param>
+        /// <param name="progressiveNumber">The Workout progressive number</param>
+        /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
+        public static WorkoutTemplateReferenceEntity FromWorkoutTemplate(uint progressiveNumber, WorkoutTemplateRoot workout)
+
+            => new WorkoutTemplateReferenceEntity(workout.Id, progressiveNumber, workout.CloneAllWorkingSets());
 
         #endregion
 
@@ -80,11 +86,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Move the Workout Reference to the new Progressive Number by creating a new ValueObject
         /// </summary>
-        /// <param name="newPnum">The new progressive number</param>
+        /// <param name="progressiveNumber">The new progressive number</param>
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
-        public WorkoutTemplateReferenceValue MoveToNewProgressiveNumber(uint newPnum)
+        public WorkoutTemplateReferenceEntity MoveToNewProgressiveNumber(uint progressiveNumber)
 
-            => BuildLinkToWorkout(newPnum, _workingSets);
+            => BuildLinkToWorkout(progressiveNumber, _workingSets);
 
 
         /// <summary>
@@ -93,7 +99,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workingSets">The Working Sets to be added</param>
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
         /// <exception cref="ArgumentException">If trying to add duplicate Working Sets to the Training Week</exception>
-        public WorkoutTemplateReferenceValue AddWorkingSets(IEnumerable<WorkingSetTemplateEntity> workingSets)
+        public WorkoutTemplateReferenceEntity AddWorkingSets(IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             if (workingSets.ContainsDuplicates())
                 throw new ArgumentException("Trying to add duplicate Working Sets to the Training Week", nameof(workingSets));
@@ -114,7 +120,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The new WorkoutTemplateReferenceValue instance</returns>
         /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
         /// <exception cref="ArgumentException">If at least one of the Working Sets couldn't be found</exception>
-        public WorkoutTemplateReferenceValue RemoveWorkingSets(IEnumerable<WorkingSetTemplateEntity> workingSets)
+        public WorkoutTemplateReferenceEntity RemoveWorkingSets(IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
             if (workingSets?.DefaultIfEmpty() == default)
                 return this;
@@ -167,11 +173,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
 
-        protected override IEnumerable<object> GetAtomicValues()
-        {
-            yield return ProgressiveNumber;
-            yield return WorkingSets;
-        }
+        //protected override IEnumerable<object> GetAtomicValues()
+        //{
+        //    yield return ProgressiveNumber;
+        //    yield return WorkingSets;
+        //}
 
         public object Clone()
 

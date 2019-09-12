@@ -42,10 +42,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasMany(wu => wu.WorkingSets)
+            builder.HasMany(w => w.WorkingSets)
                 .WithOne()
                 .HasForeignKey("WorkUnitTemplateId")
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            var navigation = builder.Metadata.FindNavigation(nameof(WorkUnitTemplateEntity.WorkingSets));
+            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
 
 
             //intesity technique

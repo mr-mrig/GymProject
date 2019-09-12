@@ -9,6 +9,7 @@ using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.UserAccountDomain.UserAggregate;
 using ConsoleTest.DataSeed;
 using System.Collections.Generic;
+using GymProject.Domain.SharedKernel;
 
 namespace ConsoleTest
 {
@@ -29,6 +30,10 @@ namespace ConsoleTest
 
             using (GymContext context = new GymContext())
             {
+                uint weekProgressiveNumber = 0;
+                uint excerciseId;
+                uint wunitProgressiveNumber;
+
                 UserRoot owner = context.Users.Single(x => x.Id == 2);
 
                 TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan("Test plan", true, owner.Id);
@@ -39,12 +44,107 @@ namespace ConsoleTest
                 context.Update(plan);
                 context.SaveChanges();
 
-                List<TrainingWeekEntity> weeks = plan.TrainingWeeks as List<TrainingWeekEntity>;
-                weeks.Add(TrainingWeekEntity.PlanTrainingWeek(null, 0));
+                ////List<TrainingWeekEntity> weeks = plan.TrainingWeeks as List<TrainingWeekEntity>;
+                ////weeks.Add(TrainingWeekEntity.PlanTrainingWeek(null, 0));
 
 
 
-                //WorkoutTemplateRoot wo = WorkoutTemplateRoot.PlanTransientWorkout(null, "WO1");
+                plan.PlanWorkout(weekProgressiveNumber, new List<WorkingSetTemplateEntity>());
+
+                context.Update(plan);
+                context.SaveChanges();
+
+                WorkoutTemplateRoot wo = WorkoutTemplateRoot.PlanWorkout(plan.Id, new List<WorkUnitTemplateEntity>(), "WO1", WeekdayEnum.Monday);
+                context.Update(wo);
+                context.SaveChanges();
+
+                excerciseId = 1;
+                wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
+                context.Update(wo);
+                context.SaveChanges();
+
+
+                TestServiceLayer service = new TestServiceLayer(context);
+
+                wunitProgressiveNumber = 0;
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wunitProgressiveNumber = 0;
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10));
+                ////context.Entry(wo.CloneLastWorkingSet(wunitProgressiveNumber)).State = EntityState.Unchanged;
+                //context.Update(wo);
+                //context.SaveChanges();
+
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10));
+                //context.Update(wo);
+                //context.SaveChanges();
+
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10));
+                //context.Update(wo);
+                //context.SaveChanges();
+
+                excerciseId = 10;
+                wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
+                context.Update(wo);
+                context.SaveChanges();
+
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wunitProgressiveNumber = 1;
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //context.Update(wo);
+                //context.SaveChanges();
+
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wunitProgressiveNumber = 1;
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //context.Update(wo);
+                //context.SaveChanges();
+
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wunitProgressiveNumber = 1;
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //context.Update(wo);
+                //context.SaveChanges();
+
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //wunitProgressiveNumber = 1;
+                //wo.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                //context.Update(wo);
+                //context.SaveChanges();
+
+
+                // WO2
+                plan.PlanWorkout(weekProgressiveNumber, new List<WorkingSetTemplateEntity>());
+                context.Update(plan);
+                context.SaveChanges();
+
+                WorkoutTemplateRoot wo1 = WorkoutTemplateRoot.PlanWorkout(plan.Id, new List<WorkUnitTemplateEntity>(), "WO2");
+                context.Update(wo1);
+                context.SaveChanges();
+
+                excerciseId = 1;
+                wo1.PlanTransientExcercise(excerciseId, null);
+                context.Update(wo1);
+                context.SaveChanges();
+
+                wunitProgressiveNumber = 0;
+                wo1.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
+                context.Update(wo1);
+                context.SaveChanges();
+
+                wo1.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
+                context.Update(wo1);
+                context.SaveChanges();
+
+                wo1.AddTransientWorkingSet(wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10));
+                context.Update(wo1);
+                context.SaveChanges();
+
+
+
+                //WorkoutTemplateRoot wo = WorkoutTemplateRoot.PlanTransientWorkout(null, "WO1", WeekdayEnum.Monday);
+
                 //wo.PlanTransientExcercise(1, null);
                 //wo.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10));
                 //wo.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10));
@@ -58,21 +158,42 @@ namespace ConsoleTest
                 //wo.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
                 //wo.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
 
-                //plan.PlanWorkout(0, wo.CloneAllWorkingSets());
-                //context.Add(plan);
+                //plan.PlanWorkout(0, wo);
+                //context.Update(plan);
+                //context.Update(wo);
                 //context.SaveChanges();
 
-                //WorkoutTemplateRoot wo2 = WorkoutTemplateRoot.PlanTransientWorkout(null, "WO2");
+
+                //WorkoutTemplateRoot wo1 = WorkoutTemplateRoot.PlanTransientWorkout(null, "WO2");
+                //wo1.PlanTransientExcercise(1, null);
+                //wo1.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(20));
+                //wo1.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(15));
+                //wo1.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10));
+
+                //plan.PlanWorkout(0, wo1);
+
+                //context.Update(wo1);
+                //context.Update(plan);
+                //context.SaveChanges();
+
+                //TrainingWeekTypeEnum overreach = context.TrainingWeekTypes.Single(x => x.Id == (uint)TrainingWeekTypeEnum.Overreach.Id);
+
+                //WorkoutTemplateRoot wo2 = WorkoutTemplateRoot.PlanTransientWorkout(null, "WO1_1", WeekdayEnum.Monday);
                 //wo2.PlanTransientExcercise(1, null);
-                //wo2.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(20));
-                //wo2.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(15));
-                //wo2.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10));
+                //wo2.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10), tempo: TUTValue.PlanTUT("3030"));
+                //wo2.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10), tempo: TUTValue.PlanTUT("3030"));
+                //wo2.AddTransientWorkingSet(0, WSRepetitionsValue.TrackRepetitionSerie(10), tempo: TUTValue.PlanTUT("3030"));
 
-                //plan.PlanWorkout(0, wo2.CloneAllWorkingSets());
+                //plan.PlanTransientTrainingWeek(overreach, new List<WorkoutTemplateReferenceValue>() { WorkoutTemplateReferenceValue.FromWorkoutTemplate(0, wo2) });
+                ////plan.PlanWorkout(1, wo1.CloneAllWorkingSets());
 
-                //context.Add(plan);
+                //context.Update(wo2);
+                //context.Update(plan);
                 //context.SaveChanges();
             }
+
+
+
 
             //using (GymContext context = new GymContext())
             //{
@@ -116,6 +237,7 @@ namespace ConsoleTest
                 TestDataSeed.WorkUnitNoteDataSeed();
                 TestDataSeed.HashtagDataSeed();
                 TestDataSeed.ProficiencyDataSeed();
+                TestDataSeed.ExcerciseDataSeed();
             }
         }
 

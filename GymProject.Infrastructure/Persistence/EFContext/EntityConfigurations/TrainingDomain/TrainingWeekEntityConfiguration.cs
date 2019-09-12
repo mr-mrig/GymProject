@@ -35,17 +35,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Property<uint>("TrainingPlanId")
                 .IsRequired();
 
-            //builder.HasOne<TrainingPlanRoot>()
-            //    .WithMany()
-            //    .HasForeignKey("TrainingPlanId")
-            //    .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(w => w.Workouts)
+                .WithOne()
+                .HasForeignKey("TrainingWeekId")
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Ignore(x => x.Workouts);
-            //builder.HasMany(w => w.Workouts)
-            //    .WithOne()
-            //    .HasForeignKey("TrainingWeekId")
-            //    .IsRequired()
-            //    .OnDelete(DeleteBehavior.Cascade);
+            var navigation = builder.Metadata.FindNavigation(nameof(TrainingWeekEntity.Workouts));
+            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+
 
             builder.HasAlternateKey
             (

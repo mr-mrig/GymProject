@@ -60,14 +60,14 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        public static IEnumerable<WorkoutTemplateReferenceValue> ForceConsecutiveProgressiveNumbers(IEnumerable<WorkoutTemplateReferenceValue> input)
+        public static IEnumerable<WorkoutTemplateReferenceEntity> ForceConsecutiveProgressiveNumbers(IEnumerable<WorkoutTemplateReferenceEntity> input)
         {
-            IEnumerable<WorkoutTemplateReferenceValue> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
+            IEnumerable<WorkoutTemplateReferenceEntity> result = input.OrderBy(x => x.ProgressiveNumber).ToList();
 
             // Just overwrite all the progressive numbers
             for (int iws = 0; iws < result.Count(); iws++)
             {
-                WorkoutTemplateReferenceValue ws = result.ElementAt(iws);
+                WorkoutTemplateReferenceEntity ws = result.ElementAt(iws);
                 ws.MoveToNewProgressiveNumber((uint)iws);
             }
             return result;

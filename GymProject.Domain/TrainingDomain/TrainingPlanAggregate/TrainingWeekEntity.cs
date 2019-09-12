@@ -38,16 +38,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
-        private IList<WorkoutTemplateReferenceValue> _workouts = new List<WorkoutTemplateReferenceValue>();
+        private List<WorkoutTemplateReferenceEntity> _workouts = new List<WorkoutTemplateReferenceEntity>();
 
         /// <summary>
         /// The IDs of the Workouts belonging to the TW
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
-        public IReadOnlyCollection<WorkoutTemplateReferenceValue> Workouts
+        public IReadOnlyCollection<WorkoutTemplateReferenceEntity> Workouts
         {
             get => _workouts?.Clone().ToList().AsReadOnly() 
-                ?? new List<WorkoutTemplateReferenceValue>().AsReadOnly();
+                ?? new List<WorkoutTemplateReferenceEntity>().AsReadOnly();
         }
 
 
@@ -63,12 +63,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         private TrainingWeekEntity() : base(null) {}
 
-        private TrainingWeekEntity(uint? id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
+        private TrainingWeekEntity(uint? id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceEntity> workouts = null, TrainingWeekTypeEnum weekType = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             TrainingWeekType = weekType ?? TrainingWeekTypeEnum.Generic;
 
-            _workouts = workouts?.ToList() ?? new List<WorkoutTemplateReferenceValue>();
+            _workouts = workouts?.ToList() ?? new List<WorkoutTemplateReferenceEntity>();
 
             TestBusinessRules();
 
@@ -90,7 +90,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekEntity PlanTrainingWeek(uint? id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekEntity PlanTrainingWeek(uint? id, uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceEntity> workouts = null, TrainingWeekTypeEnum weekType = null)
 
             => new TrainingWeekEntity(id, progressiveNumber, workouts, weekType);
 
@@ -102,7 +102,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber">The progressive number of the Training Week</param>
         /// <param name="weekType">The type of the Training Week - optional</param>
         /// <returns>The TrainingWeekTemplate instance</returns>
-        public static TrainingWeekEntity PlanTransientTrainingWeek(uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceValue> workouts = null, TrainingWeekTypeEnum weekType = null)
+        public static TrainingWeekEntity PlanTransientTrainingWeek(uint progressiveNumber, IEnumerable<WorkoutTemplateReferenceEntity> workouts = null, TrainingWeekTypeEnum weekType = null)
 
             => new TrainingWeekEntity(null, progressiveNumber, workouts, weekType);
 
@@ -114,7 +114,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The TrainingWeekTemplate instance</returns>
         public static TrainingWeekEntity PlanTransientFullRestWeek(uint progressiveNumber)
 
-            => new TrainingWeekEntity(null, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
+            => new TrainingWeekEntity(null, progressiveNumber, new List<WorkoutTemplateReferenceEntity>(), TrainingWeekTypeEnum.FullRest);
 
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The TrainingWeekTemplate instance</returns>
         public static TrainingWeekEntity PlanFullRestWeek(uint? id, uint progressiveNumber)
 
-            => new TrainingWeekEntity(id, progressiveNumber, new List<WorkoutTemplateReferenceValue>(), TrainingWeekTypeEnum.FullRest);
+            => new TrainingWeekEntity(id, progressiveNumber, new List<WorkoutTemplateReferenceEntity>(), TrainingWeekTypeEnum.FullRest);
 
         #endregion
 
@@ -233,7 +233,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public TrainingIntensityParametersValue GetWorkoutTrainingIntensity(uint progressiveNumber)
         {
-            WorkoutTemplateReferenceValue workout = FindWorkout(progressiveNumber);
+            WorkoutTemplateReferenceEntity workout = FindWorkout(progressiveNumber);
 
             return TrainingIntensityParametersValue.ComputeFromWorkingSets(workout.WorkingSets, workout.GetMainEffortType());
         }
@@ -251,13 +251,33 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         public void PlanWorkout(IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
-            _workouts.Add(WorkoutTemplateReferenceValue.BuildLinkToWorkout(
+            _workouts.Add(WorkoutTemplateReferenceEntity.BuildLinkToWorkout(
                 BuildWorkoutProgressiveNumber(),
                 workingSets));
 
 
             TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
             TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Add the Workout to the Training Week
+        /// </summary>
+        /// <param name="workout">TheWorkout to be added</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
+        public void PlanWorkout(WorkoutTemplateRoot workout)
+        {
+            _workouts.Add(WorkoutTemplateReferenceEntity.FromWorkoutTemplate(
+                BuildWorkoutProgressiveNumber(),
+                workout));
+
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(workout.CloneAllWorkingSets());
+            TrainingDensity = TrainingDensity.AddWorkingSets(workout.CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
 
             TestBusinessRules();
@@ -294,7 +314,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public void AddWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
-            WorkoutTemplateReferenceValue workout =  FindWorkout(workoutPnum);
+            WorkoutTemplateReferenceEntity workout =  FindWorkout(workoutPnum);
 
             _workouts[(int)workoutPnum] = workout.AddWorkingSets(workingSets);
 
@@ -313,7 +333,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
         public void RemoveWorkingSets(uint workoutPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
         {
-            WorkoutTemplateReferenceValue workout = FindWorkout(workoutPnum);
+            WorkoutTemplateReferenceEntity workout = FindWorkout(workoutPnum);
 
             _workouts[(int)workoutPnum] = workout.RemoveWorkingSets(workingSets);
 
@@ -331,8 +351,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
         public void MoveWorkoutToNewProgressiveNumber(uint srcPnum, uint destPnum)
         {
-            WorkoutTemplateReferenceValue src = FindWorkout(srcPnum);
-            WorkoutTemplateReferenceValue dest = FindWorkout(destPnum);
+            WorkoutTemplateReferenceEntity src = FindWorkout(srcPnum);
+            WorkoutTemplateReferenceEntity dest = FindWorkout(destPnum);
 
             _workouts[(int)srcPnum] = dest.MoveToNewProgressiveNumber(srcPnum);
             _workouts[(int)destPnum] = src.MoveToNewProgressiveNumber(destPnum);
@@ -356,7 +376,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="workoutPnum">The Progressive Number of the Workout</param>
         /// <returns>The list of the Working Sets</returns>
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
-        public WorkoutTemplateReferenceValue CloneWorkout(uint workoutPnum)
+        public WorkoutTemplateReferenceEntity CloneWorkout(uint workoutPnum)
 
             => FindWorkout(workoutPnum);
 
@@ -379,7 +399,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="progressiveNumber"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
-        private WorkoutTemplateReferenceValue FindWorkout(uint progressiveNumber)
+        private WorkoutTemplateReferenceEntity FindWorkout(uint progressiveNumber)
 
             => _workouts[(int)progressiveNumber];
 
@@ -400,12 +420,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// </summary>
         private void ForceConsecutiveWorkoutProgressiveNumbers()
         {
-            IList<WorkoutTemplateReferenceValue> sortedCopy = new List<WorkoutTemplateReferenceValue>();
+            List<WorkoutTemplateReferenceEntity> sortedCopy = new List<WorkoutTemplateReferenceEntity>();
 
             // Just overwrite all the progressive numbers
             for (int iwo = 0; iwo < _workouts.Count(); iwo++)
             {
-                WorkoutTemplateReferenceValue srcWorkout = _workouts.ElementAt(iwo);
+                WorkoutTemplateReferenceEntity srcWorkout = _workouts.ElementAt(iwo);
 
                 sortedCopy.Add(
                     srcWorkout.MoveToNewProgressiveNumber((uint)iwo));

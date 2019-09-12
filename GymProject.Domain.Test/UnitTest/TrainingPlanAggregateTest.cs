@@ -51,7 +51,7 @@ namespace GymProject.Domain.Test.UnitTest
                 bool faked = false;
                 bool isTransient = RandomFieldGenerator.RollEventWithProbability(0.1f);
 
-                List<WorkoutTemplateReferenceValue> initialWorkoutsReferences = new List<WorkoutTemplateReferenceValue>();
+                List<WorkoutTemplateReferenceEntity> initialWorkoutsReferences = new List<WorkoutTemplateReferenceEntity>();
 
                 TrainingWeekTypeEnum weekType = TrainingWeekTypeEnum.From(
                     RandomFieldGenerator.RandomInt(1, TrainingWeekTypeEnum.Peak.Id));
@@ -65,7 +65,7 @@ namespace GymProject.Domain.Test.UnitTest
                     for (int iwo = 0; iwo < initialWorkoutsNum; iwo++)
                     {
                         WorkoutTemplateRoot wo = WorkoutTemplateAggregateBuilder.BuildRandomWorkoutTemplate(iwo + 1, isTransient);
-                        initialWorkoutsReferences.Add(WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)iwo, wo.CloneAllWorkingSets()));
+                        initialWorkoutsReferences.Add(WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)iwo, wo.CloneAllWorkingSets()));
                     }
 
                     if (isTransient)
@@ -143,7 +143,7 @@ namespace GymProject.Domain.Test.UnitTest
                                 {
                                     wo = WorkoutTemplateAggregateBuilder.BuildRandomWorkoutTemplate(iwo + 1, isTransient);
                                     initialWorkoutsReferences.Add(
-                                        WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)iwo, wo.CloneAllWorkingSets()));
+                                        WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)iwo, wo.CloneAllWorkingSets()));
                                 }
                             }
                             if (!faked)
@@ -173,7 +173,7 @@ namespace GymProject.Domain.Test.UnitTest
                                     pnum = iwo;
 
                                 WorkoutTemplateRoot wo = WorkoutTemplateAggregateBuilder.BuildRandomWorkoutTemplate(iwo + 1, isTransient);
-                                initialWorkoutsReferences.Add(WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)pnum, wo.CloneAllWorkingSets()));
+                                initialWorkoutsReferences.Add(WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)pnum, wo.CloneAllWorkingSets()));
                             }
                             if (!faked)
                                 initialWorkoutsReferences[0] = initialWorkoutsReferences[0].MoveToNewProgressiveNumber(1000);
@@ -191,9 +191,9 @@ namespace GymProject.Domain.Test.UnitTest
 
             // Check fail when trying to switch to Full Rest
             week = TrainingWeekEntity.PlanTrainingWeek(weekId, 0,
-                new List<WorkoutTemplateReferenceValue>()
+                new List<WorkoutTemplateReferenceEntity>()
                 {
-                    WorkoutTemplateReferenceValue.BuildLinkToWorkout(0, new List<WorkingSetTemplateEntity>())
+                    WorkoutTemplateReferenceEntity.BuildLinkToWorkout(0, new List<WorkingSetTemplateEntity>())
                 });
 
             Assert.Throws<TrainingDomainInvariantViolationException>(() =>
@@ -243,7 +243,7 @@ namespace GymProject.Domain.Test.UnitTest
                 int initialWorkoutsNum = RandomFieldGenerator.RandomInt(initialWorkoutMin, initialWorkoutMax);
                 List<WorkoutTemplateRoot> initialWorkouts = new List<WorkoutTemplateRoot>();
                 List<WorkoutTemplateRoot> workouts = new List<WorkoutTemplateRoot>();
-                List<WorkoutTemplateReferenceValue> initialWorkoutsReferences = new List<WorkoutTemplateReferenceValue>();
+                List<WorkoutTemplateReferenceEntity> initialWorkoutsReferences = new List<WorkoutTemplateReferenceEntity>();
 
                 TrainingWeekEntity week;
                 uint? weekId = 1;
@@ -273,7 +273,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
                     WorkoutTemplateRoot wo = WorkoutTemplateAggregateBuilder.BuildRandomWorkoutTemplate(iwo + 1, isTransient);
                     initialWorkouts.Add(wo);
-                    initialWorkoutsReferences.Add(WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)iwo, wo.CloneAllWorkingSets()));
+                    initialWorkoutsReferences.Add(WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)iwo, wo.CloneAllWorkingSets()));
                 }
 
                 if (isTransient)
@@ -564,7 +564,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Throws<ArgumentNullException>(() => validPlan.PlanTrainingWeek(null));
 
                 Assert.Throws<ArgumentException>(() => validPlan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.FullRest
-                    , new List<WorkoutTemplateReferenceValue>() { WorkoutTemplateReferenceValue.BuildLinkToWorkout(0, null) }));
+                    , new List<WorkoutTemplateReferenceEntity>() { WorkoutTemplateReferenceEntity.BuildLinkToWorkout(0, null) }));
 
                 //Assert.Throws<ArgumentException>(() => rootPlan.RemoveHashtag((uint?)(
                 //    RandomFieldGenerator.RandomIntValueExcluded(1, 10000, rootPlan.Hashtags.Select(x => (int)x)))));
@@ -662,7 +662,7 @@ namespace GymProject.Domain.Test.UnitTest
                             plan.PlanTransientFullRestWeek();
                         else
                             plan.PlanTransientTrainingWeek(week.TrainingWeekType, week.Workouts.Select(
-                                x => WorkoutTemplateReferenceValue.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList());
+                                x => WorkoutTemplateReferenceEntity.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList());
                     }
   
                     else
@@ -692,7 +692,7 @@ namespace GymProject.Domain.Test.UnitTest
                         // Value Copy
                         //IList<WorkoutTemplateReferenceValue> workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts
                         //    .Select(x => WorkoutTemplateReferenceValue.BuildLinkToWorkout(x.ProgressiveNumber, x.WorkingSets)).ToList();
-                        IList<WorkoutTemplateReferenceValue> workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts.ToList();
+                        IList<WorkoutTemplateReferenceEntity> workouts = plan.TrainingWeeks.ElementAt((int)weekPnum).Workouts.ToList();
 
                         // Add Workout
                         WorkoutTemplateRoot workout = WorkoutTemplateAggregateBuilder.BuildRandomWorkoutTemplate(1, isTransient);
@@ -700,8 +700,8 @@ namespace GymProject.Domain.Test.UnitTest
 
                         week = plan.TrainingWeeks.Single(x => x.ProgressiveNumber == weekPnum);     // Keep Updated
 
-                        CheckWeekWorkouts(workouts.Union(new List<WorkoutTemplateReferenceValue>() {
-                            WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)workouts.Count(), workout.CloneAllWorkingSets()) }), week, isTransient);
+                        CheckWeekWorkouts(workouts.Union(new List<WorkoutTemplateReferenceEntity>() {
+                            WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)workouts.Count(), workout.CloneAllWorkingSets()) }), week, isTransient);
 
                         Assert.Equal((float)(weeks.Sum(x => x.Workouts.Count) + 1) / (float)weeks.Count, plan.GetAverageWorkoutsPerWeek(), 1);
 
@@ -710,8 +710,8 @@ namespace GymProject.Domain.Test.UnitTest
                         uint destPnum = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
                         plan.MoveWorkoutToNewProgressiveNumber(weekPnum, srcPnum, destPnum);
 
-                        WorkoutTemplateReferenceValue srcWorkout = plan.CloneWorkout(weekPnum, srcPnum);
-                        WorkoutTemplateReferenceValue destWorkout = plan.CloneWorkout(weekPnum, destPnum);
+                        WorkoutTemplateReferenceEntity srcWorkout = plan.CloneWorkout(weekPnum, srcPnum);
+                        WorkoutTemplateReferenceEntity destWorkout = plan.CloneWorkout(weekPnum, destPnum);
 
                         CheckWorkingSetSequence(srcWorkout.WorkingSets, week.Workouts.ToList()[(int)destPnum].WorkingSets, isTransient);
                         CheckWorkingSetSequence(destWorkout.WorkingSets, week.Workouts.ToList()[(int)srcPnum].WorkingSets, isTransient);
@@ -724,7 +724,7 @@ namespace GymProject.Domain.Test.UnitTest
                         uint pnumToRemove = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
                         plan.UnplanWorkout(weekPnum, pnumToRemove);
 
-                        IList<WorkoutTemplateReferenceValue> workoutsLeft = workouts.Where(x => x.ProgressiveNumber != pnumToRemove).ToList();
+                        IList<WorkoutTemplateReferenceEntity> workoutsLeft = workouts.Where(x => x.ProgressiveNumber != pnumToRemove).ToList();
                         workoutsLeft = StaticUtils.ForceConsecutiveProgressiveNumbers(workoutsLeft).ToList();
 
                         week = plan.TrainingWeeks.Single(x => x.ProgressiveNumber == weekPnum);     // Keep Updated
@@ -793,14 +793,14 @@ namespace GymProject.Domain.Test.UnitTest
 
 
             TrainingWeekEntity week = plan.TrainingWeeks.Single(x => x.ProgressiveNumber == weekPnum);
-            IList<WorkoutTemplateReferenceValue> workouts = week.Workouts.ToList();
+            IList<WorkoutTemplateReferenceEntity> workouts = week.Workouts.ToList();
 
             // Add Working Sets
             uint workoutPnum = (uint)RandomFieldGenerator.RandomInt(0, week.Workouts.Count - 1);
             int addWorkingSetsNumber = RandomFieldGenerator.RandomInt(addWorkingSetsMin, addWorkingSetsMax);
             uint idToAdd;
            
-            WorkoutTemplateReferenceValue workout = week.CloneWorkout(workoutPnum);
+            WorkoutTemplateReferenceEntity workout = week.CloneWorkout(workoutPnum);
 
             for (int iws = 0; iws < addWorkingSetsNumber; iws++)
             {
@@ -880,7 +880,7 @@ namespace GymProject.Domain.Test.UnitTest
             uint srcPnum = workoutPnum;
 
             workout = week.CloneWorkout(srcPnum);    // Refresh it
-            WorkoutTemplateReferenceValue destWorkout = week.Workouts.ToList()[(int)destPnum];
+            WorkoutTemplateReferenceEntity destWorkout = week.Workouts.ToList()[(int)destPnum];
 
             week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
 
@@ -901,13 +901,13 @@ namespace GymProject.Domain.Test.UnitTest
 
             float fakedOperationProbability = 0.05f;
 
-            IEnumerable<WorkoutTemplateReferenceValue> workouts = new List<WorkoutTemplateReferenceValue>(week.Workouts);
+            IEnumerable<WorkoutTemplateReferenceEntity> workouts = new List<WorkoutTemplateReferenceEntity>(week.Workouts);
             uint srcPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
 
             ICollection<WorkingSetTemplateEntity> newWorkingSets = new List<WorkingSetTemplateEntity>();
             ICollection<WorkingSetTemplateEntity> removeWorkingSets = new List<WorkingSetTemplateEntity>();
 
-            WorkoutTemplateReferenceValue srcWorkout = week.CloneWorkout(srcPnum);
+            WorkoutTemplateReferenceEntity srcWorkout = week.CloneWorkout(srcPnum);
 
 
             // Add Working Sets
@@ -1000,7 +1000,7 @@ namespace GymProject.Domain.Test.UnitTest
             uint destPnum = RandomFieldGenerator.ChooseAmong(week.Workouts.Select(x => x.ProgressiveNumber).ToList());
 
             srcWorkout = week.CloneWorkout(srcPnum);    // Refresh it
-            WorkoutTemplateReferenceValue destWorkout = week.Workouts.ToList()[(int)destPnum];
+            WorkoutTemplateReferenceEntity destWorkout = week.Workouts.ToList()[(int)destPnum];
 
             week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
 
@@ -1039,7 +1039,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         internal static void CheckWorkingSetSequence(
-            IEnumerable<WorkoutTemplateReferenceValue> workouts, TrainingWeekEntity week, bool isTransient)
+            IEnumerable<WorkoutTemplateReferenceEntity> workouts, TrainingWeekEntity week, bool isTransient)
 
             => CheckWorkingSetSequence(
                 workouts.SelectMany(x => x.WorkingSets),
@@ -1060,7 +1060,7 @@ namespace GymProject.Domain.Test.UnitTest
                 week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
 
             // Single Workout Training Parameters
-            foreach (WorkoutTemplateReferenceValue workout in week.Workouts)
+            foreach (WorkoutTemplateReferenceEntity workout in week.Workouts)
             {
                 WorkoutTemplateAggregateTest.CheckTrainingParameters(
                     workout.WorkingSets,
@@ -1071,7 +1071,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
-        internal static void CheckWeekWorkouts(IEnumerable<WorkoutTemplateReferenceValue> workouts, TrainingWeekEntity week, bool isTransient)
+        internal static void CheckWeekWorkouts(IEnumerable<WorkoutTemplateReferenceEntity> workouts, TrainingWeekEntity week, bool isTransient)
         {
             CheckWorkingSetSequence(workouts, week, isTransient);
 
@@ -1084,7 +1084,7 @@ namespace GymProject.Domain.Test.UnitTest
                 week.TrainingVolume, week.TrainingDensity, week.TrainingIntensity);
 
             // Single Workout Training Parameters
-            foreach (WorkoutTemplateReferenceValue workout in week.Workouts)
+            foreach (WorkoutTemplateReferenceEntity workout in week.Workouts)
             {
                 WorkoutTemplateAggregateTest.CheckTrainingParameters(
                     workout.WorkingSets,

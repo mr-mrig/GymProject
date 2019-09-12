@@ -52,14 +52,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public virtual DbSet<TrainingScheduleFeedbackEntity> TrainingScheduleFeedbacks { get; set; }
 
 
-        //public virtual DbSet<WorkoutTemplateRoot> WorkoutTemplates { get; set; }
-        //public virtual DbSet<WorkUnitTemplateEntity> WorkUnitTemplates { get; set; }
-        //public virtual DbSet<WorkingSetTemplateEntity> WorkingSetTemplates { get; set; }
-        //public virtual DbSet<TrainingEffortTypeEnum> EffortTypes { get; set; }
+        public virtual DbSet<WorkoutTemplateRoot> WorkoutTemplates { get; set; }
+        public virtual DbSet<WorkUnitTemplateEntity> WorkUnitTemplates { get; set; }
+        public virtual DbSet<WorkingSetTemplateEntity> WorkingSetTemplates { get; set; }
+        public virtual DbSet<TrainingEffortTypeEnum> EffortTypes { get; set; }
 
 
         public virtual DbSet<TrainingWeekEntity> TrainingWeeks { get; set; }
-        //public virtual DbSet<WorkoutTemplateReferenceValue> TrainingWeekWorkoutReferences { get; set; }
+        public virtual DbSet<WorkoutTemplateReferenceEntity> TrainingWeekWorkoutReferences { get; set; }
         public virtual DbSet<TrainingWeekTypeEnum> TrainingWeekTypes { get; set; }
 
         public virtual DbSet<TrainingPlanPhaseRelation> TrainingPlanPhases { get; set; }
@@ -101,7 +101,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.ApplyConfiguration(new TrainingWeekEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingWeekTypeEntityConfiguration());
-            //modelBuilder.ApplyConfiguration(new WorkoutReferenceEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkoutReferenceEntityConfiguration());
 
             // Notes and minor Aggregates
             modelBuilder.ApplyConfiguration(new TrainingPlanFocusEntityConfiguration());
@@ -110,10 +110,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             modelBuilder.ApplyConfiguration(new TrainingPlanProficiencyEntityConfiguration());
             modelBuilder.ApplyConfiguration(new WorkUnitTemplateNoteEntityConfiguration());
 
-            //// Workout Template Aggregate
-            //modelBuilder.ApplyConfiguration(new WorkoutTemplateEntityConfiguration());
-            //modelBuilder.ApplyConfiguration(new WorkUnitTemplateEntityConfiguration());
-            //modelBuilder.ApplyConfiguration(new WorkingSetTemplateEntityConfiguration());
+            // Workout Template Aggregate
+            modelBuilder.ApplyConfiguration(new WorkoutTemplateEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkUnitTemplateEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkingSetTemplateEntityConfiguration());
 
             // Minor Training Aggregates
             modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
@@ -122,7 +122,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             modelBuilder.ApplyConfiguration(new EffortTypeEntityConfiguration());
 
             //// Training Phase
-            //modelBuilder.ApplyConfiguration(new TrainingPhaseEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new TrainingPhaseEntityConfiguration());
 
             // Training Schedule Aggregate
             modelBuilder.ApplyConfiguration(new TrainingScheduleEntityConfiguration());

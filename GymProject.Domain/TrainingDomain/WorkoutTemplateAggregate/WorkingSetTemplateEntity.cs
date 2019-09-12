@@ -42,7 +42,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingEffortValue Effort { get; private set; } = null;
 
 
-        private IList<uint?> _intensityTechniquesIds = new List<uint?>();
+        private List<uint?> _intensityTechniquesIds = new List<uint?>();
 
         /// <summary>
         /// FK to the Intensity Techniques - Optional
@@ -66,13 +66,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         }
 
 
-        private WorkingSetTemplateEntity(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null) : base(id)
+        private WorkingSetTemplateEntity(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IEnumerable<uint?> intensityTechniqueIds = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
-            Rest = rest ?? RestPeriodValue.SetNotSpecifiedRest();
-            Tempo = tempo ?? TUTValue.SetGenericTUT();
-            Effort = effort?? TrainingEffortValue.DefaultEffort;
+            Rest = rest;// ?? RestPeriodValue.SetNotSpecifiedRest();
+            Tempo = tempo;// ?? TUTValue.SetGenericTUT();
+            Effort = effort; //?? TrainingEffortValue.DefaultEffort;
 
             //_intensityTechniqueIds = intensityTechniqueIds?.NoDuplicatesClone().ToList() ?? new List<uint?>();
             _intensityTechniquesIds = CommonUtilities.RemoveDuplicatesFrom(intensityTechniqueIds)?.ToList() ?? new List<uint?>();
@@ -95,7 +95,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IEnumerable<uint?> intensityTechniqueIds = null)
 
             => new WorkingSetTemplateEntity(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -110,7 +110,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
         /// <returns>The WorkingSetTemplate instance</returns>
-        public static WorkingSetTemplateEntity PlanWorkingSet(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null)
+        public static WorkingSetTemplateEntity PlanWorkingSet(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IEnumerable<uint?> intensityTechniqueIds = null)
 
             => new WorkingSetTemplateEntity(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
@@ -325,7 +325,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (Repetitions.IsTimedBasedSerie())
                 return Repetitions.Value;
 
-            return Tempo.ToSeconds() * Repetitions.Value;
+            return (Tempo?.ToSeconds() ?? TUTValue.SetGenericTUT().ToSeconds()) 
+                * Repetitions.Value;
         }
 
 
@@ -335,7 +336,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The rest period</returns>
         public int ToRest()
 
-            => Rest.IsRestSpecified() ? Rest.Value : RestPeriodValue.DefaultRestValue;
+            => Rest != null && Rest.IsRestSpecified() ? Rest.Value : RestPeriodValue.DefaultRestValue;
 
 
         /// <summary>

@@ -57,6 +57,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.HasMany(plan => plan.TrainingWeeks)
                 .WithOne()
                 .HasForeignKey("TrainingPlanId")
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
             var navigation = builder.Metadata.FindNavigation(nameof(TrainingPlanRoot.TrainingWeeks));

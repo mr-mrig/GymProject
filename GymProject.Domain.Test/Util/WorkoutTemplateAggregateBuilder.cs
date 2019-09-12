@@ -21,7 +21,7 @@ namespace GymProject.Domain.Test.Util
             int workingSetsMin = 10, workingSetsMax = 30;
 
             // Workouts
-            List<WorkoutTemplateReferenceValue> workouts = new List<WorkoutTemplateReferenceValue>();
+            List<WorkoutTemplateReferenceEntity> workouts = new List<WorkoutTemplateReferenceEntity>();
 
             // Week Type
             if (weekType == null)
@@ -63,7 +63,7 @@ namespace GymProject.Domain.Test.Util
                 //    System.Diagnostics.Debugger.Break();
 
                 workouts.Add(
-                    WorkoutTemplateReferenceValue.BuildLinkToWorkout((uint)iwo, workoutSets));
+                    WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)iwo, workoutSets));
             }
 
             // Create the Week

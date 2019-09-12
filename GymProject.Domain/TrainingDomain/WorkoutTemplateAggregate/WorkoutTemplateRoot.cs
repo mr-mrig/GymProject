@@ -50,7 +50,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
-        private IList<WorkUnitTemplateEntity> _workUnits = new List<WorkUnitTemplateEntity>();
+        private List<WorkUnitTemplateEntity> _workUnits = new List<WorkUnitTemplateEntity>();
 
         /// <summary>
         /// The WUs belonging to the WorkOut
@@ -154,7 +154,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// Find the Working Unit with the progressive number specified - DEFAULT if not found
         /// </summary>
         /// <param name="workingSetPnum">The progressive number to be found</param>
-        /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
+        /// <exception cref="InvalidOperationException">If more elements with the specified Progressive Number are found</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
         public WorkUnitTemplateEntity CloneWorkUnit(uint workingSetPnum)
 
@@ -166,11 +166,29 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="workUnitPnum">The WU Progressive Number to be found</param>
         /// <param name="workingSetPnum">The WS Progressive Number to be found</param>
-        /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
+        /// <exception cref="InvalidOperationException">If more elements with the specified Progressive Number are found</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
         public WorkingSetTemplateEntity CloneWorkingSet(uint workUnitPnum, uint workingSetPnum)
 
             => CloneWorkUnit(workUnitPnum)?.CloneWorkingSet(workingSetPnum) as WorkingSetTemplateEntity;
+
+
+        /// <summary>
+        /// Get a copy of the last Working Set of the WorkUnit with the specified ID - DEFAULT if not found
+        /// </summary>
+        /// <param name="workUnitPnum">The WU Progressive Number to be found</param>
+        /// <exception cref="InvalidOperationException">If more elements with the specified Progressive Number are found</exception>
+        /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
+        public WorkingSetTemplateEntity CloneLastWorkingSet(uint workUnitPnum)
+        {
+            WorkUnitTemplateEntity workUnit = CloneWorkUnit(workUnitPnum);
+
+            if (workUnit?.WorkingSets?.Count == 0)
+                return null;
+
+            return workUnit?.CloneWorkingSet((uint)workUnit.WorkingSets.Count - 1) as WorkingSetTemplateEntity;
+        }
+            
 
 
         /// <summary>
@@ -277,7 +295,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workUnits.Count(x => x?.WorkingSets?.Count() > 0) == 0 ? TrainingEffortTypeEnum.IntensityPerc
+            => _workUnits.Count(x => x?.WorkingSets?.Count(y => y.Effort != null) > 0) == 0     // No Working Sets with Effort specified?
+                ? TrainingEffortTypeEnum.IntensityPerc
                 : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {
@@ -403,7 +422,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
         public void AddTransientWorkingSet(uint workUnitPnum, WSRepetitionsValue repetitions, 
-            RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IList<uint?> intensityTechniqueIds = null)
+            RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IEnumerable<uint?> intensityTechniqueIds = null)
         {
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(workUnitPnum);
 

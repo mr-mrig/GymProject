@@ -5,14 +5,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
-    internal class WorkoutReferenceEntityConfiguration : IEntityTypeConfiguration<WorkoutTemplateReferenceValue>
+    internal class WorkoutReferenceEntityConfiguration : IEntityTypeConfiguration<WorkoutTemplateReferenceEntity>
     {
 
 
-        public void Configure(EntityTypeBuilder<WorkoutTemplateReferenceValue> builder)
+        public void Configure(EntityTypeBuilder<WorkoutTemplateReferenceEntity> builder)
         {
-            builder.ToTable("WorkoutTemplate", GymContext.DefaultSchema)
-                .HasKey("_id");
+            builder.ToTable("WorkoutTemplate", GymContext.DefaultSchema);
+
+            builder.HasKey(w => w.Id);
+
+            builder.Property(w => w.Id)
+                .ValueGeneratedOnAdd();
 
             // Build relation to the other POCO which builds the same table
             builder.HasOne<WorkoutTemplateRoot>()

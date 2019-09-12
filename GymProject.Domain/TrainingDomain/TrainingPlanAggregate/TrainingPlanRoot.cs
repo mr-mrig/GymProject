@@ -549,7 +549,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="weekPnum">The Progressive Number of the Training Week</param>
         /// <param name="workoutPnum">The Progressive Number of the Workout</param>
         /// <returns>The list of the Working Sets</returns>
-        public WorkoutTemplateReferenceValue CloneWorkout(uint weekPnum, uint workoutPnum)
+        public WorkoutTemplateReferenceEntity CloneWorkout(uint weekPnum, uint workoutPnum)
 
             => FindTrainingWeekByProgressiveNumber((int)weekPnum).CloneWorkout(workoutPnum);
 
@@ -794,7 +794,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="weekType">The type of the Training Week</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         /// <exception cref="ArgumentException">If the week type is a Full Rest one</exception>
-        public void PlanTransientTrainingWeek(TrainingWeekTypeEnum weekType, IList<WorkoutTemplateReferenceValue> workoutsReferences)
+        public void PlanTransientTrainingWeek(TrainingWeekTypeEnum weekType, IList<WorkoutTemplateReferenceEntity> workoutsReferences)
         {
             if (weekType == TrainingWeekTypeEnum.FullRest)
                 throw new ArgumentException("Cannot add Full Rest Weeks with this function.", nameof(weekType));
@@ -947,6 +947,24 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
             TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
+            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+        }
+
+
+        /// <summary>
+        /// Add the Workout to the specified Training Week
+        /// </summary>
+        /// <param name="workout">The Workout to be added</param>
+        /// <param name="weekPnum">The Progressive Number of the Week to which to add the WO to</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
+        public void PlanWorkout(uint weekPnum, WorkoutTemplateRoot workout)
+        {
+            FindTrainingWeekByProgressiveNumber((int)weekPnum).PlanWorkout(workout);
+
+            TestBusinessRules();
+
+            TrainingVolume = TrainingVolume.AddWorkingSets(workout.CloneAllWorkingSets());
+            TrainingDensity = TrainingDensity.AddWorkingSets(workout.CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
 

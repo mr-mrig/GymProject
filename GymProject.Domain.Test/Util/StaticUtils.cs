@@ -150,7 +150,7 @@ namespace GymProject.Domain.Test.Util
                     + workingSets.Where(x => x.Effort.IsIntensityPercentage()).Sum(x => x.Effort.ToRPE(avgRepsInt).Value)) / workingSets.Count());
             }
 
-            else if (mainEffortType == TrainingEffortTypeEnum.IntensityPerc)
+            else if (mainEffortType == TrainingEffortTypeEnum.IntensityPercentage)
             {
                 IEnumerable<IFullWorkingSet> rpeSets = workingSets.Where(x => x.Effort.IsRPE());
 

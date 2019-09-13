@@ -190,7 +190,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public TrainingEffortTypeEnum GetMainEffortType()
 
             => _workouts.Sum(x => x?.WorkingSets?.Count()) == 0 
-                ? TrainingEffortTypeEnum.IntensityPerc
+                ? TrainingEffortTypeEnum.IntensityPercentage
                 : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {

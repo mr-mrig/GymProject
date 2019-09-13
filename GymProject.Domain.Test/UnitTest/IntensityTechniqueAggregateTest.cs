@@ -48,14 +48,13 @@ namespace GymProject.Domain.Test.UnitTest
 
                     case var _ when constructorProbability < 0.33f:
 
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreateNativeIntensityTechnique(null, null, name, abbreviation, description, isLinkingTechnique));
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreateNativeIntensityTechnique(null, ownerId, "     ", abbreviation, description, isLinkingTechnique));
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreateNativeIntensityTechnique(null, ownerId, null, abbreviation, description, isLinkingTechnique));
+                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreateNativeIntensityTechnique(null, "     ", abbreviation, description, isLinkingTechnique));
+                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreateNativeIntensityTechnique(null, null, abbreviation, description, isLinkingTechnique));
                         break;
 
                     default:
 
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, null, name, abbreviation, description, isLinkingTechnique));
+                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, ownerId, name, abbreviation, description, isLinkingTechnique));
                         Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, ownerId, "     ", abbreviation, description, isLinkingTechnique));
                         Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, ownerId, null, abbreviation, description, isLinkingTechnique));
                         break;
@@ -63,7 +62,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                 uint? id = 1;
 
-                IntensityTechniqueRoot tech = IntensityTechniqueRoot.CreateNativeIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
+                IntensityTechniqueRoot tech = IntensityTechniqueRoot.CreateNativeIntensityTechnique(id, name, abbreviation, description, isLinkingTechnique);
                 Assert.Throws<InvalidOperationException>(() => tech.ModerateEntryStatus(null));
                 Assert.Throws<InvalidOperationException>(() => tech.ChangeEntryStatus(null));
             }
@@ -110,7 +109,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                     case var _ when constructorProbability < 0.33f:
 
-                        technique = IntensityTechniqueRoot.CreateNativeIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique);
+                        technique = IntensityTechniqueRoot.CreateNativeIntensityTechnique(id, name, abbreviation, description, isLinkingTechnique);
                         break;
 
                     default:

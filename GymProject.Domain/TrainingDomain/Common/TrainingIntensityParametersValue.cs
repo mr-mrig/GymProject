@@ -14,7 +14,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Consts
 
-        public static readonly TrainingEffortTypeEnum DefaultEffortType = TrainingEffortTypeEnum.IntensityPerc;
+        public static readonly TrainingEffortTypeEnum DefaultEffortType = TrainingEffortTypeEnum.IntensityPercentage;
         #endregion
 
 
@@ -90,7 +90,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             }
 
             return SetTrainingIntensity(
-                    wsCopy.Sum(x => x?.Effort?.Value ?? TrainingEffortValue.DefaultEffort.Value), toEffortType, wsCopy.Count());
+                    wsCopy.Sum(x => x?.ToEffort().Value ?? TrainingEffortValue.DefaultEffort.Value), toEffortType, wsCopy.Count());
         }
 
 
@@ -123,27 +123,6 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         #region Public Methods
 
-
-        ///// <summary>
-        ///// Updates the Volume parameters including the working sets added
-        ///// </summary>
-        ///// <param name="workingSetList">The list of the working sets to be added</param>
-        ///// <returns>The new TrainingVolumeValue instance</returns>
-        //public TrainingIntensityParametersValue AddWorkingSets(IEnumerable<IWorkingSet> workingSetList)
-        //{
-        //    float wsIntensitySum = workingSetList.Sum(x => x.Effort.Value);
-
-        //    int wsTotalNumber = workingSetList.Count();
-
-        //    TrainingEffortValue wsTotalWorkload = WeightPlatesValue.MeasureKilograms(workingSetList.Sum(x => x.ToWorkload().Value));
-
-        //    return SetTrainingIntensity(
-        //        _intensitySumAccumulator + wsIntensitySum,
-        //        TotalWorkingSets + wsTotalNumber,
-        //        _totalWorkingSets + wsTotalNumber);
-        //}
-
-
         [Obsolete("This function works well only if the intial EffortType computed by the Factory method stays unchanged after " +
             "all the WS added. But adding more sets might make the original EffortType wrong")]
         /// <summary>
@@ -159,12 +138,12 @@ namespace GymProject.Domain.TrainingDomain.Common
                 throw new ArgumentNullException($"Trying to add a NULL working set.");
 
 
-            if (toAdd.Effort.EffortType != AverageIntensity.EffortType)
+            if (toAdd.ToEffort().EffortType != AverageIntensity.EffortType)
                 toAdd.ToNewEffortType(AverageIntensity.EffortType);
 
 
             return SetTrainingIntensity(
-                    toAdd.Effort.Value + _intensitySumAccumulator, AverageIntensity.EffortType, _totalWorkingSets + 1);
+                    toAdd.ToEffort().Value + _intensitySumAccumulator, AverageIntensity.EffortType, _totalWorkingSets + 1);
 
 
             //// Incremental average
@@ -195,7 +174,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
             return SetTrainingIntensity(
-                _intensitySumAccumulator - toRemove.Effort.Value, AverageIntensity.EffortType, _totalWorkingSets - 1);
+                _intensitySumAccumulator - toRemove.ToEffort().Value, AverageIntensity.EffortType, _totalWorkingSets - 1);
 
             //return SetTrainingIntensity(
             //TrainingEffortValue.TrackEffort(
@@ -203,21 +182,6 @@ namespace GymProject.Domain.TrainingDomain.Common
             //    AverageIntensity.EffortType),
             //_totalWorkingSets + 1);
         }
-
-        ///// <summary>
-        ///// Updates the Intensity parameters excluding the working sets added
-        ///// </summary>
-        ///// <param name="workingSetList">The list of the working sets to be removed</param>
-        ///// <returns>The new TrainingVolumeValue instance</returns>
-        //public TrainingIntensityParametersValue RemoveWorkingSets(IEnumerable<IWorkingSet> workingSetList)
-        //{
-        //    TrainingIntensityParametersValue result = this;
-
-        //    foreach (IWorkingSet ws in workingSetList)
-        //        result = RemoveWorkingSet(ws);
-
-        //    return result;
-        //}
 
         #endregion
 

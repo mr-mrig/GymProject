@@ -14,6 +14,7 @@ using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using GymProject.Domain.BodyDomain.MuscleGroupAggregate;
+using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -71,7 +72,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public virtual DbSet<TrainingHashtagRoot> TrainingHashtags { get; set; }
         public virtual DbSet<TrainingPhaseRoot> TrainingPhases { get; set; }
         public virtual DbSet<TrainingProficiencyRoot> TrainingProficiencies { get; set; }
-        public virtual DbSet<TrainingPlanMessageRoot> TrainingPlanMessage { get; set; }
+        public virtual DbSet<TrainingPlanMessageRoot> TrainingPlanMessages { get; set; }
+        public virtual DbSet<IntensityTechniqueRoot> IntensityTechniques { get; set; }
 
 
         public virtual DbSet<ExcerciseRoot> Excercises { get; set; }
@@ -115,13 +117,16 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             modelBuilder.ApplyConfiguration(new WorkUnitTemplateEntityConfiguration());
             modelBuilder.ApplyConfiguration(new WorkingSetTemplateEntityConfiguration());
 
+            // Intensity Technique Aggregate
+            modelBuilder.ApplyConfiguration(new IntensityTechniqueEntityConfiguration());
+
             // Minor Training Aggregates
             modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingMessageEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingProficiencyEntityConfiguration());
             modelBuilder.ApplyConfiguration(new EffortTypeEntityConfiguration());
 
-            //// Training Phase
+            // Training Phase
             modelBuilder.ApplyConfiguration(new TrainingPhaseEntityConfiguration());
 
             // Training Schedule Aggregate
@@ -130,8 +135,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             // Excercise Aggregate
             modelBuilder.ApplyConfiguration(new ExcerciseEntityConfiguration());
-
-
+            
             // Muscle Group Aggregate
             modelBuilder.ApplyConfiguration(new MuscleGroupEntityConfiguration());
 

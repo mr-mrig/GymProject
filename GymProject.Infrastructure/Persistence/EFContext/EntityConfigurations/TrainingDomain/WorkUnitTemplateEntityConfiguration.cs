@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
+using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,28 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            builder.OwnsOne(ws => ws.LinkedWorkUnit,
+                 l =>
+                 {
+                     l.Property(p => p.LinkedWorkId)
+                        .HasColumnName("LinkedWorkUnitId");
+
+                     l.HasOne<WorkUnitTemplateEntity>()
+                         .WithMany()
+                         .HasForeignKey(p => p.LinkedWorkId)
+                         .IsRequired(false)
+                         .OnDelete(DeleteBehavior.SetNull);
+
+                     l.Property(p => p.LinkingIntensityTechniqueId)
+                        .HasColumnName("LinkingIntensityTechniqueId");
+
+                     l.HasOne<IntensityTechniqueRoot>()
+                         .WithMany()
+                         .HasForeignKey(p => p.LinkingIntensityTechniqueId)
+                         .IsRequired(false)
+                         .OnDelete(DeleteBehavior.SetNull);
+                 });
+
             builder.HasMany(w => w.WorkingSets)
                 .WithOne()
                 .HasForeignKey("WorkUnitTemplateId")
@@ -50,11 +73,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             var navigation = builder.Metadata.FindNavigation(nameof(WorkUnitTemplateEntity.WorkingSets));
             navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
-
-
-            //intesity technique
-            //throw new System.NotImplementedException("Intensity techinque N-to-N");
-
 
             builder.HasAlternateKey
             (

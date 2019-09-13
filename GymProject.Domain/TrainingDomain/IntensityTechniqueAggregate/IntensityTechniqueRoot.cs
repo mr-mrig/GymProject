@@ -109,9 +109,9 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <param name="isLinkingTechnique">Wether the Intensity Technique links two or more work components</param>
         /// <param name="id">The ID of the Intensity Technique</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        public static IntensityTechniqueRoot CreateNativeIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
+        public static IntensityTechniqueRoot CreateNativeIntensityTechnique(uint? id, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique)
 
-            => CreateIntensityTechnique(id, ownerId, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Native);
+            => CreateIntensityTechnique(id, null, name, abbreviation, description, isLinkingTechnique, EntryStatusTypeEnum.Native);
 
 
         /// <summary>

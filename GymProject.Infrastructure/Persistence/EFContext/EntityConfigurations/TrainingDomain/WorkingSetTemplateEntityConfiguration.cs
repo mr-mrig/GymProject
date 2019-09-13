@@ -60,7 +60,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                     .HasColumnName("Effort")
                     .HasColumnType("INTEGER");
 
-                    e.Property("EffortTypeId");
+                    //e.Property(p => p.EffortType)
+                    //   .HasColumnName("EffortTypeId");
 
                     e.HasOne(p => p.EffortType)
                         .WithMany()

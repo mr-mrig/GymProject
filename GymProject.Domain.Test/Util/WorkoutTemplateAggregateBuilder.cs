@@ -134,13 +134,14 @@ namespace GymProject.Domain.Test.Util
 
             int wuIntTechniquesMin = 0, wuIntTechniquesMax = 3;
             int intTechniqueIdMin = 1, intTechniqueIdMax = 1000;
+            int linkedIdMin = 1, linkedIdMax = 1000;
 
 
             //int wsIdOffset = 100;       // Used to ensure no ID collisions among WSs of different WUs
 
             // Build randomic Effort
             if (id % 2 == 0)
-                effortType = TrainingEffortTypeEnum.IntensityPerc;
+                effortType = TrainingEffortTypeEnum.IntensityPercentage;
 
             else if (id % 3 == 0)
                 effortType = TrainingEffortTypeEnum.RM;
@@ -160,9 +161,9 @@ namespace GymProject.Domain.Test.Util
 
             // Build randomic WU intensity techniques
             int wuIntTechniquesNum = RandomFieldGenerator.RandomInt(wuIntTechniquesMin, wuIntTechniquesMax);
-            List<uint?> wuIntensityTechniques = new List<uint?>();
-            for (int i = 0; i < wuIntTechniquesNum; i++)
-                wuIntensityTechniques.Add((uint?)RandomFieldGenerator.RandomIntValueExcluded(intTechniqueIdMin, intTechniqueIdMax, wuIntensityTechniques.Select(x => (int)x.Value)));
+
+            LinkedWorkValue linkedWorkUnit = LinkedWorkValue.LinkTo(
+                (uint)RandomFieldGenerator.RandomIntValueExcluded(linkedIdMin, linkedIdMax, (int)id), (uint)RandomFieldGenerator.RandomInt(intTechniqueIdMin, intTechniqueIdMax));
 
             // Add randomic Working Sets
             int iwsMax = RandomFieldGenerator.RandomInt(wsNumMin, wsNumMax);
@@ -181,7 +182,7 @@ namespace GymProject.Domain.Test.Util
                 progressiveNumber: (uint)progn,
                 excerciseId: (uint?)(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
                 workingSets: workingSets,
-                workUnitIntensityTechniqueIds: wuIntensityTechniques,
+                linkedWorkUnit: linkedWorkUnit,
                 ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
             );
             else
@@ -191,7 +192,7 @@ namespace GymProject.Domain.Test.Util
                     progressiveNumber: (uint)progn,
                     excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
                     workingSets: workingSets,
-                    workUnitIntensityTechniqueIds: wuIntensityTechniques,
+                    linkedWorkUnit: linkedWorkUnit,
                     ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
                 );
         }
@@ -210,7 +211,7 @@ namespace GymProject.Domain.Test.Util
 
             switch (effortType)
             {
-                case var _ when effortType == TrainingEffortTypeEnum.IntensityPerc:
+                case var _ when effortType == TrainingEffortTypeEnum.IntensityPercentage:
 
                     effort = TrainingEffortValue.AsIntensityPerc(RandomFieldGenerator.RandomFloat(intPercMin, intPercMax));
                     break;

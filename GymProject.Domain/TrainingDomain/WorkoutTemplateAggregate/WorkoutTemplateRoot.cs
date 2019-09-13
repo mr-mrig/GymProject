@@ -218,15 +218,15 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="excerciseId">The ID of the excercise of the WU</param>
         /// <param name="ownerNoteId">The ID of the WU Owner's note</param>
         /// <param name="workingSets">The WS which the WU is made up of</param>
-        /// <param name="workUnitIntensityTechniquesIds">The IDs of the WS intensity techniques</param>
+        /// <param name="linkedToThis">The Work Unit linked to the one to be planned</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void PlanTransientExcercise(uint? excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, IEnumerable<uint?> workUnitIntensityTechniquesIds = null, uint? ownerNoteId = null)
+        public void PlanTransientExcercise(uint? excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, LinkedWorkValue linkedToThis = null, uint? ownerNoteId = null)
         {
             WorkUnitTemplateEntity toAdd = WorkUnitTemplateEntity.PlanTransientWorkUnit(
                 BuildWorkUnitProgressiveNumber(),
                 excerciseId,
                 workingSets,
-                workUnitIntensityTechniquesIds,
+                linkedToThis,
                 ownerNoteId);
 
             _workUnits.Add(toAdd);
@@ -295,14 +295,23 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _workUnits.Count(x => x?.WorkingSets?.Count(y => y.Effort != null) > 0) == 0     // No Working Sets with Effort specified?
-                ? TrainingEffortTypeEnum.IntensityPerc
-                : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
+            //=> _workUnits.Count(x => x?.WorkingSets?.Count(y => y.Effort != null) > 0) == 0     // No Working Sets with Effort specified?
+            //    ? TrainingEffortTypeEnum.IntensityPercentage
+            //    : _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.Effort.EffortType).Select(x
+            //         => new
+            //         {
+            //             Counter = x.Count(),
+            //             EffortType = x.Key
+            //         }).OrderByDescending(x => x.Counter).First().EffortType;
+        
+            => _workUnits.SelectMany(x => x.WorkingSets).GroupBy(x => x.ToEffort().EffortType).Select(x
+                    => new
+                    {
+                        Counter = x.Count(),
+                        EffortType = x.Key
+                    })
+                    .OrderByDescending(x => x.Counter).FirstOrDefault()?.EffortType
+                ?? TrainingEffortTypeEnum.IntensityPercentage;
 
 
         [Obsolete("To be removed: this should be a presentation/application logic task",true)]
@@ -324,34 +333,35 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
-        /// Add the intensity technique to the selected Work Unit and all its WSs
+        /// Links two Work Units with the specified Intensity Technique
         /// </summary>
-        /// <param name="workUnitPnum">The Progressive Number of the Work Unit to be modified</param>
+        /// <param name="startingWorkUnitPNum">The Progressive Number of the Work Unit to be performed before</param>
+        /// <param name="linkedWorkUnitPNum">The Progressive Number of the Work Unit to be performed after - Must be different from the first one</param>
         /// <param name="intensityTechniqueId">The ID of the intensity technique</param>
-        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
+        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum, or if the PNums are the same</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
-        public void AddWorkUnitIntensityTechnique(uint workUnitPnum, uint? intensityTechniqueId)
+        public void LinkWorkUnits(uint startingWorkUnitPNum, uint linkedWorkUnitPNum, uint intensityTechniqueId)
         {
-            WorkUnitTemplateEntity toBeModified = FindWorkUnit(workUnitPnum);
+            if (startingWorkUnitPNum == linkedWorkUnitPNum)
+                throw new InvalidOperationException($"The Work Units must be different when linking them.");
 
-            toBeModified?.AddWorkUnitIntensityTechnique(intensityTechniqueId);
+            WorkUnitTemplateEntity startingWorkUnit = FindWorkUnit(startingWorkUnitPNum);
+            WorkUnitTemplateEntity linkedWorkUnit = FindWorkUnit(linkedWorkUnitPNum);
+
+            startingWorkUnit.LinkTo(linkedWorkUnit, intensityTechniqueId);
         }
 
 
         /// <summary>
-        /// Remove the intensity technique from the selected Work Unit and all its WSs
+        /// Remove the link between the selected Work Unit and the one linked to it
         /// </summary>
-        /// <param name="workUnitPnum">The Progressive Number of the Work Unit to be modified</param>
-        /// <param name="intensityTechniqueId">The ID of the intensity technique</param>
-        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
+        /// <param name="startingWorkUnitPnum">The Progressive Number of the Work Unit which starts the linked group</param>
+        /// <exception cref="InvalidOperationException">Thrown if no Work Unit or more than one with the same Pnum</exception>
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
         /// <returns>True if remove successfull</returns>
-        public void RemoveWorkUnitIntensityTechnique(uint workUnitPnum, uint? intensityTechniqueId)
-        {
-            WorkUnitTemplateEntity toBeModified = FindWorkUnit(workUnitPnum);
+        public void UnlinkWorkUnits(uint startingWorkUnitPnum)
 
-            toBeModified.RemoveWorkUnitIntensityTechnique(intensityTechniqueId);
-        }
+            => FindWorkUnit(startingWorkUnitPnum).Unlink();
 
 
         /// <summary>
@@ -534,6 +544,36 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             WorkUnitTemplateEntity parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
 
             parentWorkUnit?.RemoveWorkingSetIntensityTechnique(workingSetPnum, toRemoveId);
+        }
+
+
+        /// <summary>
+        /// Add the Intensity Technique to the Working Set of the Work Unit - if it could be found
+        /// </summary>
+        /// <param name="parentWorkUnitPnum">The Progressive Number of the WU which owns the WS</param>
+        /// <param name="workingSetPnum">The Progressive Number of the WS to be modifed</param>
+        /// <param name="toAddId">The ID of the Intensity Technique to be added</param>
+        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException"></exception>
+        public void LinkWorkingSet(uint parentWorkUnitPnum, uint workingSetPnum, uint? toAddId)
+        {
+            adsbefb
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Remove an intensity technique from the WS, if it could be found
+        /// </summary>
+        /// <param name="parentWorkUnitPnum">The WU Progressive Number</param>
+        /// <param name="workingSetPnum">The WS Progressive Number</param>
+        /// <param name="toRemoveId">The id to be removed</param>
+        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException"></exception>
+        public void UninkWorkingSet(uint parentWorkUnitPnum, uint workingSetPnum, uint? toRemoveId)
+        {
+            efabewfb
+            throw new NotImplementedException();
         }
 
 
@@ -813,7 +853,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         #endregion
 
 
-        #region IClonable Implementation
+        #region ICloneable Implementation
 
         public object Clone()
 

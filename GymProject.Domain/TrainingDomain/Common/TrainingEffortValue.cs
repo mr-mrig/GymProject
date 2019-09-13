@@ -74,7 +74,7 @@ namespace GymProject.Domain.TrainingDomain.Common
             if (effort <= TrainingEffortTypeEnum.MaxIntensityPercentage / 100f)
                 effort *= 100f;
 
-            return TrackEffort(effort, TrainingEffortTypeEnum.IntensityPerc);
+            return TrackEffort(effort, TrainingEffortTypeEnum.IntensityPercentage);
         }
 
 
@@ -106,7 +106,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// Check whether the effort is expressed as Intensity Percentage
         /// </summary>
         /// <returns>True if Intensity Percentage</returns>
-        public bool IsIntensityPercentage() => EffortType == TrainingEffortTypeEnum.IntensityPerc;
+        public bool IsIntensityPercentage() => EffortType == TrainingEffortTypeEnum.IntensityPercentage;
 
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
             switch (effortType)
             {
-                case var _ when effortType == TrainingEffortTypeEnum.IntensityPerc:
+                case var _ when effortType == TrainingEffortTypeEnum.IntensityPercentage:
 
                     return (float)Math.Round(value, 2);
 
@@ -205,7 +205,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         private float ToRmExact(WSRepetitionsValue targetReps = null)
         {
             // From Intenisty Percentage
-            if (EffortType == TrainingEffortTypeEnum.IntensityPerc)
+            if (EffortType == TrainingEffortTypeEnum.IntensityPercentage)
             {
                 float input = Math.Min(Value, TrainingEffortTypeEnum.OneRMIntensityPercentage);
 
@@ -239,7 +239,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         public TrainingEffortValue ToRm(WSRepetitionsValue targetReps = null)
         {
             // From Intenisty Percentage
-            if (EffortType == TrainingEffortTypeEnum.IntensityPerc)
+            if (EffortType == TrainingEffortTypeEnum.IntensityPercentage)
             {
                 float saturatedInput = Math.Min(Value, TrainingEffortTypeEnum.OneRMIntensityPercentage);   // Truncate to 100%
 
@@ -338,7 +338,7 @@ namespace GymProject.Domain.TrainingDomain.Common
                 throw new ArgumentException($"Invalid repetions when converting to RPE.", nameof(targetReps));
 
             // From Intenisty Percentage
-            if (EffortType == TrainingEffortTypeEnum.IntensityPerc)
+            if (EffortType == TrainingEffortTypeEnum.IntensityPercentage)
 
                 rmValue = ToRmExact();     // Convert to RM first
 

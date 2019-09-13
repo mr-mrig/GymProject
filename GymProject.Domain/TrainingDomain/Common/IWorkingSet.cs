@@ -14,6 +14,12 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         /// <summary>
+        /// Get the effort of the WS
+        /// </summary>
+        /// <returns>The effort - cannot be NULL</returns>
+        TrainingEffortValue ToEffort();
+
+        /// <summary>
         /// Get the duration of the WS [s]
         /// </summary>
         /// <returns>The number of seconds under tension</returns>

@@ -532,15 +532,25 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The training effort type</returns>
         public TrainingEffortTypeEnum GetMainEffortType()
 
-            => _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0
+                        //=> _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0
 
-                ? TrainingEffortTypeEnum.IntensityPerc
-                : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
-                     => new
-                     {
-                         Counter = x.Count(),
-                         EffortType = x.Key
-                     }).OrderByDescending(x => x.Counter).First().EffortType;
+                        //    ? TrainingEffortTypeEnum.IntensityPercentage
+                        //    : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
+                        //         => new
+                        //         {
+                        //             Counter = x.Count(),
+                        //             EffortType = x.Key
+                        //         }).OrderByDescending(x => x.Counter).First().EffortType;
+
+            => CloneAllWorkingSets().GroupBy(x => x.ToEffort().EffortType).Select(x
+                => new
+                {
+                    Counter = x.Count(),
+                    EffortType = x.Key
+                })
+                .OrderByDescending(x => x.Counter)
+                .FirstOrDefault()?.EffortType
+            ?? TrainingEffortTypeEnum.IntensityPercentage;
 
 
         /// <summary>
@@ -555,7 +565,31 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
-        /// Get the WSs of all the Workouts beuinting to the Plan
+        /// Get the Workout that was added last
+        /// </summary>
+        /// <param name="weekPnum">The Progressive Number of the Training Week</param>
+        /// <param name="workoutPnum">The Progressive Number of the Workout</param>
+        /// <returns>The list of the Working Sets</returns>
+        public WorkoutTemplateReferenceEntity CloneLastWorkout(uint weekPnum)
+        {
+            TrainingWeekEntity parent = FindTrainingWeekByProgressiveNumber((int) weekPnum);
+            int workoutProgressiveNumber = parent.Workouts.Count - 1;
+
+            return parent.CloneWorkout((uint)workoutProgressiveNumber);
+        }
+
+
+        /// <summary>
+        /// Get the Workouts belonging to the Plan
+        /// </summary>
+        /// <returns>The list of the Working Sets</returns>
+        public IEnumerable<WorkoutTemplateReferenceEntity> CloneAllWorkouts()
+
+             => _trainingWeeks.SelectMany(x => x.Workouts);
+
+
+        /// <summary>
+        /// Get the WSs of all the Workouts belonging to the Plan
         /// </summary>
         /// <returns>The list of the Working Sets</returns>
         public IEnumerable<WorkingSetTemplateEntity> CloneAllWorkingSets()

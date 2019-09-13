@@ -1,9 +1,12 @@
 ﻿using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
+using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
+using GymProject.Domain.UserAccountDomain.UserAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using System;
 using System.Linq;
 
 namespace ConsoleTest.DataSeed
@@ -29,16 +32,39 @@ namespace ConsoleTest.DataSeed
         }
 
 
+
+
+        internal static void UserDataSeed()
+        {
+            using (GymContext context = new GymContext())
+            {
+                UserRoot entry;
+                AccountStatusTypeEnum active = context.AccountStatusTypes.Single(x => x.Id == AccountStatusTypeEnum.Active.Id);
+
+                for (uint i = 0; i < 20; i++)
+                {
+                    entry = UserRoot.RegisterUser($"user{i.ToString()}@email.com", $"user{i.ToString()}", $"pwd{i.ToString()}", $"salt{i.ToString()}", DateTime.UtcNow, active);
+                    context.Add(entry);
+                    context.SaveChanges();
+                }
+            }
+        }
+
+
         internal static void WorkUnitNoteDataSeed()
         {
             using (GymContext context = new GymContext())
             {
-                //EntryStatusTypeEnum native = context.EntryStatusTypes.Single(x => x.Id == EntryStatusTypeEnum.Native.Id);
+                WorkUnitTemplateNoteRoot entry;
 
-                WorkUnitTemplateNoteRoot entry1 = WorkUnitTemplateNoteRoot.WriteTransient(PersonalNoteValue.Write("Note 1"));
-                context.Add(entry1);
-                context.SaveChanges();
+                for (uint i = 0; i < 20; i++)
+                {
+                    entry = WorkUnitTemplateNoteRoot.WriteTransient(PersonalNoteValue.Write($"My Short Note - {i.ToString()}"));
+                    context.Add(entry);
+                    context.SaveChanges();
+                }
             }
+
         }
 
 
@@ -104,6 +130,34 @@ namespace ConsoleTest.DataSeed
             }
         }
 
+
+        internal static void IntensityTechniqueDataSeed()
+        {
+            using (GymContext context = new GymContext())
+            {
+                IntensityTechniqueRoot entry;
+
+                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(1, "Superset", "SS", PersonalNoteValue.Write("Dummy"), true);
+                context.Add(entry);
+                context.SaveChanges();
+
+                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(1, "Jumpset", "JS", PersonalNoteValue.Write("Dummy"), true);
+                context.Add(entry);
+                context.SaveChanges();
+
+                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(3, "Dropset", "DS", PersonalNoteValue.Write("Dummy"), true);
+                context.Add(entry);
+                context.SaveChanges();
+
+                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(4, "Rest Pause", "RP", PersonalNoteValue.Write("Dummy"), false);
+                context.Add(entry);
+                context.SaveChanges();
+
+                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(5, "Forced", "For", PersonalNoteValue.Write("Dummy"), false);
+                context.Add(entry);
+                context.SaveChanges();
+            }
+        }
 
 
     }

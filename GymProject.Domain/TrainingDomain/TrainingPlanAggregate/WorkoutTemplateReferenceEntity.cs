@@ -146,7 +146,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public TrainingEffortTypeEnum GetMainEffortType()
 
             => _workingSets.Count() == 0
-                ? TrainingEffortTypeEnum.IntensityPerc
+                ? TrainingEffortTypeEnum.IntensityPercentage
                 : _workingSets.GroupBy(x => x.Effort.EffortType).Select(x
                      => new
                      {
@@ -181,6 +181,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
         public object Clone()
 
-            => BuildLinkToWorkout(ProgressiveNumber, WorkingSets);
+            => new WorkoutTemplateReferenceEntity(Id, ProgressiveNumber, WorkingSets);
     }
 }

@@ -232,11 +232,11 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(intensityPerc2, intensityP2.Value, precision);
             Assert.Equal(intensityPerc3, intensityP3.Value, precision);
 
-            Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityR1.EffortType);
-            Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityR2.EffortType);
-            Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityP1.EffortType);
-            Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityP2.EffortType);
-            Assert.Equal(TrainingEffortTypeEnum.IntensityPerc, intensityP3.EffortType);
+            Assert.Equal(TrainingEffortTypeEnum.IntensityPercentage, intensityR1.EffortType);
+            Assert.Equal(TrainingEffortTypeEnum.IntensityPercentage, intensityR2.EffortType);
+            Assert.Equal(TrainingEffortTypeEnum.IntensityPercentage, intensityP1.EffortType);
+            Assert.Equal(TrainingEffortTypeEnum.IntensityPercentage, intensityP2.EffortType);
+            Assert.Equal(TrainingEffortTypeEnum.IntensityPercentage, intensityP3.EffortType);
 
             Assert.True(intensityR1.IsIntensityPercentage());
             Assert.True(intensityR2.IsIntensityPercentage());

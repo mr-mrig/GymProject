@@ -41,7 +41,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         //public static TrainingEffortTypeEnum RPE = new TrainingEffortTypeEnum(3, "RPE", "RPE", "Self-assessed measure of the difficulty of a training set", CheckRPEConstraints);
 
         //private static TrainingEffortTypeEnum NotSet = new TrainingEffortTypeEnum(0, "NotSet", "Generic", "Effort not specified");
-        public static TrainingEffortTypeEnum IntensityPerc = new TrainingEffortTypeEnum(1, "Intensity", "%", "Percentage of 1RM");
+        public static TrainingEffortTypeEnum IntensityPercentage = new TrainingEffortTypeEnum(1, "Intensity", "%", "Percentage of 1RM");
         public static TrainingEffortTypeEnum RM = new TrainingEffortTypeEnum(2, "RM", "RM", "The most weight you can lift for a defined number of exercise movements");
         public static TrainingEffortTypeEnum RPE = new TrainingEffortTypeEnum(3, "RPE", "RPE", "Self-assessed measure of the difficulty of a training set");
 
@@ -91,7 +91,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<TrainingEffortTypeEnum> List() =>
-            new[] { /*NotSet,*/ IntensityPerc, RM, RPE, };
+            new[] { /*NotSet,*/ IntensityPercentage, RM, RPE, };
 
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <returns>True if the input is valid</returns>
         public bool CheckEffortTypeConstraints(float valueToCheck)
         {
-            if (this == IntensityPerc)
+            if (this == IntensityPercentage)
                 return CheckIntensityPercentageConstraints(valueToCheck);
             else
             {

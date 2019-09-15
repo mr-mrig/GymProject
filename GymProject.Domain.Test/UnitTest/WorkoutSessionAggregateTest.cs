@@ -314,7 +314,7 @@ namespace GymProject.Domain.Test.UnitTest
                         WorkUnitEntity originalWorkUnit = workout.CloneWorkUnit(pnumToChange);
 
                         if (RandomFieldGenerator.RollEventWithProbability(fakeChance))
-                        {
+                        {   
                             // Duplicate Id
                             if(!isTransient)
                             {

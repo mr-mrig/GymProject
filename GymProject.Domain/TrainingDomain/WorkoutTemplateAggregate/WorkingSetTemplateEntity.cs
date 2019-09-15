@@ -75,7 +75,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         }
 
 
-        public IReadOnlyCollection<uint?> NonLinkingIntensityTechniques
+        public IReadOnlyCollection<uint?> NonLinkingIntensityTechniqueIds
 
             => _intensityTechniquesRelations
                     .Where(x => x.LinkedWorkingSetId == null)?.Select(x => x.IntensityTechniqueId).ToList().AsReadOnly()
@@ -252,9 +252,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="InvalidOperationException">If another link is present</exception>
         public void LinkTo(uint linkedWorkingSetId, uint intensityTechniqueId)
         {
-            if(LinkedWorkingSet != null
-                || HasIntensityTechnique(intensityTechniqueId))
-
+            if(LinkedWorkingSet != null)
                 throw new InvalidOperationException($"A working set can be linked to only another one.");
 
             if (HasIntensityTechnique(intensityTechniqueId))
@@ -576,7 +574,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, NonLinkingIntensityTechniques, LinkedWorkingSet);
+            => PlanWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, NonLinkingIntensityTechniqueIds, LinkedWorkingSet);
 
         #endregion
     }

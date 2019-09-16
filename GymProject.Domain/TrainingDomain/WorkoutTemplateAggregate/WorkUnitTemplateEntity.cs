@@ -37,10 +37,21 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
+        ///// <summary>
+        ///// The Work Unit which is linked to this one - If any
+        ///// </summary>
+        //public LinkedWorkValue LinkedWorkUnit { get; private set; } = null;
+
+
         /// <summary>
         /// The Work Unit which is linked to this one - If any
         /// </summary>
-        public LinkedWorkValue LinkedWorkUnit { get; private set; } = null;
+        public uint? LinkedWorkUnitId { get; private set; } = null;
+
+        /// <summary>
+        /// The Intensity Technique which links the WUs - if any linked WU
+        /// </summary>
+        public uint? LinkingIntensityTechniqueId { get; private set; } = null;
 
 
         private List<WorkingSetTemplateEntity> _workingSets = new List<WorkingSetTemplateEntity>();
@@ -75,12 +86,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         private WorkUnitTemplateEntity(uint? id, uint progressiveNumber, uint? excerciseId,
-            IEnumerable<WorkingSetTemplateEntity> workingSets, LinkedWorkValue linkedWorkUnit = null, uint? ownerNoteId = null) : base(id)
+            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             WorkUnitNoteId = ownerNoteId;
             ExcerciseId = excerciseId;
-            LinkedWorkUnit = linkedWorkUnit;
+            LinkedWorkUnitId = linkedWorkUnitId;
+            LinkingIntensityTechniqueId = linkingIntensityTechniqueId;
 
             _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplateEntity>();
 
@@ -101,18 +113,30 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         #region Factories
 
         /// <summary>
+        /// Factory method - Creates an empty Work Unit. Only the mandatory fields are required
+        /// </summary>
+        /// <param name="excerciseId">The ID of the excercise which the WU consists of</param>
+        /// <param name="progressiveNumber">The progressive number of the WS</param>
+        /// <returns>The WorkUnitTemplateEntity instance</returns>
+        public static WorkUnitTemplateEntity NewDraft(uint progressiveNumber, uint? excerciseId)
+
+            => PlanTransientWorkUnit(progressiveNumber, excerciseId, null, null, null, null);
+
+
+        /// <summary>
         /// Factory method - Creates a transient WU
         /// </summary>
         /// <param name="excerciseId">The ID of the excercise which the WU consists of</param>
         /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <param name="ownerNoteId">The ID of the Work Unit Owner's note</param>
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
-        /// <param name="linkedWorkUnit">The Work Unit linked to this one - if any</param>
-        /// <returns>The WorkUnitTemplate instance</returns>
+        /// <param name="linkingIntensityTechniqueId">The ID of the Intensity Technique which links the WUs - if any</param>
+        /// <param name="linkedWorkUnitId">The ID of the Work Unit linked to this one - if any</param>
+        /// <returns>The WorkUnitTemplateEntity instance</returns>
         public static WorkUnitTemplateEntity PlanTransientWorkUnit(uint progressiveNumber, uint? excerciseId,
-            IEnumerable<WorkingSetTemplateEntity> workingSets, LinkedWorkValue linkedWorkUnit = null, uint? ownerNoteId = null)
+            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
 
-            => new WorkUnitTemplateEntity(null, progressiveNumber, excerciseId, workingSets, linkedWorkUnit, ownerNoteId);
+            => new WorkUnitTemplateEntity(null, progressiveNumber, excerciseId, workingSets, linkedWorkUnitId, linkingIntensityTechniqueId, ownerNoteId);
 
 
         /// <summary>
@@ -123,12 +147,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="progressiveNumber">The progressive number of the WS</param>
         /// <param name="ownerNoteId">The ID of the Work Unit Owner's note</param>
         /// <param name="workingSets">The working sets list - cannot be empty or null</param>
-        /// <param name="linkedWorkUnit">The Work Unit linked to this one - if any</param>
-        /// <returns>The WorkUnitTemplate instance</returns>
+        /// <param name="linkingIntensityTechniqueId">The ID of the Intensity Technique which links the WUs - if any</param>
+        /// <param name="linkedWorkUnitId">The ID of the Work Unit linked to this one - if any</param>
+        /// <returns>The WorkUnitTemplateEntity instance</returns>
         public static WorkUnitTemplateEntity PlanWorkUnit(uint? id, uint progressiveNumber, uint? excerciseId,
-            IEnumerable<WorkingSetTemplateEntity> workingSets, LinkedWorkValue linkedWorkUnit = null, uint? ownerNoteId = null)
+            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
 
-            => new WorkUnitTemplateEntity(id, progressiveNumber, excerciseId, workingSets, linkedWorkUnit, ownerNoteId);
+            => new WorkUnitTemplateEntity(id, progressiveNumber, excerciseId, workingSets, linkedWorkUnitId, linkingIntensityTechniqueId, ownerNoteId);
 
         #endregion
 
@@ -152,12 +177,14 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         /// <param name="linkingTechniqueId">The ID of the linking intensity technique</param>
         /// <param name="linkedWorkUnit">The Work Unit to be appended</param>
-        public void LinkTo(WorkUnitTemplateEntity linkedWorkUnit, uint linkingTechniqueId)
+        public void LinkTo(uint? linkedWorkUnitId, uint linkingTechniqueId)
         {
-            LinkedWorkUnit = LinkedWorkValue.LinkTo(linkedWorkUnit.Id.Value, linkingTechniqueId);
+            LinkedWorkUnitId = linkedWorkUnitId;
+
+            //LinkedWorkUnit = LinkedWorkValue.LinkTo(linkedWorkUnit.Id.Value, linkingTechniqueId);
 
             // Assume everything is already sorted by Progressive Number
-            List<WorkingSetTemplateEntity> linkedWorkingSets = linkedWorkUnit.WorkingSets.ToList();
+            //List<WorkingSetTemplateEntity> linkedWorkingSets = linkedWorkUnit.WorkingSets.ToList();
 
             //foreach (WorkingSetTemplateEntity ws in _workingSets)
             //    ws.LinkTo(linkedWorkingSets[(int)ws.ProgressiveNumber].Id.Value, linkingTechniqueId);
@@ -171,7 +198,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         public void Unlink()
         {
-            LinkedWorkUnit = null;
+            LinkedWorkUnitId = null;
 
             // Unlink the Working Sets
             //foreach (WorkingSetTemplateEntity ws in _workingSets)
@@ -296,30 +323,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             if (_workingSets.Remove(toBeRemoved))
             {
-                // Look for the WS which was linked to the removed one
-                //if (progressiveNumber > 0 && progressiveNumber < _workingSets.Count - 1)
-                //FindWorkingSet(progressiveNumber - 1).Unlink();
+                ManageLinkedWorkingSets(toBeRemoved);
 
-                // If the removed WS was linked to the previous one, then replace the removed with the following one
-                if (progressiveNumber > 0)
-                {
-                    WorkingSetTemplateEntity previousWorkingSet = FindWorkingSet(progressiveNumber - 1);
-
-                    // If nothing can be linked, then unlink
-                    if (IsLastWorkingSet(progressiveNumber))
-                        previousWorkingSet.Unlink();
-                    else
-                    {
-                        // If the removed WS had a linked one, then link the two WSs
-                        uint? removedLinkingIntensityTechnique = toBeRemoved.LinkedWorkingSet?.LinkingIntensityTechniqueId;
-
-                        if (removedLinkingIntensityTechnique.HasValue)
-                            previousWorkingSet.LinkTo(progressiveNumber, removedLinkingIntensityTechnique.Value);
-                        else
-                            previousWorkingSet.Unlink();
-                    }
-                }
-                
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
                 TrainingVolume = TrainingVolume.RemoveWorkingSet(toBeRemoved);
                 TrainingDensity = TrainingDensity.RemoveWorkingSet(toBeRemoved);
@@ -328,7 +333,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                 TestBusinessRules();
             }
         }
-
 
         /// <summary>
         /// Get a copy of the Working Set with the progressive number specified or DEFAULT if not found
@@ -347,7 +351,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>True if the Work Unit is linked to another one</returns>
         public bool HasLinkedUnit()
 
-            => LinkedWorkUnit?.LinkedWorkId != null;
+            => LinkedWorkUnitId != null;
 
         /// <summary>
         /// Get the main effort type as the effort of most of the WSs of the WU 
@@ -475,22 +479,63 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             TestBusinessRules();
         }
 
+        #endregion
+
+
+
+        #region COMMENTED - Linked Working Sets, Might be needed at a later stage
 
         /// <summary>
-        /// Link the specified Working Set to the following one
+        /// Manage the linked WSs - if any - to the one that has just been removed
         /// </summary>
-        /// <param name="startingWorkingSetPnum">The Progressive Number of the WS which starts the linked serie</param>
-        /// <param name="linkingIntensityTechnique">The ID of the Intensity Technique which linkes the two WSs</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum, or if the WS is not the last one</exception>
-        public void LinkWorkingSet(uint startingWorkingSetPnum, uint linkingIntensityTechnique)
+        /// <param name="removedWorkingSet">The Working Set which has been removed</param>
+        private void ManageLinkedWorkingSets(WorkingSetTemplateEntity removedWorkingSet)
         {
-            if (IsLastWorkingSet(startingWorkingSetPnum))
-                throw new InvalidOperationException($"No WS to link to the selected one as it is the last one.");
 
-            WorkingSetTemplateEntity ws = FindWorkingSet(startingWorkingSetPnum);
-            ws.LinkTo(startingWorkingSetPnum + 1, linkingIntensityTechnique);
+            //
+            // Linked WS disabled -> might be needed at a later stage
+            //
+
+
+            //uint progressiveNumber = removedWorkingSet.ProgressiveNumber;
+
+            //// If the removed WS was linked to the previous one, then replace the removed with the following one
+            //if (progressiveNumber > 0)
+            //{
+            //    WorkingSetTemplateEntity previousWorkingSet = FindWorkingSet(progressiveNumber - 1);
+
+            //    // If nothing can be linked, then unlink
+            //    if (IsLastWorkingSet(progressiveNumber - 1))
+            //        previousWorkingSet.Unlink();
+            //    else
+            //    {
+            //        // If the removed WS had a linked one, then link the two WSs
+            //        uint? removedLinkingIntensityTechnique = removedWorkingSet.LinkedWorkingSet?.LinkingIntensityTechniqueId;
+
+            //        if (removedLinkingIntensityTechnique.HasValue)
+            //            previousWorkingSet.LinkTo(progressiveNumber, removedLinkingIntensityTechnique.Value);
+            //        else
+            //            previousWorkingSet.Unlink();
+            //    }
+            //}
         }
+
+
+        ///// <summary>
+        ///// Link the specified Working Set to the following one
+        ///// </summary>
+        ///// <param name="startingWorkingSetPnum">The Progressive Number of the WS which starts the linked serie</param>
+        ///// <param name="linkingIntensityTechnique">The ID of the Intensity Technique which linkes the two WSs</param>
+        ///// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        ///// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum, or if the WS is not the last one</exception>
+        //public void LinkWorkingSet(uint startingWorkingSetPnum, uint linkingIntensityTechnique)
+        //{
+        //    if (IsLastWorkingSet(startingWorkingSetPnum))
+        //        throw new InvalidOperationException($"No WS to link to the selected one as it is the last one.");
+
+        //    WorkingSetTemplateEntity ws = FindWorkingSet(startingWorkingSetPnum);
+        //    ws.LinkTo(startingWorkingSetPnum + 1, linkingIntensityTechnique);
+        //}
 
 
         ///// <summary>
@@ -521,19 +566,21 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         //}
 
 
-        /// <summary>
-        /// Unlink the specified working set from the following one
-        /// </summary>
-        /// <param name="startingWorkingSetPnum">The Progressive Number of the WS to remove from the following one</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        /// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
-        public void UnlinkWorkingSet(uint startingWorkingSetPnum)
-        {
-            FindWorkingSet(startingWorkingSetPnum).Unlink();
-            TestBusinessRules();
-        }
+        ///// <summary>
+        ///// Unlink the specified working set from the following one
+        ///// </summary>
+        ///// <param name="startingWorkingSetPnum">The Progressive Number of the WS to remove from the following one</param>
+        ///// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        ///// <exception cref="InvalidOperationException">Thrown if no WS or more than one with the same Pnum</exception>
+        //public void UnlinkWorkingSet(uint startingWorkingSetPnum)
+        //{
+        //    FindWorkingSet(startingWorkingSetPnum).Unlink();
 
+        //    ForceConsecutiveWorkingSetsProgressiveNumbers();
+        //    TestBusinessRules();
+        //}
         #endregion
+
 
 
         #region Private Methods
@@ -596,26 +643,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         }
 
 
-        ///// <summary>
-        ///// Find the Working Set with the ID specified
-        ///// </summary>
-        ///// <param name="id">The Id to be found</param>
-        ///// <exception cref="ArgumentNullException">If ID is NULL</exception>
-        ///// <exception cref="ArgumentException">If ID could not be found</exception>
-        ///// <returns>The WorkingSetTemplate object/returns>
-        //private WorkingSetTemplate FindWorkingSetById(uint? id)
-        //{
-        //    if (id == null)
-        //        throw new ArgumentNullException(nameof(id), $"Cannot find a WS with NULL id");
-
-        //    WorkingSetTemplate ws = _workingSets.Where(x => x == id).FirstOrDefault();
-
-        //    if (ws == default)
-        //        throw new ArgumentException($"Working Set with Id {id.ToString()} could not be found", nameof(id));
-
-        //    return ws;
-        //}
-
         /// <summary>
         /// Find the Working Set with the progressive number specified
         /// </summary>
@@ -653,7 +680,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// The Work Unit cannot be linked to itself.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool IsNotLinkedToItself() => LinkedWorkUnit.LinkedWorkId != Id;
+        private bool IsNotLinkedToItself() => LinkedWorkUnitId == null || LinkedWorkUnitId != Id;
 
 
         /// <summary>
@@ -706,11 +733,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>True if business rule is met</returns>
         private bool AllWorkingSetsHaveWorkUnitWiseIntensityTechniques()
         {
-            if (LinkedWorkUnit?.LinkingIntensityTechniqueId == null)
+            if (LinkingIntensityTechniqueId == null)
                 return true;
 
             return _workingSets.All(x 
-                => x.IntensityTechniqueIds.Contains(LinkedWorkUnit.LinkingIntensityTechniqueId));
+                => x.IntensityTechniqueIds.Contains(LinkingIntensityTechniqueId));
         }
 
 
@@ -732,8 +759,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             //if (!AtLeastOneWorkingSet())
             //    throw new TrainingDomainInvariantViolationException($"Cannot create a Work Unit without any WS.");
 
-            if (!AllWorkingSetsHaveWorkUnitWiseIntensityTechniques())
-                throw new TrainingDomainInvariantViolationException($"Working sets must have all the work unit intensity techniques.");
+            //if (!AllWorkingSetsHaveWorkUnitWiseIntensityTechniques())
+            //    throw new TrainingDomainInvariantViolationException($"Working sets must have all the work unit intensity techniques.");
 
             if (!WorkingSetsWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Working Sets of the same Work Unit must have consecutive progressive numbers.");
@@ -746,7 +773,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), LinkedWorkUnit, WorkUnitNoteId);
+            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), LinkedWorkUnitId, LinkingIntensityTechniqueId, WorkUnitNoteId);
 
         #endregion
     }

@@ -42,30 +42,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingEffortValue Effort { get; private set; } = null;
 
 
-        //private List<uint?> _intensityTechniquesIds = new List<uint?>();
-
         ///// <summary>
-        ///// FK to the Intensity Techniques - Optional
-        ///// Provides a value copy: the instance fields must be modified through the instance methods
+        ///// The Working Set linked to this one, if any
         ///// </summary>
-        //public IReadOnlyCollection<uint?> IntensityTechniqueIds
-        //{
-        //    get => _intensityTechniquesIds?.ToList().AsReadOnly() 
-        //        ?? new List<uint?>().AsReadOnly();
-        //}
-
-
-        /// <summary>
-        /// The Working Set linked to this one, if any
-        /// </summary>
-        public LinkedWorkValue LinkedWorkingSet =>
-            FindLinkingRelationOrDefault()?.GetLinkedOrDefault();
+        //public LinkedWorkValue LinkedWorkingSet =>
+        //    FindLinkingRelationOrDefault()?.GetLinkedOrDefault();
 
 
         private List<WorkingSetIntensityTechniqueRelation> _intensityTechniquesRelations = new List<WorkingSetIntensityTechniqueRelation>();
 
         /// <summary>
-        /// FK to the Intensity Techniques, both Linking and not
+        /// FK to the Intensity Techniques
         /// Provides a value copy: the instance fields must be modified through the instance methods
         /// </summary>
         public IReadOnlyCollection<uint?> IntensityTechniqueIds
@@ -75,11 +62,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         }
 
 
-        public IReadOnlyCollection<uint?> NonLinkingIntensityTechniqueIds
+        //public IReadOnlyCollection<uint?> NonLinkingIntensityTechniqueIds
 
-            => _intensityTechniquesRelations
-                    .Where(x => x.LinkedWorkingSetId == null)?.Select(x => x.IntensityTechniqueId).ToList().AsReadOnly()
-                ?? new List<uint?>().AsReadOnly();
+        //    => _intensityTechniquesRelations
+        //            .Where(x => x.LinkedWorkingSetId == null)?.Select(x => x.IntensityTechniqueId).ToList().AsReadOnly()
+        //        ?? new List<uint?>().AsReadOnly();
 
 
 
@@ -93,7 +80,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         private WorkingSetTemplateEntity(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, 
-            IEnumerable<uint?> intensityTechniqueIds = null, LinkedWorkValue linkedWorkingSet = null) : base(id)
+            IEnumerable<uint?> intensityTechniqueIds = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             Repetitions = repetitions;
@@ -106,7 +93,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             foreach (uint? techniqueId in intensityTechniqueIds ?? new List<uint?>())
                 _intensityTechniquesRelations.Add(WorkingSetIntensityTechniqueRelation.BuildLink(this, techniqueId));
 
-            _intensityTechniquesRelations.Add(WorkingSetIntensityTechniqueRelation.BuildLink(this, linkedWorkingSet.LinkingIntensityTechniqueId, linkedWorkingSet.LinkedWorkId));
+            //_intensityTechniquesRelations.Add(WorkingSetIntensityTechniqueRelation.BuildLink(this, linkedWorkingSet.LinkingIntensityTechniqueId, linkedWorkingSet.LinkedWorkId));
 
             TestBusinessRules();
         }
@@ -115,7 +102,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         #region Factories
-
+        
         /// <summary>
         /// Factory method - Creates a transient WS
         /// </summary>
@@ -125,12 +112,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="rest">The rest period before the next WS</param>
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
-        /// <param name="linkedWorkingSet">The Working Set which is linked to this one</param>
-        /// <returns>The WorkingSetTemplate instance</returns>
+        /// <returns>The WorkingSetTemplateEntity instance</returns>
         public static WorkingSetTemplateEntity PlanTransientWorkingSet(uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, 
-            IEnumerable<uint?> intensityTechniqueIds = null, LinkedWorkValue linkedWorkingSet = null)
+            IEnumerable<uint?> intensityTechniqueIds = null)
 
-            => PlanWorkingSet(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds, linkedWorkingSet);
+            => PlanWorkingSet(null, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
         /// <summary>
         /// Factory method - Loads a WS with the specified ID
@@ -142,11 +128,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="rest">The rest period before the next WS</param>
         /// <param name="tempo">The lifting tempo of the WS</param>
         /// <param name="intensityTechniqueIds">The list of the intensity techniques to be applied</param>
-        /// <returns>The WorkingSetTemplate instance</returns>
+        /// <returns>The WorkingSetTemplateEntity instance</returns>
         public static WorkingSetTemplateEntity PlanWorkingSet(uint? id, uint progressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, 
-            IEnumerable<uint?> intensityTechniqueIds = null, LinkedWorkValue linkedWorkingSet = null)
+            IEnumerable<uint?> intensityTechniqueIds = null)
 
-            => new WorkingSetTemplateEntity(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds, linkedWorkingSet);
+            => new WorkingSetTemplateEntity(id, progressiveNumber, repetitions, rest, effort, tempo, intensityTechniqueIds);
 
         #endregion
 
@@ -242,42 +228,42 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         }
 
 
-        /// <summary>
-        /// Link the Working Set to another one
-        /// </summary>
-        /// <param name="intensityTechniqueId">The ID of the Linking Intensity Technique</param>
-        /// <param name="linkedWorkingSetId">The ID of the Working Set to be linked</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        /// <exception cref="ArgumentException">If intensity technique already present</exception>
-        /// <exception cref="InvalidOperationException">If another link is present</exception>
-        public void LinkTo(uint linkedWorkingSetId, uint intensityTechniqueId)
-        {
-            if(LinkedWorkingSet != null)
-                throw new InvalidOperationException($"A working set can be linked to only another one.");
+        ///// <summary>
+        ///// Link the Working Set to another one
+        ///// </summary>
+        ///// <param name="intensityTechniqueId">The ID of the Linking Intensity Technique</param>
+        ///// <param name="linkedWorkingSetId">The ID of the Working Set to be linked</param>
+        ///// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        ///// <exception cref="ArgumentException">If intensity technique already present</exception>
+        ///// <exception cref="InvalidOperationException">If another link is present</exception>
+        //public void LinkTo(uint linkedWorkingSetId, uint intensityTechniqueId)
+        //{
+        //    if(LinkedWorkingSet != null)
+        //        throw new InvalidOperationException($"A working set can be linked to only another one.");
 
-            if (HasIntensityTechnique(intensityTechniqueId))
-                throw new ArgumentException($"The Intensity Technique has already been added", nameof(intensityTechniqueId));
+        //    if (HasIntensityTechnique(intensityTechniqueId))
+        //        throw new ArgumentException($"The Intensity Technique has already been added", nameof(intensityTechniqueId));
 
-            _intensityTechniquesRelations.Add(
-                WorkingSetIntensityTechniqueRelation.BuildLink(this, intensityTechniqueId, linkedWorkingSetId));
+        //    _intensityTechniquesRelations.Add(
+        //        WorkingSetIntensityTechniqueRelation.BuildLink(this, intensityTechniqueId, linkedWorkingSetId));
 
-            TestBusinessRules();
-        }
+        //    TestBusinessRules();
+        //}
 
 
-        /// <summary>
-        /// Unlink the Working Set
-        /// </summary>
-        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
-        /// <exception cref="ArgumentException">If intensity technique already present</exception>
-        /// <exception cref="InvalidOperationException">If another link is present</exception>
-        public void Unlink()
-        {
-            WorkingSetIntensityTechniqueRelation linkingRelation = FindLinkingRelationOrDefault();
+        ///// <summary>
+        ///// Unlink the Working Set
+        ///// </summary>
+        ///// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        ///// <exception cref="ArgumentException">If intensity technique already present</exception>
+        ///// <exception cref="InvalidOperationException">If another link is present</exception>
+        //public void Unlink()
+        //{
+        //    WorkingSetIntensityTechniqueRelation linkingRelation = FindLinkingRelationOrDefault();
 
-            if(_intensityTechniquesRelations.Remove(linkingRelation))
-                TestBusinessRules();
-        }
+        //    if(_intensityTechniquesRelations.Remove(linkingRelation))
+        //        TestBusinessRules();
+        //}
 
 
         /// <summary>
@@ -402,23 +388,23 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (!Repetitions.IsValueSpecified())
                 return 0;
 
-            // If Max reps, convert to RM to find the repetitions, then compute the time
-            if(Repetitions.IsAMRAP())
-            {
-                if (Effort != null && 
-                    (Effort.IsIntensityPercentage() || Effort.IsRM()))
+            //// If Max reps, convert to RM to find the repetitions, then compute the time
+            //if(Repetitions.IsAMRAP())
+            //{
+            //    if (Effort != null && 
+            //        (Effort.IsIntensityPercentage() || Effort.IsRM()))
 
-                    return Tempo.ToSeconds() * (int)Effort.ToRm(Repetitions).Value;
-                else
-                    return 0;
-            }
+            //        return (Tempo?.ToSeconds() ?? TUTValue.SetGenericTUT().ToSeconds()) * ToRepetitions();
+            //    else
+            //        return 0;
+            //}
 
             // No conversion required
             if (Repetitions.IsTimedBasedSerie())
                 return Repetitions.Value;
 
             return (Tempo?.ToSeconds() ?? TUTValue.SetGenericTUT().ToSeconds()) 
-                * Repetitions.Value;
+                * ToRepetitions();
         }
 
 
@@ -574,7 +560,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, NonLinkingIntensityTechniqueIds, LinkedWorkingSet);
+            => PlanWorkingSet(Id, ProgressiveNumber, Repetitions, Rest, Effort, Tempo, IntensityTechniqueIds);
 
         #endregion
     }

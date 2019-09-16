@@ -137,23 +137,29 @@ namespace ConsoleTest.DataSeed
             {
                 IntensityTechniqueRoot entry;
 
-                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(1, "Superset", "SS", PersonalNoteValue.Write("Dummy"), true);
+                EntryStatusTypeEnum native = context.EntryStatusTypes.Single(x => x.Id == EntryStatusTypeEnum.Native.Id);
+
+                entry = IntensityTechniqueRoot.CreateIntensityTechnique(1, null, "Superset", "SS", PersonalNoteValue.Write("Dummy"), true, native);
                 context.Add(entry);
                 context.SaveChanges();
 
-                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(1, "Jumpset", "JS", PersonalNoteValue.Write("Dummy"), true);
+                entry = IntensityTechniqueRoot.CreateIntensityTechnique(2, null, "Jumpset", "JS", PersonalNoteValue.Write("Dummy"), true, native);
                 context.Add(entry);
                 context.SaveChanges();
 
-                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(3, "Dropset", "DS", PersonalNoteValue.Write("Dummy"), true);
+                entry = IntensityTechniqueRoot.CreateIntensityTechnique(3, null, "Dropset", "DS", PersonalNoteValue.Write("Dummy"), true, native);
                 context.Add(entry);
                 context.SaveChanges();
 
-                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(4, "Rest Pause", "RP", PersonalNoteValue.Write("Dummy"), false);
+                entry = IntensityTechniqueRoot.CreateIntensityTechnique(4, null, "Rest Pause", "RP", PersonalNoteValue.Write("Dummy"), true, native);
                 context.Add(entry);
                 context.SaveChanges();
 
-                entry = IntensityTechniqueRoot.CreateNativeIntensityTechnique(5, "Forced", "For", PersonalNoteValue.Write("Dummy"), false);
+                entry = IntensityTechniqueRoot.CreateIntensityTechnique(5, null, "Forced", "For", PersonalNoteValue.Write("Dummy"), false, native);
+                context.Add(entry);
+                context.SaveChanges();
+
+                entry = IntensityTechniqueRoot.CreateIntensityTechnique(6, null, "Cheat", "Ch", PersonalNoteValue.Write("Dummy"), false, native);
                 context.Add(entry);
                 context.SaveChanges();
             }

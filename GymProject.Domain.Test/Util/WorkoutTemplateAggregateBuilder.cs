@@ -1,10 +1,12 @@
 ﻿using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
+using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.Utils;
 using System.Collections.Generic;
 using System.Linq;
+using Xunit;
 
 namespace GymProject.Domain.Test.Util
 {
@@ -131,6 +133,7 @@ namespace GymProject.Domain.Test.Util
         {
             List<WorkingSetTemplateEntity> workingSets = new List<WorkingSetTemplateEntity>();
             TrainingEffortTypeEnum effortType;
+            LinkedWorkValue linkedWorkUnit;
 
             int wuIntTechniquesMin = 0, wuIntTechniquesMax = 3;
             int intTechniqueIdMin = 1, intTechniqueIdMax = 1000;
@@ -162,9 +165,6 @@ namespace GymProject.Domain.Test.Util
             // Build randomic WU intensity techniques
             int wuIntTechniquesNum = RandomFieldGenerator.RandomInt(wuIntTechniquesMin, wuIntTechniquesMax);
 
-            LinkedWorkValue linkedWorkUnit = LinkedWorkValue.LinkTo(
-                (uint)RandomFieldGenerator.RandomIntValueExcluded(linkedIdMin, linkedIdMax, (int)id), (uint)RandomFieldGenerator.RandomInt(intTechniqueIdMin, intTechniqueIdMax));
-
             // Add randomic Working Sets
             int iwsMax = RandomFieldGenerator.RandomInt(wsNumMin, wsNumMax);
 
@@ -179,22 +179,55 @@ namespace GymProject.Domain.Test.Util
             if (isTransient)
 
                 return WorkUnitTemplateEntity.PlanTransientWorkUnit(
-                progressiveNumber: (uint)progn,
+                progressiveNumber: progn,
                 excerciseId: (uint?)(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
                 workingSets: workingSets,
-                linkedWorkUnit: linkedWorkUnit,
+                linkedWorkUnitId: null,
+                linkingIntensityTechniqueId: null,
                 ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
             );
             else
+            {
+                if(RandomFieldGenerator.RollEventWithProbability(0.33f))
+                {
+                    if(RandomFieldGenerator.RollEventWithProbability(0.33f))
+                    {
+                        // Fake it
+                        Assert.Throws<TrainingDomainInvariantViolationException>(() =>
+
+                             WorkUnitTemplateEntity.PlanWorkUnit(
+                                id: id,
+                                progressiveNumber: progn,
+                                excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
+                                workingSets: workingSets,
+                                linkedWorkUnitId: id,         // Fake value
+                                linkingIntensityTechniqueId: 1,
+                                ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
+                            ));
+                    }
+
+                    // Linked WU
+                    return WorkUnitTemplateEntity.PlanWorkUnit(
+                        id: id,
+                        progressiveNumber: progn,
+                        excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
+                        workingSets: workingSets,
+                        linkedWorkUnitId: (uint)RandomFieldGenerator.RandomIntValueExcluded(linkedIdMin, linkedIdMax, (int)id),
+                        linkingIntensityTechniqueId: (uint)RandomFieldGenerator.RandomInt(intTechniqueIdMin, intTechniqueIdMax),
+                        ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
+                    );
+                }
 
                 return WorkUnitTemplateEntity.PlanWorkUnit(
-                    id: (uint)id,
+                    id: id,
                     progressiveNumber: (uint)progn,
                     excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
                     workingSets: workingSets,
-                    linkedWorkUnit: linkedWorkUnit,
+                    linkedWorkUnitId: null,
+                    linkingIntensityTechniqueId: null,
                     ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
                 );
+            }
         }
 
 

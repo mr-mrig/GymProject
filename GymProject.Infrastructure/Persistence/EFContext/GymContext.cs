@@ -58,6 +58,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public virtual DbSet<WorkingSetTemplateEntity> WorkingSetTemplates { get; set; }
         public virtual DbSet<TrainingEffortTypeEnum> EffortTypes { get; set; }
 
+        public virtual DbSet<WorkingSetIntensityTechniqueRelation> WorkingSetIntensityTechniqueRelations { get; set; }
+
 
         public virtual DbSet<TrainingWeekEntity> TrainingWeeks { get; set; }
         public virtual DbSet<WorkoutTemplateReferenceEntity> TrainingWeekWorkoutReferences { get; set; }
@@ -116,6 +118,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             modelBuilder.ApplyConfiguration(new WorkoutTemplateEntityConfiguration());
             modelBuilder.ApplyConfiguration(new WorkUnitTemplateEntityConfiguration());
             modelBuilder.ApplyConfiguration(new WorkingSetTemplateEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkingSetIntensityTechniqueEntityConfiguration());
 
             // Intensity Technique Aggregate
             modelBuilder.ApplyConfiguration(new IntensityTechniqueEntityConfiguration());

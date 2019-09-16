@@ -70,8 +70,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                         .OnDelete(DeleteBehavior.NoAction);
                 });
 
-            //intesity technique
-            //throw new System.NotImplementedException("Intensity techinque N-to-N");
+            // Intensity technique is handled in the Connection Class Configuration
 
             builder.HasAlternateKey
             (

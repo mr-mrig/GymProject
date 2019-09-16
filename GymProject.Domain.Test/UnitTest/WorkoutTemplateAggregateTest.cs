@@ -15,7 +15,7 @@ namespace GymProject.Domain.Test.UnitTest
     {
 
 
-        public const int ntests = 500;
+        public int ntests = 500;
 
 
 
@@ -24,6 +24,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
 
             bool isTransient;
+            ntests = 100;
 
             uint? id = 1;
             IList<WorkUnitTemplateEntity> wusFirstNull = new List<WorkUnitTemplateEntity>();
@@ -135,7 +136,7 @@ namespace GymProject.Domain.Test.UnitTest
                     wu = WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(wuIds.Last().Value, pnum++, isTransient);
 
                     if (isTransient)
-                        workout.PlanTransientExcercise(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.IntensityTechniquesIds.ToList(), wu.WorkUnitNoteId);
+                        workout.PlanTransientExcercise(wu.ExcerciseId, wu.WorkingSets.ToList(), wu.LinkedWorkUnitId, wu.WorkUnitNoteId);
                     else
                         workout.PlanExcercise(wu);
 
@@ -218,24 +219,44 @@ namespace GymProject.Domain.Test.UnitTest
 
                         CheckTrainingParameters(workout.WorkUnits.SelectMany(x => x.WorkingSets), workout.TrainingVolume, workout.TrainingDensity, workout.TrainingIntensity, null);
 
-
                         // Check linked WUs
                         if (toRemovePnum > 0)
                         {
-                            if (previous.LinkedWorkUnit?.LinkedWorkId != null       // The removed one was not linked to anything
+                            if (previous.LinkedWorkUnitId != null                   // The removed one was not linked to anything
                                 || toRemovePnum == workout.WorkUnits.Count - 1)     // The remove one was the last one
                             {
                                 // If the removed one was not linked to anything, then the previous one should not be linked as well
-                                if (removed.LinkedWorkUnit?.LinkedWorkId == null)
-                                    Assert.Null(previous.LinkedWorkUnit);
+                                if (removed.LinkedWorkUnitId == null)
+                                {
+                                    Assert.Null(previous.LinkedWorkUnitId);
+                                    Assert.Null(previous.LinkingIntensityTechniqueId);
+                                }
                                 else
                                 {
                                     // Otherwise it should be linked to the one that was linked to the removed one
-                                    Assert.Equal(workout.CloneWorkUnit(toRemovePnum).Id, workout.CloneWorkUnit(toRemovePnum - 1).LinkedWorkUnit.LinkedWorkId);
-                                    Assert.Equal(removed.LinkedWorkUnit.LinkingIntensityTechniqueId, workout.CloneWorkUnit(toRemovePnum - 1).LinkedWorkUnit.LinkingIntensityTechniqueId);
+                                    Assert.Equal(workout.CloneWorkUnit(toRemovePnum).Id, workout.CloneWorkUnit(toRemovePnum - 1).LinkedWorkUnitId);
+                                    Assert.Equal(removed.LinkingIntensityTechniqueId, workout.CloneWorkUnit(toRemovePnum - 1).LinkingIntensityTechniqueId);
                                 }
                             }
                         }
+
+                        //// Check linked WUs
+                        //if (toRemovePnum > 0)
+                        //{
+                        //    if (previous.LinkedWorkUnit?.LinkedWorkId != null       // The removed one was not linked to anything
+                        //        || toRemovePnum == workout.WorkUnits.Count - 1)     // The remove one was the last one
+                        //    {
+                        //        // If the removed one was not linked to anything, then the previous one should not be linked as well
+                        //        if (removed.LinkedWorkUnit?.LinkedWorkId == null)
+                        //            Assert.Null(previous.LinkedWorkUnit);
+                        //        else
+                        //        {
+                        //            // Otherwise it should be linked to the one that was linked to the removed one
+                        //            Assert.Equal(workout.CloneWorkUnit(toRemovePnum).Id, workout.CloneWorkUnit(toRemovePnum - 1).LinkedWorkUnit.LinkedWorkId);
+                        //            Assert.Equal(removed.LinkedWorkUnit.LinkingIntensityTechniqueId, workout.CloneWorkUnit(toRemovePnum - 1).LinkedWorkUnit.LinkingIntensityTechniqueId);
+                        //        }
+                        //    }
+                        //}
                     }
                 }
 
@@ -255,7 +276,7 @@ namespace GymProject.Domain.Test.UnitTest
                     {
                         wasAdded = true;
                         toAdd = WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(1, (uint)workout.WorkUnits.Count(), isTransient);
-                        workout.PlanTransientExcercise(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.IntensityTechniquesIds.ToList(), toAdd.WorkUnitNoteId);
+                        workout.PlanTransientExcercise(toAdd.ExcerciseId, toAdd.WorkingSets.ToList(), toAdd.LinkedWorkUnitId, toAdd.WorkUnitNoteId);
                     }
                     else
                     {
@@ -405,7 +426,7 @@ namespace GymProject.Domain.Test.UnitTest
                     Assert.Contains(idLeft, right.IntensityTechniqueIds);
 
                 if(wunit.HasLinkedUnit())
-                    Assert.Contains(wunit.LinkedWorkUnit.LinkingIntensityTechniqueId, right.IntensityTechniqueIds);
+                    Assert.Contains(wunit.LinkingIntensityTechniqueId, right.IntensityTechniqueIds);
             }
         }
 
@@ -450,42 +471,51 @@ namespace GymProject.Domain.Test.UnitTest
             else
             {
                 intTechniqueId = (uint)RandomFieldGenerator.RandomInt(intTechniqueIdMin, intTechniqueIdMax);
-                workout.LinkWorkUnits(workUnit.ProgressiveNumber, intTechniqueId);
 
-                toCheck = workout.CloneWorkUnit(workUnit.ProgressiveNumber);
-                toCompare = workout.CloneWorkUnit(workUnit.ProgressiveNumber + 1);
-
-                Assert.True(toCheck.HasLinkedUnit());
-                Assert.Equal(intTechniqueId, toCheck.LinkedWorkUnit.LinkingIntensityTechniqueId);
-                Assert.Equal(toCompare.Id, toCheck.LinkedWorkUnit.LinkedWorkId);
-
-                foreach (WorkingSetTemplateEntity workingSet in toCheck.WorkingSets)
+                if (isTransient)
+                    // Cannot link to transient WUs
+                    //Assert.Throws<InvalidOperationException>(() => workout.LinkWorkUnits(workUnit.ProgressiveNumber, intTechniqueId));
+                    ;
+                else
                 {
-                    Assert.Contains(intTechniqueId, workingSet.IntensityTechniqueIds);
-                    Assert.DoesNotContain(intTechniqueId, workingSet.NonLinkingIntensityTechniqueIds);
-                    Assert.Equal(intTechniqueId, workingSet.LinkedWorkingSet.LinkingIntensityTechniqueId);
-                    Assert.Equal(toCompare.CloneWorkingSet(workingSet.ProgressiveNumber).Id, workingSet.LinkedWorkingSet.LinkedWorkId);
+                    workout.LinkWorkUnits(workUnit.ProgressiveNumber, intTechniqueId);
+
+                    toCheck = workout.CloneWorkUnit(workUnit.ProgressiveNumber);
+                    toCompare = workout.CloneWorkUnit(workUnit.ProgressiveNumber + 1);
+
+                    Assert.True(toCheck.HasLinkedUnit());
+                    Assert.Equal(intTechniqueId, toCheck.LinkingIntensityTechniqueId);
+                    Assert.Equal(toCompare.Id, toCheck.LinkedWorkUnitId);
+
+                    //foreach (WorkingSetTemplateEntity workingSet in toCheck.WorkingSets)
+                    //{
+                    //    Assert.Contains(intTechniqueId, workingSet.IntensityTechniqueIds);
+                    //    Assert.DoesNotContain(intTechniqueId, workingSet.NonLinkingIntensityTechniqueIds);
+                    //    Assert.Equal(intTechniqueId, workingSet.LinkedWorkingSet.LinkingIntensityTechniqueId);
+                    //    Assert.Equal(toCompare.CloneWorkingSet(workingSet.ProgressiveNumber).Id, workingSet.LinkedWorkingSet.LinkedWorkId);
+                    //}
+
+                    //// Double link -> Overwrite
+                    //if (RandomFieldGenerator.RollEventWithProbability())
+                    //{
+                    //    linkedWunitPnum = (uint)RandomFieldGenerator.RandomIntValueExcluded(0, workout.WorkUnits.Count - 1, (int)workUnit.ProgressiveNumber);
+                    //    workout.LinkWorkUnits(workUnit.ProgressiveNumber, linkedWunitPnum, intTechniqueId);
+
+                    //    Assert.True(workout.CloneWorkUnit(workUnit.ProgressiveNumber).HasLinkedUnit());
+                    //    Assert.False(workout.CloneWorkUnit(linkedWunitPnum).HasLinkedUnit());
+                    //    Assert.Equal(intTechniqueId, workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkedWorkUnit.LinkingIntensityTechniqueId);
+                    //    Assert.Equal(linkedWunitPnum, workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkedWorkUnit.LinkedWorkId);
+                    //}
                 }
-
-                //// Double link -> Overwrite
-                //if (RandomFieldGenerator.RollEventWithProbability())
-                //{
-                //    linkedWunitPnum = (uint)RandomFieldGenerator.RandomIntValueExcluded(0, workout.WorkUnits.Count - 1, (int)workUnit.ProgressiveNumber);
-                //    workout.LinkWorkUnits(workUnit.ProgressiveNumber, linkedWunitPnum, intTechniqueId);
-
-                //    Assert.True(workout.CloneWorkUnit(workUnit.ProgressiveNumber).HasLinkedUnit());
-                //    Assert.False(workout.CloneWorkUnit(linkedWunitPnum).HasLinkedUnit());
-                //    Assert.Equal(intTechniqueId, workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkedWorkUnit.LinkingIntensityTechniqueId);
-                //    Assert.Equal(linkedWunitPnum, workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkedWorkUnit.LinkedWorkId);
-                //}
             }
 
             // Unlink
             workout.UnlinkWorkUnits(workUnit.ProgressiveNumber);
-            Assert.Null(workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkedWorkUnit);
+            Assert.Null(workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkedWorkUnitId);
+            Assert.Null(workout.CloneWorkUnit(workUnit.ProgressiveNumber).LinkingIntensityTechniqueId);
 
-            foreach (WorkingSetTemplateEntity ws in workout.CloneWorkUnit(workUnit.ProgressiveNumber).WorkingSets)
-                Assert.Null(ws.LinkedWorkingSet);
+            //foreach (WorkingSetTemplateEntity ws in workout.CloneWorkUnit(workUnit.ProgressiveNumber).WorkingSets)
+            //    Assert.Null(ws.LinkedWorkingSet);
 
             // Remove WSs
             toCheck = workout.CloneWorkUnit(workUnit.ProgressiveNumber);
@@ -526,23 +556,23 @@ namespace GymProject.Domain.Test.UnitTest
 
                         CheckWorkUnitSets(toCheck, finalSets, isTransient, toCheck.TrainingIntensity.AverageIntensity.EffortType, false);
 
-                        // Check linked WSs
-                        if (pnumToRemove > 0)
-                        {
-                            if (previousWorkingSet.LinkedWorkingSet?.LinkedWorkId != null       // The removed one was not linked to anything
-                            || pnumToRemove == toCheck.WorkingSets.Count)                       // The remove one was the last one
-                            {
-                                // If the removed one was not linked to anything, then the previous one should not be linked as well
-                                if (removed.LinkedWorkingSet?.LinkedWorkId == null)
-                                    Assert.Null(previousWorkingSet.LinkedWorkingSet);
-                                else
-                                {
-                                    // Otherwise it should be linked to the one that was linked to the removed one
-                                    Assert.Equal(toCheck.CloneWorkingSet(pnumToRemove).Id, toCheck.CloneWorkingSet(pnumToRemove - 1).LinkedWorkingSet.LinkedWorkId);
-                                    Assert.Equal(removed.LinkedWorkingSet.LinkingIntensityTechniqueId, toCheck.CloneWorkingSet(pnumToRemove - 1).LinkedWorkingSet.LinkingIntensityTechniqueId);
-                                }
-                            }
-                        }
+                        //// Check linked WSs
+                        //if (pnumToRemove > 0)
+                        //{
+                        //    if (previousWorkingSet.LinkedWorkingSet?.LinkedWorkId != null       // The removed one was not linked to anything
+                        //    || pnumToRemove == toCheck.WorkingSets.Count)                       // The remove one was the last one
+                        //    {
+                        //        // If the removed one was not linked to anything, then the previous one should not be linked as well
+                        //        if (removed.LinkedWorkingSet?.LinkedWorkId == null)
+                        //            Assert.Null(previousWorkingSet.LinkedWorkingSet);
+                        //        else
+                        //        {
+                        //            // Otherwise it should be linked to the one that was linked to the removed one
+                        //            Assert.Equal(toCheck.CloneWorkingSet(pnumToRemove).Id, toCheck.CloneWorkingSet(pnumToRemove - 1).LinkedWorkingSet.LinkedWorkId);
+                        //            Assert.Equal(removed.LinkedWorkingSet.LinkingIntensityTechniqueId, toCheck.CloneWorkingSet(pnumToRemove - 1).LinkedWorkingSet.LinkingIntensityTechniqueId);
+                        //        }
+                        //    }
+                        //}
                     }
                     //else
                     //    ;       // Removing the last WS will lead to an error in the following iterations: no check for failure
@@ -633,7 +663,7 @@ namespace GymProject.Domain.Test.UnitTest
             if (!isTransient)
                 Assert.Equal(workUnit, workout.CloneWorkUnit(workUnitPnum));
             Assert.Equal(workUnit.ExcerciseId, workout.CloneWorkUnit(workUnitPnum).ExcerciseId);
-            Assert.Equal(workUnit.LinkedWorkUnit, workout.CloneWorkUnit(workUnitPnum).LinkedWorkUnit);
+            Assert.Equal(workUnit.LinkedWorkUnitId, workout.CloneWorkUnit(workUnitPnum).LinkedWorkUnitId);
             Assert.Equal(workUnit.WorkUnitNoteId, workout.CloneWorkUnit(workUnitPnum).WorkUnitNoteId);
             Assert.Equal(workUnitPnum, workout.CloneWorkUnit(workUnitPnum).ProgressiveNumber);
 
@@ -655,7 +685,7 @@ namespace GymProject.Domain.Test.UnitTest
                 Assert.Equal(left, right);
 
             Assert.Equal(left.ExcerciseId, right.ExcerciseId);
-            Assert.Equal(left.LinkedWorkUnit, right.LinkedWorkUnit);
+            Assert.Equal(left.LinkedWorkUnitId, right.LinkedWorkUnitId);
             Assert.Equal(left.WorkUnitNoteId, right.WorkUnitNoteId);
             Assert.Equal(left.ProgressiveNumber, right.ProgressiveNumber);
 

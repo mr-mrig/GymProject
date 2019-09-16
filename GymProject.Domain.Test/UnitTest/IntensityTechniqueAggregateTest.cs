@@ -54,7 +54,6 @@ namespace GymProject.Domain.Test.UnitTest
 
                     default:
 
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, ownerId, name, abbreviation, description, isLinkingTechnique));
                         Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, ownerId, "     ", abbreviation, description, isLinkingTechnique));
                         Assert.Throws<TrainingDomainInvariantViolationException>(() => IntensityTechniqueRoot.CreatePrivateIntensityTechnique(null, ownerId, null, abbreviation, description, isLinkingTechnique));
                         break;

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ConsoleTest
@@ -35,17 +36,45 @@ namespace ConsoleTest
         public void AddWorkingSet(uint workoutId, uint wunitProgressiveNumber, WSRepetitionsValue repetitions = null,
             RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null, IEnumerable<uint?> intensityTechniques = null)
         {
-            using(GymContext _context = new GymContext())
-            {
-                WorkoutTemplateRoot wo = WorkoutTemplateRepositoryFind(workoutId);
+            WorkoutTemplateRoot wo = WorkoutTemplateRepositoryFind(workoutId);
 
-                wo.AddTransientWorkingSet(wunitProgressiveNumber, repetitions, rest, effort, tempo, intensityTechniques);
+            wo.AddTransientWorkingSet(wunitProgressiveNumber, repetitions, rest, effort, tempo, intensityTechniques);
 
-                WorkoutTemplateRepositoryUpdate(wo);
-                UnitOfWorkSave();
-            }
+            WorkoutTemplateRepositoryUpdate(wo);
+            UnitOfWorkSave();
         }
 
+
+        public void AddLinkedSet(uint workoutId, uint wunitProgressiveNumber, uint linkingIntensityTechniqueId, WSRepetitionsValue repetitions = null,
+            RestPeriodValue rest = null, TrainingEffortValue effort = null, TUTValue tempo = null)
+        {
+            if (!_context.IntensityTechniques.Find(linkingIntensityTechniqueId).IsLinkingTechnique)
+                throw new ArgumentException("The Intensity Technique is not a linking one", nameof(linkingIntensityTechniqueId));
+
+            WorkoutTemplateRoot wo = WorkoutTemplateRepositoryFind(workoutId);
+
+            wo.AddTransientWorkingSet(wunitProgressiveNumber, repetitions, rest, effort, tempo, new List<uint?>() { linkingIntensityTechniqueId });
+
+            WorkoutTemplateRepositoryUpdate(wo);
+            UnitOfWorkSave();
+        }
+
+
+        public void AddLinkedExcercise(uint workoutId, uint excerciseId, uint linkingIntensityTechniqueId)
+        {
+            if (!_context.IntensityTechniques.Find(linkingIntensityTechniqueId).IsLinkingTechnique)
+                throw new ArgumentException("The Intensity Technique is not a linking one", nameof(linkingIntensityTechniqueId));
+
+            WorkoutTemplateRoot wo = WorkoutTemplateRepositoryFind(workoutId);
+
+            wo.DraftExcercise(excerciseId);
+
+            WorkoutTemplateRepositoryUpdate(wo);
+            UnitOfWorkSave();
+
+            wo.LinkWorkUnits((uint)wo.WorkUnits.Count - 2, linkingIntensityTechniqueId);
+            UnitOfWorkSave();
+        }
 
 
         public WorkoutTemplateRoot PlanWorkout(uint trainingPlanId, uint trainingWeekProgressiveNumber, string workoutName, WeekdayEnum weeklyOccurance = null)
@@ -180,6 +209,7 @@ namespace ConsoleTest
         {
             // Avoid double insert for tables that should not be tracked
             IgnoreStaticEnumTables();
+            DebugChangeTracker();
             _context.SaveChanges();
         }
 
@@ -198,6 +228,30 @@ namespace ConsoleTest
             foreach (var entity in _context.ChangeTracker.Entries<Enumeration>())
                 entity.State = EntityState.Unchanged;
         }
+
+        [Conditional("DEBUG")]
+        private void DebugChangeTracker()
+        {
+            //foreach (var entity in _context.ChangeTracker.Entries<WorkUnitTemplateEntity>())
+            //{
+            //    var state = entity.State;
+
+            //    if(state != EntityState.Unchanged)
+            //        Debugger.Break();           // Do what you need before the breakpoint
+            //}
+
+            //foreach (var entity in _context.ChangeTracker.Entries<LinkedWorkValue>())
+            //{
+            //    var state = entity.State;
+
+            //    if(state == EntityState.Added || state == EntityState.Deleted)
+            //        entity.State = EntityState.Modified;
+
+            //    Debugger.Break();           // Do what you need before the breakpoint
+            //}
+                
+        }
+
 
     }
 }

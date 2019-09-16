@@ -79,7 +79,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// <param name="id">The ID of the Intensity Technique</param>
         /// <param name="entryStatus">The status of the entry</param>
         /// <returns>A new IntensityTechnique instance</returns>
-        protected static IntensityTechniqueRoot CreateIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus)
+        public static IntensityTechniqueRoot CreateIntensityTechnique(uint? id, uint? ownerId, string name, string abbreviation, PersonalNoteValue description, bool isLinkingTechnique, EntryStatusTypeEnum entryStatus)
 
             => new IntensityTechniqueRoot(id, ownerId, name, abbreviation, description, isLinkingTechnique, entryStatus);
 
@@ -174,7 +174,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         /// The Intensity Technique must be linked to its Owner.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool OwnerIsMandatory() => OwnerId != null;
+        private bool OwnerIsMandatory() => OwnerId != null || EntryStatus == EntryStatusTypeEnum.Native;
 
 
 
@@ -191,7 +191,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
                 throw new TrainingDomainInvariantViolationException($"The Intensity Technique must have a valid abbreviation.");
 
             if (!OwnerIsMandatory())
-                throw new TrainingDomainInvariantViolationException($"The Intensity Technique must be linked to its Owner.");
+                throw new TrainingDomainInvariantViolationException($"The non-native Intensity Technique must have a valid Owner.");
 
         }
         #endregion

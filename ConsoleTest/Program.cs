@@ -20,7 +20,7 @@ namespace ConsoleTest
         {
 
             // Check if seeding is needed
-            if(TestDataSeed.IsSeedingRequired())
+            if (TestDataSeed.IsSeedingRequired())
             {
                 SeedData();
             }
@@ -54,8 +54,16 @@ namespace ConsoleTest
 
                 wunitProgressiveNumber = 0;
                 service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
+                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+
                 service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
+                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+
                 service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
+                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
 
                 // SS - Work Unit 1
                 excerciseId = 10;
@@ -95,6 +103,16 @@ namespace ConsoleTest
                 context.SaveChanges();
 
                 wunitProgressiveNumber = 0;
+                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
+                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
+                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)
+                    , intensityTechniques: new List<uint?>() { 5 });
+
+                // Work Unit 1 - SS with WU0
+                excerciseId = 2;
+                service.AddLinkedExcercise(wo1.Id.Value, excerciseId, 1);
+
+                wunitProgressiveNumber = 1;
                 service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
                 service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
                 service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)

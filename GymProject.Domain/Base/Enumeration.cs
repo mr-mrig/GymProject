@@ -66,6 +66,34 @@ namespace GymProject.Domain.Base
         #endregion
 
 
+        #region Operators override
+
+
+        public static bool operator ==(Enumeration left, Enumeration right)
+        {
+            if (left is null)
+            {
+                if (right is null)
+                    return true;
+                else
+                    return false;
+            }
+            else
+            {
+                if (right is null)
+                    return false;
+
+                return left.Id == right.Id;
+            }
+        }
+
+
+        public static bool operator !=(Enumeration left, Enumeration right)
+        {
+            return !(left == right);
+        }
+
+        #endregion
 
     }
 

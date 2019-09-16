@@ -43,27 +43,30 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.OwnsOne(ws => ws.LinkedWorkUnit,
-                 l =>
-                 {
-                     l.Property(p => p.LinkedWorkId)
-                        .HasColumnName("LinkedWorkUnitId");
+            //builder.OwnsOne(ws => ws.LinkedWorkUnit,
 
-                     l.HasOne<WorkUnitTemplateEntity>()
-                         .WithMany()
-                         .HasForeignKey(p => p.LinkedWorkId)
-                         .IsRequired(false)
-                         .OnDelete(DeleteBehavior.SetNull);
+            //     l =>
+            //     {
+            //         l.Property(p => p.LinkedWorkId)
+            //            .HasColumnName("LinkedWorkUnitId");
 
-                     l.Property(p => p.LinkingIntensityTechniqueId)
-                        .HasColumnName("LinkingIntensityTechniqueId");
+            //         l.HasOne<WorkUnitTemplateEntity>()
+            //             .WithMany()
+            //             .HasForeignKey(p => p.LinkedWorkId)
+            //             .IsRequired(false)
+            //             .OnDelete(DeleteBehavior.Cascade);
 
-                     l.HasOne<IntensityTechniqueRoot>()
-                         .WithMany()
-                         .HasForeignKey(p => p.LinkingIntensityTechniqueId)
-                         .IsRequired(false)
-                         .OnDelete(DeleteBehavior.SetNull);
-                 });
+            //         l.Property(p => p.LinkingIntensityTechniqueId)
+            //            .HasColumnName("IntensityTechniqueId");
+
+            //         l.HasOne<IntensityTechniqueRoot>()
+            //             .WithMany()
+            //             .HasForeignKey(p => p.LinkingIntensityTechniqueId)
+            //             .IsRequired(false)
+            //             .OnDelete(DeleteBehavior.SetNull);
+            //     });
+
+
 
             builder.HasMany(w => w.WorkingSets)
                 .WithOne()

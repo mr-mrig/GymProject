@@ -23,7 +23,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.Property(t => t.Abbreviation)
                 .IsRequired()
-                .HasMaxLength(ConstraintsConfiguration.AbbreviationDefaultMaxLength)
+                .HasMaxLength(DatabaseEnvironmentConfiguration.AbbreviationDefaultMaxLength)
                 .HasColumnType("TEXT");
 
             builder.HasAlternateKey(t => t.Name);

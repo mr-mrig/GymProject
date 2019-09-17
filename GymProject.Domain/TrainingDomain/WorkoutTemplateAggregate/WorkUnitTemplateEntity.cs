@@ -43,10 +43,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         //public LinkedWorkValue LinkedWorkUnit { get; private set; } = null;
 
 
-        /// <summary>
-        /// The Work Unit which is linked to this one - If any
-        /// </summary>
-        public uint? LinkedWorkUnitId { get; private set; } = null;
+        ///// <summary>
+        ///// The Work Unit which is linked to this one - If any
+        ///// </summary>
+        //public uint? LinkedWorkUnitId { get; private set; } = null;
 
         /// <summary>
         /// The Intensity Technique which links the WUs - if any linked WU
@@ -86,12 +86,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         private WorkUnitTemplateEntity(uint? id, uint progressiveNumber, uint? excerciseId,
-            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null) : base(id)
+            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null) : base(id)
         {
             ProgressiveNumber = progressiveNumber;
             WorkUnitNoteId = ownerNoteId;
             ExcerciseId = excerciseId;
-            LinkedWorkUnitId = linkedWorkUnitId;
+            //LinkedWorkUnitId = linkedWorkUnitId;
             LinkingIntensityTechniqueId = linkingIntensityTechniqueId;
 
             _workingSets = workingSets?.Clone().ToList() ?? new List<WorkingSetTemplateEntity>();
@@ -120,7 +120,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>The WorkUnitTemplateEntity instance</returns>
         public static WorkUnitTemplateEntity NewDraft(uint progressiveNumber, uint? excerciseId)
 
-            => PlanTransientWorkUnit(progressiveNumber, excerciseId, null, null, null, null);
+            => PlanTransientWorkUnit(progressiveNumber, excerciseId, null, null, null);
 
 
         /// <summary>
@@ -134,9 +134,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="linkedWorkUnitId">The ID of the Work Unit linked to this one - if any</param>
         /// <returns>The WorkUnitTemplateEntity instance</returns>
         public static WorkUnitTemplateEntity PlanTransientWorkUnit(uint progressiveNumber, uint? excerciseId,
-            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
+            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
 
-            => new WorkUnitTemplateEntity(null, progressiveNumber, excerciseId, workingSets, linkedWorkUnitId, linkingIntensityTechniqueId, ownerNoteId);
+            => new WorkUnitTemplateEntity(null, progressiveNumber, excerciseId, workingSets, linkingIntensityTechniqueId, ownerNoteId);
 
 
         /// <summary>
@@ -151,9 +151,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="linkedWorkUnitId">The ID of the Work Unit linked to this one - if any</param>
         /// <returns>The WorkUnitTemplateEntity instance</returns>
         public static WorkUnitTemplateEntity PlanWorkUnit(uint? id, uint progressiveNumber, uint? excerciseId,
-            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
+            IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
 
-            => new WorkUnitTemplateEntity(id, progressiveNumber, excerciseId, workingSets, linkedWorkUnitId, linkingIntensityTechniqueId, ownerNoteId);
+            => new WorkUnitTemplateEntity(id, progressiveNumber, excerciseId, workingSets, linkingIntensityTechniqueId, ownerNoteId);
 
         #endregion
 
@@ -173,13 +173,14 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
-        /// LLink the specified Work Unit by appending it with the selected Intensity Technique
+        /// Link the specified Work Unit by appending it to this one linking them with the selected Intensity Technique
         /// </summary>
         /// <param name="linkingTechniqueId">The ID of the linking intensity technique</param>
-        /// <param name="linkedWorkUnit">The Work Unit to be appended</param>
-        public void LinkTo(uint? linkedWorkUnitId, uint linkingTechniqueId)
+        /// <param name="linkedWorkUnitId">The ID of the Work Unit to linked</param>
+        public void LinkToNext(uint linkingTechniqueId)
         {
-            LinkedWorkUnitId = linkedWorkUnitId;
+            //LinkedWorkUnitId = linkedWorkUnitId;
+            LinkingIntensityTechniqueId = linkingTechniqueId;
 
             //LinkedWorkUnit = LinkedWorkValue.LinkTo(linkedWorkUnit.Id.Value, linkingTechniqueId);
 
@@ -189,7 +190,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             //foreach (WorkingSetTemplateEntity ws in _workingSets)
             //    ws.LinkTo(linkedWorkingSets[(int)ws.ProgressiveNumber].Id.Value, linkingTechniqueId);
 
-            TestBusinessRules();
+            //TestBusinessRules();
         }
 
 
@@ -198,7 +199,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         public void Unlink()
         {
-            LinkedWorkUnitId = null;
+            //LinkedWorkUnitId = null;
+            LinkingIntensityTechniqueId = null;
 
             // Unlink the Working Sets
             //foreach (WorkingSetTemplateEntity ws in _workingSets)
@@ -351,7 +353,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>True if the Work Unit is linked to another one</returns>
         public bool HasLinkedUnit()
 
-            => LinkedWorkUnitId != null;
+            //=> LinkedWorkUnitId != null;
+            => LinkingIntensityTechniqueId != null;
 
         /// <summary>
         /// Get the main effort type as the effort of most of the WSs of the WU 
@@ -676,11 +679,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         private bool NoNullWorkingSets() => _workingSets.All(x => x != null);
 
 
-        /// <summary>
-        /// The Work Unit cannot be linked to itself.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool IsNotLinkedToItself() => LinkedWorkUnitId == null || LinkedWorkUnitId != Id;
+        ///// <summary>
+        ///// The Work Unit cannot be linked to itself.
+        ///// </summary>
+        ///// <returns>True if business rule is met</returns>
+        //private bool IsNotLinkedToItself() => LinkedWorkUnitId == null || LinkedWorkUnitId != Id;
 
 
         /// <summary>
@@ -753,8 +756,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (!ExcerciseSpecified())
                 throw new TrainingDomainInvariantViolationException($"The Work Unit must be linked to an excercise.");
 
-            if (!IsNotLinkedToItself())
-                throw new TrainingDomainInvariantViolationException($"The Work Unit cannot be linked to itself.");
+            //if (!IsNotLinkedToItself())
+            //    throw new TrainingDomainInvariantViolationException($"The Work Unit cannot be linked to itself.");
 
             //if (!AtLeastOneWorkingSet())
             //    throw new TrainingDomainInvariantViolationException($"Cannot create a Work Unit without any WS.");
@@ -773,7 +776,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), LinkedWorkUnitId, LinkingIntensityTechniqueId, WorkUnitNoteId);
+            => PlanWorkUnit(Id, ProgressiveNumber, ExcerciseId, WorkingSets.ToList(), LinkingIntensityTechniqueId, WorkUnitNoteId);
 
         #endregion
     }

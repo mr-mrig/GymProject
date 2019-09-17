@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 
 namespace GymProject.Infrastructure.Persistence.Converters

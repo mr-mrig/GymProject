@@ -182,7 +182,6 @@ namespace GymProject.Domain.Test.Util
                 progressiveNumber: progn,
                 excerciseId: (uint?)(RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax)),
                 workingSets: workingSets,
-                linkedWorkUnitId: null,
                 linkingIntensityTechniqueId: null,
                 ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
             );
@@ -190,21 +189,21 @@ namespace GymProject.Domain.Test.Util
             {
                 if(RandomFieldGenerator.RollEventWithProbability(0.33f))
                 {
-                    if(RandomFieldGenerator.RollEventWithProbability(0.33f))
-                    {
-                        // Fake it
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() =>
+                    //if(RandomFieldGenerator.RollEventWithProbability(0.33f))
+                    //{
+                    //    // Fake it
+                    //    Assert.Throws<TrainingDomainInvariantViolationException>(() =>
 
-                             WorkUnitTemplateEntity.PlanWorkUnit(
-                                id: id,
-                                progressiveNumber: progn,
-                                excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
-                                workingSets: workingSets,
-                                linkedWorkUnitId: id,         // Fake value
-                                linkingIntensityTechniqueId: 1,
-                                ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
-                            ));
-                    }
+                    //         WorkUnitTemplateEntity.PlanWorkUnit(
+                    //            id: id,
+                    //            progressiveNumber: progn,
+                    //            excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
+                    //            workingSets: workingSets,
+                    //            linkedWorkUnitId: id,         // Fake value
+                    //            linkingIntensityTechniqueId: 1,
+                    //            ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
+                    //        ));
+                    //}
 
                     // Linked WU
                     return WorkUnitTemplateEntity.PlanWorkUnit(
@@ -212,7 +211,7 @@ namespace GymProject.Domain.Test.Util
                         progressiveNumber: progn,
                         excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
                         workingSets: workingSets,
-                        linkedWorkUnitId: (uint)RandomFieldGenerator.RandomIntValueExcluded(linkedIdMin, linkedIdMax, (int)id),
+                        //linkedWorkUnitId: (uint)RandomFieldGenerator.RandomIntValueExcluded(linkedIdMin, linkedIdMax, (int)id),
                         linkingIntensityTechniqueId: (uint)RandomFieldGenerator.RandomInt(intTechniqueIdMin, intTechniqueIdMax),
                         ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
                     );
@@ -223,7 +222,6 @@ namespace GymProject.Domain.Test.Util
                     progressiveNumber: (uint)progn,
                     excerciseId: (uint?)RandomFieldGenerator.RandomInt(excerciseIdMin, excerciseIdMax),
                     workingSets: workingSets,
-                    linkedWorkUnitId: null,
                     linkingIntensityTechniqueId: null,
                     ownerNoteId: (uint?)(RandomFieldGenerator.RandomInt(ownerNoteIdMin, ownerNoteIdMax))
                 );

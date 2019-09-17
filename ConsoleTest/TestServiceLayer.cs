@@ -73,15 +73,31 @@ namespace ConsoleTest
             UnitOfWorkSave();
 
             wo.LinkWorkUnits((uint)wo.WorkUnits.Count - 2, linkingIntensityTechniqueId);
+            WorkoutTemplateRepositoryUpdate(wo);
             UnitOfWorkSave();
         }
 
 
         public WorkoutTemplateRoot PlanWorkout(uint trainingPlanId, uint trainingWeekProgressiveNumber, string workoutName, WeekdayEnum weeklyOccurance = null)
         {
-            WorkoutTemplateReferenceEntity workoutAdded = AddWorkoutToPlan(trainingPlanId, trainingWeekProgressiveNumber);
+            //WorkoutTemplateReferenceEntity workoutAdded = AddWorkoutToPlan(trainingPlanId, trainingWeekProgressiveNumber);
 
-            return CreateWorkout(workoutAdded.Id.Value, workoutName, weeklyOccurance);
+            //return CreateWorkout(workoutAdded.Id.Value, workoutName, weeklyOccurance);
+
+            // Build the Workout
+            WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlanTransientWorkout(new List<WorkUnitTemplateEntity>(), workoutName, weeklyOccurance);
+            WorkoutTemplateRepositoryUpdate(workout);
+            UnitOfWorkSave();
+
+            // Build link to plan
+            TrainingPlanRoot plan = TrainingPlanRepositoryFind(trainingPlanId);
+
+            plan.PlanWorkout(trainingWeekProgressiveNumber, new List<WorkingSetTemplateEntity>());
+            plan = TrainingPlanRepositoryUpdate(plan);
+            WorkoutTemplateRepositoryUpdate(workout);
+            UnitOfWorkSave();
+
+            return workout;
         }
 
         /// <summary>
@@ -115,6 +131,19 @@ namespace ConsoleTest
         }
 
 
+        public void StartWorkoutSession(uint workoutTemplateId)
+        {
+            WorkoutTemplateRoot workout = WorkoutTemplateRepositoryFind(workoutTemplateId);
+
+            if (workout == null)
+                Debugger.Break();
+            else
+                Console.WriteLine("OK");
+        }
+
+
+
+
         /// <summary>
         /// This is the simulation of what the Repository will do
         /// </summary>
@@ -123,6 +152,9 @@ namespace ConsoleTest
         public WorkoutTemplateRoot WorkoutTemplateRepositoryFind(uint workoutId)
         {
             WorkoutTemplateRoot workout = null;
+
+
+            return _context.WorkoutTemplates.Find(workoutId);
 
             if (_enableEagerLoading)
             {
@@ -163,12 +195,12 @@ namespace ConsoleTest
 
         private TrainingPlanRoot TrainingPlanRepositoryFind(uint trainingPlanId)
         {
-            TrainingPlanRoot workout = null;
+            TrainingPlanRoot plan = null;
 
             if (_enableEagerLoading)
             {
                 // One query for all objects
-                workout = _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
+                plan = _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
                     .Include(wo => wo.TrainingWeeks)
                         .ThenInclude(tw => tw.Workouts)
                     .SingleOrDefault();
@@ -176,15 +208,15 @@ namespace ConsoleTest
             else
             {
                 // No query if object already tracked -> If State = Added, but contt not saved hte WO is still retrieved
-                workout = _context.TrainingPlans.Find(trainingPlanId);
+                plan = _context.TrainingPlans.Find(trainingPlanId);
 
-                if (workout != null)
+                if (plan != null)
                 {
                     // One query for each Load -> wasteful
                     throw new NotImplementedException();
                 }
             }
-            return workout;
+            return plan;
         }
 
 
@@ -225,8 +257,20 @@ namespace ConsoleTest
             //    if(!(entity.Entity is WeekdayEnum))
             //        entity.State = EntityState.Unchanged;
 
+
+            // Avoid double insert for tables that should not be tracked
             foreach (var entity in _context.ChangeTracker.Entries<Enumeration>())
-                entity.State = EntityState.Unchanged;
+            {
+                try
+                {
+                    entity.State = EntityState.Unchanged;
+                }
+                catch(InvalidOperationException)
+                {
+                    // Enumeration as field, instead of separate table -> No need to set it as Unchanged - IE: see WeekdayEnum
+                    continue;
+                }
+            }
         }
 
         [Conditional("DEBUG")]

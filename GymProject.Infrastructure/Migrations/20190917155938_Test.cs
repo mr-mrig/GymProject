@@ -133,6 +133,36 @@ namespace GymProject.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WorkingSetNote",
+                schema: "GymApp",
+                columns: table => new
+                {
+                    Id = table.Column<uint>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Body = table.Column<string>(maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkingSetNote", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkoutSession",
+                schema: "GymApp",
+                columns: table => new
+                {
+                    Id = table.Column<uint>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    StartTime = table.Column<long>(type: "INTEGER", nullable: false, defaultValueSql: "strftime('%s', 'now')"),
+                    EndTime = table.Column<long>(type: "INTEGER", nullable: true),
+                    WorkoutTemplateId = table.Column<uint>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkoutSession", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WorkUnitTemplateNote",
                 schema: "GymApp",
                 columns: table => new
@@ -326,6 +356,37 @@ namespace GymProject.Infrastructure.Migrations
                         principalTable: "TrainingPlanNote",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkUnit",
+                schema: "GymApp",
+                columns: table => new
+                {
+                    Id = table.Column<uint>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ProgressiveNumber = table.Column<uint>(type: "INTEGER", nullable: false),
+                    Rating = table.Column<float>(type: "DECIMAL", nullable: true),
+                    ExcerciseId = table.Column<uint>(nullable: false),
+                    WorkoutSessionId = table.Column<uint>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkUnit", x => x.Id);
+                    table.UniqueConstraint("AK_WorkUnit_WorkoutSessionId_ProgressiveNumber", x => new { x.WorkoutSessionId, x.ProgressiveNumber });
+                    table.ForeignKey(
+                        name: "FK_WorkUnit_Excercise_ExcerciseId",
+                        column: x => x.ExcerciseId,
+                        principalSchema: "GymApp",
+                        principalTable: "Excercise",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WorkUnit_WorkoutSession_WorkoutSessionId",
+                        column: x => x.WorkoutSessionId,
+                        principalSchema: "GymApp",
+                        principalTable: "WorkoutSession",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -534,6 +595,39 @@ namespace GymProject.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WorkingSet",
+                schema: "GymApp",
+                columns: table => new
+                {
+                    Id = table.Column<uint>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ProgressiveNumber = table.Column<uint>(type: "INTEGER", nullable: false),
+                    Repetitions = table.Column<int>(type: "INTEGER", nullable: true),
+                    WeightKg = table.Column<float>(type: "DECIMAL", nullable: true),
+                    NoteId = table.Column<uint>(nullable: true),
+                    WorkUnitId = table.Column<uint>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkingSet", x => x.Id);
+                    table.UniqueConstraint("AK_WorkingSet_WorkUnitId_ProgressiveNumber", x => new { x.WorkUnitId, x.ProgressiveNumber });
+                    table.ForeignKey(
+                        name: "FK_WorkingSet_WorkingSetNote_NoteId",
+                        column: x => x.NoteId,
+                        principalSchema: "GymApp",
+                        principalTable: "WorkingSetNote",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_WorkingSet_WorkUnit_WorkUnitId",
+                        column: x => x.WorkUnitId,
+                        principalSchema: "GymApp",
+                        principalTable: "WorkUnit",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TrainingScheduleFeedback",
                 schema: "GymApp",
                 columns: table => new
@@ -576,7 +670,8 @@ namespace GymProject.Infrastructure.Migrations
                     TrainingWeekId = table.Column<uint>(nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     SpecificWeekday = table.Column<int>(nullable: true, defaultValue: 0)
-                        .Annotation("Sqlite:Autoincrement", true)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    WorkoutTemplateId = table.Column<uint>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -589,6 +684,12 @@ namespace GymProject.Infrastructure.Migrations
                         principalTable: "TrainingWeek",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkoutTemplate_WorkoutSession_WorkoutTemplateId",
+                        column: x => x.WorkoutTemplateId,
+                        principalSchema: "GymApp",
+                        principalTable: "WorkoutSession",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -599,8 +700,7 @@ namespace GymProject.Infrastructure.Migrations
                     Id = table.Column<uint>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ProgressiveNumber = table.Column<uint>(type: "INTEGER", nullable: false),
-                    IntensityTechniqueId = table.Column<uint>(nullable: true),
-                    LinkedWorkUnitId = table.Column<uint>(nullable: true),
+                    LinkingIntensityTechniqueId = table.Column<uint>(nullable: true),
                     WorkUnitNoteId = table.Column<uint>(nullable: true),
                     ExcerciseId = table.Column<uint>(nullable: false),
                     WorkoutTemplateId = table.Column<uint>(nullable: false)
@@ -610,31 +710,25 @@ namespace GymProject.Infrastructure.Migrations
                     table.PrimaryKey("PK_WorkUnitTemplate", x => x.Id);
                     table.UniqueConstraint("AK_WorkUnitTemplate_WorkoutTemplateId_ProgressiveNumber", x => new { x.WorkoutTemplateId, x.ProgressiveNumber });
                     table.ForeignKey(
-                        name: "FK_WorkUnitTemplate_WorkUnitTemplate_LinkedWorkUnitId",
-                        column: x => x.LinkedWorkUnitId,
-                        principalSchema: "GymApp",
-                        principalTable: "WorkUnitTemplate",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_WorkUnitTemplate_IntensityTechnique_IntensityTechniqueId",
-                        column: x => x.IntensityTechniqueId,
-                        principalSchema: "GymApp",
-                        principalTable: "IntensityTechnique",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
                         name: "FK_WorkUnitTemplate_Excercise_ExcerciseId",
                         column: x => x.ExcerciseId,
                         principalSchema: "GymApp",
                         principalTable: "Excercise",
                         principalColumn: "Id");
                     table.ForeignKey(
+                        name: "FK_WorkUnitTemplate_IntensityTechnique_LinkingIntensityTechniqueId",
+                        column: x => x.LinkingIntensityTechniqueId,
+                        principalSchema: "GymApp",
+                        principalTable: "IntensityTechnique",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_WorkUnitTemplate_WorkUnitTemplateNote_WorkUnitNoteId",
                         column: x => x.WorkUnitNoteId,
                         principalSchema: "GymApp",
                         principalTable: "WorkUnitTemplateNote",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_WorkUnitTemplate_WorkoutTemplate_WorkoutTemplateId",
                         column: x => x.WorkoutTemplateId,
@@ -988,6 +1082,12 @@ namespace GymProject.Infrastructure.Migrations
                 column: "AccountStatusTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkingSet_NoteId",
+                schema: "GymApp",
+                table: "WorkingSet",
+                column: "NoteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkingSetIntensityTechnique_IntensityTechniqueId",
                 schema: "GymApp",
                 table: "WorkingSetIntensityTechnique",
@@ -1000,22 +1100,28 @@ namespace GymProject.Infrastructure.Migrations
                 column: "Effort_EffortTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkUnitTemplate_LinkedWorkUnitId",
+                name: "IX_WorkoutTemplate_WorkoutTemplateId",
                 schema: "GymApp",
-                table: "WorkUnitTemplate",
-                column: "LinkedWorkUnitId");
+                table: "WorkoutTemplate",
+                column: "WorkoutTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkUnitTemplate_IntensityTechniqueId",
+                name: "IX_WorkUnit_ExcerciseId",
                 schema: "GymApp",
-                table: "WorkUnitTemplate",
-                column: "IntensityTechniqueId");
+                table: "WorkUnit",
+                column: "ExcerciseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkUnitTemplate_ExcerciseId",
                 schema: "GymApp",
                 table: "WorkUnitTemplate",
                 column: "ExcerciseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkUnitTemplate_LinkingIntensityTechniqueId",
+                schema: "GymApp",
+                table: "WorkUnitTemplate",
+                column: "LinkingIntensityTechniqueId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkUnitTemplate_WorkUnitNoteId",
@@ -1059,6 +1165,10 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
+                name: "WorkingSet",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
                 name: "WorkingSetIntensityTechnique",
                 schema: "GymApp");
 
@@ -1083,6 +1193,14 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
+                name: "WorkingSetNote",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "WorkUnit",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
                 name: "WorkingSetTemplate",
                 schema: "GymApp");
 
@@ -1095,11 +1213,11 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
-                name: "IntensityTechnique",
+                name: "Excercise",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
-                name: "Excercise",
+                name: "IntensityTechnique",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
@@ -1116,6 +1234,10 @@ namespace GymProject.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "TrainingWeek",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "WorkoutSession",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(

@@ -50,7 +50,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         public uint? WorkoutTemplateId { get; private set; } = null;
 
 
-        private IList<WorkUnitEntity> _workUnits = new List<WorkUnitEntity>();
+        private List<WorkUnitEntity> _workUnits = new List<WorkUnitEntity>();
 
         /// <summary>
         /// The WUs belonging to the Workout

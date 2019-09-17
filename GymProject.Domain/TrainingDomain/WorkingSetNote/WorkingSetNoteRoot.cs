@@ -11,6 +11,8 @@ namespace GymProject.Domain.TrainingDomain.WorkingSetNote
 
         #region Ctors
 
+        private WorkingSetNoteRoot() : base(null, null) { }
+
         private WorkingSetNoteRoot(uint? id, PersonalNoteValue note) : base(id, note)
         {
 

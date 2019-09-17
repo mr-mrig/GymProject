@@ -2,6 +2,7 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
+using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -56,6 +57,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             get => _workUnits?.ToList().AsReadOnly()
                 ?? new List<WorkUnitTemplateEntity>().AsReadOnly();
         }
+
+
 
 
 
@@ -225,14 +228,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <param name="linkedWorkUnitId">The ID of the Work Unit linked to the one to be planned - if any</param>
         /// <param name="linkingIntensityTechniqueId">The ID of the Intensity Technique which links the WUs - if any</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void PlanTransientExcercise(uint? excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets, uint? linkedWorkUnitId = null,
+        public void PlanTransientExcercise(uint? excerciseId, IEnumerable<WorkingSetTemplateEntity> workingSets,
             uint? linkingIntensityTechniqueId = null, uint? ownerNoteId = null)
         {
             WorkUnitTemplateEntity toAdd = WorkUnitTemplateEntity.PlanTransientWorkUnit(
                 BuildWorkUnitProgressiveNumber(),
                 excerciseId,
                 workingSets,
-                linkedWorkUnitId,
                 linkingIntensityTechniqueId,
                 ownerNoteId);
 
@@ -296,24 +298,25 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                 {
                     WorkUnitTemplateEntity previousWorkUnit = FindWorkUnit(toRemovePnum - 1);
 
-                    if (previousWorkUnit.HasLinkedUnit())
-                    {
-                        // If nothing can be linked, then unlink
-                        if (IsLastWorkUnit(toRemovePnum))
-                            previousWorkUnit.Unlink();
-                        else
-                        {
-                            // If the removed WU had a linked one, then link the two WUs
-                            uint? removedLinkingIntensityTechnique = toBeRemoved.LinkingIntensityTechniqueId;
+                    //if (previousWorkUnit.HasLinkedUnit())
+                    //{
+                    //    // If nothing can be linked, then unlink
+                    //    if (IsLastWorkUnit(toRemovePnum))
+                    //        previousWorkUnit.Unlink();
+                    //    else
+                    //    {
+                    //        // If the removed WU had a linked one, then link the two WUs
+                    //        uint? removedLinkingIntensityTechnique = toBeRemoved.LinkingIntensityTechniqueId;
 
-                            if (removedLinkingIntensityTechnique.HasValue)
-                                previousWorkUnit.LinkTo(CloneWorkUnit(toRemovePnum).Id, removedLinkingIntensityTechnique.Value);
+                    //        if (removedLinkingIntensityTechnique.HasValue)
+                    //            previousWorkUnit.LinkTo(CloneWorkUnit(toRemovePnum).Id, removedLinkingIntensityTechnique.Value);
 
-                            else
-                                previousWorkUnit.Unlink();
+                    //        else
+                    //            previousWorkUnit.Unlink();
 
-                        }
-                    }
+                    //    }
+                    //}
+                    previousWorkUnit.Unlink();
                 }
 
                 TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
@@ -392,9 +395,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
                 throw new InvalidOperationException($"There's no Work Unit to link to the specified one as it is the last one.");
 
             WorkUnitTemplateEntity startingWorkUnit = FindWorkUnit(startingWorkUnitPNum);
-            WorkUnitTemplateEntity linkedWorkUnit = FindWorkUnit(startingWorkUnitPNum + 1);
+            //WorkUnitTemplateEntity linkedWorkUnit = FindWorkUnit(startingWorkUnitPNum + 1);
 
-            startingWorkUnit.LinkTo(linkedWorkUnit.Id, intensityTechniqueId);
+            //startingWorkUnit.LinkTo(linkedWorkUnit.Id, intensityTechniqueId);
+            startingWorkUnit.LinkToNext(intensityTechniqueId);
         }
 
 

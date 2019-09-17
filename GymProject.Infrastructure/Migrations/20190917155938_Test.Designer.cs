@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GymProject.Infrastructure.Migrations
 {
     [DbContext(typeof(GymContext))]
-    [Migration("20190916111321_Test")]
+    [Migration("20190917155938_Test")]
     partial class Test
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -639,6 +639,92 @@ namespace GymProject.Infrastructure.Migrations
                     b.ToTable("WorkUnitTemplateNote","GymApp");
                 });
 
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkingSetNote.WorkingSetNoteRoot", b =>
+                {
+                    b.Property<uint?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkingSetNote","GymApp");
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkUnitEntity", b =>
+                {
+                    b.Property<uint?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint?>("ExcerciseId")
+                        .IsRequired()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("ProgressiveNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("WorkoutSessionId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("WorkoutSessionId", "ProgressiveNumber");
+
+                    b.HasIndex("ExcerciseId");
+
+                    b.ToTable("WorkUnit","GymApp");
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkingSetEntity", b =>
+                {
+                    b.Property<uint?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float?>("Load")
+                        .HasColumnName("WeightKg")
+                        .HasColumnType("DECIMAL");
+
+                    b.Property<uint?>("NoteId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("ProgressiveNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("WorkUnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("WorkUnitId", "ProgressiveNumber");
+
+                    b.HasIndex("NoteId");
+
+                    b.ToTable("WorkingSet","GymApp");
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkoutSessionRoot", b =>
+                {
+                    b.Property<uint?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("EndTime")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("StartTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValueSql("strftime('%s', 'now')");
+
+                    b.Property<uint?>("WorkoutTemplateId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkoutSession","GymApp");
+                });
+
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkUnitTemplateEntity", b =>
                 {
                     b.Property<uint?>("Id")
@@ -647,6 +733,9 @@ namespace GymProject.Infrastructure.Migrations
 
                     b.Property<uint?>("ExcerciseId")
                         .IsRequired()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint?>("LinkingIntensityTechniqueId")
                         .HasColumnType("INTEGER");
 
                     b.Property<uint>("ProgressiveNumber")
@@ -663,6 +752,8 @@ namespace GymProject.Infrastructure.Migrations
                     b.HasAlternateKey("WorkoutTemplateId", "ProgressiveNumber");
 
                     b.HasIndex("ExcerciseId");
+
+                    b.HasIndex("LinkingIntensityTechniqueId");
 
                     b.HasIndex("WorkUnitNoteId");
 
@@ -706,12 +797,19 @@ namespace GymProject.Infrastructure.Migrations
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkoutTemplateRoot", b =>
                 {
                     b.Property<uint?>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
+                    b.Property<uint?>("WorkoutTemplateId")
+                        .IsRequired()
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("WorkoutTemplateId");
 
                     b.ToTable("WorkoutTemplate","GymApp");
                 });
@@ -1188,6 +1286,91 @@ namespace GymProject.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkingSetNote.WorkingSetNoteRoot", b =>
+                {
+                    b.OwnsOne("GymProject.Domain.SharedKernel.PersonalNoteValue", "Body", b1 =>
+                        {
+                            b1.Property<uint>("WorkingSetNoteRootId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("Body")
+                                .IsRequired()
+                                .HasColumnName("Body")
+                                .HasColumnType("TEXT")
+                                .HasMaxLength(1000);
+
+                            b1.HasKey("WorkingSetNoteRootId");
+
+                            b1.ToTable("WorkingSetNote");
+
+                            b1.WithOwner()
+                                .HasForeignKey("WorkingSetNoteRootId");
+                        });
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkUnitEntity", b =>
+                {
+                    b.HasOne("GymProject.Domain.TrainingDomain.ExcerciseAggregate.ExcerciseRoot", null)
+                        .WithMany()
+                        .HasForeignKey("ExcerciseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkoutSessionRoot", null)
+                        .WithMany("WorkUnits")
+                        .HasForeignKey("WorkoutSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("GymProject.Domain.SharedKernel.RatingValue", "UserRating", b1 =>
+                        {
+                            b1.Property<uint>("WorkUnitEntityId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<float>("Value")
+                                .HasColumnName("Rating")
+                                .HasColumnType("DECIMAL");
+
+                            b1.HasKey("WorkUnitEntityId");
+
+                            b1.ToTable("WorkUnit");
+
+                            b1.WithOwner()
+                                .HasForeignKey("WorkUnitEntityId");
+                        });
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkingSetEntity", b =>
+                {
+                    b.HasOne("GymProject.Domain.TrainingDomain.WorkingSetNote.WorkingSetNoteRoot", null)
+                        .WithMany()
+                        .HasForeignKey("NoteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkUnitEntity", null)
+                        .WithMany("WorkingSets")
+                        .HasForeignKey("WorkUnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("GymProject.Domain.TrainingDomain.Common.WSRepetitionsValue", "Repetitions", b1 =>
+                        {
+                            b1.Property<uint>("WorkingSetEntityId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<int>("Value")
+                                .HasColumnName("Repetitions")
+                                .HasColumnType("INTEGER");
+
+                            b1.HasKey("WorkingSetEntityId");
+
+                            b1.ToTable("WorkingSet");
+
+                            b1.WithOwner()
+                                .HasForeignKey("WorkingSetEntityId");
+                        });
+                });
+
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkUnitTemplateEntity", b =>
                 {
                     b.HasOne("GymProject.Domain.TrainingDomain.ExcerciseAggregate.ExcerciseRoot", null)
@@ -1196,51 +1379,21 @@ namespace GymProject.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate.IntensityTechniqueRoot", null)
+                        .WithMany()
+                        .HasForeignKey("LinkingIntensityTechniqueId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GymProject.Domain.TrainingDomain.WorkUnitTemplateNote.WorkUnitTemplateNoteRoot", null)
                         .WithMany()
                         .HasForeignKey("WorkUnitNoteId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkoutTemplateRoot", null)
                         .WithMany("WorkUnits")
                         .HasForeignKey("WorkoutTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.OwnsOne("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.LinkedWorkValue", "LinkedWorkUnit", b1 =>
-                        {
-                            b1.Property<uint>("WorkUnitTemplateEntityId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<uint?>("LinkedWorkId")
-                                .HasColumnName("LinkedWorkUnitId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<uint?>("LinkingIntensityTechniqueId")
-                                .HasColumnName("IntensityTechniqueId")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("WorkUnitTemplateEntityId");
-
-                            b1.HasIndex("LinkedWorkId");
-
-                            b1.HasIndex("LinkingIntensityTechniqueId");
-
-                            b1.ToTable("WorkUnitTemplate");
-
-                            b1.HasOne("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkUnitTemplateEntity", null)
-                                .WithMany()
-                                .HasForeignKey("LinkedWorkId")
-                                .OnDelete(DeleteBehavior.Cascade);
-
-                            b1.HasOne("GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate.IntensityTechniqueRoot", null)
-                                .WithMany()
-                                .HasForeignKey("LinkingIntensityTechniqueId")
-                                .OnDelete(DeleteBehavior.SetNull);
-
-                            b1.WithOwner()
-                                .HasForeignKey("WorkUnitTemplateEntityId");
-                        });
                 });
 
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkingSetIntensityTechniqueRelation", b =>
@@ -1351,6 +1504,12 @@ namespace GymProject.Infrastructure.Migrations
                         .WithOne()
                         .HasForeignKey("GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate.WorkoutTemplateRoot", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GymProject.Domain.TrainingDomain.WorkoutSessionAggregate.WorkoutSessionRoot", null)
+                        .WithMany()
+                        .HasForeignKey("WorkoutTemplateId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.OwnsOne("GymProject.Domain.SharedKernel.WeekdayEnum", "SpecificWeekday", b1 =>

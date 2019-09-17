@@ -15,6 +15,10 @@ using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using GymProject.Domain.BodyDomain.MuscleGroupAggregate;
 using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
+using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
+using GymProject.Domain.TrainingDomain.WorkingSetNote;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -22,6 +26,9 @@ namespace GymProject.Infrastructure.Persistence.EFContext
     {
 
         public const string DefaultSchema = "GymApp";
+
+        //public static readonly LoggerFactory MyLoggerFactory
+        //    = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
 
 
         public GymContext()
@@ -51,6 +58,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         public virtual DbSet<TrainingScheduleRoot> TrainingSchedules { get; set; }
         public virtual DbSet<TrainingScheduleFeedbackEntity> TrainingScheduleFeedbacks { get; set; }
+
+
+        public virtual DbSet<WorkoutSessionRoot> WorkoutSessions { get; set; }
+        public virtual DbSet<WorkUnitEntity> WorkUnits { get; set; }
+        public virtual DbSet<WorkingSetEntity> WorkingSets { get; set; }
+        public virtual DbSet<WorkingSetNoteRoot> WorkingSetNotes { get; set; }
 
 
         public virtual DbSet<WorkoutTemplateRoot> WorkoutTemplates { get; set; }
@@ -86,11 +99,23 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(@"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;");
+            //var loggerFactory = LoggerFactory.Create(builder =>
+            //{
+            //    //builder.AddFilter("Microsoft", LogLevel.Warning)
+            //    //       .AddFilter("System", LogLevel.Warning)
+            //    //       .AddFilter("SampleApp.Program", LogLevel.Debug)
+            //    builder.AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information)
+            //           .AddConsole();
+            //});
+
+            optionsBuilder.UseSqlite(@"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;")
+                ;/*.UseLoggerFactory(loggerFactory);*/
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+
             modelBuilder.ApplyConfiguration(new EntryStatusEntityConfiguration());
 
             // User Aggregate
@@ -113,6 +138,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             modelBuilder.ApplyConfiguration(new TrainingPlanPhaseEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanProficiencyEntityConfiguration());
             modelBuilder.ApplyConfiguration(new WorkUnitTemplateNoteEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkingSetNoteEntityConfiguration());
 
             // Workout Template Aggregate
             modelBuilder.ApplyConfiguration(new WorkoutTemplateEntityConfiguration());
@@ -122,6 +148,11 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             // Intensity Technique Aggregate
             modelBuilder.ApplyConfiguration(new IntensityTechniqueEntityConfiguration());
+
+            // Workout Session Aggregate
+            modelBuilder.ApplyConfiguration(new WorkoutSessionEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkUnitEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkingSetEntityConfiguration());
 
             // Minor Training Aggregates
             modelBuilder.ApplyConfiguration(new TrainingHashtagEntityConfiguration());

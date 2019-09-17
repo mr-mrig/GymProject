@@ -25,6 +25,24 @@ namespace ConsoleTest
                 SeedData();
             }
 
+            BuildTrainingPlanTestCase();
+            //PerformWorkoutTestCase();
+        }
+
+
+        private static void PerformWorkoutTestCase()
+        {
+            using (GymContext context = new GymContext())
+            {
+                TestServiceLayer service = new TestServiceLayer(context);
+                service.StartWorkoutSession(1);
+            }
+        }
+
+
+        private static void BuildTrainingPlanTestCase()
+        {
+
             using (GymContext context = new GymContext())
             {
                 uint weekProgressiveNumber = 0;
@@ -65,33 +83,34 @@ namespace ConsoleTest
                 service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
                 service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
 
-                // SS - Work Unit 1
+                // Work Unit 1
                 excerciseId = 10;
                 wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
                 context.Update(wo);
                 context.SaveChanges();
 
                 wunitProgressiveNumber++;
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
 
-                // SS - Work Unit 2
+                // Work Unit 2
                 excerciseId = 2;
                 wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
                 context.Update(wo);
                 context.SaveChanges();
 
+                wunitProgressiveNumber++;
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+
+                // Work Unit 3 - Empty
                 wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
                 context.Update(wo);
                 context.SaveChanges();
-
-                wunitProgressiveNumber++;
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
 
                 // WO2
                 WorkoutTemplateRoot wo1 = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber, "WO2");
@@ -119,8 +138,6 @@ namespace ConsoleTest
                     , intensityTechniques: new List<uint?>() { 5 });
             }
         }
-
-
 
         private static void SeedData()
         {

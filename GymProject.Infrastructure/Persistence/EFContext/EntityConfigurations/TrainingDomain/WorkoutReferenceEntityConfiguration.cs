@@ -13,15 +13,17 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
         {
             builder.ToTable("WorkoutTemplate", GymContext.DefaultSchema);
 
-            builder.HasKey(w => w.Id);
+            //builder.HasKey(w => w.Id);
 
-            builder.Property(w => w.Id)
-                .ValueGeneratedOnAdd();
+            //builder.Property(w => w.Id)
+            //    .ValueGeneratedOnAdd();
 
-            // Build relation to the other POCO which builds the same table
-            builder.HasOne<WorkoutTemplateRoot>()
-                .WithOne()
-                .HasForeignKey<WorkoutTemplateRoot>(w => w.Id);
+            //// Build relation to the other POCO which builds the same table
+            //builder.HasOne<WorkoutTemplateRoot>()
+            //    .WithOne()
+            //    .HasForeignKey<WorkoutTemplateRoot>(w => w.Id);
+
+
 
             builder.Ignore(wo => wo.WorkingSets);
 

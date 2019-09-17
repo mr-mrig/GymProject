@@ -41,7 +41,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .WithMany()
                 .HasForeignKey(wu => wu.WorkUnitNoteId)
                 .IsRequired(false)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
             //builder.OwnsOne(ws => ws.LinkedWorkUnit,
 
@@ -66,7 +66,19 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             //             .OnDelete(DeleteBehavior.SetNull);
             //     });
 
+            //builder.HasOne<WorkUnitTemplateEntity>()
+            //    .WithMany()
+            //    .HasForeignKey(w => w.LinkedWorkUnitId)
+            //    .IsRequired(false)
+            //    .OnDelete(DeleteBehavior.SetNull);
 
+            //builder.Ignore(w => w.LinkingIntensityTechniqueId);     // Use the FK with renamed column, see later
+
+            builder.HasOne<IntensityTechniqueRoot>()
+                .WithMany()
+                .HasForeignKey(w => w.LinkingIntensityTechniqueId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(w => w.WorkingSets)
                 .WithOne()

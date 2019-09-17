@@ -28,7 +28,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Property(e => e.Abbreviation)
                 .HasColumnType("TEXT")
                 .IsRequired()
-                .HasMaxLength(ConstraintsConfiguration.AbbreviationDefaultMaxLength);
+                .HasMaxLength(DatabaseEnvironmentConfiguration.AbbreviationDefaultMaxLength);
 
             builder.Property(e => e.IsLinkingTechnique)
                 .HasColumnType("INTEGER")

@@ -32,7 +32,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
 
 
-        private IList<WorkingSetEntity> _workingSets = new List<WorkingSetEntity>();
+        private List<WorkingSetEntity> _workingSets = new List<WorkingSetEntity>();
 
         /// <summary>
         /// The Working Sets belonging to the WU, sorted by Progressive Numbers.

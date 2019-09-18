@@ -1,7 +1,4 @@
 ﻿using GymProject.Domain.Base;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
@@ -9,12 +6,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
     {
 
 
-        /// <summary>
-        /// Fetch the Aggregate with the specifed Id
-        /// </summary>
-        /// <param name="id">The ID to be fetched</param>
-        /// <returns>The Aggregate</returns>
-        TrainingPlanRoot WithId(uint? id);
+        TrainingPlanRoot Find(uint id);
 
     }
 }

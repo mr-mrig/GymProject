@@ -19,6 +19,9 @@ using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
 using GymProject.Domain.TrainingDomain.WorkingSetNote;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
+using System;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -26,6 +29,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext
     {
 
         public const string DefaultSchema = "GymApp";
+
+        private IDbContextTransaction _currentTransaction;
 
         //public static readonly LoggerFactory MyLoggerFactory
         //    = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
@@ -75,7 +80,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
 
         public virtual DbSet<TrainingWeekEntity> TrainingWeeks { get; set; }
-        public virtual DbSet<WorkoutTemplateReferenceEntity> TrainingWeekWorkoutReferences { get; set; }
         public virtual DbSet<TrainingWeekTypeEnum> TrainingWeekTypes { get; set; }
 
         public virtual DbSet<TrainingPlanPhaseRelation> TrainingPlanPhases { get; set; }
@@ -130,7 +134,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             modelBuilder.ApplyConfiguration(new TrainingWeekEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingWeekTypeEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new WorkoutReferenceEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new WorkoutReferenceEntityConfiguration());
 
             // Notes and minor Aggregates
             modelBuilder.ApplyConfiguration(new TrainingPlanFocusEntityConfiguration());
@@ -190,5 +194,62 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             //    }
             //}
         }
+
+
+        #region Transactions Management
+
+        public IDbContextTransaction BeginTransaction()
+        {
+            if (_currentTransaction != null) return null;
+
+            _currentTransaction = Database.BeginTransaction(IsolationLevel.ReadCommitted);
+
+            return _currentTransaction;
+        }
+
+        public void CommitTransaction(IDbContextTransaction transaction)
+        {
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
+            if (transaction != _currentTransaction)
+                throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+            try
+            {
+                SaveChanges();
+                transaction.Commit();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
+        }
+
+        public void RollbackTransaction()
+        {
+            try
+            {
+                _currentTransaction?.Rollback();
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
+        }
+        #endregion
     }
 }

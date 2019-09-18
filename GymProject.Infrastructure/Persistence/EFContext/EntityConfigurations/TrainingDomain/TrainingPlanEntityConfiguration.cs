@@ -22,10 +22,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .ValueGeneratedOnAdd();
 
             builder.Ignore(plan => plan.DomainEvents);
-            builder.Ignore(plan => plan.TrainingVolume);
-            builder.Ignore(plan => plan.TrainingIntensity);
-            builder.Ignore(plan => plan.TrainingDensity);
             builder.Ignore(plan => plan.IsTemplate);
+            builder.Ignore(plan => plan.WorkoutIds);
 
             builder.Property(plan => plan.IsBookmarked)
                 .HasColumnType("INTEGER")

@@ -23,7 +23,7 @@ namespace GymProject.Domain.Test.Util
             int workingSetsMin = 10, workingSetsMax = 30;
 
             // Workouts
-            List<WorkoutTemplateReferenceEntity> workouts = new List<WorkoutTemplateReferenceEntity>();
+            List<uint?> workoutsIds = new List<uint?>();
 
             // Week Type
             if (weekType == null)
@@ -64,21 +64,20 @@ namespace GymProject.Domain.Test.Util
                 //if (workoutSets.ContainsDuplicates())
                 //    System.Diagnostics.Debugger.Break();
 
-                workouts.Add(
-                    WorkoutTemplateReferenceEntity.BuildLinkToWorkout((uint)iwo, workoutSets));
+                workoutsIds.Add((uint?)RandomFieldGenerator.RandomIntValueExcluded(1, 1234123, workoutsIds.Select(x => (int)x.Value)));
             }
 
             // Create the Week
             if (isTransient)
-                return TrainingWeekEntity.PlanTransientTrainingWeek((uint)progn, workouts, weekType);
+                return TrainingWeekEntity.PlanTransientTrainingWeek((uint)progn, workoutsIds, weekType);
 
             else
 
-                return TrainingWeekEntity.PlanTrainingWeek((uint?)(id), (uint)progn, workouts, weekType);
+                return TrainingWeekEntity.PlanTrainingWeek((uint?)(id), (uint)progn, workoutsIds, weekType);
         }
 
 
-        internal static WorkoutTemplateRoot BuildRandomWorkoutTemplate(long id, bool isTransient,
+        internal static WorkoutTemplateRoot BuildRandomWorkoutTemplate(long id, uint progressiveNumber, bool isTransient,
             int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
@@ -112,6 +111,7 @@ namespace GymProject.Domain.Test.Util
             if (isTransient)
 
                 return WorkoutTemplateRoot.PlanTransientWorkout(
+                    progressiveNumber: progressiveNumber,
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, true, 0.05f),
                     weekday: specificDay
@@ -119,6 +119,7 @@ namespace GymProject.Domain.Test.Util
             else
                 return WorkoutTemplateRoot.PlanWorkout(
                     id: (uint?)(id),
+                    progressiveNumber: progressiveNumber,
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, true, 0.05f),
                     weekday: specificDay

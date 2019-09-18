@@ -27,6 +27,8 @@ namespace GymProject.Domain.Test.UnitTest
             ntests = 100;
 
             uint? id = 1;
+            uint validPnum = 1;
+
             IList<WorkUnitTemplateEntity> wusFirstNull = new List<WorkUnitTemplateEntity>();
             IList<WorkUnitTemplateEntity> wusLastNull = new List<WorkUnitTemplateEntity>();
             IList<WorkUnitTemplateEntity> wusMiddleNull = new List<WorkUnitTemplateEntity>();
@@ -49,9 +51,9 @@ namespace GymProject.Domain.Test.UnitTest
 
                 wusLastNull.Add(null);
 
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusFirstNull, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusMiddleNull, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusLastNull, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validPnum, wusFirstNull, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validPnum, wusMiddleNull, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validPnum, wusLastNull, string.Empty));
 
                 IList<WorkUnitTemplateEntity> wusPnumStarts1 = new List<WorkUnitTemplateEntity>();
                 IList<WorkUnitTemplateEntity> wusPnumGap = new List<WorkUnitTemplateEntity>();
@@ -66,8 +68,8 @@ namespace GymProject.Domain.Test.UnitTest
                         wusPnumGap.Add(WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(i + 1, i + 1, isTransient));
                 }
 
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusPnumStarts1, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, wusPnumGap, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validPnum, wusPnumStarts1, string.Empty));
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validPnum, wusPnumGap, string.Empty));
             }
         }
 
@@ -89,6 +91,7 @@ namespace GymProject.Domain.Test.UnitTest
             WorkoutTemplateRoot workout;
             WorkUnitTemplateEntity wu;
             uint? woId = 1;
+            uint progressiveNumber = 0;
 
             for (int itest = 0; itest < ntests; itest++)
             {
@@ -120,9 +123,9 @@ namespace GymProject.Domain.Test.UnitTest
 
                 // WO with initial WUs
                 if (isTransient)
-                    workout = WorkoutTemplateRoot.PlanTransientWorkout(initialWus, woName, specificDay);  // Transient
+                    workout = WorkoutTemplateRoot.PlanTransientWorkout(progressiveNumber, initialWus, woName, specificDay);  // Transient
                 else
-                    workout = WorkoutTemplateRoot.PlanWorkout(woId, initialWus, woName, specificDay);     // Persistent
+                    workout = WorkoutTemplateRoot.PlanWorkout(woId, progressiveNumber, initialWus, woName, specificDay);     // Persistent
 
                 // No WUs loaded from the DB -> start the sequence
                 if (initialWuNum == 0)
@@ -158,11 +161,11 @@ namespace GymProject.Domain.Test.UnitTest
                 WeekdayEnum newDay = WeekdayEnum.From(RandomFieldGenerator.RandomInt(0, WeekdayEnum.AllTheWeek));
 
                 workout.GiveName(newName);
-                //workout.MoveToNewProgressiveNumber(newPnum);
+                workout.MoveToNewProgressiveNumber(newPnum);
                 workout.ScheduleToSpecificDay(newDay);
 
                 Assert.Equal(newName, workout.Name);
-                //Assert.Equal(newPnum, workout.ProgressiveNumber);
+                Assert.Equal(newPnum, workout.ProgressiveNumber);
                 Assert.Equal(newDay, workout.SpecificWeekday);
 
                 workout.UnscheduleSpecificDay();
@@ -327,7 +330,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             TrainingEffortValue avgEffort = null;
             float intensityPercentageTolerance = 0.025f;
-            float rpeAndRmTolerance = 0.0625f;      // Smaller numbers -> Higher tolerance. IE: 5RPE Vs 5.5RPE must be considered equivalent
+            float rpeAndRmTolerance = 0.07f;      // Smaller numbers -> Higher tolerance. IE: 5RPE Vs 5.5RPE must be considered equivalent
 
             // Get the expected training parameters
             int totalReps = srcWorkingSets.Sum(x => x.ToRepetitions());

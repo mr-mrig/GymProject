@@ -95,7 +95,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="startTime">The Session start time</param>
         /// <param name="workoutTemplateId">The ID of the Workout Template which the Session refers to - optional to allow on-the-fly Sessions</param>
         /// <returns>The WorkoutSessionRoot instance</returns>
-        public static WorkoutSessionRoot BeginWorkout(DateTime? startTime, uint? workoutTemplateId = null)
+        public static WorkoutSessionRoot BeginWorkout(uint? workoutTemplateId = null, DateTime ? startTime = null)
 
             => TrackWorkout(null, startTime, null, null, workoutTemplateId, null);
 
@@ -191,6 +191,16 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         public WorkUnitEntity CloneWorkUnit(uint workingSetPnum)
 
             => FindWorkUnitOrDefault(workingSetPnum)?.Clone() as WorkUnitEntity;
+
+
+        /// <summary>
+        /// Get a copy of the last work unit - DEFAULT if not found
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If more elements with the specified Progressive Number are found</exception>
+        /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
+        public WorkUnitEntity CloneLastWorkUnit()
+
+            => CloneWorkUnit((uint)(_workUnits.Count - 1));     // If negative -> overflow -> default
 
 
         /// <summary>
@@ -396,10 +406,9 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <param name="noteId">The ID of the Note to be attached</param>
         public void WriteWorkingSetNote(uint parentWorkUnitPnum, uint workingSetPnum, uint? noteId)
         {
-            WorkUnitEntity parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
-            WorkingSetEntity toChange = parentWorkUnit.CloneWorkingSet(workingSetPnum);
+            WorkingSetEntity workingSet = FindWorkingSetOrDefault(parentWorkUnitPnum, workingSetPnum);
 
-            toChange.WriteNote(noteId);
+            workingSet.WriteNote(noteId);
         }
 
 
@@ -408,7 +417,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// </summary>
         /// <param name="parentWorkUnitPnum">The WU Progressive Number</param>
         /// <param name="workingSetPnum">The Progressive Number of the Working Set</param>
-        public void WriteWorkingSetNote(uint parentWorkUnitPnum, uint workingSetPnum)
+        public void ClearWorkingSetNote(uint parentWorkUnitPnum, uint workingSetPnum)
         {
             WorkUnitEntity parentWorkUnit = FindWorkUnit(parentWorkUnitPnum);
             WorkingSetEntity toChange = parentWorkUnit.CloneWorkingSet(workingSetPnum);

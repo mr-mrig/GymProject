@@ -2,7 +2,6 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
-using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -16,8 +15,15 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
 
+
         /// <summary>
-        /// The Workout name - Unique among the WOs of the Training Week
+        /// The Workout progressive number
+        /// </summary>
+        public uint ProgressiveNumber { get; private set; }
+
+
+        /// <summary>
+        /// The Workout name
         /// </summary>
         public string Name { get; private set; } = string.Empty;
 
@@ -46,6 +52,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
+        /// <summary>
+        /// FK to the Training Plan Aggregate
+        /// </summary>
+        public uint? TrainingWeekId { get; private set; } = null;
+
+
         private List<WorkUnitTemplateEntity> _workUnits = new List<WorkUnitTemplateEntity>();
 
         /// <summary>
@@ -70,10 +82,13 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         }
 
-        private WorkoutTemplateRoot(uint? id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday) : base(id)
+        private WorkoutTemplateRoot(uint? id, uint? trainingWeekId, uint progressiveNumber, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday) 
+            : base(id)
         {
             Name = workoutName ?? string.Empty;
             SpecificWeekday = weekday ?? WeekdayEnum.Generic;
+            ProgressiveNumber = progressiveNumber;
+            TrainingWeekId = trainingWeekId;
 
             _workUnits = workUnits?.Clone().ToList() ?? new List<WorkUnitTemplateEntity>();
 
@@ -90,43 +105,78 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         #region Factories
 
         /// <summary>
+        /// Factory method - Create an empty Workout planned on the specified week
+        /// </summary>
+        /// <param name="progressiveNumber">The Progressive Number</param>
+        /// <param name="trainingWeekId">The ID of the Training Week which the Workout is planned to</param>
+        /// <returns>The WorkoutTemplateRoot instance</returns>
+        public static WorkoutTemplateRoot PlannedDraft(uint? trainingWeekId, uint progressiveNumber)
+
+            //=> new WorkoutTemplateRoot();
+            => PlanWorkout(null, trainingWeekId, progressiveNumber, null, null, null);
+
+
+        /// <summary>
         /// Factory method - Create an empty Workout
         /// </summary>
+        /// <param name="progressiveNumber">The Progressive Number</param>
         /// <returns>The WorkoutTemplateRoot instance</returns>
-        public static WorkoutTemplateRoot NewDraft()
+        public static WorkoutTemplateRoot UnplannedDraft(uint progressiveNumber)
 
-            => new WorkoutTemplateRoot();
+            //=> new WorkoutTemplateRoot();
+            => PlanWorkout(null, null, progressiveNumber, null, null, null);
 
 
         /// <summary>
         /// Factory method - Create a transient Workout
         /// </summary>
+        /// <param name="progressiveNumber">The Progressive Number</param>
         /// <param name="weekday">The week day the Workout is scheduled to - if any</param>
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkoutTemplateRoot instance</returns>
-        public static WorkoutTemplateRoot PlanTransientWorkout(IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplateRoot PlanTransientWorkout(uint progressiveNumber, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
 
-            => PlanWorkout(null, workUnits, workoutName, weekday);
+            => PlanWorkout(null, null, progressiveNumber, workUnits, workoutName, weekday);
 
 
         /// <summary>
         /// Factory method - Load a persisted Workout
         /// </summary>
         /// <param name="id">The ID of the WU</param>
+        /// <param name="progressiveNumber">The Progressive Number</param>
         /// <param name="weekday">The week day the Workout is scheduled to - if any</param>
         /// <param name="workoutName">The name given to the Workout - unique inside the Training Week</param>
         /// <param name="workUnits">The work unit list - cannot be empty or null</param>
         /// <returns>The WorkoutTemplateRoot instance</returns>
-        public static WorkoutTemplateRoot PlanWorkout(uint? id, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
+        public static WorkoutTemplateRoot PlanWorkout(uint? id, uint? trainingWeekId, uint progressiveNumber, IEnumerable<WorkUnitTemplateEntity> workUnits, string workoutName, WeekdayEnum weekday = null)
 
-            => new WorkoutTemplateRoot(id, workUnits, workoutName, weekday);
+            => new WorkoutTemplateRoot(id, trainingWeekId, progressiveNumber, workUnits, workoutName, weekday);
 
         #endregion
 
 
 
         #region Public Methods
+
+        /// <summary>
+        /// Plan the Workout to the specified Training Week
+        /// </summary>
+        /// <param name="trainingWeekId">The ID of the Training Week</param>
+        public void PlanToWeek(uint trainingWeekId)
+
+            => TrainingWeekId = trainingWeekId;
+
+
+        /// <summary>
+        /// Change the Progressive Number
+        /// </summary>
+        /// <param name="progressiveNumber">The new name</param>
+        public void MoveToNewProgressiveNumber(uint progressiveNumber)
+        {
+            ProgressiveNumber = progressiveNumber;
+        }
+
 
         /// <summary>
         /// Change the name of the WO
@@ -960,7 +1010,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         public object Clone()
 
-            => PlanWorkout(Id, _workUnits, Name, SpecificWeekday);
+            => PlanWorkout(Id, TrainingWeekId, ProgressiveNumber, _workUnits, Name, SpecificWeekday);
 
         #endregion
     }

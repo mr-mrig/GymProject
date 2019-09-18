@@ -42,22 +42,22 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public bool IsBookmarked { get; private set; } = false;
 
 
-        /// <summary>
-        /// The training volume parameters, as the sum of the params of the single Training Weeks
-        /// </summary>
-        public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
+        ///// <summary>
+        ///// The training volume parameters, as the sum of the params of the single Training Weeks
+        ///// </summary>
+        //public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
 
 
-        /// <summary>
-        /// The training effort, as the average of the single Training Weeks efforts
-        /// </summary>
-        public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
+        ///// <summary>
+        ///// The training effort, as the average of the single Training Weeks efforts
+        ///// </summary>
+        //public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
 
 
-        /// <summary>
-        /// The training density parameters, as the sum of the params of the single Training Weeks
-        /// </summary>
-        public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
+        ///// <summary>
+        ///// The training density parameters, as the sum of the params of the single Training Weeks
+        ///// </summary>
+        //public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
 
 
         /// <summary>
@@ -173,6 +173,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 ?? new List<uint?>().AsReadOnly();
         }
 
+        /// <summary>
+        /// FK to the Workouts scheduled during the whole Training Plan
+        /// </summary>
+        public IReadOnlyCollection<uint?> WorkoutIds
+        {
+            get => _trainingWeeks?.SelectMany(x => x.WorkoutIds)?.ToList().AsReadOnly()
+                ?? new List<uint?>().AsReadOnly();
+        }
 
 
 
@@ -234,11 +242,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 _trainingPlanPhases.Add(TrainingPlanPhaseRelation.BuildLink(this, phase));
 
             TestBusinessRules();
-
-            // Training Parameters
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
 
         #endregion
@@ -525,77 +528,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TestBusinessRules();
         }
 
-
-        /// <summary>
-        /// Get the main effort type as the effort of most of the WSs of the WU 
-        /// </summary>
-        /// <returns>The training effort type</returns>
-        public TrainingEffortTypeEnum GetMainEffortType()
-
-                        //=> _trainingWeeks.Sum(x => x?.CloneAllWorkingSets().Count()) == 0
-
-                        //    ? TrainingEffortTypeEnum.IntensityPercentage
-                        //    : CloneAllWorkingSets().GroupBy(x => x.Effort.EffortType).Select(x
-                        //         => new
-                        //         {
-                        //             Counter = x.Count(),
-                        //             EffortType = x.Key
-                        //         }).OrderByDescending(x => x.Counter).First().EffortType;
-
-            => CloneAllWorkingSets().GroupBy(x => x.ToEffort().EffortType).Select(x
-                => new
-                {
-                    Counter = x.Count(),
-                    EffortType = x.Key
-                })
-                .OrderByDescending(x => x.Counter)
-                .FirstOrDefault()?.EffortType
-            ?? TrainingEffortTypeEnum.IntensityPercentage;
-
-
-        /// <summary>
-        /// Get the Workout given the cohordinates
-        /// </summary>
-        /// <param name="weekPnum">The Progressive Number of the Training Week</param>
-        /// <param name="workoutPnum">The Progressive Number of the Workout</param>
-        /// <returns>The list of the Working Sets</returns>
-        public WorkoutTemplateReferenceEntity CloneWorkout(uint weekPnum, uint workoutPnum)
-
-            => FindTrainingWeekByProgressiveNumber((int)weekPnum).CloneWorkout(workoutPnum);
-
-
-        /// <summary>
-        /// Get the Workout that was added last
-        /// </summary>
-        /// <param name="weekPnum">The Progressive Number of the Training Week</param>
-        /// <param name="workoutPnum">The Progressive Number of the Workout</param>
-        /// <returns>The list of the Working Sets</returns>
-        public WorkoutTemplateReferenceEntity CloneLastWorkout(uint weekPnum)
-        {
-            TrainingWeekEntity parent = FindTrainingWeekByProgressiveNumber((int) weekPnum);
-            int workoutProgressiveNumber = parent.Workouts.Count - 1;
-
-            return parent.CloneWorkout((uint)workoutProgressiveNumber);
-        }
-
-
-        /// <summary>
-        /// Get the Workouts belonging to the Plan
-        /// </summary>
-        /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkoutTemplateReferenceEntity> CloneAllWorkouts()
-
-             => _trainingWeeks.SelectMany(x => x.Workouts);
-
-
-        /// <summary>
-        /// Get the WSs of all the Workouts belonging to the Plan
-        /// </summary>
-        /// <returns>The list of the Working Sets</returns>
-        public IEnumerable<WorkingSetTemplateEntity> CloneAllWorkingSets()
-
-             => _trainingWeeks.SelectMany(x => x.CloneAllWorkingSets());
-
         #endregion
 
 
@@ -811,12 +743,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             else
             {
                 _trainingWeeks.Add(trainingWeek.Clone() as TrainingWeekEntity);
-
                 TestBusinessRules();
-
-                TrainingVolume = TrainingVolume.AddWorkingSets(trainingWeek.CloneAllWorkingSets());
-                TrainingDensity = TrainingDensity.AddWorkingSets(trainingWeek.CloneAllWorkingSets());
-                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
             }
         }
 
@@ -824,27 +751,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Add the Training Week to the Plan. This is not meant to work with Full Rest Weeks.
         /// </summary>
-        /// <param name="workoutsReferences">The list of the WOs which the Training Plan is made up of</param>
+        /// <param name="workoutsIds">The IDs of the Workouts planned for the specified Training Week</param>
         /// <param name="weekType">The type of the Training Week</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
         /// <exception cref="ArgumentException">If the week type is a Full Rest one</exception>
-        public void PlanTransientTrainingWeek(TrainingWeekTypeEnum weekType, IList<WorkoutTemplateReferenceEntity> workoutsReferences)
+        public void PlanTransientTrainingWeek(TrainingWeekTypeEnum weekType, IEnumerable<uint?> workoutsIds)
         {
             if (weekType == TrainingWeekTypeEnum.FullRest)
                 throw new ArgumentException("Cannot add Full Rest Weeks with this function.", nameof(weekType));
 
             TrainingWeekEntity toAdd = TrainingWeekEntity.PlanTransientTrainingWeek(
                 BuildTrainingWeekProgressiveNumber(),
-                workoutsReferences,
+                workoutsIds,
                 weekType);
 
             _trainingWeeks.Add(toAdd);
 
             TestBusinessRules();
-
-            TrainingVolume = TrainingVolume.AddWorkingSets(toAdd.CloneAllWorkingSets());
-            TrainingDensity = TrainingDensity.AddWorkingSets(toAdd.CloneAllWorkingSets());
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
 
 
@@ -855,7 +778,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public void PlanTransientFullRestWeek()
         {
             _trainingWeeks.Add(TrainingWeekEntity.PlanTransientFullRestWeek(BuildTrainingWeekProgressiveNumber()));
-
             TestBusinessRules();
         }
 
@@ -875,16 +797,8 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             if (!restWeek.IsFullRestWeek())
                 throw new ArgumentException("Trying to add a Full Rest Week from a non-rest one.", nameof(restWeek));
 
-            //_trainingWeeks.Add(
-            //    TrainingWeekTemplate.PlanFullRestWeek(
-            //        restWeek,
-            //        BuildTrainingWeekProgressiveNumber()));
-
             _trainingWeeks.Add(restWeek.Clone() as TrainingWeekEntity);
-
             TestBusinessRules();
-
-            // Training Parameters don't change
         }
 
 
@@ -905,10 +819,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 //ForceConsecutiveTrainingWeeksProgressiveNumbers(weekPnum);
                 ForceConsecutiveTrainingWeeksProgressiveNumbers();
                 TestBusinessRules();
-
-                TrainingVolume = TrainingVolume.RemoveWorkingSets(toBeRemoved.CloneAllWorkingSets());
-                TrainingDensity = TrainingDensity.RemoveWorkingSets(toBeRemoved.CloneAllWorkingSets());
-                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
             }
         }
 
@@ -934,14 +844,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
         /// <summary>
-        /// Make the week a full rest one. 
-        /// This function also clears all the workouts scheduled, in order to meet the business rule.
+        /// Assign the specific Week Type
         /// </summary>
         /// <param name="weekType">The training week type</param>
         /// <param name="weekPnum">The Progressive Number of the week to be moved</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void AssignSpecificWeekType(uint weekPnum, TrainingWeekTypeEnum weekType)
+        public void MarkTrainingWeekAs(uint weekPnum, TrainingWeekTypeEnum weekType)
         {
             FindTrainingWeekByProgressiveNumber((int)weekPnum).AssignSpecificWeekType(weekType);
             TestBusinessRules();
@@ -961,6 +870,16 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TestBusinessRules();
         }
 
+
+        /// <summary>
+        /// Get a copy of the Training Week with the specified progressive number
+        /// </summary>
+        /// <param name="weekProgressiveNumber">The Progressive Number of the Week</param>
+        /// <exception cref="InvalidOperationException">If no workouts or more than one found</exception>
+        public TrainingWeekEntity CloneTrainingWeek(uint weekProgressiveNumber)
+
+            => _trainingWeeks.Single(x => x.ProgressiveNumber == weekProgressiveNumber).Clone() as TrainingWeekEntity;
+
         #endregion
 
 
@@ -970,106 +889,47 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Add the Workout to the specified Training Week
         /// </summary>
-        /// <param name="workingSets">The list of the WSs which the WO is made up of</param>
+        /// <param name="workoutId">The ID of the Workout to be planned</param>
         /// <param name="weekPnum">The Progressive Number of the Week to which to add the WO to</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void PlanWorkout(uint weekPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
-        {
-            FindTrainingWeekByProgressiveNumber((int)weekPnum).PlanWorkout(workingSets);
+        public void PlanWorkout(uint weekPnum, uint workoutId)
 
-            TestBusinessRules();
-
-            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
-            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-        }
-
-
-        /// <summary>
-        /// Add the Workout to the specified Training Week
-        /// </summary>
-        /// <param name="workout">The Workout to be added</param>
-        /// <param name="weekPnum">The Progressive Number of the Week to which to add the WO to</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void PlanWorkout(uint weekPnum, WorkoutTemplateRoot workout)
-        {
-            FindTrainingWeekByProgressiveNumber((int)weekPnum).PlanWorkout(workout);
-
-            TestBusinessRules();
-
-            TrainingVolume = TrainingVolume.AddWorkingSets(workout.CloneAllWorkingSets());
-            TrainingDensity = TrainingDensity.AddWorkingSets(workout.CloneAllWorkingSets());
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-        }
+            => FindTrainingWeekByProgressiveNumber((int)weekPnum).PlanWorkout(workoutId);
 
 
         /// <summary>
         /// Remove the Workout from the specified Training Week
         /// </summary>
-        /// <param name="workoutPnum">The Progressive Number of the WO to be removed</param>
+        /// <param name="workoutId">The ID of the WO to be removed</param>
         /// <param name="weekPnum">The Progressive Number of the Week to which to remove the WO from</param>
         /// <exception cref="InvalidOperationException">If no workouts or more than one found</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void UnplanWorkout(uint weekPnum, uint workoutPnum)
+        public void UnplanWorkout(uint weekPnum, uint workoutId)
         {
-            TrainingWeekEntity week = FindTrainingWeekByProgressiveNumber((int)weekPnum);
-            IEnumerable<WorkingSetTemplateEntity> removedWorkingSets = week.CloneWorkoutWorkingSets(workoutPnum);
-
-            week.UnplanWorkout(workoutPnum);
-
+            FindTrainingWeekByProgressiveNumber((int)weekPnum).UnplanWorkout(workoutId);
             TestBusinessRules();
-
-            TrainingVolume = TrainingVolume.RemoveWorkingSets(removedWorkingSets);
-            TrainingDensity = TrainingDensity.RemoveWorkingSets(removedWorkingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
         }
 
 
         /// <summary>
-        /// Modify the Workout by adding the selected Working Sets
+        /// Get the ID of the Workouts of the whole Training Plan
         /// </summary>
-        /// <param name="workingSets">The list of the WSs to add to the WO</param>
-        /// <param name="workoutPnum">The Progressive Number of the Workout to be modified</param>
-        /// <param name="trainingWeekPnum">The Progressive Number of the Training Week whicch to add the WS to</param>
-        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
-        public void AddWorkingSets(uint trainingWeekPnum, uint workoutPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
-        {
-            FindTrainingWeekByProgressiveNumber((int)trainingWeekPnum).AddWorkingSets(workoutPnum, workingSets);
+        /// <param name="weekProgressiveNumber">The Progressive Number of the Week</param>
+        /// <exception cref="InvalidOperationException">If no workouts or more than one found</exception>
+        public IEnumerable<uint?> CloneWorkouts(uint weekProgressiveNumber)
 
-            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
-            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-        }
+            => _trainingWeeks.Single(x => x.ProgressiveNumber == weekProgressiveNumber).WorkoutIds;
 
-
-        /// <summary>
-        /// Modify the Workout by removing the selected Working Sets
-        /// </summary>
-        /// <param name="workingSets">The list of the WSs to remove from the WO</param>
-        /// <param name="workoutPnum">The Progressive Number of the Workout to be modified</param>
-        /// <param name="trainingWeekPnum">The Progressive Number of the Training Week whicch to remove the WS from</param>
-        /// <exception cref="ArgumentOutOfRangeException">If Workout not found</exception>
-        /// <exception cref="InvalidOperationException">If trying to remove transient Working Sets</exception>
-        public void RemoveWorkingSets(uint trainingWeekPnum, uint workoutPnum, IEnumerable<WorkingSetTemplateEntity> workingSets)
-        {
-            FindTrainingWeekByProgressiveNumber((int)trainingWeekPnum).RemoveWorkingSets(workoutPnum, workingSets);
-
-            TrainingVolume = TrainingVolume.AddWorkingSets(workingSets);
-            TrainingDensity = TrainingDensity.AddWorkingSets(workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
-        }
-
-
-        /// <summary>
-        /// Assign a new progressive number to the WO of the Training Week
-        /// </summary>
-        /// <param name="destPnum">The new Progressive Number - PNums must be consecutive</param>
-        /// <param name="srcPnum">The Progressive Number of the WO to be moved</param>
-        public void MoveWorkoutToNewProgressiveNumber(uint weekPnum, uint srcPnum, uint destPnum)
-        {
-            TrainingWeekEntity week = FindTrainingWeekByProgressiveNumber((int)weekPnum);
-            week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
-        }
+        ///// <summary>
+        ///// Assign a new progressive number to the WO of the Training Week
+        ///// </summary>
+        ///// <param name="destPnum">The new Progressive Number - PNums must be consecutive</param>
+        ///// <param name="srcPnum">The Progressive Number of the WO to be moved</param>
+        //public void MoveWorkoutToNewProgressiveNumber(uint weekPnum, uint srcPnum, uint destPnum)
+        //{
+        //    TrainingWeekEntity week = FindTrainingWeekByProgressiveNumber((int)weekPnum);
+        //    week.MoveWorkoutToNewProgressiveNumber(srcPnum, destPnum);
+        //}
 
 
         /// <summary>
@@ -1078,7 +938,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The average number of weekly workouts</returns>
         public float GetAverageWorkoutsPerWeek()
 
-            => (float)_trainingWeeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Average(x => x?.Workouts.Count ?? 0);
+            => (float)_trainingWeeks.Where(x => x?.WorkoutIds != null).DefaultIfEmpty()?.Average(x => x?.WorkoutIds.Count ?? 0);
 
 
         /// <summary>
@@ -1087,7 +947,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The minimum number of weekly workouts</returns>
         public int GetMinimumWorkoutsPerWeek()
 
-            => (int)_trainingWeeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Min(x => x?.Workouts.Count ?? 0);
+            => (int)_trainingWeeks.Where(x => x?.WorkoutIds != null).DefaultIfEmpty()?.Min(x => x?.WorkoutIds.Count ?? 0);
 
 
         /// <summary>
@@ -1096,7 +956,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <returns>The maximum number of weekly workouts</returns>
         public int GetMaximumWorkoutsPerWeek()
 
-            => (int)_trainingWeeks.Where(x => x?.Workouts != null).DefaultIfEmpty()?.Max(x => x?.Workouts.Count ?? 0);
+            => (int)_trainingWeeks.Where(x => x?.WorkoutIds != null).DefaultIfEmpty()?.Max(x => x?.WorkoutIds.Count ?? 0);
 
 
         #endregion

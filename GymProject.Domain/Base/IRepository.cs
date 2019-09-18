@@ -7,6 +7,7 @@ namespace GymProject.Domain.Base
 
 
 
+
         /// <summary>
         /// Adds an aggregate
         /// </summary>

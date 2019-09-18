@@ -2,6 +2,8 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.WorkingSetNote;
+using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using Microsoft.EntityFrameworkCore;
@@ -78,70 +80,131 @@ namespace ConsoleTest
         }
 
 
-        public WorkoutTemplateRoot PlanWorkout(uint trainingPlanId, uint trainingWeekProgressiveNumber, string workoutName, WeekdayEnum weeklyOccurance = null)
+        public WorkoutTemplateRoot PlanWorkout(uint trainingPlanId, uint trainingWeekProgressiveNumber)
         {
-            //WorkoutTemplateReferenceEntity workoutAdded = AddWorkoutToPlan(trainingPlanId, trainingWeekProgressiveNumber);
+            TrainingPlanRoot plan = TrainingPlanRepositoryFind(trainingPlanId);
+            TrainingWeekEntity week = plan.CloneTrainingWeek(trainingWeekProgressiveNumber);
 
-            //return CreateWorkout(workoutAdded.Id.Value, workoutName, weeklyOccurance);
+            int nextProgressiveNumber = week.WorkoutIds.Count;
 
             // Build the Workout
-            WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlanTransientWorkout(new List<WorkUnitTemplateEntity>(), workoutName, weeklyOccurance);
-            WorkoutTemplateRepositoryUpdate(workout);
-            UnitOfWorkSave();
+            WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlannedDraft(week.Id.Value, (uint)nextProgressiveNumber);
+            //workout.PlanToWeek(week.Id.Value);
 
-            // Build link to plan
-            TrainingPlanRoot plan = TrainingPlanRepositoryFind(trainingPlanId);
+            using (var transaction = _context.BeginTransaction())
+            {
+                try
+                {
+                    // Workout Template Aggregate
+                    WorkoutTemplateRepositoryUpdate(workout);
+                    UnitOfWorkSave();
 
-            plan.PlanWorkout(trainingWeekProgressiveNumber, new List<WorkingSetTemplateEntity>());
-            plan = TrainingPlanRepositoryUpdate(plan);
-            WorkoutTemplateRepositoryUpdate(workout);
-            UnitOfWorkSave();
+                    //throw new ArgumentException();
 
-            return workout;
-        }
+                    // Training Plan Aggregate
+                    plan.PlanWorkout(trainingWeekProgressiveNumber, workout.Id.Value);
+                    plan = TrainingPlanRepositoryUpdate(plan);
+                    UnitOfWorkSave();
 
-        /// <summary>
-        /// Add an empty Workout to the Plan
-        /// </summary>
-        /// <param name="trainingPlanId"></param>
-        /// <param name=""></param>
-        public WorkoutTemplateReferenceEntity AddWorkoutToPlan(uint trainingPlanId, uint trainingWeekProgressiveNumber)
-        {
-            // Link the Workout to the Plan it belongs
-            TrainingPlanRoot plan = TrainingPlanRepositoryFind(trainingPlanId);
-
-            plan.PlanWorkout(trainingWeekProgressiveNumber, new List<WorkingSetTemplateEntity>());
-            plan = TrainingPlanRepositoryUpdate(plan);
-
-            UnitOfWorkSave();
-
-            return plan.CloneLastWorkout(trainingWeekProgressiveNumber);
-        }
-
-
-        public WorkoutTemplateRoot CreateWorkout(uint workoutId, string workoutName, WeekdayEnum weeklyOccurance = null)
-        {
-            // Build the Workout
-            WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlanWorkout(workoutId, new List<WorkUnitTemplateEntity>(), workoutName, weeklyOccurance);
-            WorkoutTemplateRepositoryUpdate(workout);
-
-            UnitOfWorkSave();
+                    _context.CommitTransaction(transaction);
+                }
+                catch
+                {
+                    _context.RollbackTransaction();
+                }
+            }
 
             return workout;
         }
 
 
-        public void StartWorkoutSession(uint workoutTemplateId)
+        public void ModifyWorkoutAttributes(uint workoutId, string workoutName, WeekdayEnum weeklyOccurance = null)
         {
-            WorkoutTemplateRoot workout = WorkoutTemplateRepositoryFind(workoutTemplateId);
+            WorkoutTemplateRoot workout = WorkoutTemplateRepositoryFind(workoutId);
+            workout.GiveName(workoutName);
+            workout.ScheduleToSpecificDay(weeklyOccurance);
 
-            if (workout == null)
-                Debugger.Break();
-            else
-                Console.WriteLine("OK");
+            WorkoutTemplateRepositoryUpdate(workout);
+            UnitOfWorkSave();
         }
 
 
+        public WorkoutSessionRoot StartWorkoutSession(uint workoutTemplateId)
+        {
+            WorkoutSessionRoot session = WorkoutSessionRoot.BeginWorkout(workoutTemplateId);
+
+            WorkoutSessionRepositoryUpdate(session);
+            UnitOfWorkSave();
+
+            return session;
+        }
+
+        public void StartOnTheFlyWorkout()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public WorkUnitEntity StartExcercise(uint workoutId, uint excerciseId)
+        {
+            WorkoutSessionRoot session = WorkoutSessionRepositoryFind(workoutId);
+            session.StartTrackingExcercise(excerciseId);
+
+            WorkoutSessionRepositoryUpdate(session);
+            UnitOfWorkSave();
+
+            return session.CloneLastWorkUnit();
+        }
+
+
+        public void TrackWorkingSet(uint workoutId, uint excerciseProgressiveNumber, WSRepetitionsValue repetitionsPerformed, WeightPlatesValue weightLifted = null)
+        {
+            WorkoutSessionRoot session = WorkoutSessionRepositoryFind(workoutId);
+            session.TrackWorkingSet(excerciseProgressiveNumber, repetitionsPerformed, weightLifted);
+
+            WorkoutSessionRepositoryUpdate(session);
+            UnitOfWorkSave();
+        }
+
+
+        public void AttachWorkingSetNote(uint workoutId, uint excerciseProgressiveNumber, uint workingSetProgressiveNumber, uint? workingSetNoteId)
+        {
+            WorkoutSessionRoot session = WorkoutSessionRepositoryFind(workoutId);
+            session.WriteWorkingSetNote(excerciseProgressiveNumber, workingSetProgressiveNumber, workingSetNoteId);
+
+            WorkoutSessionRepositoryUpdate(session);
+            UnitOfWorkSave();
+        }
+
+        public void RateExcercisePerformance(uint workoutId, uint excerciseProgressiveNumber, float rating)
+        {
+            WorkoutSessionRoot session = WorkoutSessionRepositoryFind(workoutId);
+            session.RatePerformance(excerciseProgressiveNumber, RatingValue.Rate(rating));
+
+            WorkoutSessionRepositoryUpdate(session);
+            UnitOfWorkSave();
+        }
+
+
+        public void FinishWorkoutSession(uint workoutId, DateTime? when = null)
+        {
+            WorkoutSessionRoot session = WorkoutSessionRepositoryFind(workoutId);
+            session.FinishWorkout(when ?? DateTime.UtcNow);
+
+            WorkoutSessionRepositoryUpdate(session);
+            UnitOfWorkSave();
+        }
+
+
+        public uint WriteWorkingSetNote(string body)
+        {
+            WorkingSetNoteRoot note = WorkingSetNoteRoot.WriteTransient(PersonalNoteValue.Write(body));
+            _context.Add<WorkingSetNoteRoot>(note);
+
+            UnitOfWorkSave();
+
+            return note.Id.Value;
+        }
 
 
         /// <summary>
@@ -154,7 +217,7 @@ namespace ConsoleTest
             WorkoutTemplateRoot workout = null;
 
 
-            return _context.WorkoutTemplates.Find(workoutId);
+            //return _context.WorkoutTemplates.Find(workoutId);
 
             if (_enableEagerLoading)
             {
@@ -193,6 +256,17 @@ namespace ConsoleTest
         }
 
 
+        /// <summary>
+        /// This is the simulation of what the Repository will do
+        /// </summary>
+        /// <param name="workoutId"></param>
+        /// <returns></returns>
+        public WorkoutSessionRoot WorkoutSessionRepositoryUpdate(WorkoutSessionRoot session)
+        {
+            return _context.Update(session).Entity;
+        }
+
+
         private TrainingPlanRoot TrainingPlanRepositoryFind(uint trainingPlanId)
         {
             TrainingPlanRoot plan = null;
@@ -202,7 +276,6 @@ namespace ConsoleTest
                 // One query for all objects
                 plan = _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
                     .Include(wo => wo.TrainingWeeks)
-                        .ThenInclude(tw => tw.Workouts)
                     .SingleOrDefault();
             }
             else
@@ -217,6 +290,33 @@ namespace ConsoleTest
                 }
             }
             return plan;
+        }
+
+
+        private WorkoutSessionRoot WorkoutSessionRepositoryFind(uint sessionId)
+        {
+            WorkoutSessionRoot session = null;
+
+            if (_enableEagerLoading)
+            {
+                // One query for all objects
+                session = _context.WorkoutSessions.Where(x => x.Id == sessionId)
+                    .Include(wo => wo.WorkUnits)
+                        .ThenInclude(wu => wu.WorkingSets)
+                    .SingleOrDefault();
+            }
+            else
+            {
+                // No query if object already tracked -> If State = Added, but contt not saved hte WO is still retrieved
+                session = _context.WorkoutSessions.Find(sessionId);
+
+                if (session != null)
+                {
+                    // One query for each Load -> wasteful
+                    throw new NotImplementedException();
+                }
+            }
+            return session;
         }
 
 
@@ -241,6 +341,7 @@ namespace ConsoleTest
         {
             // Avoid double insert for tables that should not be tracked
             IgnoreStaticEnumTables();
+            IgnoreEmbeddedValueObjects();
             DebugChangeTracker();
             _context.SaveChanges();
         }
@@ -273,6 +374,25 @@ namespace ConsoleTest
             }
         }
 
+        private void IgnoreEmbeddedValueObjects()
+        {
+            // Value objects are part of the parent table
+            foreach (var entity in _context.ChangeTracker.Entries<ValueObject>())
+            {
+                try
+                {
+                    if(entity.State == EntityState.Added)
+                        entity.State = EntityState.Modified;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Enumeration as field, instead of separate table -> No need to set it as Unchanged - IE: see WeekdayEnum
+                    continue;
+                }
+            }
+        }
+
+
         [Conditional("DEBUG")]
         private void DebugChangeTracker()
         {
@@ -284,16 +404,18 @@ namespace ConsoleTest
             //        Debugger.Break();           // Do what you need before the breakpoint
             //}
 
-            //foreach (var entity in _context.ChangeTracker.Entries<LinkedWorkValue>())
+            //foreach (var entity in _context.ChangeTracker.Entries<WeekdayEnum>())
             //{
+            //    Debugger.Break();           // Do what you need before the breakpoint
+
             //    var state = entity.State;
 
-            //    if(state == EntityState.Added || state == EntityState.Deleted)
-            //        entity.State = EntityState.Modified;
+            //    if (state == EntityState.Added || state == EntityState.Deleted)
+            //        entity.State = EntityState.Unchanged;
 
             //    Debugger.Break();           // Do what you need before the breakpoint
             //}
-                
+
         }
 
 

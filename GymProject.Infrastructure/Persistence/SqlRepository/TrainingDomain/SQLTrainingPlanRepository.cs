@@ -4,6 +4,7 @@ using GymProject.Infrastructure.Persistence.EFContext;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
@@ -12,52 +13,47 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
     {
 
 
-        private readonly GymContext _gymContext;
+        private readonly GymContext _context;
 
 
         #region Ctors
 
         public SQLTrainingPlanRepository(GymContext context)
         {
-            _gymContext = context ??
+            _context = context ??
                 throw new ArgumentNullException(nameof(context), "Cannot instantiate a Repository on a NULL DB context");
         }
         #endregion
 
 
+
         #region IRepository Implementation
 
-        public TrainingPlanRoot Add(TrainingPlanRoot aggregateRoot)
+        public TrainingPlanRoot Add(TrainingPlanRoot trainingPlan)
         {
-            //_gymContext.Add(aggregateRoot);
-
-
-            //_gymContext.Add(TrainingPlanRoot.CreateTrainingPlan(IdTypeValue.Create(1), "", true, null));
-
-            //foreach (TrainingWeekEntity week in aggregateRoot.TrainingWeeks)
-            //    _gymContext.Add(week);
-
-            throw new NotImplementedException();
+            return _context.Add(trainingPlan).Entity;
         }
 
 
-        public TrainingPlanRoot Modify(TrainingPlanRoot aggregateRoot)
+        public TrainingPlanRoot Find(uint trainingPlanId)
         {
-            _gymContext.Update(aggregateRoot);
+            //return _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
+            //        .Include(wo => wo.TrainingWeeks)
+            //        .SingleOrDefault();
 
-            throw new NotImplementedException();
+            return _context.Find<TrainingPlanRoot>(trainingPlanId);
         }
 
 
-        public void Remove(TrainingPlanRoot aggregateRoot)
+        public TrainingPlanRoot Modify(TrainingPlanRoot trainingPlan)
         {
-            throw new NotImplementedException();
+            return _context.Update(trainingPlan).Entity;
         }
 
 
-        public TrainingPlanRoot WithId(uint? id)
+        public void Remove(TrainingPlanRoot trainingPlan)
         {
-            throw new NotImplementedException();
+            _context.Remove(trainingPlan);
         }
         #endregion
 

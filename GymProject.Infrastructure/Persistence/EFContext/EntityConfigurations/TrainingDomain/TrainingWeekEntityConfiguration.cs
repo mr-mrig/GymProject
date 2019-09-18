@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,10 +19,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .ValueGeneratedOnAdd();
 
             builder.Ignore(w => w.DomainEvents)
-                .Ignore(w => w.TrainingVolume)
-                .Ignore(w => w.TrainingIntensity)
-                .Ignore(w => w.TrainingDensity)
-                .Ignore(w => w.Workouts);
+                .Ignore(w => w.WorkoutIds);
 
             builder.Property(w => w.ProgressiveNumber)
                 .HasColumnType("INTEGER")
@@ -35,14 +33,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Property<uint>("TrainingPlanId")
                 .IsRequired();
 
-            builder.HasMany(w => w.Workouts)
-                .WithOne()
-                .HasForeignKey("TrainingWeekId")
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasMany<WorkoutTemplateRoot>()
+            //    .WithOne()
+            //    .HasForeignKey(w => w.Id)
+            //    .IsRequired()
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            var navigation = builder.Metadata.FindNavigation(nameof(TrainingWeekEntity.Workouts));
-            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+            //var navigation = builder.Metadata.FindNavigation(nameof(TrainingWeekEntity.WorkoutIds));
+            //navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
 
 
             builder.HasAlternateKey

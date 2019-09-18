@@ -11,6 +11,7 @@ using ConsoleTest.DataSeed;
 using System.Collections.Generic;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
+using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
 
 namespace ConsoleTest
 {
@@ -32,10 +33,52 @@ namespace ConsoleTest
 
         private static void PerformWorkoutTestCase()
         {
+            uint excerciseProgressiveNumber = 0;
+            uint excerciseId = 0;
+            uint noteId = 0;
+
             using (GymContext context = new GymContext())
             {
+                uint? workoutTemplateId = context.WorkoutTemplates.Select(x => x.Id).FirstOrDefault();
+
+                if (!workoutTemplateId.HasValue)
+                    throw new InvalidOperationException("No Workout Templates in the DB. Please populate them before trying again.");
+
                 TestServiceLayer service = new TestServiceLayer(context);
-                service.StartWorkoutSession(1);
+                WorkoutSessionRoot workout = service.StartWorkoutSession(workoutTemplateId.Value);
+
+                excerciseId = 1;
+                service.StartExcercise(workout.Id.Value, excerciseId);
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10), WeightPlatesValue.MeasureKilograms(110.2522f));
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(9), WeightPlatesValue.MeasureKilograms(110.2522f));
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8), WeightPlatesValue.MeasureKilograms(110.25f));
+                service.RateExcercisePerformance(workout.Id.Value, excerciseProgressiveNumber, 1f);
+
+                excerciseId = 9;
+                excerciseProgressiveNumber++;
+                service.StartExcercise(workout.Id.Value, excerciseId);
+
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20), WeightPlatesValue.MeasureKilograms(32));
+                noteId = service.WriteWorkingSetNote($"Brand new note0!!");
+                service.AttachWorkingSetNote(workout.Id.Value, excerciseProgressiveNumber, 0, noteId);
+
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20), WeightPlatesValue.MeasureKilograms(30));
+                noteId = service.WriteWorkingSetNote($"Brand new note1!!");
+                service.AttachWorkingSetNote(workout.Id.Value, excerciseProgressiveNumber, 1, noteId);
+
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20), WeightPlatesValue.MeasureKilograms(28));
+                noteId = service.WriteWorkingSetNote($"Brand new note2!!");
+                service.AttachWorkingSetNote(workout.Id.Value, excerciseProgressiveNumber, 2, noteId);
+                service.RateExcercisePerformance(workout.Id.Value, excerciseProgressiveNumber, 3.6f);
+
+                excerciseId = 5;
+                excerciseProgressiveNumber++;
+                service.StartExcercise(workout.Id.Value, excerciseId);
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(7), WeightPlatesValue.MeasureKilograms(10));
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(7), WeightPlatesValue.MeasureKilograms(10));
+                service.TrackWorkingSet(workout.Id.Value, excerciseProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(7), WeightPlatesValue.MeasureKilograms(10));
+
+                service.FinishWorkoutSession(workout.Id.Value);
             }
         }
 
@@ -62,7 +105,8 @@ namespace ConsoleTest
                 context.SaveChanges();
 
 
-                WorkoutTemplateRoot wo = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber, "WO1", WeekdayEnum.Monday);
+                WorkoutTemplateRoot wo = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber);
+                service.ModifyWorkoutAttributes(wo.Id.Value, "WO1", WeekdayEnum.Monday);
 
                 // Work Unit 0
                 excerciseId = 1;
@@ -113,7 +157,8 @@ namespace ConsoleTest
                 context.SaveChanges();
 
                 // WO2
-                WorkoutTemplateRoot wo1 = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber, "WO2");
+                WorkoutTemplateRoot wo1 = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber);
+                service.ModifyWorkoutAttributes(wo1.Id.Value, "WO2");
 
                 // Work Unit 0
                 excerciseId = 1;

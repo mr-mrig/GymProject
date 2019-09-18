@@ -34,8 +34,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasConversion(new UnixTimestampValueConverter())
                 .IsRequired(false);
 
-            builder.HasMany<WorkoutTemplateRoot>()      // Why do EFCore 1-to-1 does not work?
-                .WithOne()
+            builder.HasOne<WorkoutTemplateRoot>()      // Why do EFCore 1-to-1 does not work?
+                .WithMany()
                 .HasForeignKey(nameof(WorkoutSessionRoot.WorkoutTemplateId))
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);     // Don't remove Workout Data when the Program is deleted

@@ -39,7 +39,7 @@ namespace GymProject.Infrastructure.Persistence.UnitOfWork
 
         #region IUnitOfWork Implementation
 
-        public void Commit()
+        public void Save()
         {
             if (_context == null)
                 return;
@@ -97,7 +97,7 @@ namespace GymProject.Infrastructure.Persistence.UnitOfWork
         }
 
 
-        public void Rollback()
+        public void Discard()
         {
             foreach (var entry in _context.ChangeTracker.Entries()
                   .Where(e => e.State != EntityState.Unchanged))

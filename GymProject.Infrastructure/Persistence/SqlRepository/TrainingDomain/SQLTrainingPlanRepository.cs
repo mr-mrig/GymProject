@@ -1,11 +1,6 @@
-﻿using GymProject.Domain.Base;
-using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {

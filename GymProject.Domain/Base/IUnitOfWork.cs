@@ -10,14 +10,14 @@ namespace GymProject.Domain.Base
 
 
         /// <summary>
-        /// Committ all changes
+        /// Commit all changes
         /// </summary>
-        void Commit();
+        void Save();
 
         /// <summary>
         /// Discards all changes that has not been commited
         /// </summary>
-        void Rollback();
+        void Discard();
     }
 
 }

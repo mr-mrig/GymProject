@@ -1,43 +1,48 @@
-﻿using GymProject.Domain.Base;
-using GymProject.Infrastructure.Persistence.EFContext;
-using System;
+﻿//using GymProject.Domain.Base;
+//using GymProject.Infrastructure.Persistence.EFContext;
+//using System;
 
-namespace GymProject.Infrastructure.Persistence.SqlRepository
-{
-    public class SqlGenericRepository : IRepository<IAggregateRoot>
-    {
-
-
-        private readonly GymContext _context;
+//namespace GymProject.Infrastructure.Persistence.SqlRepository
+//{
+//    public class SqlGenericRepository : IRepository<IAggregateRoot>
+//    {
 
 
-
-        public SqlGenericRepository(GymContext context)
-        {
-            _context = context ??
-                throw new ArgumentNullException(nameof(context), "Cannot instantiate a Repository on a NULL DB context");
-        }
+//        private readonly GymContext _context;
 
 
 
+//        public SqlGenericRepository(GymContext context)
+//        {
+//            _context = context ??
+//                throw new ArgumentNullException(nameof(context), "Cannot instantiate a Repository on a NULL DB context");
+//        }
 
-        public IAggregateRoot Add(IAggregateRoot aggregateRoot)
-        {
-            _context.Add(aggregateRoot);
-            return aggregateRoot;
-        }
+
+//        public IAggregateRoot Find(uint id)
+//        {
+//            does not work
+//            return _context.Find<IAggregateRoot>(id);
+//        }
 
 
-        public IAggregateRoot Modify(IAggregateRoot aggregateRoot)
-        {
-            _context.Update(aggregateRoot);
-            return aggregateRoot;
-        }
+//        public IAggregateRoot Add(IAggregateRoot aggregateRoot)
+//        {
+//            _context.Add(aggregateRoot);
+//            return aggregateRoot;
+//        }
 
-        public void Remove(IAggregateRoot aggregateRoot)
-        {
-            _context.Remove(aggregateRoot);
-        }
 
-    }
-}
+//        public IAggregateRoot Modify(IAggregateRoot aggregateRoot)
+//        {
+//            _context.Update(aggregateRoot);
+//            return aggregateRoot;
+//        }
+
+//        public void Remove(IAggregateRoot aggregateRoot)
+//        {
+//            _context.Remove(aggregateRoot);
+//        }
+
+//    }
+//}

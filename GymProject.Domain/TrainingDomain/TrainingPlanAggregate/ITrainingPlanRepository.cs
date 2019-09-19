@@ -6,7 +6,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
     {
 
 
-        TrainingPlanRoot Find(uint id);
 
     }
 }

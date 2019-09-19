@@ -77,7 +77,7 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static WorkoutTemplateRoot BuildRandomWorkoutTemplate(long id, uint progressiveNumber, bool isTransient,
+        internal static WorkoutTemplateRoot BuildRandomWorkoutTemplate(long id, uint progressiveNumber, bool isTransient, uint? trainingWeekId = null,
             int nWorkUnitsMin = 3, int nWorkUnitsMax = 7, WeekdayEnum specificDay = null, float emptyWorkoutProb = 0.05f)
         {
             // Work Units
@@ -119,6 +119,7 @@ namespace GymProject.Domain.Test.Util
             else
                 return WorkoutTemplateRoot.PlanWorkout(
                     id: (uint?)(id),
+                    trainingWeekId: trainingWeekId ?? (uint?)RandomFieldGenerator.RandomInt(1, 1000),
                     progressiveNumber: progressiveNumber,
                     workUnits: workUnits,
                     workoutName: RandomFieldGenerator.RandomTextValue(4, 5, true, 0.05f),

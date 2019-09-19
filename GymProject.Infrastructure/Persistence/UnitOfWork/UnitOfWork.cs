@@ -6,6 +6,17 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain;
+using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
+using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
+using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
+using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
+using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
+using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPhaseAggregate;
+using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
+using GymProject.Domain.TrainingDomain.WorkingSetNote;
+using GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate;
 
 namespace GymProject.Infrastructure.Persistence.UnitOfWork
 {
@@ -30,8 +41,110 @@ namespace GymProject.Infrastructure.Persistence.UnitOfWork
 
         public ITrainingPlanRepository TrainingPlanRepository
         {
-            get => _trainingPlanRepository ?? new SQLTrainingPlanRepository(_context);
+            get => _trainingPlanRepository 
+                ?? new SQLTrainingPlanRepository(_context);
         }
+
+
+        private IWorkoutTemplateRepository _workoutTemplateRepository;
+
+        public IWorkoutTemplateRepository WorkoutTemplateRepository
+        {
+            get => _workoutTemplateRepository 
+                ?? new SQLWorkoutTemplateRepository(_context);
+        }
+
+
+        private IWorkoutSessionRepository _workoutSessionRepository;
+
+        public IWorkoutSessionRepository WorkoutSessionRepository
+        {
+            get => _workoutSessionRepository
+                ?? new SQLWorkoutSessionRepository(_context);
+        }
+
+
+        private ITrainingScheduleRepository _trainingScheduleRepository;
+
+        public ITrainingScheduleRepository TrainingScheduleRepository
+        {
+            get => _trainingScheduleRepository
+                ?? new SQLTrainingScheduleRepository(_context);
+        }
+
+
+        private IIntensityTechniqueRepository _intensityTechniqueRepository;
+
+        public IIntensityTechniqueRepository IntensityTechniqueRepository
+        {
+            get => _intensityTechniqueRepository
+                ?? new SQLIntensityTechniqueRepository(_context);
+        }
+
+
+        private ITrainingHashtagRepository _trainingHashtagRepository;
+
+        public ITrainingHashtagRepository TrainingHashtagRepository
+        {
+            get => _trainingHashtagRepository
+                ?? new SQLTrainingHashtagRepository(_context);
+        }
+
+
+        private ITrainingProficiencyRepository _trainingProficiencyRepository;
+
+        public ITrainingProficiencyRepository TrainingProficiencyRepository
+        {
+            get => _trainingProficiencyRepository
+                ?? new SQLTrainingProficiencyRepository(_context);
+        }
+
+
+        private ITrainingPhaseRepository _trainingPhaseRepository;
+
+        public ITrainingPhaseRepository TrainingPhaseRepository
+        {
+            get => _trainingPhaseRepository
+                ?? new SQLTrainingPhaseRepository(_context);
+        }
+
+
+        private IWorkUnitTemplateNoteRepository _workUnitTemplateNoteRepository;
+
+        public IWorkUnitTemplateNoteRepository WorkUnitTemplateNoteRepository
+        {
+            get => _workUnitTemplateNoteRepository
+                ?? new SQLWorkUnitTemplateNoteRepository(_context);
+        }
+
+
+        private IWorkingSetNoteRepository _workingSetNoteRepository;
+
+        public IWorkingSetNoteRepository WorkingSetNoteRepository
+        {
+            get => _workingSetNoteRepository
+                ?? new SQLWorkingSetNoteRepository(_context);
+        }
+
+
+        private ITrainingPlanNoteRepository _trainingPlanNoteRepository;
+
+        public ITrainingPlanNoteRepository TrainingPlanNoteRepository
+        {
+            get => _trainingPlanNoteRepository
+                ?? new SQLTrainingPlanNoteRepository(_context);
+        }
+
+
+        private ITrainingPlanMessageRepository _trainingPlanMessageRepository;
+
+        public ITrainingPlanMessageRepository TrainingPlanMessageRepository
+        {
+            get => _trainingPlanMessageRepository
+                ?? new SQLTrainingPlanMessageRepository(_context);
+        }
+
+
         #endregion
 
 
@@ -47,7 +160,7 @@ namespace GymProject.Infrastructure.Persistence.UnitOfWork
 
         #region IUnitOfWork Implementation
 
-        public void Commit()
+        public void Save()
         {
             if (_context == null)
                 return;
@@ -105,7 +218,7 @@ namespace GymProject.Infrastructure.Persistence.UnitOfWork
         }
 
 
-        public void Rollback()
+        public void Discard()
         {
             foreach (var entry in _context.ChangeTracker.Entries()
                   .Where(e => e.State != EntityState.Unchanged))

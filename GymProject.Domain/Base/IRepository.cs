@@ -6,6 +6,15 @@ namespace GymProject.Domain.Base
     {
 
 
+        // DDD note: no need for the classic UoW implementation, as DD is intrinsically transaction consistent
+        // As long as event sourcing and idempotency is ensured
+        // https://blog.sapiensworks.com/post/2015/09/02/DDD-and-UoW
+
+        /// <summary>
+        /// The entity accountable to Save/Discard the changes made by the repository
+        /// </summary>
+        IUnitOfWork UnitOfWork { get; }
+
 
 
         /// <summary>

@@ -97,6 +97,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
+
+            AddWorkoutTemplateCreatedDomainEvent();
         }
         #endregion
 
@@ -1001,6 +1003,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             if (!WorkUnitsWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Work Units of the same Workout must have consecutive progressive numbers.");
+        }
+
+        #endregion
+
+
+
+        #region Domain Events
+
+        public void AddWorkoutTemplateCreatedDomainEvent()
+        {
+            AddDomainEvent(new WorkoutTemplateCreatedDomainEvent(this));
         }
 
         #endregion

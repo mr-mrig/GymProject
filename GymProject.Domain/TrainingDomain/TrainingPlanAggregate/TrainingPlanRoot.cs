@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.Base.Mediator;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
@@ -7,11 +8,12 @@ using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingPlanRoot : Entity<uint?>, IAggregateRoot, ICloneable
+    public class TrainingPlanRoot : Entity<uint?>, IAggregateRoot, ICloneable, IMediatorNotificationHandler<WorkoutTemplateCreatedDomainEvent>
     {
 
 
@@ -1222,6 +1224,20 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
         #endregion
+
+
+
+        #region Domain Events
+
+        public async Task Handle(WorkoutTemplateCreatedDomainEvent notification, CancellationToken cancellationToken = default)
+        {
+            WorkoutTemplateRoot workoutTemplate = notification.WorkoutTemplate;
+
+            PlanWorkout(0, workoutTemplate.Id.Value);
+        }
+
+        #endregion
+
 
 
         #region IClonable Interface

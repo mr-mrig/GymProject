@@ -19,18 +19,28 @@ using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
 using GymProject.Domain.TrainingDomain.WorkingSetNote;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System;
+using GymProject.Domain.Base;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using GymProject.Infrastructure.Mediator;
+using Microsoft.EntityFrameworkCore.Design;
+using GymProject.Domain.Base.Mediator;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
-    public partial class GymContext : DbContext
+    public partial class GymContext : DbContext, IUnitOfWork
     {
 
         public const string DefaultSchema = "GymApp";
 
         private IDbContextTransaction _currentTransaction;
+        private readonly IMediatorService _mediator;
+        private readonly ILogger _logger;
 
         //public static readonly LoggerFactory MyLoggerFactory
         //    = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
@@ -40,10 +50,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         {
         }
 
-        public GymContext(DbContextOptions<GymContext> options)
-            : base(options)
+        public GymContext(IMediatorService mediator, ILogger logger)
         {
-            
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
 
@@ -196,6 +206,30 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         }
 
 
+        #region IUnitOfWork Implementation
+
+        public async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
+        {
+            // Dispatch Domain Events collection. 
+            // Choices:
+            // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+            // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
+            // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
+            // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
+            await _mediator.PublishDomainEventsAsync(this, _logger);
+
+            // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
+            // performed through the DbContext will be committed
+            var result = await base.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation($"DB Context saved");
+
+            return true;
+        }
+
+        #endregion
+
+
         #region Transactions Management
 
         public IDbContextTransaction BeginTransaction()
@@ -250,6 +284,41 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 }
             }
         }
+
         #endregion
     }
+
+
+
+    #region Factory Class
+
+    //public class GymContextDesignFactory : IDesignTimeDbContextFactory<GymContext>
+    //{
+    //    public GymContext CreateDbContext(string[] args)
+    //    {
+    //        var optionsBuilder = new DbContextOptionsBuilder<GymContext>()
+    //            .UseSqlServer("Server=.;Initial Catalog=Microsoft.eShopOnContainers.Services.OrderingDb;Integrated Security=true");
+
+    //        return new GymContext(optionsBuilder.Options, new NoMediator());
+    //    }
+
+    //    class NoMediator : IMediatorService
+    //    {
+    //        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default(CancellationToken)) where TNotification : INotification
+    //        {
+    //            return Task.CompletedTask;
+    //        }
+
+    //        public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default(CancellationToken))
+    //        {
+    //            return Task.FromResult<TResponse>(default(TResponse));
+    //        }
+
+    //        public Task Send(IRequest request, CancellationToken cancellationToken = default(CancellationToken))
+    //        {
+    //            return Task.CompletedTask;
+    //        }
+    //    }
+    //}
+    #endregion
 }

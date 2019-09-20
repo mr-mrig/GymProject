@@ -12,6 +12,11 @@ using System.Collections.Generic;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Debug;
+using GymProject.Domain.Base.Mediator;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ConsoleTest
 {
@@ -20,22 +25,70 @@ namespace ConsoleTest
         static void Main(string[] args)
         {
 
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddProvider(new DebugLoggerProvider());
+
+            ILogger log = loggerFactory.CreateLogger("Test");
+
+            IMediator mediator = new Mediator(
+                ServiceFactory.)
+            
+            TestCaseWrapper testCase = new TestCaseWrapper(null, log);
+
             // Check if seeding is needed
             if (TestDataSeed.IsSeedingRequired())
             {
-                SeedData();
+                log.LogInformation("Seeding Starting");
+
+                testCase.SeedData();
+
+                log.LogInformation("Seeding Ended");
             }
 
-            BuildTrainingPlanTestCase();
-            //PerformWorkoutTestCase();
+            //testCase.BuildTrainingPlanTestCase(log);
+            //testCase.PerformWorkoutTestCase(log);
+        }
+
+    }
+
+
+
+
+    internal class TestCaseWrapper
+    {
+
+
+        private IMediatorService _mediator;
+        private ILogger _logger;
+
+
+        public TestCaseWrapper(IMediatorService mediator, ILogger logger)
+        {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
 
-        private static void PerformWorkoutTestCase()
+        internal void TestDomainEvents()
+        {
+            _logger.LogInformation("Domain Events Start");
+
+            using(GymContext context = new GymContext(_mediator, _logger))
+            {
+
+            }
+
+            _logger.LogInformation("Domain Events End");
+        }
+
+
+        internal void PerformWorkoutTestCase()
         {
             uint excerciseProgressiveNumber = 0;
             uint excerciseId = 0;
             uint noteId = 0;
+
+            _logger.LogInformation("Workout Session Start");
 
             using (GymContext context = new GymContext())
             {
@@ -80,11 +133,15 @@ namespace ConsoleTest
 
                 service.FinishWorkoutSession(workout.Id.Value);
             }
+
+            _logger.LogInformation("Workout Session End");
         }
 
 
-        private static void BuildTrainingPlanTestCase()
+        internal void BuildTrainingPlanTestCase()
         {
+
+            _logger.LogInformation("Training Plan Start");
 
             using (GymContext context = new GymContext())
             {
@@ -182,9 +239,11 @@ namespace ConsoleTest
                 service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)
                     , intensityTechniques: new List<uint?>() { 5 });
             }
+
+            _logger.LogInformation("Training Plan End");
         }
 
-        private static void SeedData()
+        internal void SeedData()
         {
             using (GymContext context = new GymContext())
             {

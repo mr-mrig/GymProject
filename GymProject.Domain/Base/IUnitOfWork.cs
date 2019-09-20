@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GymProject.Domain.Base
 {
@@ -9,15 +11,12 @@ namespace GymProject.Domain.Base
         //Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default(CancellationToken));
 
 
-        /// <summary>
-        /// Commit all changes
-        /// </summary>
-        void Save();
 
         /// <summary>
-        /// Discards all changes that has not been commited
+        /// Commit all changes - Async
         /// </summary>
-        void Discard();
+        Task<bool> SaveAsync(CancellationToken cancellationToken);
+
     }
 
 }

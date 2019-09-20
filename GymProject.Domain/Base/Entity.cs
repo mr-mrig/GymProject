@@ -58,6 +58,14 @@ namespace GymProject.Domain.Base
 
             _domainEvents.Remove(eventItem);
         }
+
+        /// <summary>
+        /// Clear all the domain events
+        /// </summary>
+        public void ClearDomainEvents()
+        {
+            _domainEvents?.Clear();
+        }
         #endregion
 
 

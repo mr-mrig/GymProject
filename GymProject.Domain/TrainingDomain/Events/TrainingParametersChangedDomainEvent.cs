@@ -3,7 +3,7 @@ using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 
 namespace GymProject.Domain.TrainingDomain.Events
 {
-    public class TrainingParametersChangedDomainEvent : IMediatorNotification
+    public class TrainingParametersChangedDomainEvent : IDomainNotification
     {
 
         /// <summary>

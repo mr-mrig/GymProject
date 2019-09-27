@@ -1,9 +1,10 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.Base.Mediator;
+using MediatR;
 
 namespace GymProject.Domain.DietDomain.DietPlanAggregate
 {
-    public class DietPlanChangedDomainEvent : IMediatorNotification
+    public class DietPlanChangedDomainEvent : INotification
     {
 
 

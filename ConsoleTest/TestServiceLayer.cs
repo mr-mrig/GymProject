@@ -118,6 +118,40 @@ namespace ConsoleTest
         }
 
 
+        public WorkoutTemplateRoot CreateWorkoutTemplateOnly(uint trainingWeekId, uint workoutProgressiveNumber)
+        {
+            //TrainingPlanRoot plan = TrainingPlanRepositoryFind(trainingPlanId);
+            //TrainingWeekEntity week = plan.CloneTrainingWeek(trainingWeekProgressiveNumber);
+
+            //int nextProgressiveNumber = week.WorkoutIds.Count;
+
+            // Build the Workout
+            WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlannedDraft(trainingWeekId, (uint)workoutProgressiveNumber);
+            //workout.PlanToWeek(week.Id.Value);
+
+            using (var transaction = _context.BeginTransaction())
+            {
+                try
+                {
+                    // Workout Template Aggregate
+                    WorkoutTemplateRepositoryUpdate(workout);
+                    UnitOfWorkSave();
+
+                    //throw new ArgumentException();
+
+
+                    _context.CommitTransaction(transaction);
+                }
+                catch(Exception e)
+                {
+                    _context.RollbackTransaction();
+                }
+            }
+
+            return workout;
+        }
+
+
         public void ModifyWorkoutAttributes(uint workoutId, string workoutName, WeekdayEnum weeklyOccurance = null)
         {
             WorkoutTemplateRoot workout = WorkoutTemplateRepositoryFind(workoutId);
@@ -337,13 +371,13 @@ namespace ConsoleTest
         /// </summary>
         /// <param name="workoutId"></param>
         /// <returns></returns>
-        public void UnitOfWorkSave()
+        public async void UnitOfWorkSave()
         {
             // Avoid double insert for tables that should not be tracked
             IgnoreStaticEnumTables();
             IgnoreEmbeddedValueObjects();
             DebugChangeTracker();
-            _context.SaveChanges();
+            await _context.SaveAsync();
         }
 
 

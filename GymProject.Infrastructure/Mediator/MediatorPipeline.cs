@@ -4,9 +4,9 @@ using GymProject.Domain.Base.Mediator;
 
 namespace GymProject.Infrastructure.Mediator
 {
-    public class MediatorPipeline<TNotification> : IMediatorNotificationHandler<TNotification> where TNotification : IMediatorNotification
+    public class MediatorPipeline<TNotification> : IDomainNotificationHandler<TNotification> where TNotification : IDomainNotification
     {
-        private readonly IMediatorNotificationHandler<TNotification> _inner;
+        private readonly IDomainNotificationHandler<TNotification> _inner;
         //private readonly IEnumearble<IMessageValidator<TRequest>> _validators;
         //private readonly IMessageAuthorizer _authorizer;
         //private readonly IEnumerable<IPreRequestProcessor<TRequest>> _preProcessors;
@@ -32,7 +32,7 @@ namespace GymProject.Infrastructure.Mediator
         //    _responseProcessors = responseProcessors;
         //}
 
-        public MediatorPipeline(IMediatorNotificationHandler<TNotification> inner)
+        public MediatorPipeline(IDomainNotificationHandler<TNotification> inner)
         {
             _inner = inner;
         }

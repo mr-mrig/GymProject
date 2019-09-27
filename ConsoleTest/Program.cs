@@ -17,36 +17,95 @@ using Microsoft.Extensions.Logging.Debug;
 using GymProject.Domain.Base.Mediator;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using TinyIoC;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 
 namespace ConsoleTest
 {
     class Program
     {
+
+        public enum DependencyInjectionFramework : byte
+        {
+            MicrosoftDI = 0,
+            TinyIoc,
+            Autofac,
+        }
+
+
+
         static void Main(string[] args)
         {
+            DependencyInjectionFramework dependencyInjectionProvider = DependencyInjectionFramework.Autofac;
 
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new DebugLoggerProvider());
+            TestCaseWrapper testCase = GetTestCaseWrapper(dependencyInjectionProvider);
+            testCase.SeedData();        // Do not comment or remove
 
-            ILogger log = loggerFactory.CreateLogger("Test");
+            testCase.TestDomainEvents();
+            //testCase.BuildTrainingPlanTestCase();
+            //testCase.PerformWorkoutTestCase();
+        }
 
-            IMediator mediator = new Mediator(
-                ServiceFactory.)
-            
-            TestCaseWrapper testCase = new TestCaseWrapper(null, log);
 
-            // Check if seeding is needed
-            if (TestDataSeed.IsSeedingRequired())
+        private static TestCaseWrapper GetTestCaseWrapper(DependencyInjectionFramework dependencyInjectionProvider)
+        {
+            ILogger logger;
+            TestCaseWrapper testCase;
+
+            // Dpendency Injection Setup
+            switch(dependencyInjectionProvider)
             {
-                log.LogInformation("Seeding Starting");
+                case DependencyInjectionFramework.MicrosoftDI:
 
-                testCase.SeedData();
+                    ServiceProvider serviceProvider = DependencyInjectionFactory.DefaultMicrosoftDIServiceProvider;
 
-                log.LogInformation("Seeding Ended");
+                    logger = serviceProvider.GetRequiredService<ILoggerFactory>()
+                       .CreateLogger<Program>();
+
+                    logger.LogInformation("TinyIoc");
+
+                    testCase = new TestCaseWrapper(
+                       serviceProvider.GetRequiredService<IMediator>(),
+                       logger);
+                    break;
+
+                case DependencyInjectionFramework.TinyIoc:
+
+                    TinyIoCContainer container = DependencyInjectionFactory.DefaultTinyIoCContainer;
+
+                    logger = container.Resolve<ILoggerFactory>()
+                        .CreateLogger<Program>();
+
+                    logger.LogInformation("Microsoft DI");
+
+
+                    testCase = new TestCaseWrapper(
+                        container.Resolve<IMediator>(),
+                        logger);
+                    break;
+
+                case DependencyInjectionFramework.Autofac:
+
+                    IContainer autofac = DependencyInjectionFactory.DefaultAutofacContainer;
+
+                    logger = autofac.Resolve<ILoggerFactory>()
+                        .CreateLogger<Program>();
+
+                    logger.LogInformation("AUTOFAC");
+
+                    testCase = new TestCaseWrapper(
+                        autofac.Resolve<IMediator>(),
+                        logger);
+                    break;
+
+                default:
+
+                    throw new ArgumentException(nameof(dependencyInjectionProvider));
+
             }
 
-            //testCase.BuildTrainingPlanTestCase(log);
-            //testCase.PerformWorkoutTestCase(log);
+            return testCase;
         }
 
     }
@@ -58,15 +117,18 @@ namespace ConsoleTest
     {
 
 
-        private IMediatorService _mediator;
+        private IMediator _mediator;
         private ILogger _logger;
 
 
-        public TestCaseWrapper(IMediatorService mediator, ILogger logger)
+        public TestCaseWrapper(IMediator mediator, ILogger logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+
+
 
 
         internal void TestDomainEvents()
@@ -75,6 +137,10 @@ namespace ConsoleTest
 
             using(GymContext context = new GymContext(_mediator, _logger))
             {
+                TestServiceLayer service = new TestServiceLayer(context);
+
+                service.CreateWorkoutTemplateOnly(1, 9);
+
 
             }
 
@@ -245,14 +311,21 @@ namespace ConsoleTest
 
         internal void SeedData()
         {
-            using (GymContext context = new GymContext())
+            if(TestDataSeed.IsSeedingRequired())
             {
-                TestDataSeed.UserDataSeed();
-                TestDataSeed.WorkUnitNoteDataSeed();
-                TestDataSeed.HashtagDataSeed();
-                TestDataSeed.ProficiencyDataSeed();
-                TestDataSeed.ExcerciseDataSeed();
-                TestDataSeed.IntensityTechniqueDataSeed();
+                _logger.LogInformation("Seeding Starting");
+
+                using (GymContext context = new GymContext())
+                {
+                    TestDataSeed.UserDataSeed();
+                    TestDataSeed.WorkUnitNoteDataSeed();
+                    TestDataSeed.HashtagDataSeed();
+                    TestDataSeed.ProficiencyDataSeed();
+                    TestDataSeed.ExcerciseDataSeed();
+                    TestDataSeed.IntensityTechniqueDataSeed();
+                }
+
+                _logger.LogInformation("Seeding End");
             }
         }
 

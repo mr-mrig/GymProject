@@ -632,7 +632,7 @@ namespace GymProject.Domain.Test.UnitTest
                         uint? toRemoveId = RandomFieldGenerator.ChooseAmong(workoutsIds);
 
                         workoutsIds.Remove(toRemoveId);
-                        plan.UnplanWorkout(weekPnum, toRemoveId.Value);
+                        plan.UnplanWorkout(toRemoveId.Value);
 
                         Assert.True(plan.CloneWorkouts(weekPnum).SequenceEqual(workoutsIds));
                     }

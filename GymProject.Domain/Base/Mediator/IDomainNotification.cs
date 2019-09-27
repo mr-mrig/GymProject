@@ -1,7 +1,7 @@
 ﻿
 namespace GymProject.Domain.Base.Mediator
 {
-    public interface  IMediatorNotification
+    public interface  IDomainNotification
     {
     }
 }

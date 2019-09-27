@@ -1,9 +1,10 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.Base.Mediator;
+using MediatR;
 
 namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 {
-    public class FitnessHasBeenClearedDomainEvent : IMediatorNotification
+    public class FitnessHasBeenClearedDomainEvent : INotification
     {
 
 

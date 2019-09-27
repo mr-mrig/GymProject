@@ -39,22 +39,32 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public const string DefaultSchema = "GymApp";
 
         private IDbContextTransaction _currentTransaction;
-        private readonly IMediatorService _mediator;
+        private readonly IMediator _mediator;
         private readonly ILogger _logger;
 
         //public static readonly LoggerFactory MyLoggerFactory
         //    = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
 
 
-        public GymContext()
-        {
-        }
+        public GymContext() { }
 
-        public GymContext(IMediatorService mediator, ILogger logger)
+
+        public GymContext(IMediator mediator, ILogger logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+
+        public GymContext(DbContextOptions options, IMediator mediator, ILogger logger) 
+            : base(options)
+        {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+
+        public GymContext(DbContextOptions options) : base(options) { }
 
 
 
@@ -111,6 +121,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         #endregion
 
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //var loggerFactory = LoggerFactory.Create(builder =>
@@ -122,9 +134,13 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             //           .AddConsole();
             //});
 
-            optionsBuilder.UseSqlite(@"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;")
-                ;/*.UseLoggerFactory(loggerFactory);*/
+
+            // Should be configured elsewhere?
+            //optionsBuilder.UseSqlite(@"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;")
+
+            
         }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -232,9 +248,20 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         #region Transactions Management
 
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            if (_currentTransaction != null)
+                return null;
+
+            _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+            return _currentTransaction;
+        }
+
         public IDbContextTransaction BeginTransaction()
         {
-            if (_currentTransaction != null) return null;
+            if (_currentTransaction != null)
+                return null;
 
             _currentTransaction = Database.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -269,6 +296,34 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             }
         }
 
+        public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+        {
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
+            if (transaction != _currentTransaction)
+                throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+            try
+            {
+                await SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
+        }
+
         public void RollbackTransaction()
         {
             try
@@ -286,6 +341,9 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         }
 
         #endregion
+
+        public bool HasActiveTransaction() => _currentTransaction != null;
+
     }
 
 

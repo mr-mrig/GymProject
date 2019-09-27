@@ -1,11 +1,9 @@
 ﻿using GymProject.Domain.Base.Mediator;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using MediatR;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkoutTemplateCreatedDomainEvent : IMediatorNotification
+    public class WorkoutTemplateCreatedDomainEvent : INotification
     {
 
 
@@ -13,7 +11,19 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <summary>
         /// Event source
         /// </summary>
-        public WorkoutTemplateRoot WorkoutTemplate { get; private set; }
+        public uint? WorkoutTemplateId { get; private set; }
+
+
+        /// <summary>
+        /// Event source
+        /// </summary>
+        public uint? TrainingPlanId { get; private set; }
+
+
+        /// <summary>
+        /// Event source
+        /// </summary>
+        public uint TrainingWeekProgressiveNumber { get; private set; }
 
 
 
@@ -22,10 +32,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <summary>
         /// Event contructor
         /// </summary>
-        /// <param name="workoutTemplate">The event source</param>
-        public WorkoutTemplateCreatedDomainEvent(WorkoutTemplateRoot workoutTemplate)
+        public WorkoutTemplateCreatedDomainEvent(uint? workoutTemplateId, uint? trainingPlanId, uint trainingWeekProgressiveNumber)
         {
-            WorkoutTemplate = workoutTemplate;
+            WorkoutTemplateId = workoutTemplateId;
+            TrainingPlanId = trainingPlanId;
+            TrainingWeekProgressiveNumber = trainingWeekProgressiveNumber;
         }
 
     }

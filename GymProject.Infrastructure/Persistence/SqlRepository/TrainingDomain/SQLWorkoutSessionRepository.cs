@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
+﻿using GymProject.Domain.Base;
+using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using System;
 
@@ -10,6 +11,13 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         private readonly GymContext _context;
 
+        public IUnitOfWork UnitOfWork
+        {
+            get
+            {
+                return _context;
+            }
+        }
 
         #region Ctors
 

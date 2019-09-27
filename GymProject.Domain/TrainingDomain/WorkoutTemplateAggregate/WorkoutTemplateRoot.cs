@@ -2,6 +2,7 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
+using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -98,7 +99,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets());
             TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(CloneAllWorkingSets(), GetMainEffortType());
 
-            AddWorkoutTemplateCreatedDomainEvent();
+            //AddWorkoutTemplateCreatedDomainEvent();
         }
         #endregion
 
@@ -109,6 +110,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <summary>
         /// Factory method - Create an empty Workout planned on the specified week
         /// </summary>
+        /// <param name="trainingPlanId">The ID of the training plan</param>
         /// <param name="progressiveNumber">The Progressive Number</param>
         /// <param name="trainingWeekId">The ID of the Training Week which the Workout is planned to</param>
         /// <returns>The WorkoutTemplateRoot instance</returns>
@@ -1011,10 +1013,10 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Domain Events
 
-        public void AddWorkoutTemplateCreatedDomainEvent()
-        {
-            AddDomainEvent(new WorkoutTemplateCreatedDomainEvent(this));
-        }
+        //public void AddWorkoutTemplateCreatedDomainEvent()
+        //{
+        //    AddDomainEvent(new WorkoutTemplateCreatedDomainEvent(Id, 1, 1));    // TODO
+        //}
 
         #endregion
 

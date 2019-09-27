@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace GymProject.Domain.Base.Mediator
 {
-    public interface IMediatorNotificationHandler<in TNotification>
+    public interface IDomainNotificationHandler<in TNotification>
     {
 
         /// <summary>

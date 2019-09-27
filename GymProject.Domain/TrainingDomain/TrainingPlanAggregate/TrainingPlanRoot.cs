@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public class TrainingPlanRoot : Entity<uint?>, IAggregateRoot, ICloneable, IMediatorNotificationHandler<WorkoutTemplateCreatedDomainEvent>
+    public class TrainingPlanRoot : Entity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -877,10 +877,31 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Get a copy of the Training Week with the specified progressive number
         /// </summary>
         /// <param name="weekProgressiveNumber">The Progressive Number of the Week</param>
-        /// <exception cref="InvalidOperationException">If no workouts or more than one found</exception>
+        /// <exception cref="InvalidOperationException">If no Training Week or more than one found</exception>
         public TrainingWeekEntity CloneTrainingWeek(uint weekProgressiveNumber)
 
             => _trainingWeeks.Single(x => x.ProgressiveNumber == weekProgressiveNumber).Clone() as TrainingWeekEntity;
+
+
+        ///// <summary>
+        ///// Get a copy of the Training Week with the specified ID
+        ///// </summary>
+        ///// <param name="trainingWeekId">The ID of the Week</param>
+        ///// <exception cref="InvalidOperationException">If no Training Week or more than one found</exception>
+        //public TrainingWeekEntity CloneTrainingWeekById(uint trainingWeekId)
+
+        //    => _trainingWeeks.Single(x => x.Id == trainingWeekId).Clone() as TrainingWeekEntity;
+
+        /// <summary>
+        /// Get the next available WO progressive number for the specified Training Week
+        /// </summary>
+        /// <param name="weekProgressiveNumber">The Progressive Number of the Week</param>
+        /// <exception cref="InvalidOperationException">If no Training Week or more than one found</exception>
+        /// <returns>The next WO progressive number available</returns>
+        public int GetNextWorkoutProgressiveNumber(uint weekProgressiveNumber)
+
+            => _trainingWeeks.Single(x => x.ProgressiveNumber == weekProgressiveNumber)
+                    .WorkoutIds.Count();
 
         #endregion
 
@@ -903,12 +924,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// Remove the Workout from the specified Training Week
         /// </summary>
         /// <param name="workoutId">The ID of the WO to be removed</param>
-        /// <param name="weekPnum">The Progressive Number of the Week to which to remove the WO from</param>
         /// <exception cref="InvalidOperationException">If no workouts or more than one found</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
-        public void UnplanWorkout(uint weekPnum, uint workoutId)
+        public void UnplanWorkout(uint workoutId)
         {
-            FindTrainingWeekByProgressiveNumber((int)weekPnum).UnplanWorkout(workoutId);
+            FindTrainingWeekByWorkoutId((int)workoutId).UnplanWorkout(workoutId);
             TestBusinessRules();
         }
 
@@ -1022,6 +1042,22 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             return week;
         }
 
+
+        /// <summary>
+        /// Find the Training Week which the specified workout has been planned to
+        /// </summary>
+        /// <param name="workoutId">The ID to be found</param>
+        /// <returns>The TrainingWeekEntity object/returns>
+        /// <exception cref="ArgumentException">If ID could not be found</exception>
+        private TrainingWeekEntity FindTrainingWeekByWorkoutId(int workoutId)
+        {
+            TrainingWeekEntity week = _trainingWeeks?.SingleOrDefault(x => x.WorkoutIds.ToList().Contains((uint?)workoutId));
+
+            if (week == default)
+                throw new ArgumentException($"The Workout with ID {workoutId.ToString()} could not be found", nameof(workoutId));
+
+            return week;
+        }
 
         /// <summary>
         /// Build the next valid progressive number
@@ -1221,19 +1257,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
             if (!TrainingWeeksWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Training Weeks of the same Training Plan must have consecutive progressive numbers.");
-        }
-
-        #endregion
-
-
-
-        #region Domain Events
-
-        public async Task Handle(WorkoutTemplateCreatedDomainEvent notification, CancellationToken cancellationToken = default)
-        {
-            WorkoutTemplateRoot workoutTemplate = notification.WorkoutTemplate;
-
-            PlanWorkout(0, workoutTemplate.Id.Value);
         }
 
         #endregion

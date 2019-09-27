@@ -98,7 +98,6 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void ChangeRating(RatingValue newRating)
         {
             Rating = newRating;
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
         /// <summary>
@@ -112,9 +111,6 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
 
             if (DayDate == null)
                 throw new FitnessJournalDomainInvariantViolationException($"{GetType().Name} must have a valid Date");
-
-
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
         }
 
 
@@ -140,7 +136,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWellnessDay(TemperatureValue temperature = null, GlycemiaValue glycemia = null, ICollection<MusReference> musList = null)
         {
             DailyWellness = DailyWellnessValue.TrackWellness(temperature, glycemia, musList);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
 
@@ -151,7 +147,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void DiagnoseMus(MusReference toAdd)
         {
             DailyWellness = DailyWellness.DiagnoseMus(toAdd);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
 
@@ -162,7 +158,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void UndiagnoseMus(MusReference toRemove)
         {
             DailyWellness = DailyWellness.RemoveMus(toRemove);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
 
@@ -173,7 +169,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void UndiagnoseMus(uint? toRemoveId)
         {
             DailyWellness = DailyWellness.RemoveMus(toRemoveId);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
 
@@ -183,7 +179,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void UntrackWellness()
         {
             DailyWellness = null;
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
 
             if (CheckNullEntries())
                 AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
@@ -201,7 +197,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWeight(float weight, WeightUnitMeasureEnum measUnit)
         {
             DailyWeight = BodyWeightValue.Measure(weight, measUnit);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
         /// <summary>
@@ -211,7 +207,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWeightKilograms(float weight)
         {
             DailyWeight = BodyWeightValue.Measure(weight, WeightUnitMeasureEnum.Kilograms);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
         /// <summary>
@@ -221,7 +217,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void TrackWeightPounds(float weight)
         {
             DailyWeight = BodyWeightValue.Measure(weight, WeightUnitMeasureEnum.Pounds);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
         /// <summary>
@@ -230,7 +226,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void UntrackWeight()
         {
             DailyWeight = null;
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
 
             if (CheckNullEntries())
                 AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
@@ -260,7 +256,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             HeartRateValue maxHeartRate = null)
         {
             DailyActivity = DailyActivityValue.TrackActivity(steps, stairs, burnedKcal, sleepTime, sleepQuality, restHeartRate, maxHeartRate);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
         /// <summary>
@@ -269,7 +265,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void UntrackActivity()
         {
             DailyActivity = null;
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
 
             if (CheckNullEntries())
                 AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));
@@ -299,7 +295,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
             DietDayTypeEnum dayType = null)
         {
             DailyDiet = DailyDietValue.TrackDiet(carbs, fats, proteins, salt, water, isFreeMeal, dayType);
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
         }
 
 
@@ -309,7 +305,7 @@ namespace GymProject.Domain.FitnessJournalDomain.FitnessDayAggregate
         public void UntrackDiet()
         {
             DailyDiet = null;
-            AddDomainEvent(new FitnessDayChangedDomainEvent(this, PostId));
+
 
             if (CheckNullEntries())
                 AddDomainEvent(new FitnessHasBeenClearedDomainEvent(this, PostId));

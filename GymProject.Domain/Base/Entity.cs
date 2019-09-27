@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base.Mediator;
+using MediatR;
 using System;
 using System.Collections.Generic;
 
@@ -30,20 +31,20 @@ namespace GymProject.Domain.Base
 
         #region Domain Events Management
 
-        private List<IMediatorNotification> _domainEvents;
+        private List<INotification> _domainEvents;
         /// <summary>
         /// List of domain events as MediatR notification messages
         /// </summary>
-        public List<IMediatorNotification> DomainEvents => _domainEvents;
+        public List<INotification> DomainEvents => _domainEvents;
 
         /// <summary>
         /// Add a domain event to the pipeline.
         /// The event will be actually raised before or after the transaction commit according to the UnitOfWork design
         /// </summary>
         /// <param name="eventItem">The MediatR notification message</param>
-        public void AddDomainEvent(IMediatorNotification eventItem)
+        public void AddDomainEvent(INotification eventItem)
         {
-            _domainEvents = _domainEvents ?? new List<IMediatorNotification>();
+            _domainEvents = _domainEvents ?? new List<INotification>();
             _domainEvents.Add(eventItem);
         }
 
@@ -51,7 +52,7 @@ namespace GymProject.Domain.Base
         /// Remove a domain event from the pipeline
         /// </summary>
         /// <param name="eventItem">The MediatR notification message</param>
-        public void RemoveDomainEvent(IMediatorNotification eventItem)
+        public void RemoveDomainEvent(INotification eventItem)
         {
             if (_domainEvents is null)
                 return;

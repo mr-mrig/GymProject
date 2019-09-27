@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace GymProject.Application.Command
+namespace GymProject.Application.Command.TrainingDomain
 {
 
     public class CreateDraftTrainingPlanCommand : IRequest<bool>

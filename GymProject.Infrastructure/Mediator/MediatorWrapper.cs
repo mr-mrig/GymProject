@@ -20,11 +20,11 @@ namespace GymProject.Infrastructure.Mediator
 
 
 
-        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : IMediatorNotification
+        public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : IDomainNotification
         {
-            NotificationWrapper<TNotification> notification2 = new NotificationWrapper<TNotification>(notification);
+            NotificationWrapper<TNotification> unwrappedNotification = new NotificationWrapper<TNotification>(notification);
 
-            return _mediator.Publish(notification2, cancellationToken);
+            await _mediator.Publish(unwrappedNotification, cancellationToken);
         }
     }
 }

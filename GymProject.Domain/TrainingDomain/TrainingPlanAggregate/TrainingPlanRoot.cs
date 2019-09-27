@@ -1,6 +1,4 @@
 ﻿using GymProject.Domain.Base;
-using GymProject.Domain.Base.Mediator;
-using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
@@ -8,8 +6,7 @@ using GymProject.Domain.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
@@ -765,6 +762,25 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             TrainingWeekEntity toAdd = TrainingWeekEntity.PlanTransientTrainingWeek(
                 BuildTrainingWeekProgressiveNumber(),
                 workoutsIds,
+                weekType);
+
+            _trainingWeeks.Add(toAdd);
+
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Add a Training Week Draft to the Plan.
+        /// </summary>
+        /// <param name="weekType">The type of the Training Week</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If a business rule is violated</exception>
+        public void PlanDraftTrainingWeek(TrainingWeekTypeEnum weekType)
+        {
+
+            TrainingWeekEntity toAdd = TrainingWeekEntity.PlanTransientTrainingWeek(
+                BuildTrainingWeekProgressiveNumber(),
+                new List<uint?>(),
                 weekType);
 
             _trainingWeeks.Add(toAdd);

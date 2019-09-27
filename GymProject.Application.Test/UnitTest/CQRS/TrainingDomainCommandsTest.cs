@@ -134,18 +134,72 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         }
 
 
+        //[Fact]
+        //public async Task FakePlanDraftWorkoutCommandTransactionalFail()
+        //{
+        //    // Mocking
+        //    var mediator = new Mock<IMediator>();
+        //    var logger = new Mock<ILogger<TransactionBehaviour<PlanDraftWorkoutCommand, bool>>>();
+
+        //    // In memory DB
+        //    DatabaseSeed seed = new DatabaseSeed(new GymContext(
+        //        StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+        //        , mediator.Object
+        //        , logger.Object));
+        //    seed.SeedTrainingDomain();
+
+        //    GymContext context = seed.Context;
+
+        //    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
+        //    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+
+        //    // Test
+        //    TransactionBehaviour<PlanDraftWorkoutCommand, bool> transactionHandler = new TransactionBehaviour<PlanDraftWorkoutCommand, bool>(context, logger.Object);
+
+
+        //    uint planId = 1;
+        //    uint weekId = 1;
+        //    uint weekPnum = context.TrainingWeeks.Find(weekId).ProgressiveNumber;
+
+        //    int fakeWeekPnum = 1000;
+        //    int weekWorkoutsNumberBefore = context.TrainingWeeks.Find(weekId).WorkoutIds.Count;
+
+        //    PlanDraftWorkoutCommand command = new PlanDraftWorkoutCommand(planId, weekId, weekPnum);
+
+        //    FakePlanDraftWorkoutCommandHandler handler = new FakePlanDraftWorkoutCommandHandler(
+        //        workoutRepository,
+        //        planRepository,
+        //        logger.Object,
+        //        fakeWeekPnum);
+
+        //    mediator.Setup(x
+        //        => x.Send(It.IsAny<PlanDraftWorkoutCommand>(), default))
+        //        .Returns(Task.Run(() => handler));
+
+
+
+
+
+
+
+        //    await transactionHandler.Handle(command, default, null);
+
+        //    //Assert.False(await handler.Handle(command, default));
+
+        //    //// Check no changes -> both operations should fail
+        //    //TrainingWeekEntity week = context.TrainingWeeks.Find(weekId);
+        //    //Assert.Equal(weekWorkoutsNumberBefore, week.WorkoutIds.Count);
+        //    //Assert.Equal(seed.WorkoutTemplates.Count(), context.WorkoutTemplates.Count());
+        //}
+
+
+
         [Fact]
-        public async Task FakePlanDraftWorkoutCommandTransactionalFail()
+        public async Task DraftTrainingPlanCommandSuccess()
         {
             // Mocking
             var mediator = new Mock<IMediator>();
-            var logger = new Mock<ILogger<TransactionBehaviour<PlanDraftWorkoutCommand, bool>>>();
-
-            //mediator.Setup(x
-            //    => x.Send(It.IsAny<PlanDraftWorkoutCommand>(), default))
-            //    .Returns(Task.FromResult(true));
-
-            //await mediator.Object.Send(new PlanDraftWorkoutCommand(1,1,1));
+            var logger = new Mock<ILogger<CreateDraftTrainingPlanCommandHandler>>();
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
@@ -155,38 +209,63 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             seed.SeedTrainingDomain();
 
             GymContext context = seed.Context;
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
 
+            // Test
+            uint userId = 1;
+
+            CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(userId);
+            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(
+                planRepository, logger.Object);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check new training plan
+            TrainingPlanRoot added = context.TrainingPlans.Last();
+            Assert.Equal(userId, added.OwnerId);
+            Assert.Empty(added.MuscleFocusIds);
+            Assert.Empty(added.RelationsWithChildPlans);
+            Assert.Empty(added.RelationsWithParentPlans);
+            Assert.Equal(1, added.TrainingWeeks.Count);
+            Assert.Equal(string.Empty, added.Name);
+        }
+
+
+        [Fact]
+        public async Task DeleteTrainingPlanCommandSuccess()
+        {
+            // Mocking
+            var mediator = new Mock<IMediator>();
+            var logger = new Mock<ILogger<DeleteTrainingPlanCommandHandler>>();
+
+            // In memory DB
+            DatabaseSeed seed = new DatabaseSeed(new GymContext(
+                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                , mediator.Object
+                , logger.Object));
+            seed.SeedTrainingDomain();
+
+            GymContext context = seed.Context;
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
 
             // Test
-            TransactionBehaviour<PlanDraftWorkoutCommand, bool> transactionHandler = new TransactionBehaviour<PlanDraftWorkoutCommand, bool>(context, logger.Object);
-
-
             uint planId = 1;
-            uint weekId = 1;
-            uint weekPnum = context.TrainingWeeks.Find(weekId).ProgressiveNumber;
+            TrainingPlanRoot removed = planRepository.Find(planId);
 
-            int fakeWeekPnum = 1000;
-            int weekWorkoutsNumberBefore = context.TrainingWeeks.Find(weekId).WorkoutIds.Count;
+            DeleteTrainingPlanCommand command = new DeleteTrainingPlanCommand(planId);
+            DeleteTrainingPlanCommandHandler handler = new DeleteTrainingPlanCommandHandler(
+                workoutRepository, planRepository, logger.Object);
 
-            PlanDraftWorkoutCommand command = new PlanDraftWorkoutCommand(planId, weekId, weekPnum);
-            //FakePlanDraftWorkoutCommandHandler handler = new FakePlanDraftWorkoutCommandHandler(
-            //    workoutRepository, 
-            //    planRepository, 
-            //    logger.Object, 
-            //    fakeWeekPnum);
+            Assert.True(await handler.Handle(command, default));
 
-
-
-            await transactionHandler.Handle(command, default, null);
-
-            //Assert.False(await handler.Handle(command, default));
-
-            //// Check no changes -> both operations should fail
-            //TrainingWeekEntity week = context.TrainingWeeks.Find(weekId);
-            //Assert.Equal(weekWorkoutsNumberBefore, week.WorkoutIds.Count);
-            //Assert.Equal(seed.WorkoutTemplates.Count(), context.WorkoutTemplates.Count());
+            // Check new training plan
+            Assert.Equal(seed.TrainingPlans.Count() - 1, context.TrainingPlans.Count());
+            Assert.Equal(seed.WorkoutTemplates.Count() - removed.WorkoutIds.Count(), context.WorkoutTemplates.Count());
+            Assert.DoesNotContain(removed, context.TrainingPlans);
+            
+            foreach(uint? workoutId in removed.WorkoutIds)
+                Assert.DoesNotContain(workoutId, context.WorkoutTemplates.ToList().Select(x => x.Id));
         }
 
 

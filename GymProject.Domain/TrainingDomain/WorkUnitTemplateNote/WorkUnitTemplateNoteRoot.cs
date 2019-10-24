@@ -31,6 +31,10 @@ namespace GymProject.Domain.TrainingDomain.WorkUnitTemplateNote
 
             => new WorkUnitTemplateNoteRoot(id, note);
 
+        public static WorkUnitTemplateNoteRoot Write(PersonalNoteValue note)
+
+            => new WorkUnitTemplateNoteRoot(null, note);
+
         #endregion
     }
 }

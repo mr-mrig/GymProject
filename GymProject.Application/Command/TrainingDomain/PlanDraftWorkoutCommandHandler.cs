@@ -52,20 +52,29 @@ namespace GymProject.Application.Command.TrainingDomain
                 workout = _workoutRepository.Add(workout);
                 result = await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);
 
-                // Link to the workout
-                if (result)
+                try
                 {
-                    plan.PlanWorkout(message.TrainingWeekProgressiveNumber, workout.Id.Value);
-                    _planRepository.Modify(plan);
+                    // Link to the workout
+                    if (result)
+                    {
+                        plan.PlanWorkout(message.TrainingWeekProgressiveNumber, workout.Id.Value);
+                        _planRepository.Modify(plan);
 
-                    result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
+                        result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
+                    }
+                }
+                catch (Exception exc)
+                {
+                    _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _planRepository.UnitOfWork);
+                    result = false;
                 }
             }
-            catch(Exception exc)
+            catch (Exception exc)
             {
-                _logger.LogError($"----- Transaction failed: {exc.Message}");
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _workoutRepository.UnitOfWork);
                 result = false;
             }
+
 
             //PlanWorkoutCreationSuccessed(workout.Id);     // Link the Workout to the Plan by event
 

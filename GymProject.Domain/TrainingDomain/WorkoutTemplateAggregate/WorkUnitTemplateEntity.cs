@@ -309,7 +309,19 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (toRemove == null)
                 return;
 
-            RemoveWorkingSet(toRemove.ProgressiveNumber);
+            uint progressiveNumber = toRemove.ProgressiveNumber;
+
+            if (_workingSets.Remove(toRemove))
+            {
+                ManageLinkedWorkingSets(toRemove);
+
+                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
+                TrainingVolume = TrainingVolume.RemoveWorkingSet(toRemove);
+                TrainingDensity = TrainingDensity.RemoveWorkingSet(toRemove);
+
+                ForceConsecutiveWorkingSetsProgressiveNumbers(progressiveNumber);
+                TestBusinessRules();
+            }
         }
 
 
@@ -321,20 +333,21 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException"></exception>
         public void RemoveWorkingSet(uint progressiveNumber)
         {
-            WorkingSetTemplateEntity toBeRemoved = FindWorkingSet(progressiveNumber);
-
-            if (_workingSets.Remove(toBeRemoved))
-            {
-                ManageLinkedWorkingSets(toBeRemoved);
-
-                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
-                TrainingVolume = TrainingVolume.RemoveWorkingSet(toBeRemoved);
-                TrainingDensity = TrainingDensity.RemoveWorkingSet(toBeRemoved);
-
-                ForceConsecutiveWorkingSetsProgressiveNumbers(progressiveNumber);
-                TestBusinessRules();
-            }
+            RemoveWorkingSet(FindWorkingSet(progressiveNumber));
         }
+
+
+        /// <summary>
+        /// Remove the Working Set from the Work Unit
+        /// </summary>
+        /// <param name="workingSetId">The ID of the WS to be removed</param>
+        /// <exception cref="InvalidOperationException">If more Working Sets with the specified Progressive Number</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException"></exception>
+        public void RemoveWorkingSetById(uint workingSetId)
+        {
+            RemoveWorkingSet(FindWorkingSetById(workingSetId));
+        }
+
 
         /// <summary>
         /// Get a copy of the Working Set with the progressive number specified or DEFAULT if not found
@@ -666,6 +679,17 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         private WorkingSetTemplateEntity FindWorkingSet(uint pNum)
 
             => _workingSets.Single(x => x.ProgressiveNumber == pNum);
+
+
+        /// <summary>
+        /// Find the Working Set with the specified ID
+        /// </summary>
+        /// <param name="id">The ID to be found</param>
+        /// <exception cref="InvalidOperationException">If more Working Sets, or zero, with the specified Progressive Number</exception>
+        /// <returns>The WorkingSetTemplate object</returns>
+        private WorkingSetTemplateEntity FindWorkingSetById(uint id)
+
+            => _workingSets.Single(x => x.Id == id);
 
         #endregion
 

@@ -196,6 +196,23 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
 
         /// <summary>
+        /// Reset the Intensity Technique IDs and assign the specified ones
+        /// </summary>
+        /// <param name="intensityTechniqueIds">The list of the intensity techinques IDs</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
+        public void AssignIntensityTechniques(IEnumerable<uint?> intensityTechniqueIds)
+        {
+            _intensityTechniquesRelations.Clear();
+
+            foreach (uint? techniqueId in intensityTechniqueIds)
+                _intensityTechniquesRelations.Add(
+                    WorkingSetIntensityTechniqueRelation.BuildLink(this, techniqueId));
+
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
         /// Add an intensity technique - Do nothing if already present in the list
         /// </summary>
         /// <param name="intensityTechniqueId">The id to be added</param>

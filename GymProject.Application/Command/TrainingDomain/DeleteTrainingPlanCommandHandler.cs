@@ -63,7 +63,7 @@ namespace GymProject.Application.Command.TrainingDomain
             }
             catch (Exception exc)
             {
-                _logger.LogError($"----- Transaction failed: {exc.Message}");
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _workoutRepository.UnitOfWork);
                 result = false;
             }
 

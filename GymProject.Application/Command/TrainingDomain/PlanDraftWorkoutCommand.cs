@@ -7,9 +7,9 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        public uint TrainingPlanId;
-        public uint TrainingWeekId; 
-        public uint TrainingWeekProgressiveNumber;      // Redundant, might be computed later by adding the proper function to the domain AR
+        public uint TrainingPlanId { get; private set; }
+        public uint TrainingWeekId { get; private set; }
+        public uint TrainingWeekProgressiveNumber { get; private set; }      // Redundant, might be computed later by adding the proper function to the domain AR
 
 
 

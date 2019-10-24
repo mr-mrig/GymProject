@@ -18,7 +18,7 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         /// <summary>
-        /// The value which means "As Many Reps As Possible"
+        /// The value which means "Repetitions not set"
         /// </summary>
         public const int NotSetValue = 0;
         #endregion
@@ -59,11 +59,11 @@ namespace GymProject.Domain.TrainingDomain.Common
         #region Factories
 
         /// <summary>
-        /// Factory method - PROTECTED
+        /// Factory method - generic
         /// </summary>
         /// <param name="workValue">The value</param>
         /// <returns>The RepetitionValue instance</returns>
-        protected static WSRepetitionsValue TrackWork(int workValue, WSWorkTypeEnum workType)
+        public static WSRepetitionsValue TrackWork(int workValue, WSWorkTypeEnum workType)
 
             => new WSRepetitionsValue(workValue, workType);
 

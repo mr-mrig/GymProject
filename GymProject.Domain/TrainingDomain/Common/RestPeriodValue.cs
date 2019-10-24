@@ -14,18 +14,23 @@ namespace GymProject.Domain.TrainingDomain.Common
         #region Const
 
         /// <summary>
+        /// Default meas unit to be used when nothing is specified
+        /// </summary>
+        protected readonly TimeMeasureUnitEnum DefaultRestMeasUnit = TimeMeasureUnitEnum.Seconds;
+
+        /// <summary>
         /// Values that identifies that an input value has not been specified
         /// </summary>
         protected const int NotSpecifiedInput = -1;
 
 
         /// <summary>
-        /// Value to be used when no rest is specified
+        /// Value to be used when no rest is specified. This value is used internally, but the user should see the NotSpecifiedInput one.
         /// </summary>
         public const int DefaultRestValue = 90;
 
         /// <summary>
-        /// Value when the rest is complete
+        /// Value which identifies a complete rest.
         /// </summary>
         public const int FullRecoveryRestValue = 240;
 
@@ -60,7 +65,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         private RestPeriodValue(int rest, TimeMeasureUnitEnum unit) 
         {
             Value = rest;
-            MeasureUnit = unit;
+            MeasureUnit = unit ?? TimeMeasureUnitEnum.Seconds;
 
             TestBusinessRules();
         }
@@ -72,11 +77,11 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         /// <summary>
-        /// Factory method - PROTECTED
+        /// Factory method
         /// </summary>
         /// <param name="restValue">The value</param>
         /// <returns>The RestPeriodValue instance</returns>
-        protected static RestPeriodValue SetRest(int restValue, TimeMeasureUnitEnum measUnit)
+        public static RestPeriodValue SetRest(int restValue, TimeMeasureUnitEnum measUnit)
 
             => new RestPeriodValue(restValue, measUnit);
 

@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.Common;
+using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -37,7 +38,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                plan.PlanTrainingWeek();
+                plan.PlanDraftTrainingWeek(TrainingWeekTypeEnum.From((int)message.WeekTypeEnumId));
 
 
                 _logger.LogInformation("----- Creating Training Week - {@TrainingPlan}", plan);
@@ -47,7 +48,7 @@ namespace GymProject.Application.Command.TrainingDomain
             }
             catch (Exception exc)
             {
-                _logger.LogError($"----- Transaction failed: {exc.Message}");
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _planRepository.UnitOfWork);
                 result = false;
             }
 
@@ -56,4 +57,4 @@ namespace GymProject.Application.Command.TrainingDomain
             return result;
         }
     }
-    }
+}

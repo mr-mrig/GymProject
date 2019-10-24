@@ -97,6 +97,35 @@ namespace GymProject.Domain.TrainingDomain.Common
 
             => TrackEffort(effort, TrainingEffortTypeEnum.RPE);
 
+
+        /// <summary>
+        /// Factory method - generic
+        /// </summary>
+        /// <param name="effortType">The effort type</param>
+        /// <param name="effort">The value</param>
+        /// <returns>The TrainingEffortValue instance</returns>
+        public static TrainingEffortValue FromEffort(float effort, TrainingEffortTypeEnum effortType)
+        {
+            switch (effortType)
+            {
+                case var _ when effortType == TrainingEffortTypeEnum.IntensityPercentage:
+
+                    return AsIntensityPerc(effort);
+
+                case var _ when effortType == TrainingEffortTypeEnum.RPE:
+
+                    return AsRPE(effort);
+
+                case var _ when effortType == TrainingEffortTypeEnum.RM:
+
+                    return AsRM(effort);
+
+                default:
+
+                    return null;
+            }
+        }
+
         #endregion
 
 

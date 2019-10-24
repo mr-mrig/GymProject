@@ -459,13 +459,13 @@ namespace GymProject.Domain.Test.UnitTest
             uint? newNoteId = (uint?)(RandomFieldGenerator.RandomInt(noteIdMin, noteIdMax));
 
             workout.AssignWorkUnitExcercise(workUnit.ProgressiveNumber, newExcerciseId);
-            workout.AssignWorkUnitNote(workUnit.ProgressiveNumber, newNoteId);
+            workout.AttachWorkUnitNote(workUnit.ProgressiveNumber, newNoteId);
 
             // Check WU changes
             Assert.Equal(newNoteId, workUnit.WorkUnitNoteId);
             Assert.Equal(newExcerciseId, workUnit.ExcerciseId);
 
-            workout.RemoveWorkUnitNote(workUnit.ProgressiveNumber);
+            workout.DetachWorkUnitNote(workUnit.ProgressiveNumber);
             Assert.Null(workout.CloneWorkUnit(workUnit.ProgressiveNumber).WorkUnitNoteId);
 
             // Link To new Work Unit

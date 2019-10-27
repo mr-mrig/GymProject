@@ -647,9 +647,10 @@ namespace GymProject.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAlternateKey("WorkoutSessionId", "ProgressiveNumber");
-
                     b.HasIndex("ExcerciseId");
+
+                    b.HasIndex("WorkoutSessionId", "ProgressiveNumber")
+                        .IsUnique();
 
                     b.ToTable("WorkUnit","GymApp");
                 });
@@ -731,13 +732,14 @@ namespace GymProject.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAlternateKey("WorkoutTemplateId", "ProgressiveNumber");
-
                     b.HasIndex("ExcerciseId");
 
                     b.HasIndex("LinkingIntensityTechniqueId");
 
                     b.HasIndex("WorkUnitNoteId");
+
+                    b.HasIndex("WorkoutTemplateId", "ProgressiveNumber")
+                        .IsUnique();
 
                     b.ToTable("WorkUnitTemplate","GymApp");
                 });
@@ -771,7 +773,8 @@ namespace GymProject.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAlternateKey("WorkUnitTemplateId", "ProgressiveNumber");
+                    b.HasIndex("WorkUnitTemplateId", "ProgressiveNumber")
+                        .IsUnique();
 
                     b.ToTable("WorkingSetTemplate","GymApp");
                 });

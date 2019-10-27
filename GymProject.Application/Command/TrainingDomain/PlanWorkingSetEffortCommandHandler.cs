@@ -36,24 +36,10 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                TrainingEffortValue newEffort;
-
-                if (message.EffortTypeId.HasValue && message.EffortValue.HasValue)
-                {
-                    TrainingEffortTypeEnum effortType = TrainingEffortTypeEnum.From(message.EffortTypeId.Value);
-                    newEffort = TrainingEffortValue.FromEffort(message.EffortValue.Value, effortType);
-
-                    if (effortType == null || newEffort == null)
-                    {
-                        _logger.LogWarning("Not parsable Effort Type {@EffortTypeId}", message.EffortTypeId);
-                        return false;
-                    }
-                }
-                else
-                    newEffort = null;
+                TrainingEffortValue effort = ParseEffort(message.EffortValue, message.EffortTypeId);
 
 
-                workout.ReviseWorkingSetEffort(message.WorkUnitProgressiveNumber, message.WorkingSetProgressiveNumber, newEffort);
+                workout.ReviseWorkingSetEffort(message.WorkUnitProgressiveNumber, message.WorkingSetProgressiveNumber, effort);
 
                 _logger.LogInformation("----- Setting effort for Working Set [{@WorkingSetProgressiveNumber} of {@WorkUnitProgressiveNumber}] in {@workout.Id}"
                     ,message.WorkingSetProgressiveNumber, message.WorkUnitProgressiveNumber, workout.Id);
@@ -70,5 +56,17 @@ namespace GymProject.Application.Command.TrainingDomain
             return result;
         }
 
+        private TrainingEffortValue ParseEffort(int? effortValue, int? effortTypeId)
+        {
+            if (!effortValue.HasValue)
+                return null;
+
+            TrainingEffortTypeEnum effortType = effortTypeId.HasValue
+                ? TrainingEffortTypeEnum.From(effortTypeId.Value)
+                : TrainingEffortTypeEnum.IntensityPercentage;
+
+
+            return TrainingEffortValue.FromEffort(effortValue.Value, effortType);
+        }
     }
 }

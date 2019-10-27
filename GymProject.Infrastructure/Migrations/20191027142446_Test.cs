@@ -642,7 +642,6 @@ namespace GymProject.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkUnitTemplate", x => x.Id);
-                    table.UniqueConstraint("AK_WorkUnitTemplate_WorkoutTemplateId_ProgressiveNumber", x => new { x.WorkoutTemplateId, x.ProgressiveNumber });
                     table.ForeignKey(
                         name: "FK_WorkUnitTemplate_Excercise_ExcerciseId",
                         column: x => x.ExcerciseId,
@@ -687,7 +686,6 @@ namespace GymProject.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkUnit", x => x.Id);
-                    table.UniqueConstraint("AK_WorkUnit_WorkoutSessionId_ProgressiveNumber", x => new { x.WorkoutSessionId, x.ProgressiveNumber });
                     table.ForeignKey(
                         name: "FK_WorkUnit_Excercise_ExcerciseId",
                         column: x => x.ExcerciseId,
@@ -721,7 +719,6 @@ namespace GymProject.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkingSetTemplate", x => x.Id);
-                    table.UniqueConstraint("AK_WorkingSetTemplate_WorkUnitTemplateId_ProgressiveNumber", x => new { x.WorkUnitTemplateId, x.ProgressiveNumber });
                     table.ForeignKey(
                         name: "FK_WorkingSetTemplate_TrainingEffortType_Effort_EffortTypeId",
                         column: x => x.Effort_EffortTypeId,
@@ -1098,6 +1095,13 @@ namespace GymProject.Infrastructure.Migrations
                 column: "Effort_EffortTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkingSetTemplate_WorkUnitTemplateId_ProgressiveNumber",
+                schema: "GymApp",
+                table: "WorkingSetTemplate",
+                columns: new[] { "WorkUnitTemplateId", "ProgressiveNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkoutSession_WorkoutTemplateId",
                 schema: "GymApp",
                 table: "WorkoutSession",
@@ -1116,6 +1120,13 @@ namespace GymProject.Infrastructure.Migrations
                 column: "ExcerciseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkUnit_WorkoutSessionId_ProgressiveNumber",
+                schema: "GymApp",
+                table: "WorkUnit",
+                columns: new[] { "WorkoutSessionId", "ProgressiveNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkUnitTemplate_ExcerciseId",
                 schema: "GymApp",
                 table: "WorkUnitTemplate",
@@ -1132,6 +1143,13 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "WorkUnitTemplate",
                 column: "WorkUnitNoteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkUnitTemplate_WorkoutTemplateId_ProgressiveNumber",
+                schema: "GymApp",
+                table: "WorkUnitTemplate",
+                columns: new[] { "WorkoutTemplateId", "ProgressiveNumber" },
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

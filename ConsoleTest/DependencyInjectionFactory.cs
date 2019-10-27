@@ -153,6 +153,11 @@ namespace ConsoleTest
             builder.RegisterGeneric(typeof(TransactionBehaviour<,>))
                 .As(typeof(IPipelineBehavior<,>))
                 .InstancePerDependency();
+
+            builder.RegisterGeneric(typeof(ValidatorBehavior<,>))
+                .As(typeof(IPipelineBehavior<,>))
+                .InstancePerDependency();
+
             //builder.RegisterType(typeof(IPipelineBehavior<,>)).As(typeof(TransactionBehaviour<,>)).InstancePerDependency();
 
 

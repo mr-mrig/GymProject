@@ -1,4 +1,6 @@
-﻿using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
+﻿using GymProject.Domain.SharedKernel;
+using GymProject.Domain.TrainingDomain.Common;
+using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -35,7 +37,12 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                workout.AddTransientWorkingSet(message.WorkUnitProgressiveNumber, message.Repetitions, message.Rest, message.Effort, message.Tempo, message.IntensityTechniquesIds);
+                WSRepetitionsValue repetitions = ParseRepetitions(message.RepetitionsValue, message.WorkTypeId);
+                RestPeriodValue rest = ParseRest(message.RestValue, message.RestMeasUnitId);
+                TrainingEffortValue effort = ParseEffort(message.EffortValue, message.EffortTypeId);
+                TUTValue tempo = ParseTempo(message.Tempo);
+
+                workout.AddTransientWorkingSet(message.WorkUnitProgressiveNumber, repetitions, rest, effort, tempo, message.IntensityTechniquesIds);
 
 
                 _logger.LogInformation("----- Creating Working Set {@WorkUnitProgressiveNumber} in {@workout.Id}", message.WorkUnitProgressiveNumber, workout.Id);
@@ -51,6 +58,67 @@ namespace GymProject.Application.Command.TrainingDomain
 
             return result;
         }
+
+
+        private WSRepetitionsValue ParseRepetitions(int repetitionsValue, int? workTypeId)
+        {
+            //if (!repetitionsValue.HasValue)
+            //    return null;
+
+            WSWorkTypeEnum workType = workTypeId.HasValue
+                ? WSWorkTypeEnum.From(workTypeId.Value)
+                : WSWorkTypeEnum.RepetitionBasedSerie;
+
+            WSRepetitionsValue repetitions;
+
+            if (repetitionsValue == WSRepetitionsValue.AMRAPValue && workType == WSWorkTypeEnum.RepetitionBasedSerie)
+                repetitions = WSRepetitionsValue.TrackAMRAP();
+            else
+                repetitions = WSRepetitionsValue.TrackWork(repetitionsValue, workType);
+
+            return repetitions;
+        }
+
+
+        private RestPeriodValue ParseRest(int? restValue, int? restMeasUnitId)
+        {
+            if (!restValue.HasValue)
+                return null;
+
+
+            TimeMeasureUnitEnum restUnit = restMeasUnitId.HasValue
+                ? TimeMeasureUnitEnum.From(restMeasUnitId.Value)    // Null if unit not found
+                : TimeMeasureUnitEnum.Seconds;
+
+            return RestPeriodValue.SetRest(restValue.Value, restUnit);
+        }
+
+        private TrainingEffortValue ParseEffort(int? effortValue, int? effortTypeId)
+        {
+            if(!effortValue.HasValue)
+                return null;
+
+            TrainingEffortTypeEnum effortType = effortTypeId.HasValue
+                ? TrainingEffortTypeEnum.From(effortTypeId.Value)
+                : TrainingEffortTypeEnum.IntensityPercentage;
+
+
+            return TrainingEffortValue.FromEffort(effortValue.Value, effortType);
+        }
+
+
+        private TUTValue ParseTempo(string tempo)
+        {
+            TUTValue ret;
+
+            if (string.IsNullOrWhiteSpace(tempo))
+                ret = null;
+            else
+                ret = TUTValue.PlanTUT(tempo);
+
+            return ret;
+        }
+
 
     }
 }

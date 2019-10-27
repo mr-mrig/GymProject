@@ -466,7 +466,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (Repetitions.IsRepetitionBasedSerie())
                 return Repetitions.Value;
 
-            return Repetitions.Value / Tempo.ToSeconds();
+            return Repetitions.Value / (Tempo?.ToSeconds()
+                ?? TUTValue.SetGenericTUT().ToSeconds());
         }
 
 
@@ -526,7 +527,8 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>True if business rule is met</returns>
         private bool ValidEffortWhenAMRAP()
 
-            => !Repetitions.IsAMRAP() ||
+            => /*Repetitions == null ||*/
+                !Repetitions.IsAMRAP() ||
                 (Effort != null && 
                     (Effort.IsRM() || Effort.IsIntensityPercentage()));
 

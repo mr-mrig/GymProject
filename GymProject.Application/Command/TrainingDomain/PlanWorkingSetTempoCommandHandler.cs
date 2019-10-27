@@ -27,7 +27,7 @@ namespace GymProject.Application.Command.TrainingDomain
         public async Task<bool> Handle(PlanWorkingSetTempoCommand message, CancellationToken cancellationToken)
         {
             bool result = false;
-
+            TUTValue tempo;
             WorkoutTemplateRoot workout = _workoutRepository.Find(message.WorkoutTemplateId);
 
             if (workout == null)
@@ -35,7 +35,10 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                TUTValue tempo = TUTValue.PlanTUT(message.TutValue);
+                if (string.IsNullOrWhiteSpace(message.TutValue))
+                    tempo = null;
+                else
+                    tempo = TUTValue.PlanTUT(message.TutValue);
 
                 workout.ReviseWorkingSetLiftingTempo(message.WorkUnitProgressiveNumber, message.WorkingSetProgressiveNumber, tempo);
 

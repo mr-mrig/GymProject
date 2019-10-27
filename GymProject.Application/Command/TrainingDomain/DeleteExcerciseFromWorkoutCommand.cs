@@ -7,14 +7,15 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         public uint WorkoutTemplateId { get; private set; }
-        public uint WorkUnitId { get; private set; }
+        //public uint WorkUnitId { get; private set; }
+        public uint WorkUnitProgressiveNumber { get; private set; }
 
 
 
-        public DeleteExcerciseFromWorkoutCommand(uint workoutTemplateId, uint workUnitId)
+        public DeleteExcerciseFromWorkoutCommand(uint workoutTemplateId, uint workUnitProgressiveNumber)
         {
             WorkoutTemplateId = workoutTemplateId;
-            WorkUnitId = workUnitId;
+            WorkUnitProgressiveNumber = workUnitProgressiveNumber;
         }
 
 

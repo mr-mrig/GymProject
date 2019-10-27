@@ -160,12 +160,12 @@ namespace GymProject.Domain.Test.Util
         /// </summary>
         /// <param name="possibleChoices">The items list which to choose from</param>
         /// <returns>One of the possible items.</returns>
-        public static T? ChooseAmongNullable<T>(IList<T?> possibleChoices, float prob = 0) where T : struct
+        public static T? ChooseAmongNullable<T>(IEnumerable<T?> possibleChoices, float prob = 0) where T : struct
         {
             if (RandomDouble(0, 1) < prob)
                 return null;
 
-            return possibleChoices[RandomInt(0, possibleChoices.Count() - 1)];
+            return possibleChoices.ElementAt(RandomInt(0, possibleChoices.Count() - 1));
         }
 
 

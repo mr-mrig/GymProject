@@ -7,11 +7,11 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         public uint TrainingPlanId { get; private set; }
-        public uint WeekTypeEnumId { get; private set; }
+        public uint? WeekTypeEnumId { get; private set; }
 
 
 
-        public PlanTrainingWeekCommand(uint trainingPlanId, uint weekTypeEnumId)
+        public PlanTrainingWeekCommand(uint trainingPlanId, uint? weekTypeEnumId)
         {
             TrainingPlanId = trainingPlanId;
             WeekTypeEnumId = weekTypeEnumId;

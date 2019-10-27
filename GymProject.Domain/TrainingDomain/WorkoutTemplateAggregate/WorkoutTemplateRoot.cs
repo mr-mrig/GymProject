@@ -214,12 +214,12 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <summary>
         /// Find the Working Unit with the progressive number specified - DEFAULT if not found
         /// </summary>
-        /// <param name="workingSetPnum">The progressive number to be found</param>
+        /// <param name="workUnitProgressiveNumber">The progressive number to be found</param>
         /// <exception cref="InvalidOperationException">If more elements with the specified Progressive Number are found</exception>
         /// <returns>The WorkingSetTemplate object or DEFAULT if not found</returns>
-        public WorkUnitTemplateEntity CloneWorkUnit(uint workingSetPnum)
+        public WorkUnitTemplateEntity CloneWorkUnit(uint workUnitProgressiveNumber)
 
-            => FindWorkUnitOrDefault(workingSetPnum)?.Clone() as WorkUnitTemplateEntity;
+            => FindWorkUnitOrDefault(workUnitProgressiveNumber)?.Clone() as WorkUnitTemplateEntity;
 
 
         /// <summary>

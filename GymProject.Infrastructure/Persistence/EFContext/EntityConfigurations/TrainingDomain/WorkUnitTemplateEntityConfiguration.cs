@@ -89,11 +89,18 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             var navigation = builder.Metadata.FindNavigation(nameof(WorkUnitTemplateEntity.WorkingSets));
             navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasAlternateKey
+            //builder.HasAlternateKey
+            //(
+            //    "WorkoutTemplateId",
+            //    "ProgressiveNumber"
+            //);
+
+            builder.HasIndex
             (
                 "WorkoutTemplateId",
                 "ProgressiveNumber"
-            );
+            )
+            .IsUnique();
         }
 
     }

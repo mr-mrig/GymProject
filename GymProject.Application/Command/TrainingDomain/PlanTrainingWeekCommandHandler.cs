@@ -38,7 +38,20 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                plan.PlanDraftTrainingWeek(TrainingWeekTypeEnum.From((int)message.WeekTypeEnumId));
+
+                TrainingWeekTypeEnum weekType = message.WeekTypeEnumId == null 
+                    ? null
+                    : TrainingWeekTypeEnum.From((int)message.WeekTypeEnumId);
+
+                // Validator should handle this
+                //if(weekType == null)
+                //{
+                //    _logger.LogWarning("ERROR: {@WeekTypeId} not parsable", message.WeekTypeEnumId);
+                //    return false;
+                //}
+
+
+                plan.PlanDraftTrainingWeek(weekType);
 
 
                 _logger.LogInformation("----- Creating Training Week - {@TrainingPlan}", plan);

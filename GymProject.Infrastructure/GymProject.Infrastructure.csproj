@@ -19,4 +19,8 @@
     <ProjectReference Include="..\GymProject.Domain\GymProject.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

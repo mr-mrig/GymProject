@@ -2,7 +2,11 @@
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate;
+using GymProject.Domain.TrainingDomain.WorkingSetNote;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
+using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
 using GymProject.Domain.UserAccountDomain.UserAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using System;
@@ -26,6 +30,12 @@ namespace GymProject.Application.Test.Utils
         public IEnumerable<ExcerciseRoot> Excercises { get; protected set; }
         public IEnumerable<TrainingPlanRoot> TrainingPlans { get; protected set; }
         public IEnumerable<WorkoutTemplateRoot> WorkoutTemplates { get; protected set; }
+
+
+        //public IEnumerable<WorkUnitTemplateNoteRoot> WorkUnitTemplateNotes { get; protected set; }
+        public IEnumerable<TrainingPlanNoteRoot> TrainingPlanNotes { get; protected set; }
+        public IEnumerable<WorkingSetNoteRoot> WorkingSetNotes { get; protected set; }
+        public IEnumerable<TrainingPlanMessageRoot> TrainingPlanMessages { get; protected set; }
 
         #endregion
 
@@ -71,6 +81,55 @@ namespace GymProject.Application.Test.Utils
 
             Context.Excercises.AddRange(Excercises);
             Context.SaveChanges();
+        }
+
+
+        internal void SeedNotes()
+        {
+            //WorkUnitTemplateNotes = new List<WorkUnitTemplateNoteRoot>()
+            //{
+            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note1")),
+            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note2")),
+            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note3")),
+            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note4")),
+            //};
+
+            //Context.worknot.AddRange(WorkUnitTemplateNotes);
+            //Context.SaveChanges();
+
+            TrainingPlanNotes = new List<TrainingPlanNoteRoot>()
+            {
+                TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note1")),
+                TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note2")),
+                TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note3")),
+                TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note4")),
+            };
+
+            Context.TrainingPlanNotes.AddRange(TrainingPlanNotes);
+            Context.SaveChanges();
+
+            WorkingSetNotes = new List<WorkingSetNoteRoot>()
+            {
+                WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note1")),
+                WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note2")),
+                WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note3")),
+                WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note4")),
+            };
+
+            Context.WorkingSetNotes.AddRange(WorkingSetNotes);
+            Context.SaveChanges();
+
+            TrainingPlanMessages = new List<TrainingPlanMessageRoot>()
+            {
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
+            };
+
+            Context.TrainingPlanMessages.AddRange(TrainingPlanMessages);
+            Context.SaveChanges();
+            
         }
 
 
@@ -159,6 +218,7 @@ namespace GymProject.Application.Test.Utils
             //SeedMuscle();
             SeedExcercise();
             SeedTrainingPlan();
+            SeedNotes();
 
         }
 

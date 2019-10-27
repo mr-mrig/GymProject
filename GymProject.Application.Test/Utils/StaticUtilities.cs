@@ -1,4 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GymProject.Domain.Base;
+using GymProject.Infrastructure.Persistence.EFContext;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -25,6 +30,33 @@ namespace GymProject.Application.Test.Utils
                 .Options;
 
 
+        /// <summary>
+        /// Unit test initial setup. It insulates each test environment according to the test name
+        /// </summary>
+        /// <typeparam name="T">The command handler class</typeparam>
+        /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
+        /// <returns></returns>
+        public static (GymContext, IMediator, ILogger<T>) InitTest<T>(string callerName)
+        {
+            // Mocking
+            var mediator = new Mock<IMediator>();
+            var logger = new Mock<ILogger<T>>();
+
+            // In memory DB
+            DatabaseSeed seed = new DatabaseSeed(new GymContext(
+                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>(callerName)
+                , mediator.Object
+                , logger.Object));
+            seed.SeedTrainingDomain();
+
+            GymContext context = seed.Context;
+
+            return(context, mediator.Object, logger.Object);
+        }
+
+        public static T GetSourceAggregate<T>(IRepository<T> repo, uint id) where T : class, IAggregateRoot
+
+            => repo.Find(id) as T;
 
     }
 }

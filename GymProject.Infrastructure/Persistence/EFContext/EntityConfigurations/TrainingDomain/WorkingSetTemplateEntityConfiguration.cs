@@ -72,11 +72,18 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             // Intensity technique is handled in the Connection Class Configuration
 
-            builder.HasAlternateKey
+            //builder.HasAlternateKey
+            //(
+            //    "WorkUnitTemplateId",
+            //    "ProgressiveNumber"
+            //);
+
+            builder.HasIndex
             (
                 "WorkUnitTemplateId",
                 "ProgressiveNumber"
-            );
+            )
+            .IsUnique();
         }
 
     }

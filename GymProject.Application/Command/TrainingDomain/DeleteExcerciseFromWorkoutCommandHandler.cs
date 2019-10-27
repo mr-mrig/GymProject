@@ -36,10 +36,10 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                workout.UnplanExcerciseById(message.WorkUnitId);
+                workout.UnplanExcercise(message.WorkUnitProgressiveNumber);
 
 
-                _logger.LogInformation("----- Deleting Work Unit - {@WorkUnit}", message.WorkUnitId);
+                _logger.LogInformation("----- Deleting Work Unit - {@WorkUnit}", message.WorkUnitProgressiveNumber);
 
                 _workoutRepository.Modify(workout);
                 result = await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);

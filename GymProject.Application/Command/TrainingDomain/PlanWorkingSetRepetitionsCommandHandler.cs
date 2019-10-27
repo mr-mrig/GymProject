@@ -59,8 +59,8 @@ namespace GymProject.Application.Command.TrainingDomain
 
                 if (message.RepetitionsValue == WSRepetitionsValue.AMRAPValue && workType == WSWorkTypeEnum.RepetitionBasedSerie)
                     repetitions = WSRepetitionsValue.TrackAMRAP();
-
-                repetitions = WSRepetitionsValue.TrackWork(message.RepetitionsValue, workType);
+                else
+                    repetitions = WSRepetitionsValue.TrackWork(message.RepetitionsValue, workType);
 
 
                 workout.ReviseWorkingSetRepetitions(message.WorkUnitProgressiveNumber, message.WorkingSetProgressiveNumber, repetitions);

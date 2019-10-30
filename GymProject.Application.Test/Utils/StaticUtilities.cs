@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.Base;
+﻿using FluentValidation;
+using GymProject.Domain.Base;
 using GymProject.Infrastructure.Persistence.EFContext;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,15 @@ namespace GymProject.Application.Test.Utils
         public static T GetSourceAggregate<T>(IRepository<T> repo, uint id) where T : class, IAggregateRoot
 
             => repo.Find(id) as T;
+
+
+        //public static void TestcommandValidator<TCommand,TValidator,Z>() where TValidator : AbstractValidator<TCommand>
+        //{
+        //    ILogger<TCommand> loggerValidator;
+        //    Mock<ILogger<TValidator>> logger = new Mock<ILogger<TValidator>>();
+        //    TValidator validator = new TValidator(logger.Object);
+        //    Assert.False(validator.Validate(command).IsValid);
+        //}
 
     }
 }

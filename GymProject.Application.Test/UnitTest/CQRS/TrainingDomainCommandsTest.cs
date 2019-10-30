@@ -2,6 +2,7 @@ using GymProject.Application.Command;
 using GymProject.Application.Command.TrainingDomain;
 using GymProject.Application.MediatorBehavior;
 using GymProject.Application.Test.Utils;
+using GymProject.Application.Validator.TrainingDomain;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.Test.Util;
 using GymProject.Domain.TrainingDomain.Common;
@@ -708,6 +709,10 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             PlanTrainingWeekCommandHandler handler = new PlanTrainingWeekCommandHandler(
                 repo, logger);
 
+            var loggerValidator = new Mock<ILogger<PlanTrainingWeekCommandValidator>>();
+            PlanTrainingWeekCommandValidator validator = new PlanTrainingWeekCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+
             Assert.True(await handler.Handle(command, default));
 
             // Check
@@ -717,15 +722,11 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
 
         [Fact]
-        public async Task PlanTrainingWeekCommandFail()
+        public void PlanTrainingWeekCommandFail()
         {
-
-            throw new NotImplementedException("This is done by the validator... How do we test it?");
-
             GymContext context;
-            ILogger<PlanTrainingWeekCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitTest<PlanTrainingWeekCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, _) = StaticUtilities.InitTest<PlanTrainingWeekCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -735,27 +736,10 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             var src = repo.Find(id).Clone() as TrainingPlanRoot;
 
             PlanTrainingWeekCommand command = new PlanTrainingWeekCommand(id, weekTypeId);
-            PlanTrainingWeekCommandHandler handler = new PlanTrainingWeekCommandHandler(
-                repo, logger);
 
-            Assert.False(await handler.Handle(command, default));
-
-            // Check
-            var dest = repo.Find(id);
-            Assert.Equal(src.TrainingWeeks.Count(), dest.TrainingWeeks.Count());
-
-            // Test - NULL
-            uint? weekTypeId2 = null;
-
-            command = new PlanTrainingWeekCommand(id, weekTypeId2);
-            handler = new PlanTrainingWeekCommandHandler(
-                repo, logger);
-
-            Assert.False(await handler.Handle(command, default));
-
-            // Check
-            dest = repo.Find(id);
-            Assert.Equal(src.TrainingWeeks.Count(), dest.TrainingWeeks.Count());
+            var loggerValidator = new Mock<ILogger<PlanTrainingWeekCommandValidator>>();
+            PlanTrainingWeekCommandValidator validator = new PlanTrainingWeekCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
         }
 
 
@@ -832,7 +816,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         }
 
         [Fact]
-        public async Task PlanWorkingSetCommandFail()
+        public void PlanWorkingSetCommandFail()
         {
             GymContext context;
             ILogger<PlanWorkingSetCommandHandler> logger;
@@ -841,52 +825,41 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
-            // Test
             uint id = 1;
             uint workUnitPnum = 0;
             var src = repo.Find(id).Clone() as WorkoutTemplateRoot;
 
 
-            int reps = RandomFieldGenerator.RandomInt(1, 30);
-            int? workType = RandomFieldGenerator.ChooseAmongNullable(TimeMeasureUnitEnum.List().Select(x => (int?)x.Id), 0.25f);
-            int? rest = RandomFieldGenerator.RandomIntNullable(30, 360, 0.25f);
-            int? restMeas = RandomFieldGenerator.ChooseAmongNullable(TimeMeasureUnitEnum.List().Select(x => (int?)x.Id), 0.25f);
-            int? effort = RandomFieldGenerator.RandomIntNullable(2, 15, 0.25f);
+            int reps = 10;
 
-            int? effortType = 55;
+            // Test wrong EffortTypeId
+            int? workType = 1;
+            int? rest = 120;
+            int? restMeas = 1;
+            int? effort = 10;
+            int? effortType = -1;
 
 
             PlanWorkingSetCommand command = new PlanWorkingSetCommand(id, workUnitPnum, reps,
                 workType, rest, restMeas, effort, effortType, null, null);
-            PlanWorkingSetCommandHandler handler = new PlanWorkingSetCommandHandler(
-                repo, logger);
 
-            Assert.True(await handler.Handle(command, default));
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetCommandValidator>>();
+            PlanWorkingSetCommandValidator validator = new PlanWorkingSetCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
 
-            // Check
-            var dest = repo.Find(id);
-            var wsAdded = dest.CloneWorkUnit(workUnitPnum).WorkingSets.Last();
-            Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count() - itest - 1);
+            // Test wrong WorkTypeId
+            effortType = 1;
+            workType = 100;
 
-            Assert.Equal(
-                WSRepetitionsValue.TrackWork(reps, workType.HasValue ? WSWorkTypeEnum.From(workType.Value) : WSWorkTypeEnum.RepetitionBasedSerie)
-                , wsAdded.Repetitions);
+            command = new PlanWorkingSetCommand(id, workUnitPnum, reps, workType, rest, restMeas, effort, effortType, null, null);
+            Assert.False(validator.Validate(command).IsValid);
 
-            if (rest.HasValue)
-                Assert.Equal(
-                    RestPeriodValue.SetRest(rest.Value, restMeas.HasValue ? TimeMeasureUnitEnum.From(restMeas.Value) : TimeMeasureUnitEnum.Seconds)
-                    , wsAdded.Rest);
+            // Test wrong TimeMEasUnitId
+            workType = 1;
+            restMeas = 0;
 
-            if (effort.HasValue)
-                Assert.Equal(
-                    TrainingEffortValue.FromEffort(effort.Value, effortType.HasValue ? TrainingEffortTypeEnum.From(effortType.Value) : TrainingEffortTypeEnum.IntensityPercentage)
-                    , wsAdded.Effort);
-
-            if (string.IsNullOrWhiteSpace(tempo))
-                Assert.Null(wsAdded.Tempo);
-            else
-                Assert.Equal(TUTValue.PlanTUT(tempo), wsAdded.Tempo);
-
+            command = new PlanWorkingSetCommand(id, workUnitPnum, reps, workType, rest, restMeas, effort, effortType, null, null);
+            Assert.False(validator.Validate(command).IsValid);
         }
 
 
@@ -896,6 +869,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         {
             GymContext context;
             ILogger<PlanWorkingSetEffortCommandHandler> logger;
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetEffortCommandValidator>>();
 
             (context, _, logger) = StaticUtilities.InitTest<PlanWorkingSetEffortCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
@@ -913,6 +887,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             PlanWorkingSetEffortCommandHandler handler = new PlanWorkingSetEffortCommandHandler(
                 repo, logger);
 
+            PlanWorkingSetEffortCommandValidator validator = new PlanWorkingSetEffortCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+
             Assert.True(await handler.Handle(command, default));
 
             // Check
@@ -921,5 +898,131 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             Assert.Equal(TrainingEffortValue.FromEffort(effort.Value, TrainingEffortTypeEnum.From(effortTypeId.Value)), 
                 dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).Effort);
         }
+
+
+        [Fact]
+        public async Task PlanWorkingSetRepetitionsCommandSuccess()
+        {
+            GymContext context;
+            ILogger<PlanWorkingSetRepetitionsCommandHandler> logger;
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetRepetitionsCommandValidator>>();
+
+            (context, _, logger) = StaticUtilities.InitTest<PlanWorkingSetRepetitionsCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLWorkoutTemplateRepository(context);
+
+            // Test
+            uint id = 1;
+            uint workUnitPnum = 0;
+            uint wsPnum = 0;
+            int reps = 9;
+            int? workTypeId = 1;
+            var src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+
+            PlanWorkingSetRepetitionsCommand command = new PlanWorkingSetRepetitionsCommand(id, workUnitPnum, wsPnum, reps, workTypeId);
+            PlanWorkingSetRepetitionsCommandHandler handler = new PlanWorkingSetRepetitionsCommandHandler(
+                repo, logger);
+
+            PlanWorkingSetRepetitionsCommandValidator validator = new PlanWorkingSetRepetitionsCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+            Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
+            Assert.Equal(WSRepetitionsValue.TrackWork(reps, WSWorkTypeEnum.From(workTypeId.Value)), 
+                dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).Repetitions);
+        }
+
+
+        [Fact]
+        public async Task PlanWorkingSetTempoCommandSuccess()
+        {
+            GymContext context;
+            ILogger<PlanWorkingSetTempoCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<PlanWorkingSetTempoCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLWorkoutTemplateRepository(context);
+
+            // Test
+            uint id = 1;
+            uint workUnitPnum = 0;
+            uint wsPnum = 0;
+            string tempo = "11X0";
+            var src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+
+            PlanWorkingSetTempoCommand command = new PlanWorkingSetTempoCommand(id, workUnitPnum, wsPnum, tempo);
+            PlanWorkingSetTempoCommandHandler handler = new PlanWorkingSetTempoCommandHandler(
+                repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+            Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
+            Assert.Equal(TUTValue.PlanTUT(tempo), dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).Tempo);
+        }
+
+
+        [Fact]
+        public async Task RemoveWorkingSetIntensityTechniqueCommandSuccess()
+        {
+            GymContext context;
+            ILogger<RemoveWorkingSetIntensityTechniqueCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<RemoveWorkingSetIntensityTechniqueCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLWorkoutTemplateRepository(context);
+
+            // Test
+            uint id = 1;
+            uint workUnitPnum = 0;
+            uint wsPnum = 0;
+            var src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+            uint? intTechniqueId = src.CloneWorkingSet(workUnitPnum, wsPnum).IntensityTechniqueIds.First();
+
+            RemoveWorkingSetIntensityTechniqueCommand command = new RemoveWorkingSetIntensityTechniqueCommand(id, workUnitPnum, wsPnum, intTechniqueId.Value);
+            RemoveWorkingSetIntensityTechniqueCommandHandler handler = new RemoveWorkingSetIntensityTechniqueCommandHandler(
+                repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+            Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
+            Assert.Equal(src.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).IntensityTechniqueIds.Count() - 1,
+                dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).IntensityTechniqueIds.Count);
+            Assert.DoesNotContain(intTechniqueId, dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).IntensityTechniqueIds);
+        }
+
+
+        [Fact]
+        public async Task TagTrainingPlanCommandSuccess()
+        {
+            GymContext context;
+            ILogger<TagTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint hashtagId = 1111;
+
+            TagTrainingPlanCommand command = new TagTrainingPlanCommand(id, hashtagId);
+            TagTrainingPlanCommandHandler handler = new TagTrainingPlanCommandHandler(repo, logger);
+
+            Assert.False(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+            Assert.NotEmpty(dest.HashtagIds);
+            Assert.Equal(hashtagId, dest.HashtagIds.Last());
+        }
+
+
     }
 }

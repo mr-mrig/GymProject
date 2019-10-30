@@ -1,6 +1,8 @@
 ﻿using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
+using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
+using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate;
@@ -36,6 +38,13 @@ namespace GymProject.Application.Test.Utils
         public IEnumerable<TrainingPlanNoteRoot> TrainingPlanNotes { get; protected set; }
         public IEnumerable<WorkingSetNoteRoot> WorkingSetNotes { get; protected set; }
         public IEnumerable<TrainingPlanMessageRoot> TrainingPlanMessages { get; protected set; }
+
+
+        public IEnumerable<TrainingHashtagRoot> TrainingHashtags { get; protected set; }
+        public IEnumerable<TrainingPlanHashtagRelation> TrainingPlanHashtags { get; protected set; }
+
+
+        public IEnumerable<IntensityTechniqueRoot> IntensityTechniques { get; protected set; }
 
         #endregion
 
@@ -81,6 +90,38 @@ namespace GymProject.Application.Test.Utils
 
             Context.Excercises.AddRange(Excercises);
             Context.SaveChanges();
+        }
+
+
+        internal void SeedIntensityTechnique()
+        {
+            IntensityTechniques = new List<IntensityTechniqueRoot>()
+            {
+                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 1", "IT1", null, false),
+                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 2", "IT2", null, false),
+            };
+
+            Context.IntensityTechniques.AddRange(IntensityTechniques);
+            Context.SaveChanges();
+        }
+
+
+        internal void SeedHashtags()
+        {
+            TrainingHashtags = new List<TrainingHashtagRoot>()
+            {
+                TrainingHashtagRoot.TagWithTransient(GenericHashtagValue.TagWith("My Hashtag 1")),
+                TrainingHashtagRoot.TagWithTransient(GenericHashtagValue.TagWith("My Hashtag 2")),
+                TrainingHashtagRoot.TagWithTransient(GenericHashtagValue.TagWith("My Hashtag 3")),
+                TrainingHashtagRoot.TagWithTransient(GenericHashtagValue.TagWith("My Hashtag 4")),
+                TrainingHashtagRoot.TagWithTransient(GenericHashtagValue.TagWith("My Hashtag 5")),
+                TrainingHashtagRoot.TagWithTransient(GenericHashtagValue.TagWith("My Hashtag 6")),
+            };
+
+            Context.TrainingHashtags.AddRange(TrainingHashtags);
+            Context.SaveChanges();
+
+
         }
 
 
@@ -147,6 +188,8 @@ namespace GymProject.Application.Test.Utils
                 plan1, plan2, plan3
             };
 
+            plan1.TagAs(3);
+            plan1.TagAs(4);
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
 
@@ -183,6 +226,7 @@ namespace GymProject.Application.Test.Utils
                     for (uint iws = 0; iws < workingSetsNumber; iws++)
                     {
                         wo.AddTransientWorkingSet(iexc, WSRepetitionsValue.TrackRepetitionSerie(10));
+                        wo.AddWorkingSetIntensityTechnique(iexc, iws, 1);
                     }
                 }
 
@@ -217,6 +261,8 @@ namespace GymProject.Application.Test.Utils
             SeedUser();
             //SeedMuscle();
             SeedExcercise();
+            SeedIntensityTechnique();
+            SeedHashtags();
             SeedTrainingPlan();
             SeedNotes();
 

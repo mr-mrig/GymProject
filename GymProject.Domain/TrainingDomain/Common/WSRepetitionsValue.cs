@@ -48,7 +48,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         private WSRepetitionsValue(int serieLength, WSWorkTypeEnum serieType)
         {
             Value = serieLength;
-            WorkType = serieType ?? WSWorkTypeEnum.NotSet;
+            WorkType = serieType ?? WSWorkTypeEnum.RepetitionBasedSerie;
 
             TestBusinessRules();
         }

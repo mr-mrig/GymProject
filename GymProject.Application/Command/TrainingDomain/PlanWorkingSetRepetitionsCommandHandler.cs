@@ -36,7 +36,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                WSWorkTypeEnum workType = WSWorkTypeEnum.From(message.WorkTypeId);
+                WSWorkTypeEnum workType = WSWorkTypeEnum.From(message.WorkTypeId.Value);
                 WSRepetitionsValue repetitions;
 
                 //switch(workType)

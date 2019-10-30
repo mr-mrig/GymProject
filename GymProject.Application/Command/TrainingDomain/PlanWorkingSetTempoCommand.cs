@@ -19,7 +19,7 @@ namespace GymProject.Application.Command.TrainingDomain
             WorkoutTemplateId = workoutTemplateId;
             WorkUnitProgressiveNumber = workUnitProgressiveNumber;
             WorkingSetProgressiveNumber = workingSetProgressiveNumber;
-            TutValue = TutValue;
+            TutValue = tutValue;
         }
 
 

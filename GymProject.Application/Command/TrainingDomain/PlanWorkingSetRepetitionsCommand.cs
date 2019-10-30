@@ -11,7 +11,7 @@ namespace GymProject.Application.Command.TrainingDomain
         public uint WorkingSetProgressiveNumber { get; private set; }
 
         public int RepetitionsValue { get; private set; }
-        public int WorkTypeId { get; private set; }
+        public int? WorkTypeId { get; private set; }
 
         //public WSRepetitionsValue Repetitions { get; private set; }
         //public RestPeriodValue Rest { get; private set; }
@@ -21,23 +21,15 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        //public PlanWorkingSetRepetitionsCommand (uint workoutTemplateId, uint workUnitProgressiveNumber, WSRepetitionsValue repetitions, RestPeriodValue rest
-        //    , TrainingEffortValue effort, TUTValue tempo, IEnumerable<uint?> intensityTechniquesIds)
 
-        public PlanWorkingSetRepetitionsCommand(uint workoutTemplateId, uint workUnitProgressiveNumber, uint workingSetProgressiveNumber, int repetitions, int workTypeId)
+        public PlanWorkingSetRepetitionsCommand(uint workoutTemplateId, uint workUnitProgressiveNumber, uint workingSetProgressiveNumber, int repetitions, int? workTypeId)
         {
             WorkoutTemplateId = workoutTemplateId;
             WorkUnitProgressiveNumber = workUnitProgressiveNumber;
             WorkingSetProgressiveNumber = workingSetProgressiveNumber;
             RepetitionsValue = repetitions;
             WorkTypeId = workTypeId;
-            //Rest = rest;
-            //Effort = effort;
-            //Tempo = tempo;
-            //IntensityTechniquesIds = intensityTechniquesIds
         }
-
-
 
 
     }

@@ -10,7 +10,7 @@ namespace GymProject.Application.Validator.TrainingDomain
 
 
 
-        public WriteWorkUnitTemplateNoteCommandValidator (ILogger<WriteWorkUnitTemplateNoteCommand> logger)
+        public WriteWorkUnitTemplateNoteCommandValidator (ILogger<WriteWorkUnitTemplateNoteCommandValidator> logger)
         {
             RuleFor(x => x.WorkoutTemplateId).NotEmpty();
             RuleFor(x => x.WorkUnitProgressiveNumber).NotEmpty();

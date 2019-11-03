@@ -26,7 +26,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Used to give a priority in order to sort the Hashtags when displaying them to the user
         /// </summary>
-        public uint ProgressiveNumber { get; private set; }
+        public uint ProgressiveNumber { get; internal set; }
 
 
 

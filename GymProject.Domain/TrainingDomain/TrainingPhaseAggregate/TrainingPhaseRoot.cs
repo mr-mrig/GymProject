@@ -43,13 +43,13 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method - PROTECTED
+        /// Factory method
         /// </summary>
         /// <param name="name">The name of the phase</param>
         /// <param name="ownerId">The User which the phase was created by</param>
         /// <param name="entryStatus">TThe specified entry status</param>
         /// <returns>A new TrainingPhase instance</returns>
-        protected static TrainingPhaseRoot CreateTrainingPhase
+        public static TrainingPhaseRoot CreateTrainingPhase
         (
             string name,
             EntryStatusTypeEnum entryStatus

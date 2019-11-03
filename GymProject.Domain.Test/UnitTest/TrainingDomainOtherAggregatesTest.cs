@@ -42,7 +42,7 @@ namespace GymProject.Domain.Test.UnitTest
 
                 if (isTransient)
                 {
-                    trainingHashtag = TrainingHashtagRoot.TagWithTransient(hashtag);
+                    trainingHashtag = TrainingHashtagRoot.TagWith(hashtag);
                     Assert.Null(trainingHashtag.Id);
                     Assert.Null(trainingHashtag.EntryStatus);
                 }

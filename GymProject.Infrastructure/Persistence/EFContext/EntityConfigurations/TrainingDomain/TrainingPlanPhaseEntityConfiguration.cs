@@ -1,4 +1,4 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
+﻿using GymProject.Domain.TrainingDomain.TrainingPhaseAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -24,7 +24,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasOne<TrainingHashtagRoot>()
+            builder.HasOne<TrainingPhaseRoot>()
                 .WithMany()
                 .HasForeignKey(rel => rel.TrainingPhaseId)
                 .OnDelete(DeleteBehavior.Cascade);

@@ -999,12 +999,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
 
         [Fact]
-        public async Task TagTrainingPlanCommandSuccess()
+        public async Task TagTrainingPlanAsHashtagCommandSuccess()
         {
             GymContext context;
-            ILogger<TagTrainingPlanCommandHandler> logger;
+            ILogger<TagTrainingPlanAsHashtagCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanAsHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1012,15 +1012,370 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             uint id = 1;
             uint hashtagId = 1111;
 
-            TagTrainingPlanCommand command = new TagTrainingPlanCommand(id, hashtagId);
-            TagTrainingPlanCommandHandler handler = new TagTrainingPlanCommandHandler(repo, logger);
+            TagTrainingPlanAsHashtagCommand command = new TagTrainingPlanAsHashtagCommand(id, hashtagId);
+            TagTrainingPlanAsHashtagCommandHandler handler = new TagTrainingPlanAsHashtagCommandHandler(repo, logger);
 
-            Assert.False(await handler.Handle(command, default));
+            Assert.True(await handler.Handle(command, default));
 
             // Check
             var dest = repo.Find(id);
             Assert.NotEmpty(dest.HashtagIds);
             Assert.Equal(hashtagId, dest.HashtagIds.Last());
+            Assert.Equal(dest.HashtagIds.Count - 1, 
+                (int)context.TrainingPlanHashtags.Single(x => x.HashtagId == hashtagId && x.TrainingPlanId == id).ProgressiveNumber);
+        }
+
+
+        [Fact]
+        public async Task TagTrainingPlanAsNewHashtagCommandSuccess()
+        {
+            GymContext context;
+            ILogger<TagTrainingPlanAsNewHashtagCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var planRepo = new SQLTrainingPlanRepository(context);
+            var hashtagRepo = new SQLTrainingHashtagRepository(context);
+
+            // Test
+            uint id = 1;
+            string hashtagBody = "MyHashtag";
+
+            TagTrainingPlanAsNewHashtagCommand command = new TagTrainingPlanAsNewHashtagCommand(id, hashtagBody);
+            TagTrainingPlanAsNewHashtagCommandHandler handler = new TagTrainingPlanAsNewHashtagCommandHandler(planRepo, hashtagRepo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var newPlan = planRepo.Find(id);
+            var newHashtag = context.TrainingHashtags.Last();
+
+            Assert.Equal(hashtagBody, newHashtag.Hashtag.Body);
+            Assert.Equal("#" + hashtagBody, newHashtag.Hashtag.ToFullHashtag());
+
+            Assert.NotEmpty(newPlan.HashtagIds);
+            Assert.Equal(newHashtag.Id, newPlan.HashtagIds.Last());
+            //Assert.Equal(newPlan.HashtagIds.Count - 1,
+            //    (int)context.TrainingPlanHashtags.Single(x => x.HashtagId == newHashtag.Id && x.TrainingPlanId == id).ProgressiveNumber);
+        }
+
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandFail()
+        {
+            string fake;
+            TagTrainingPlanAsNewHashtagCommand command;
+            TagTrainingPlanAsNewHashtagCommandValidator validator;
+
+            GymContext context;
+            ILogger<TagTrainingPlanAsNewHashtagCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            uint id = 1;
+            var repo = new SQLWorkoutTemplateRepository(context);
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+
+            // Too short Hashtag
+            fake = "a";
+
+            command = new TagTrainingPlanAsNewHashtagCommand(id, fake);
+            validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+
+            // Too long Hashtag
+            fake = "a".PadRight(GenericHashtagValue.DefaultMaximumLength + 1);
+
+            command = new TagTrainingPlanAsNewHashtagCommand(id, fake);
+            validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+
+            // Invalid hashtag
+            fake = "my hashtag with spaces";
+
+            command = new TagTrainingPlanAsNewHashtagCommand(id, fake);
+            validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+
+            // Invalid hashtag
+            fake = "myhashtagwith#hashtags";
+
+            command = new TagTrainingPlanAsNewHashtagCommand(id, fake);
+            validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+
+            // Invalid hashtag
+            fake = "myhashtagwith many #errors";
+
+            command = new TagTrainingPlanAsNewHashtagCommand(id, fake);
+            validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+
+        [Fact]
+        public async Task UntagTrainingPlanAsHashtagCommandSuccess()
+        {
+            GymContext context;
+            ILogger<UntagTrainingPlanAsHashtagCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<UntagTrainingPlanAsHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var planRepo = new SQLTrainingPlanRepository(context);
+            var hashtagRepo = new SQLTrainingHashtagRepository(context);
+
+            // Test
+            uint id = 1;
+            uint hashtagId = planRepo.Find(id).HashtagIds.First().Value + 1;
+            var src = planRepo.Find(id).Clone() as TrainingPlanRoot;
+
+            UntagTrainingPlanAsHashtagCommand command = new UntagTrainingPlanAsHashtagCommand(id, hashtagId);
+            UntagTrainingPlanAsHashtagCommandHandler handler = new UntagTrainingPlanAsHashtagCommandHandler(planRepo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = planRepo.Find(id);
+
+            Assert.Equal(src.HashtagIds.Count(), dest.HashtagIds.Count() + 1);
+            Assert.DoesNotContain(hashtagId, dest.HashtagIds);
+
+            //Assert.True(Enumerable.Range(0, dest.HashtagIds.Count())
+            //    .SequenceEqual(context.TrainingPlanHashtags
+            //        .OrderBy(x => x.ProgressiveNumber)
+            //        .Where(x => x.TrainingPlanId == id).Select(y => (int)y.ProgressiveNumber)));
+        }
+
+
+        [Fact]
+        public async Task CreateTrainingPhaseCommandSuccess()
+        {
+            GymContext context;
+            ILogger<CreateTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<CreateTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPhaseRepository(context);
+
+            // Test
+            uint entryStatusId = 1;
+            string phasename = "Local Phase";
+
+            CreateTrainingPhaseCommand command = new CreateTrainingPhaseCommand(entryStatusId, phasename);
+            CreateTrainingPhaseCommandHandler handler = new CreateTrainingPhaseCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = context.TrainingPhases.Last();
+
+            Assert.Equal(phasename, dest.Name);
+            Assert.Equal(EntryStatusTypeEnum.From((int)entryStatusId), dest.EntryStatus);
+        }
+
+
+        [Fact]
+        public async Task CreateTrainingPhaseCommandDuplicateFail()
+        {
+            GymContext context;
+            ILogger<CreateTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<CreateTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPhaseRepository(context);
+
+            // Test
+            uint entryStatusId = 1;
+            string phasename = repo.Find(1).Name;   // Duplicate name
+
+            CreateTrainingPhaseCommand command = new CreateTrainingPhaseCommand(entryStatusId, phasename);
+            CreateTrainingPhaseCommandHandler handler = new CreateTrainingPhaseCommandHandler(repo, logger);
+
+            Assert.False(await handler.Handle(command, default));
+        }
+
+
+        [Fact]
+        public async Task TagTrainingPlanWithTrainingPhaseCommandSuccess()
+        {
+            GymContext context;
+            ILogger<TagTrainingPlanWithTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanWithTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint phaseId = context.TrainingPlans
+                .Find(id).TrainingPhaseIds
+                .Last().Value + 1;
+
+            var src = repo.Find(id).Clone() as TrainingPlanRoot;
+
+            TagTrainingPlanWithTrainingPhaseCommand command = new TagTrainingPlanWithTrainingPhaseCommand(id, phaseId);
+            TagTrainingPlanWithTrainingPhaseCommandHandler handler = new TagTrainingPlanWithTrainingPhaseCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+
+            Assert.Equal(src.TrainingPhaseIds.Count() + 1, dest.TrainingPhaseIds.Count());
+            Assert.Contains(phaseId, dest.TrainingPhaseIds);
+        }
+
+
+        [Fact]
+        public async Task UntagTrainingPlanWithTrainingPhaseCommandSuccess()
+        {
+            GymContext context;
+            ILogger<UntagTrainingPlanWithTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<UntagTrainingPlanWithTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint phaseId = context.TrainingPlans.Find(id).TrainingPhaseIds.First().Value;
+
+            var src = repo.Find(id).Clone() as TrainingPlanRoot;
+
+            UntagTrainingPlanWithTrainingPhaseCommand command = new UntagTrainingPlanWithTrainingPhaseCommand(id, phaseId);
+            UntagTrainingPlanWithTrainingPhaseCommandHandler handler = new UntagTrainingPlanWithTrainingPhaseCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+
+            Assert.Equal(src.TrainingPhaseIds.Count() - 1, dest.TrainingPhaseIds.Count());
+            Assert.DoesNotContain(phaseId, dest.TrainingPhaseIds);
+        }
+
+
+        [Fact]
+        public async Task TagTrainingPlanWithProficiencyCommandSuccess()
+        {
+            GymContext context;
+            ILogger<TagTrainingPlanWithProficiencyCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanWithProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint proficiencyId = context.TrainingPlans
+                .Find(id).TrainingProficiencyIds
+                .Last().Value + 1;
+
+            var src = repo.Find(id).Clone() as TrainingPlanRoot;
+
+            TagTrainingPlanWithProficiencyCommand command = new TagTrainingPlanWithProficiencyCommand(id, proficiencyId);
+            TagTrainingPlanWithProficiencyCommandHandler handler = new TagTrainingPlanWithProficiencyCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+
+            Assert.Equal(src.TrainingProficiencyIds.Count() + 1, dest.TrainingProficiencyIds.Count());
+            Assert.Contains(proficiencyId, dest.TrainingProficiencyIds);
+        }
+
+
+        [Fact]
+        public async Task UntagTrainingPlanWithProficiencyCommandSuccess()
+        {
+            GymContext context;
+            ILogger<UntagTrainingPlanWithProficiencyCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<UntagTrainingPlanWithProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint proficiencyId = context.TrainingPlans
+                .Find(id).TrainingProficiencyIds
+                .Last().Value;
+
+            var src = repo.Find(id).Clone() as TrainingPlanRoot;
+
+            UntagTrainingPlanWithProficiencyCommand command = new UntagTrainingPlanWithProficiencyCommand(id, proficiencyId);
+            UntagTrainingPlanWithProficiencyCommandHandler handler = new UntagTrainingPlanWithProficiencyCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+
+            Assert.Equal(src.TrainingProficiencyIds.Count() - 1, dest.TrainingProficiencyIds.Count());
+            Assert.DoesNotContain(proficiencyId, dest.TrainingProficiencyIds);
+        }
+
+
+        [Fact]
+        public async Task TagTrainingPlanWithMuscleFocusCommandSuccess()
+        {
+            GymContext context;
+            ILogger<TagTrainingPlanWithMuscleFocusCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<TagTrainingPlanWithMuscleFocusCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint muscleId = context.TrainingPlans
+                .Find(id).MuscleFocusIds
+                .Last().Value + 1;
+
+            var src = repo.Find(id).Clone() as TrainingPlanRoot;
+
+            TagTrainingPlanWithMuscleFocusCommand command = new TagTrainingPlanWithMuscleFocusCommand(id, muscleId);
+            TagTrainingPlanWithMuscleFocusCommandHandler handler = new TagTrainingPlanWithMuscleFocusCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+
+            Assert.Equal(src.MuscleFocusIds.Count() + 1, dest.MuscleFocusIds.Count());
+            Assert.Contains(muscleId, dest.MuscleFocusIds);
+        }
+
+
+        [Fact]
+        public async Task UntagTrainingPlanWithMuscleFocusCommandSuccess()
+        {
+            GymContext context;
+            ILogger<UntagTrainingPlanWithMuscleFocusCommandHandler> logger;
+
+            (context, _, logger) = StaticUtilities.InitTest<UntagTrainingPlanWithMuscleFocusCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var repo = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint id = 1;
+            uint muscleId = context.TrainingPlans
+                .Find(id).MuscleFocusIds
+                .Last().Value;
+
+            var src = repo.Find(id).Clone() as TrainingPlanRoot;
+
+            UntagTrainingPlanWithMuscleFocusCommand command = new UntagTrainingPlanWithMuscleFocusCommand(id, muscleId);
+            UntagTrainingPlanWithMuscleFocusCommandHandler handler = new UntagTrainingPlanWithMuscleFocusCommandHandler(repo, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var dest = repo.Find(id);
+
+            Assert.Equal(src.MuscleFocusIds.Count() - 1, dest.MuscleFocusIds.Count());
+            Assert.DoesNotContain(muscleId, dest.MuscleFocusIds);
         }
 
 

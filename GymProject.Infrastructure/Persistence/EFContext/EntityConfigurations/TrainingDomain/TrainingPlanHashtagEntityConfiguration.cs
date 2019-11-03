@@ -16,8 +16,9 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.HasKey(rel => new { rel.TrainingPlanId, rel.HashtagId });
 
             builder.Property(rel => rel.TrainingPlanId);
-
             builder.Property(rel => rel.HashtagId);
+            //builder.Property(rel => rel.ProgressiveNumber);
+            builder.Ignore(rel => rel.ProgressiveNumber);
 
             builder.HasOne(rel => rel.TrainingPlan)
                 .WithMany("_trainingPlanHashtags")

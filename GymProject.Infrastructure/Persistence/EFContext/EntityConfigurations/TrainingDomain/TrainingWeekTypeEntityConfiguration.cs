@@ -28,7 +28,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasColumnType("TEXT");
 
             // Data Seeding
-            builder.HasData(TrainingPlanTypeEnum.List());
+            builder.HasData(TrainingWeekTypeEnum.List());
         }
     }
 }

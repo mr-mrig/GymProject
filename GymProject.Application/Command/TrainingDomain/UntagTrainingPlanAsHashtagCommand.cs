@@ -3,7 +3,7 @@
 namespace GymProject.Application.Command.TrainingDomain
 {
 
-    public class TagTrainingPlanCommand : IRequest<bool>
+    public class UntagTrainingPlanAsHashtagCommand : IRequest<bool>
     {
 
 
@@ -13,7 +13,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        public TagTrainingPlanCommand(uint trainingPlanId, uint trainingHashtagId)
+        public UntagTrainingPlanAsHashtagCommand(uint trainingPlanId, uint trainingHashtagId)
         {
             TrainingPlanId = trainingPlanId;
             TrainingHashtagId = trainingHashtagId;

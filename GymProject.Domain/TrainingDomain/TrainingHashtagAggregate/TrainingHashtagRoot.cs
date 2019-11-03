@@ -32,24 +32,24 @@ namespace GymProject.Domain.TrainingDomain.TrainingHashtagAggregate
         #region Factory
 
         /// <summary>
-        /// Factory method for transient entities
+        /// Factory method - Pennding status
         /// </summary>
         /// <param name="hashtag">The hashtag content</param>
         /// <returns>The TrainingHashtagRoot instance</returns>
-        public static TrainingHashtagRoot TagWithTransient(GenericHashtagValue hashtag)
+        public static TrainingHashtagRoot TagWith(GenericHashtagValue hashtag)
 
-            => TagWith(null, hashtag, null);
+            => TagWith(null, hashtag, EntryStatusTypeEnum.Pending);
 
 
         /// <summary>
-        /// Factory method
+        /// Factory method - Pending status
         /// </summary>
         /// <param name="id">The ID of the entity</param>
         /// <param name="hashtag">The hashtag content</param>
         /// <returns>The TrainingHashtagRoot instance</returns>
         public static TrainingHashtagRoot TagWith(uint? id, GenericHashtagValue hashtag)
 
-            => TagWith(id, hashtag, null);
+            => TagWith(id, hashtag, EntryStatusTypeEnum.Pending);
 
 
         /// <summary>

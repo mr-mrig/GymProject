@@ -563,7 +563,10 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
                 throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
 
             if (_trainingPlanHashtags.Remove(TrainingPlanHashtagRelation.BuildLink(this, 0, hashtagId)))
+            {
+                //ForceConsecutiveHashtagProgressiveNumbers();
                 TestBusinessRules();
+            }
         }
 
 
@@ -1098,6 +1101,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
             {
                 TrainingWeekEntity ws = _trainingWeeks[itw];
                 ws.MoveToNewProgressiveNumber((uint)itw);
+            }
+        }
+
+
+        /// <summary>
+        /// Force the WOs to have consecutive progressive numbers
+        /// It works by assuming that the WSs are added in a sorted fashion.
+        /// </summary>
+        private void ForceConsecutiveHashtagProgressiveNumbers()
+        {
+            _trainingPlanHashtags = _trainingPlanHashtags.OrderBy(x => x.ProgressiveNumber).ToList();
+
+            // Just overwrite all the progressive numbers
+            for (int irel = 0; irel < _trainingPlanHashtags.Count(); irel++)
+            {
+                TrainingPlanHashtagRelation rel = _trainingPlanHashtags.ElementAt(irel);
+                rel.ProgressiveNumber = (uint)irel;
             }
         }
 

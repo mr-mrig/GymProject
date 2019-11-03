@@ -12,7 +12,7 @@ namespace GymProject.Application.Validator.TrainingDomain
         {
             RuleFor(x => x.WeekTypeEnumId)
                 .Must(w => TrainingDomainBasicRules.IsValidWeekType(w))
-                .WithMessage("Invalid WeekTypeEnumId");
+                .WithMessage(w => $"Invalid WeekTypeEnumId: {w.WeekTypeEnumId.ToString()}");
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

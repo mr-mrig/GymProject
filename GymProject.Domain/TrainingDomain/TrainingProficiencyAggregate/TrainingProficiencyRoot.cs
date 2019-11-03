@@ -100,7 +100,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
         /// <param name="description">The description</param>
         /// <param name="ownerId">The User which the phase was created by</param>
         /// <returns>A new TrainingProficiency instance</returns>
-        public static TrainingProficiencyRoot AddNativeTrainingProficiency(uint id, string name, PersonalNoteValue description)
+        public static TrainingProficiencyRoot AddNativeTrainingProficiency(uint? id, string name, PersonalNoteValue description)
 
             => CreateTrainingProficiency(id, name, description, EntryStatusTypeEnum.Native);
 

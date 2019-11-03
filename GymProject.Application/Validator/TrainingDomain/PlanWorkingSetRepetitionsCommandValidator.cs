@@ -12,7 +12,7 @@ namespace GymProject.Application.Validator.TrainingDomain
         {
             RuleFor(x => x.WorkTypeId)
                 .Must(wt => TrainingDomainBasicRules.IsValidWorkType(wt))
-                .WithMessage($"Invalid WorkTypeId");
+                .WithMessage(wt => $"Invalid WorkTypeId: {wt.WorkTypeId.ToString()}");
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

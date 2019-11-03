@@ -12,13 +12,13 @@ namespace GymProject.Application.Validator.TrainingDomain
         {
             RuleFor(x => x.EffortTypeId)
                 .Must(eff => TrainingDomainBasicRules.IsValidEffortType(eff))
-                .WithMessage("Invalid EffortTypeId");
+                .WithMessage(eff => $"Invalid EffortTypeId: {eff.EffortTypeId.ToString()}");
             RuleFor(x => x.RestMeasUnitId)
                 .Must(rmeas => TrainingDomainBasicRules.IsValidRestMeasUnit(rmeas))
-                .WithMessage("Invalid RestMeasUnit");
+                .WithMessage(rmeas => $"Invalid RestMeasUnit: {rmeas.RestMeasUnitId.ToString()}");
             RuleFor(x => x.WorkTypeId)
                 .Must(wt => TrainingDomainBasicRules.IsValidWorkType(wt))
-                .WithMessage("Invalid WorkTypeId");
+                .WithMessage(wt => $"Invalid WorkTypeId: {wt.WorkTypeId.ToString()}");
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

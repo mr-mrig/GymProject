@@ -12,7 +12,7 @@ namespace GymProject.Application.Validator.TrainingDomain
         {
             RuleFor(x => x.EffortTypeId)
                 .Must(eff => TrainingDomainBasicRules.IsValidEffortType(eff))
-                .WithMessage("Invalid EffortTypeId");
+                .WithMessage(eff => $"Invalid EffortTypeId: {eff.EffortTypeId.ToString()}");
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

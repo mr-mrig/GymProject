@@ -11,9 +11,11 @@
 
 --WorkUnitTemplateNote -> Body NOT NULL
 
---TrainingPhase -> Data Seeding
+-- TrainingPhase -> Data Seeding
 
---TrainingProficiency -> Data Seeding
+-- TrainingProficiency -> Data Seeding
+
+-- IntensityTechnique -> Data Seeding
 
 -- WorkingSetTemplate -> Rename column "Effort_EffortTypeId"
 
@@ -21,5 +23,7 @@
 
 -- Training Week -> Redundant index, should be removed
 
-
+--
+--	How to Create the SQL functions?? RmToIntPErc etc....
+--
 

@@ -27,7 +27,7 @@ namespace GymProject.Domain.Utils.Extensions
         /// <typeparam name="T">Must be a class, must implement IClonable</typeparam>
         /// <param name="toClone">The input list</param>
         /// <returns>The copy</returns>
-        public static IEnumerable<T> NoDuplicatesClone<T>(this IEnumerable<T> toClone) where T : class, ICloneable
+        public static IEnumerable<T> CloneNoDuplicates<T>(this IEnumerable<T> toClone) where T : class, ICloneable
         {
             ICollection<T> src = Clone(toClone).ToList();
             ICollection<T> dest = new List<T>();
@@ -40,6 +40,25 @@ namespace GymProject.Domain.Utils.Extensions
             }
 
             return dest;
+        }
+
+
+
+        /// <summary>
+        /// Adds an element to the input Collection if it is not already present
+        /// </summary>
+        /// <typeparam name="T">Must be a class</typeparam>
+        /// <param name="list">The input list</param>
+        /// <param name="toAdd">The value to be added</param>
+        /// <returns>The output list</returns>
+        public static ICollection<T> AddNoDuplicates<T>(this ICollection<T> list, T toAdd) where T : class
+        {
+            if (list.Contains(toAdd))
+                return list;
+            else
+                list.Add(toAdd);
+
+            return list;
         }
 
 

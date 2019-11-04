@@ -34,7 +34,7 @@ namespace GymProject.Application.Test.Utils
         public IEnumerable<ExcerciseRoot> Excercises { get; protected set; }
         public IEnumerable<MuscleGroupRoot> Muscles { get; protected set; }
         public IEnumerable<TrainingPlanRoot> TrainingPlans { get; protected set; }
-        public IEnumerable<WorkoutTemplateRoot> WorkoutTemplates { get; protected set; }
+        public ICollection<WorkoutTemplateRoot> WorkoutTemplates { get; protected set; }
 
 
         //public IEnumerable<WorkUnitTemplateNoteRoot> WorkUnitTemplateNotes { get; protected set; }
@@ -224,16 +224,15 @@ namespace GymProject.Application.Test.Utils
 
         internal void SeedTrainingPlan()
         {
-            int execrcisesNumber = 3;
-            int workingSetsNumber = 3;
-
+            // Seed Training Plans
             TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User1", false, 1);
             TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User2", false, 2);
             TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Plan2 User1", false, 1);
+            TrainingPlanRoot plan4 = TrainingPlanRoot.CreateTrainingPlan("Plan3 User1", true, 1);
 
             TrainingPlans = new List<TrainingPlanRoot>()
             {
-                plan1, plan2, plan3
+                plan1, plan2, plan3, plan4,
             };
 
             plan1.TagAs(2);
@@ -249,69 +248,71 @@ namespace GymProject.Application.Test.Utils
             plan1.FocusOnMuscle(1);
             plan1.FocusOnMuscle(3);
 
+            plan2.TagAs(1);
+            plan3.TagAs(1);
+
+            // Seed Training Weeks
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
-
-            WorkoutTemplateRoot workout10 = WorkoutTemplateRoot.PlannedDraft(1, 0);
-            WorkoutTemplateRoot workout11 = WorkoutTemplateRoot.PlannedDraft(1, 1);
-            WorkoutTemplateRoot workout12 = WorkoutTemplateRoot.PlannedDraft(1, 2);
-
-            WorkoutTemplateRoot workout20 = WorkoutTemplateRoot.PlannedDraft(2, 0);
-            WorkoutTemplateRoot workout21 = WorkoutTemplateRoot.PlannedDraft(2, 1);
-            WorkoutTemplateRoot workout22 = WorkoutTemplateRoot.PlannedDraft(2, 2);
-
-
-            WorkoutTemplates = new List<WorkoutTemplateRoot>()
-            {
-                workout10, workout11, workout12,        // Plan1 Week1
-                workout20, workout21, workout22,        // Plan1 Week2
-            };
+            
+            plan2.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            plan2.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            
+            plan3.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            plan3.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            
+            plan4.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
 
             Context.TrainingPlans.AddRange(TrainingPlans);
-            Context.WorkoutTemplates.AddRange(WorkoutTemplates);
             Context.SaveChanges();
 
-            // Add the same number of WSs and excercises for each workout
-            foreach (WorkoutTemplateRoot wo in WorkoutTemplates)
-            {
-                for (uint iexc = 0; iexc < execrcisesNumber; iexc++)
-                {
-                    uint excerciseId = iexc == Context.Excercises.Count() - 1
-                        ? 1
-                        : iexc + 1;
+            // Seed Workouts
+            foreach (TrainingPlanRoot plan in TrainingPlans)
+                SeedWorkoutTemplate(plan);
 
-                    wo.DraftExcercise(iexc);
-
-                    for (uint iws = 0; iws < workingSetsNumber; iws++)
-                    {
-                        wo.AddTransientWorkingSet(iexc, WSRepetitionsValue.TrackRepetitionSerie(10));
-                        wo.AddWorkingSetIntensityTechnique(iexc, iws, 1);
-                    }
-                }
-
-                // Add to the plan
-                switch (wo.TrainingWeekId)
-                {
-                    case 1:
-
-                        plan1.PlanWorkout(0, wo.Id.Value);
-                        break;
-
-                    case 2:
-
-                        plan1.PlanWorkout(1, wo.Id.Value);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-            }
-
+            // Save last changes
             Context.TrainingPlans.UpdateRange(TrainingPlans);
             Context.WorkoutTemplates.UpdateRange(WorkoutTemplates);
             Context.SaveChanges();
+        }
+
+        private void SeedWorkoutTemplate(TrainingPlanRoot plan, 
+            int workoutsNumber = 3, int workingSetsNumber = 3, int execrcisesNumber = 3)
+        {
+            WorkoutTemplates = new List<WorkoutTemplateRoot>();
+
+            foreach (TrainingWeekEntity week in plan.TrainingWeeks)
+            {
+                uint weekId = week.Id ?? 1;
+
+                for (int iwo = 0; iwo < workoutsNumber; iwo++)
+                {
+                    WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlannedDraft(weekId, (uint)iwo);
+                    WorkoutTemplates.Add(workout);
+                    Context.WorkoutTemplates.Add(workout);
+
+                    // Save now as we need the ID later in this method
+                    Context.SaveChanges();
+
+                    // Add the same number of WSs and excercises for each workout
+                    for (uint iexc = 0; iexc < execrcisesNumber; iexc++)
+                    {
+                        uint excerciseId = iexc == Context.Excercises.Count() - 1
+                            ? 1
+                            : iexc + 1;
+
+                        workout.DraftExcercise(iexc);
+
+                        for (uint iws = 0; iws < workingSetsNumber; iws++)
+                        {
+                            workout.AddTransientWorkingSet(iexc, WSRepetitionsValue.TrackRepetitionSerie(10));
+                            workout.AddWorkingSetIntensityTechnique(iexc, iws, 1);
+                        }
+                    }
+                    // Add to the plan
+                    plan.PlanWorkout(week.ProgressiveNumber, workout.Id.Value);
+                }
+            }
         }
 
 

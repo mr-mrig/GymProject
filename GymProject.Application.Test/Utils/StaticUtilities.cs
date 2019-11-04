@@ -32,12 +32,12 @@ namespace GymProject.Application.Test.Utils
 
 
         /// <summary>
-        /// Unit test initial setup. It insulates each test environment according to the test name
+        /// Command Unit test initial setup. It insulates each test environment according to the test name
         /// </summary>
         /// <typeparam name="T">The command handler class</typeparam>
         /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
         /// <returns></returns>
-        public static (GymContext, IMediator, ILogger<T>) InitTest<T>(string callerName)
+        public static (GymContext, IMediator, ILogger<T>) InitCommandTest<T>(string callerName)
         {
             // Mocking
             var mediator = new Mock<IMediator>();
@@ -54,6 +54,26 @@ namespace GymProject.Application.Test.Utils
 
             return(context, mediator.Object, logger.Object);
         }
+
+
+        /// <summary>
+        /// Query Unit test initial setup. It insulates each test environment according to the test name
+        /// </summary>
+        /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
+        /// <returns></returns>
+        public static GymContext InitQueryTest(string callerName)
+        {
+
+            // In memory DB
+            DatabaseSeed seed = new DatabaseSeed(new GymContext(
+                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>(callerName)));
+            seed.SeedTrainingDomain();
+
+            GymContext context = seed.Context;
+
+            return context;
+        }
+
 
         public static T GetSourceAggregate<T>(IRepository<T> repo, uint id) where T : class, IAggregateRoot
 

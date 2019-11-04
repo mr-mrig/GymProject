@@ -13,9 +13,10 @@ namespace GymProject.Application.Queries.TrainingDomain
 
         private string _connectionString = string.Empty;
 
-        public TrainingQueryWrapper(string constr)
+        public TrainingQueryWrapper(string connectionString)
         {
-            _connectionString = !string.IsNullOrWhiteSpace(constr) ? constr : throw new ArgumentNullException(nameof(constr));
+            _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString 
+                : throw new ArgumentNullException(nameof(connectionString));
         }
 
 
@@ -113,24 +114,24 @@ namespace GymProject.Application.Queries.TrainingDomain
                 //if (queryResult.AsList().Count == 0)
                 //    throw new KeyNotFoundException();
 
-                return mapTrainingPlanSummaryDto();
+                return mapTrainingPlanSummaryDto(queryResult);
 
             }
         }
 
-        private List<TrainingPlanSummaryDto> mapTrainingPlanSummaryDto()
+        private List<TrainingPlanSummaryDto> mapTrainingPlanSummaryDto(IEnumerable<dynamic> queryResult)
         {
             List<TrainingPlanSummaryDto> result = new List<TrainingPlanSummaryDto>();
 
             for (int i = 0; i < queryResult.Count(); i++)
             {
                 dynamic res = queryResult.ElementAt(i);
-                uint currentPlanId = res.Id;
+                uint nextResrentPlanId = res.Id;
 
                 // Fields shared by all the Training Plan records
                 TrainingPlanSummaryDto trainingPlanDto = new TrainingPlanSummaryDto()
                 {
-                    TrainingPlanId = currentPlanId,
+                    TrainingPlanId = nextResrentPlanId,
                     TrainingPlanName = res.PlanName,
                     IsBookmarked = res.IsBookmarked,
                     AvgWorkoutDays = res.AvgWorkoutDays,
@@ -142,47 +143,57 @@ namespace GymProject.Application.Queries.TrainingDomain
                     TargetPhases = new List<PhaseDto>(),
                 };
 
-                // Get all the records belonging to the TraininPlan 
-                while (queryResult.ElementAt(i++).Id == currentPlanId)
+                // Get all the records belonging to the TrainingPlan
+                int j = i;
+
+                while (j < queryResult.Count() && queryResult.ElementAt(j).Id == nextResrentPlanId)
                 {
-                    dynamic nextRes = queryResult.ElementAt(i);
+                    dynamic nextRes = queryResult.ElementAt(j);
 
-                    if (res.HashtagId != null)
+                    if (nextRes.HashtagId != null)
                     {
-                        if it is not already contained then
-
+                        if (!trainingPlanDto.Hashtags.Contains(new HashtagDto() { Id = (uint)nextRes.HashtagId }))
+                        {
                             trainingPlanDto.Hashtags.Add(new HashtagDto()
                             {
                                 Id = res.HashtagId,
                                 Body = res.Hashtag,
                             });
+                        }
                     }
 
-                    if (res.ProficiencyId != null)
+                    if (nextRes.PhaseId != null)
                     {
-                        if it is not already contained then
-
-                            trainingPlanDto.TargetProficiencies.Add(new ProficiencyDto()
-                            {
-                                Id = res.ProficiencyIf,
-                                Body = res.Proficiency,
-                            });
-                    }
-
-                    if (res.PhaseId != null)
-                    {
-                        if it is not already contained then
-
+                        if (!trainingPlanDto.TargetPhases.Contains(new PhaseDto() { Id = (uint)nextRes.PhaseId }))
+                        {
                             trainingPlanDto.TargetPhases.Add(new PhaseDto()
                             {
                                 Id = res.PhaseId,
                                 Body = res.Phase,
                             });
+                        }
                     }
 
+                    if (nextRes.ProficiencyId != null)
+                    {
+                        if (!trainingPlanDto.TargetProficiencies.Contains(new ProficiencyDto() { Id = (uint)nextRes.PhaseId }))
+                        {
+                            trainingPlanDto.TargetProficiencies.Add(new ProficiencyDto()
+                            {
+                                Id = res.ProficiencyId,
+                                Body = res.Proficiency,
+                            });
+                        }
+                    }
+
+                    j++;
                 }
+
+                i = j - 1;
+
                 result.Add(trainingPlanDto);
             }
+            return result;
         }
     }
 }

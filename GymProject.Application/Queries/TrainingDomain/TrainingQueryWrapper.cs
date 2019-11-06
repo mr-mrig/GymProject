@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using System.Linq;
+using GymProject.Infrastructure.Persistence.EFContext.SQLiteExtensions;
 
 namespace GymProject.Application.Queries.TrainingDomain
 {
@@ -21,11 +22,12 @@ namespace GymProject.Application.Queries.TrainingDomain
 
 
 
-        public async Task<IEnumerable<TrainingPlanSummaryDto>> GetTraininPlansSummaries(int userId)
+        public async Task<IEnumerable<TrainingPlanSummaryDto>> GetTraininPlansSummaries(uint userId)
         {
             using (var connection = new SQLiteConnection(_connectionString))
             {
-                connection.Open();
+                //connection.Open();
+                connection.OpenGymAppConnection();
 
                 IEnumerable<dynamic> queryResult = await connection.QueryAsync<dynamic>(
                    @"SELECT TP.Id As Id, TP.Name as PlanName, TP.IsBookmarked, 

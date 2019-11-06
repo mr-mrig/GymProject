@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GymProject.Application.Queries.Base;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,23 +23,20 @@ namespace GymProject.Application.Queries.TrainingDomain
 
 
 
-    public class HashtagDto
+    public class HashtagDto : BaseIdentifiedDto
     {
-        public uint Id { get; set; }
         public string Body { get; set; }
     }
 
 
-    public class ProficiencyDto
+    public class ProficiencyDto : BaseIdentifiedDto
     {
-        public uint Id { get; set; }
         public string Body { get; set; }
     }
 
 
-    public class PhaseDto
+    public class PhaseDto : BaseIdentifiedDto
     {
-        public uint Id { get; set; }
         public string Body { get; set; }
     }
 

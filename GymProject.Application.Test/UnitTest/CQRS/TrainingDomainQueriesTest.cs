@@ -1,6 +1,7 @@
 using GymProject.Application.Command;
 using GymProject.Application.Command.TrainingDomain;
 using GymProject.Application.MediatorBehavior;
+using GymProject.Application.Queries.TrainingDomain;
 using GymProject.Application.Test.Utils;
 using GymProject.Application.Validator.TrainingDomain;
 using GymProject.Domain.SharedKernel;
@@ -35,7 +36,10 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             //MyDbContext.Database.Connection.ConnectionString
 
-            
+            TrainingQueryWrapper queries = new TrainingQueryWrapper();
+
+            uint id = 1;
+            IEnumerable<TrainingPlanSummaryDto> results = await queries.GetTraininPlansSummaries(id);
         }
 
 

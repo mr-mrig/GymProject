@@ -23,6 +23,23 @@ namespace GymProject.Application.Queries.Base
         }
 
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null || !(obj is BaseIdentifiedDto))
+                return false;
+
+            if (Object.ReferenceEquals(this, obj))
+                return true;
+
+            if (GetType() != obj.GetType())
+                return false;
+
+            BaseIdentifiedDto item = (BaseIdentifiedDto)obj;
+
+            return Id.Equals(item.Id);
+        }
+
+
         public override int GetHashCode()
         {
             if (Id == 0)

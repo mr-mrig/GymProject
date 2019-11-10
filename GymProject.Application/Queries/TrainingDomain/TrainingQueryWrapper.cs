@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using System.Linq;
 using GymProject.Infrastructure.Persistence.EFContext.SQLiteExtensions;
+using GymProject.Application.Queries.Base;
 
 namespace GymProject.Application.Queries.TrainingDomain
 {
@@ -22,6 +23,11 @@ namespace GymProject.Application.Queries.TrainingDomain
 
 
 
+        /// <summary>
+        /// Get the summaries of all the Training Plans belonging to the specified user
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the user to be searched</param>
+        /// <returns>The Training Plan Summary DTO list</returns>
         public async Task<IEnumerable<TrainingPlanSummaryDto>> GetTraininPlansSummaries(uint userId)
         {
             using (var connection = new SQLiteConnection(_connectionString))
@@ -31,7 +37,7 @@ namespace GymProject.Application.Queries.TrainingDomain
 
                 IEnumerable<dynamic> queryResult = await connection.QueryAsync<dynamic>(
                    @"SELECT TP.Id As Id, TP.Name as PlanName, TP.IsBookmarked, 
-	                TH.Id Aa HAshtagId, TH.Body As Hashtag, TProf.Id as ProficiencyId, TProf.Name as Proficiency, 
+	                TH.Id As HashtagId, TH.Body As Hashtag, TProf.Id as ProficiencyId, TProf.Name as Proficiency, 
                     Pha.Id As PhaseId, Pha.Name as Phase,
                 	--Average Workout Days per plan
                     (
@@ -67,9 +73,9 @@ namespace GymProject.Application.Queries.TrainingDomain
                     (
                         SELECT Round(Avg(
                         CASE
-                            WHEN EffortTypeId = 1 THEN Effort / 10.0-- Intensity[%]
-                            WHEN EffortTypeId = 2 THEN Round(RmToIntensityPerc(Effort), 1)-- RM
-                            WHEN EffortTypeId = 3 THEN Round(RmToIntensityPerc(TargetRepetitions + (10 - Effort)), 1)-- RPE
+                            WHEN Effort_EffortTypeId = 1 THEN Effort / 10.0-- Intensity[%]
+                            WHEN Effort_EffortTypeId = 2 THEN Round(RmToIntensityPerc(Effort), 1)-- RM
+                            WHEN Effort_EffortTypeId = 3 THEN Round(RmToIntensityPerc(TargetRepetitions + (10 - Effort)), 1)-- RPE
                             ELSE null
                         END), 1) as AvgIntensity
                         FROM TrainingWeek
@@ -80,7 +86,7 @@ namespace GymProject.Application.Queries.TrainingDomain
                         JOIN WorkingSetTemplate
                         ON WorkUnitTemplate.Id = WorkUnitTemplateId
                         WHERE TrainingPlanId = TP.Id
-                    ) As AvgIntensityPerc,
+                    ) As AvgIntensityPercentage,
                     --Last workout date
                     (
                         SELECT Max(StartTime)
@@ -121,6 +127,8 @@ namespace GymProject.Application.Queries.TrainingDomain
             }
         }
 
+
+
         private List<TrainingPlanSummaryDto> mapTrainingPlanSummaryDto(IEnumerable<dynamic> queryResult)
         {
             List<TrainingPlanSummaryDto> result = new List<TrainingPlanSummaryDto>();
@@ -128,18 +136,18 @@ namespace GymProject.Application.Queries.TrainingDomain
             for (int i = 0; i < queryResult.Count(); i++)
             {
                 dynamic res = queryResult.ElementAt(i);
-                uint nextResrentPlanId = res.Id;
+                uint nextResrentPlanId = (uint)res.Id;
 
                 // Fields shared by all the Training Plan records
                 TrainingPlanSummaryDto trainingPlanDto = new TrainingPlanSummaryDto()
                 {
                     TrainingPlanId = nextResrentPlanId,
-                    TrainingPlanName = res.PlanName,
-                    IsBookmarked = res.IsBookmarked,
-                    AvgWorkoutDays = res.AvgWorkoutDays,
-                    AvgWorkingSets = res.AvgWorkingSets,
-                    AvgIntensityPercentage = res.AvgIntensityPercentage,
-                    LastWorkoutTimestamp = res.LastWorkoutTimestamp,
+                    TrainingPlanName = (string)res.PlanName,
+                    IsBookmarked = (bool)(res.IsBookmarked != 0),
+                    AvgWorkoutDays = (float?)res.AvgWorkoutDays,
+                    AvgWorkingSets = (float?)res.AvgWorkingSets,
+                    AvgIntensityPercentage = (float?)res.AvgIntensityPercentage,
+                    LastWorkoutTimestamp = Conversions.GetDatetimeFromUnixTimestamp((long?)res.LastWorkoutTimestamp),
                     Hashtags = new List<HashtagDto>(),
                     TargetProficiencies = new List<ProficiencyDto>(),
                     TargetPhases = new List<PhaseDto>(),
@@ -158,8 +166,8 @@ namespace GymProject.Application.Queries.TrainingDomain
                         {
                             trainingPlanDto.Hashtags.Add(new HashtagDto()
                             {
-                                Id = res.HashtagId,
-                                Body = res.Hashtag,
+                                Id = (uint)nextRes.HashtagId,
+                                Body = (string)nextRes.Hashtag,
                             });
                         }
                     }
@@ -170,20 +178,20 @@ namespace GymProject.Application.Queries.TrainingDomain
                         {
                             trainingPlanDto.TargetPhases.Add(new PhaseDto()
                             {
-                                Id = res.PhaseId,
-                                Body = res.Phase,
+                                Id = (uint)nextRes.PhaseId,
+                                Body = (string)nextRes.Phase,
                             });
                         }
                     }
 
                     if (nextRes.ProficiencyId != null)
                     {
-                        if (!trainingPlanDto.TargetProficiencies.Contains(new ProficiencyDto() { Id = (uint)nextRes.PhaseId }))
+                        if (!trainingPlanDto.TargetProficiencies.Contains(new ProficiencyDto() { Id = (uint)nextRes.ProficiencyId }))
                         {
                             trainingPlanDto.TargetProficiencies.Add(new ProficiencyDto()
                             {
-                                Id = res.ProficiencyId,
-                                Body = res.Proficiency,
+                                Id = (uint)nextRes.ProficiencyId,
+                                Body = (string)nextRes.Proficiency,
                             });
                         }
                     }
@@ -196,6 +204,78 @@ namespace GymProject.Application.Queries.TrainingDomain
                 result.Add(trainingPlanDto);
             }
             return result;
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the user to be searched</param>
+        /// <returns>The Training Plan Summary DTO list</returns>
+        public async Task<IEnumerable<TrainingPlanSummaryDto>> GetTraininPlanPlannedWorkoutDays(uint trainingPlanId, string workoutName)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                //connection.Open();
+                connection.OpenGymAppConnection();
+
+                IEnumerable<dynamic> queryResult = await connection.QueryAsync<dynamic>(
+                   @"SELECT WT.Id as WorkoutId, WT.ProgressiveNumber as WorkoutProgressiveNumber, 
+                    WT.TrainingWeekId, W.ProgressiveNumber as WeekProgressiveNumber, WT.Name as WorkoutName, WT.SpecificWeekday,
+                    WUTN.Id as WorkUnitNoteId, WUTN.Body as WorkUnitNote,
+                    WUT.Id as WorkUnitTemplateId, WUT.LinkingIntensityTechniqueId as LinkingIntensityTechniqueId, IT1.Abbreviation as LinkingIntensityTechnique,
+                    E.Id as ExcerciseId, E.Name as ExcerciseName,
+                    WST.Id as WorkingSetId, WST.ProgressiveNumber as WsProgressiveNumber, WST.TargetRepetitions, WST.Rest, WST.Cadence, WST.Effort,
+                    ET.Id as EffortTypeId, ET.Abbreviation as EffortName,
+                    IT.Id as WsIntensityTechniqueId, IT.Abbreviation as IntensityTechnique
+
+                    FROM TrainingWeek W
+                    JOIN WorkoutTemplate WT
+                    ON W.Id = WT.TrainingWeekId
+                    JOIN WorkUnitTemplate WUT
+                    ON WT.Id = WUT.WorkoutTemplateId
+                    LEFT JOIN WorkUnitTemplateNote WUTN
+                    ON WUTN.Id = WUT.WorkUnitNoteId
+                    JOIN Excercise E
+                    ON E.Id = WUT.ExcerciseId
+                    JOIN WorkingSetTemplate WST
+                    ON WUT.Id = WST.WorkUnitTemplateId
+                    LEFT JOIN TrainingEffortType ET
+                    ON WST.Effort_EffortTypeId = ET.Id
+                    LEFT JOIN IntensityTechnique IT1
+                    ON IT1.Id = WUT.LinkingIntensityTechniqueId
+
+                    -- Fetch all the Techniques of the sets
+                    LEFT JOIN
+                    (
+                        SELECT WorkingSetId, WSTIT2.IntensityTechniqueId as Id, Abbreviation
+                        FROM WorkingSetTemplate WST
+                        JOIN WorkingSetIntensityTechnique WSTIT2
+                        ON WSTIT2.WorkingSetId = WST.Id
+                        LEFT JOIN IntensityTechnique IT2
+                        ON IT2.Id = WSTIT2.IntensityTechniqueId
+
+                    ) IT
+                    ON IT.WorkingSetId = WST.Id
+
+                    WHERE W.TrainingPlanId = @trainingPlanId
+                    AND WT.Name = @workoutName
+
+                    ORDER BY W.ProgressiveNumber, WT.ProgressiveNumber, WUT.ProgressiveNumber, WST.ProgressiveNumber"
+                    , new { trainingPlanId, workoutName }
+                );
+
+
+                //if (queryResult.AsList().Count == 0)
+                //    throw new KeyNotFoundException();
+
+                //return mapTrainingPlanSummaryDto(queryResult);
+
+            }
         }
     }
 }

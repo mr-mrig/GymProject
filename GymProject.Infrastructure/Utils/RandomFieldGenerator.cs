@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GymProject.Domain.Test.Util
+namespace GymProject.Infrastructure.Utils
 {
     public static class RandomFieldGenerator
     {
 
         #region consts
-        public const string Alphabet = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        public const string AlphabetWithSpaces = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
+        //public const string UtilityLib.Alphabet = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        //public const string AlphabetWithSpaces = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
         #endregion
 
 
@@ -110,12 +110,12 @@ namespace GymProject.Domain.Test.Util
             if (areSpacesAllowed)
             {
                 chars = Enumerable.Range(0, length)
-                    .Select(x => AlphabetWithSpaces[Rand.Next(0, Alphabet.Length)]);
+                    .Select(x => UtilityLib.AlphabetWithSpaces[Rand.Next(0, UtilityLib.Alphabet.Length)]);
             }
             else
             {
                 chars = Enumerable.Range(0, length)
-                    .Select(x => Alphabet[Rand.Next(0, Alphabet.Length)]);
+                    .Select(x => UtilityLib.Alphabet[Rand.Next(0, UtilityLib.Alphabet.Length)]);
             }
 
 
@@ -141,12 +141,12 @@ namespace GymProject.Domain.Test.Util
             if (areSpacesAllowed)
             {
                 chars = Enumerable.Range(0, RandomInt(lengthMin, lengthMax))
-                    .Select(x => AlphabetWithSpaces[Rand.Next(0, Alphabet.Length)]);
+                    .Select(x => UtilityLib.AlphabetWithSpaces[Rand.Next(0, UtilityLib.Alphabet.Length)]);
             }
             else
             {
                 chars = Enumerable.Range(0, RandomInt(lengthMin, lengthMax))
-                    .Select(x => Alphabet[Rand.Next(0, Alphabet.Length)]);
+                    .Select(x => UtilityLib.Alphabet[Rand.Next(0, UtilityLib.Alphabet.Length)]);
             }
 
             return new string(chars.ToArray());

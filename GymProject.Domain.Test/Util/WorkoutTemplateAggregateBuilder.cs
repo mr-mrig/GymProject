@@ -4,6 +4,7 @@ using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.Utils;
+using GymProject.Infrastructure.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;

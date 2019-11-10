@@ -6,6 +6,7 @@ using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
 using GymProject.Domain.Utils.Extensions;
+using GymProject.Infrastructure.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;

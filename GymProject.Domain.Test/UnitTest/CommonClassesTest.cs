@@ -2,10 +2,12 @@
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.SharedKernel.Exceptions;
 using GymProject.Domain.Test.Util;
+using GymProject.Infrastructure.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
+
 
 namespace GymProject.Domain.Test.UnitTest
 {

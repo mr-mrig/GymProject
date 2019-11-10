@@ -3,23 +3,15 @@ using GymProject.Application.Command.TrainingDomain;
 using GymProject.Application.MediatorBehavior;
 using GymProject.Application.Queries.TrainingDomain;
 using GymProject.Application.Test.Utils;
-using GymProject.Application.Validator.TrainingDomain;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.Test.Util;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
-using GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory;
-using Microsoft.Extensions.Logging;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,17 +21,46 @@ namespace GymProject.Application.Test.UnitTest.CQRS
     {
 
 
+
         [Fact]
         public async Task GetTraininPlansSummariesTest()
         {
-            GymContext context = StaticUtilities.InitQueryTest(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            IEnumerable<TrainingPlanSummaryDto> results;
+            uint id;
 
-            //MyDbContext.Database.Connection.ConnectionString
+            GymContext context = ApplicationTestService.InitQueryTest();
+            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
 
-            TrainingQueryWrapper queries = new TrainingQueryWrapper();
+            // Dummy case:  No results
+            id = uint.MaxValue;
+            results = await queries.GetTraininPlansSummaries(id);
+            // Check
+            Assert.Empty(results);
 
-            uint id = 1;
-            IEnumerable<TrainingPlanSummaryDto> results = await queries.GetTraininPlansSummaries(id);
+            // Standard case
+            id = 1;
+            results = await queries.GetTraininPlansSummaries(id);
+
+            // Get expected results
+            var planIds = context.TrainingPlans.Where(x => x.OwnerId == id).Select(x => x.Id);
+            var nhashtags = context.TrainingPlanHashtags.Count(x => planIds.Contains(x.TrainingPlanId));
+            var nphases = context.TrainingPlanPhases.Count(x => planIds.Contains(x.TrainingPlanId));
+            var nproficiencies = context.TrainingPlanProficiencies.Count(x => planIds.Contains(x.TrainingPlanId));
+
+            // Check
+            Assert.Equal(planIds.Count(), results.Count());
+            Assert.Equal(nhashtags, results.SelectMany(x => x.Hashtags).Count());
+            Assert.Equal(nphases, results.SelectMany(x => x.TargetPhases).Count());
+            Assert.Equal(nproficiencies, results.SelectMany(x => x.TargetProficiencies).Count());
+
+            // Ad-hoc case
+            uint specialId = 1;
+            Assert.Equal(4.5f, results.Single(x => x.TrainingPlanId == specialId).AvgWorkoutDays.Value, 2);
+            Assert.Equal(36, results.Single(x => x.TrainingPlanId == specialId).AvgWorkingSets.Value);
+
+            // Not testable yet
+            //Assert.Equal(todo, results.Single(x => x.TrainingPlanId == specialId).AvgIntensityPercentage);
+            //Assert.Equal(todo, results.Single(x => x.TrainingPlanId == specialId).LastWorkoutTimestamp);
         }
 
 

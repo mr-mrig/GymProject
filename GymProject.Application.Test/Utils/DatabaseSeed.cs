@@ -14,9 +14,11 @@ using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
 using GymProject.Domain.UserAccountDomain.UserAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using GymProject.Infrastructure.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GymProject.Application.Test.Utils
 {
@@ -66,9 +68,20 @@ namespace GymProject.Application.Test.Utils
 
 
 
+        /// <summary>
+        /// Check whether the Unit Test Database has the test cases loaded or it must be seeded in order to start the tests.
+        /// This method just checks a sample query, hence the developer must ensure that all the queries have been seeded.
+        /// </summary>
+        /// <returns>True if Db ready, false if seeding is needed</returns>
+        public bool IsDbReadyForUnitTesting()
+
+            => Context.TrainingPlans.Count() > 0
+                && Context.WorkoutTemplates.Count() > 0;
+                // Insert other checks here....
+        
 
 
-        internal void SeedUser()
+        public void SeedUser()
         {
             Users = new List<UserRoot>()
             {
@@ -80,11 +93,11 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.Users.AddRange(Users);
-            Context.SaveChanges();
+            Context.SaveAsync();
         }
 
 
-        internal void SeedMuscle()
+        public void SeedMuscle()
         {
             Muscles = new List<MuscleGroupRoot>()
             {
@@ -96,11 +109,11 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.MuscleGroups.AddRange(Muscles);
-            Context.SaveChanges();
+            Context.SaveAsync();
         }
 
 
-        internal void SeedExcercise()
+        public void SeedExcercise()
         {
             Excercises = new List<ExcerciseRoot>()
             {
@@ -112,24 +125,28 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.Excercises.AddRange(Excercises);
-            Context.SaveChanges();
+            Context.SaveAsync();
         }
 
 
-        internal void SeedIntensityTechnique()
+        public void SeedIntensityTechnique()
         {
             IntensityTechniques = new List<IntensityTechniqueRoot>()
             {
                 IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 1", "IT1", null, false),
                 IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 2", "IT2", null, false),
+                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 3", "IT3", null, false),
+                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 4", "IT4", null, false),
+                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 5", "IT5", null, false),
+                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 6", "IT6", null, false),
             };
 
             Context.IntensityTechniques.AddRange(IntensityTechniques);
-            Context.SaveChanges();
+            Context.SaveAsync();
         }
 
 
-        internal void SeedHashtags()
+        public void SeedHashtags()
         {
             TrainingHashtags = new List<TrainingHashtagRoot>()
             {
@@ -142,7 +159,7 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.TrainingHashtags.AddRange(TrainingHashtags);
-            Context.SaveChanges();
+            Context.SaveAsync();
 
 
             TrainingPhases = new List<TrainingPhaseRoot>()
@@ -154,11 +171,11 @@ namespace GymProject.Application.Test.Utils
                 TrainingPhaseRoot.CreateNativeTrainingPhase("Strength"),
                 TrainingPhaseRoot.CreateNativeTrainingPhase("Peaking"),
                 TrainingPhaseRoot.CreatePrivateTrainingPhase("My Private"),
-                TrainingPhaseRoot.CreatePublicTrainingPhase("My Public"),
+                TrainingPhaseRoot.CreatePublicTrainingPhase("My public"),
             };
 
             Context.TrainingPhases.AddRange(TrainingPhases);
-            Context.SaveChanges();
+            Context.SaveAsync();
 
 
             TrainingProficiencies = new List<TrainingProficiencyRoot>()
@@ -170,11 +187,11 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.TrainingProficiencies.AddRange(TrainingProficiencies);
-            Context.SaveChanges();
+            Context.SaveAsync();
         }
 
 
-        internal void SeedNotes()
+        public void SeedNotes()
         {
             //WorkUnitTemplateNotes = new List<WorkUnitTemplateNoteRoot>()
             //{
@@ -185,7 +202,7 @@ namespace GymProject.Application.Test.Utils
             //};
 
             //Context.worknot.AddRange(WorkUnitTemplateNotes);
-            //Context.SaveChanges();
+            //Context.SaveAsync();
 
             TrainingPlanNotes = new List<TrainingPlanNoteRoot>()
             {
@@ -196,7 +213,7 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.TrainingPlanNotes.AddRange(TrainingPlanNotes);
-            Context.SaveChanges();
+            Context.SaveAsync();
 
             WorkingSetNotes = new List<WorkingSetNoteRoot>()
             {
@@ -207,32 +224,33 @@ namespace GymProject.Application.Test.Utils
             };
 
             Context.WorkingSetNotes.AddRange(WorkingSetNotes);
-            Context.SaveChanges();
+            Context.SaveAsync();
 
             TrainingPlanMessages = new List<TrainingPlanMessageRoot>()
             {
                 TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
-                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
-                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
-                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 2")),
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 3")),
+                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 4")),
             };
 
             Context.TrainingPlanMessages.AddRange(TrainingPlanMessages);
-            Context.SaveChanges();
+            Context.SaveAsync();
         }
 
 
-        internal void SeedTrainingPlan()
+        public async Task SeedTrainingPlan()
         {
             // Seed Training Plans
-            TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User1", false, 1);
+            TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User1", true, 1);
             TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User2", false, 2);
-            TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Plan2 User1", false, 1);
-            TrainingPlanRoot plan4 = TrainingPlanRoot.CreateTrainingPlan("Plan3 User1", true, 1);
+            TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Plan2 User1 Variant of Plan1", false, 1);
+            TrainingPlanRoot plan4 = TrainingPlanRoot.CreateTrainingPlan("Plan3 User1", false, 1);
+            TrainingPlanRoot plan5 = TrainingPlanRoot.CreateTrainingPlan("Plan4 User1 Variant of Plan2 - Plan1", true, 1);
 
             TrainingPlans = new List<TrainingPlanRoot>()
             {
-                plan1, plan2, plan3, plan4,
+                plan1, plan2, plan3, plan4, plan5,
             };
 
             plan1.TagAs(2);
@@ -254,30 +272,41 @@ namespace GymProject.Application.Test.Utils
             // Seed Training Weeks
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             
             plan2.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             plan2.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             
             plan3.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
-            plan3.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            plan3.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);        
+            
+            plan5.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            plan5.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
             
             plan4.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
 
             Context.TrainingPlans.AddRange(TrainingPlans);
-            Context.SaveChanges();
+            await Context.SaveAsync();
 
             // Seed Workouts
-            foreach (TrainingPlanRoot plan in TrainingPlans)
-                SeedWorkoutTemplate(plan);
+            await SeedAdHocWorkoutTemplate(TrainingPlans.First());   // Make it different from the others
+
+            foreach (TrainingPlanRoot plan in TrainingPlans.Skip(1))
+                await SeedWorkoutTemplate(plan);
 
             // Save last changes
             Context.TrainingPlans.UpdateRange(TrainingPlans);
             Context.WorkoutTemplates.UpdateRange(WorkoutTemplates);
-            Context.SaveChanges();
+            await Context.SaveAsync();
+
+            // Seed Training Plan Relations
+            plan1.AttachChildPlan(plan3.Id, TrainingPlanTypeEnum.Variant);
+            plan3.AttachChildPlan(plan5.Id, TrainingPlanTypeEnum.Variant);
         }
 
-        private void SeedWorkoutTemplate(TrainingPlanRoot plan, 
-            int workoutsNumber = 3, int workingSetsNumber = 3, int execrcisesNumber = 3)
+
+        private async Task SeedWorkoutTemplate(TrainingPlanRoot plan, 
+            float workoutsNumber = 3, float workingSetsNumber = 3, float exercisesNumber = 3, float repetitions = 10)
         {
             WorkoutTemplates = new List<WorkoutTemplateRoot>();
 
@@ -288,46 +317,146 @@ namespace GymProject.Application.Test.Utils
                 for (int iwo = 0; iwo < workoutsNumber; iwo++)
                 {
                     WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlannedDraft(weekId, (uint)iwo);
+                    workout.GiveName(GetWorkoutName(iwo));
+
                     WorkoutTemplates.Add(workout);
                     Context.WorkoutTemplates.Add(workout);
 
                     // Save now as we need the ID later in this method
-                    Context.SaveChanges();
+                    await Context.SaveAsync();
+
+                    // Add to the plan
+                    plan.PlanWorkout(week.ProgressiveNumber, workout.Id.Value);
+                    Context.Update(plan);
+                    await Context.SaveAsync();
 
                     // Add the same number of WSs and excercises for each workout
-                    for (uint iexc = 0; iexc < execrcisesNumber; iexc++)
+                    for (uint iexc = 0; iexc < exercisesNumber; iexc++)
                     {
-                        uint excerciseId = iexc == Context.Excercises.Count() - 1
+                        uint excerciseId = iexc >= Context.Excercises.Count()
                             ? 1
                             : iexc + 1;
 
-                        workout.DraftExcercise(iexc);
+                        workout.DraftExcercise(excerciseId);
 
                         for (uint iws = 0; iws < workingSetsNumber; iws++)
                         {
-                            workout.AddTransientWorkingSet(iexc, WSRepetitionsValue.TrackRepetitionSerie(10));
-                            workout.AddWorkingSetIntensityTechnique(iexc, iws, 1);
+                            workout.AddTransientWorkingSet(iexc, WSRepetitionsValue.TrackRepetitionSerie((uint)repetitions));
+                            //workout.AddWorkingSetIntensityTechnique(iexc, iws, 1);
                         }
                     }
-                    // Add to the plan
-                    plan.PlanWorkout(week.ProgressiveNumber, workout.Id.Value);
+
+                    Context.Update(workout);
+                    await Context.SaveAsync();
                 }
             }
         }
 
 
-        internal void SeedTrainingDomain()
+        private async Task SeedAdHocWorkoutTemplate(TrainingPlanRoot plan, float repetitions = 10)
+        {
+            WorkoutTemplates = new List<WorkoutTemplateRoot>();
+
+            for(int iweek = 0; iweek < plan.TrainingWeeks.Count; iweek++)
+            {
+                TrainingWeekEntity week = plan.TrainingWeeks.ElementAt(iweek);
+
+                uint weekId = week.Id ?? 1;
+                int workoutsNumber = iweek % 2 == 0 ? 5 : 4;   // Expected avg WO number = 4.5
+
+                for (int iwo = 0; iwo < workoutsNumber; iwo++)
+                {
+                    int exercisesNumber = 3;    // Expected avg WU number = 3
+                    WorkoutTemplateRoot workout = WorkoutTemplateRoot.PlannedDraft(weekId, (uint)iwo);
+                    workout.GiveName(GetWorkoutName(iwo));
+
+                    WorkoutTemplates.Add(workout);
+                    Context.WorkoutTemplates.Add(workout);
+
+                    // Save now as we need the ID later in this method
+                    await Context.SaveAsync();
+
+                    // Add to the plan
+                    plan.PlanWorkout(week.ProgressiveNumber, workout.Id.Value);
+                    Context.Update(plan);
+                    await Context.SaveAsync();
+
+
+                    // Add the same number of WSs and excercises for each workout
+                    for (uint iexc = 0; iexc < exercisesNumber; iexc++)
+                    {
+                        int workingSetsNumber = iexc % 2 == 0 ? 2 : 4;   // Expected avg WS number = 2.66
+
+                        uint excerciseId = iexc >= Context.Excercises.Count()
+                            ? 1
+                            : iexc + 1;
+
+                        workout.DraftExcercise(excerciseId);
+
+                        for (uint iws = 0; iws < workingSetsNumber; iws++)
+                        {
+                            workout.AddTransientWorkingSet(iexc, WSRepetitionsValue.TrackRepetitionSerie((uint)repetitions));
+
+                            switch(iws)
+                            {
+                                case 0:
+                                    workout.AddWorkingSetIntensityTechnique(iexc, iws, 1);
+                                    if(iexc == 0)
+                                        workout.AddWorkingSetIntensityTechnique(iexc, iws, 4);
+                                    break;
+
+                                case 2:
+                                    workout.AddWorkingSetIntensityTechnique(iexc, iws, 2);
+                                    break;
+
+                                default:
+                                    break;
+                            }
+
+                            switch(iexc)
+                            {
+                                case 0:
+                                    workout.ReviseWorkingSetEffort(iexc, iws, TrainingEffortValue.AsRM(12));
+                                    workout.ReviseWorkingSetRestPeriod(iexc, iws, RestPeriodValue.SetRest(120, TimeMeasureUnitEnum.Seconds));
+                                    break;
+
+                                case 2:
+                                    workout.ReviseWorkingSetEffort(iexc, iws, TrainingEffortValue.AsRM(15));
+                                    workout.ReviseWorkingSetRestPeriod(iexc, iws, RestPeriodValue.SetRest(90, TimeMeasureUnitEnum.Seconds));
+                                    break;
+
+                                default:
+                                    workout.ReviseWorkingSetLiftingTempo(iexc, iws, TUTValue.PlanTUT("3030"));
+                                    break;
+                            }
+                        }
+                    }
+                    workout.LinkWorkUnits(0, 5);
+
+                    Context.Update(workout);
+                    await Context.SaveAsync();
+                }
+            }
+        }
+
+
+
+        public void SeedTrainingDomain()
         {
             SeedUser();
-            SeedMuscle();
+            //SeedMuscle();
             SeedExcercise();
+            SeedNotes();
             SeedIntensityTechnique();
             SeedHashtags();
             SeedTrainingPlan();
-            SeedNotes();
-
         }
 
+
+
+        private string GetWorkoutName(int workoutProgressiveNumber)
+
+            => ("Day " + UtilityLib.Alphabet[workoutProgressiveNumber]).ToUpper();
 
     }
 }

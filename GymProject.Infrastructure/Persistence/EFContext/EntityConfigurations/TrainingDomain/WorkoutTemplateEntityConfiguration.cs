@@ -30,7 +30,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Ignore(wo => wo.TrainingDensity);
 
             builder.Property(wo => wo.Name)
-                .HasColumnType("TEXT");
+                .HasColumnType("TEXT")
+                .IsRequired();
 
             //builder.OwnsOne(wo => wo.SpecificWeekday,
             //    sw =>
@@ -66,6 +67,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.HasAlternateKey
             (
                 "ProgressiveNumber",
+                "TrainingWeekId"
+            );
+
+            builder.HasAlternateKey
+            (
+                "Name",
                 "TrainingWeekId"
             );
         }

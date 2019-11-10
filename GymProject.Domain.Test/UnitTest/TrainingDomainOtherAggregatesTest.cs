@@ -3,6 +3,7 @@ using GymProject.Domain.SharedKernel;
 using GymProject.Domain.SharedKernel.Exceptions;
 using GymProject.Domain.Test.Util;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
+using GymProject.Infrastructure.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;

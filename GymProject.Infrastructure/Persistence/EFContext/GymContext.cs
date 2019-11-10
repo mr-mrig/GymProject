@@ -135,8 +135,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             //});
 
             // Should be configured elsewhere?
-            //optionsBuilder.UseSqlite(@"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;")
             //optionsBuilder.UseSqlite(@"DataSource=C:\Users\Admin\Source\Repos\GymProject\GymProject.Infrastructure\test.db;");  // EF needs this - commaent again after the DB build
+            //optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - commaent again after the DB build
         }
 
 
@@ -222,7 +222,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         #region IUnitOfWork Implementation
 
-        public async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
         {
             // Dispatch Domain Events collection. 
             // Choices:
@@ -231,6 +231,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
             // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
             await _mediator.PublishDomainEventsAsync(this, _logger);
+
+            // Preliminary operations to ensure consistent operations
+            IgnoreStaticEnumTables();
+            //IgnoreEmbeddedValueObjects();
 
             // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
             // performed through the DbContext will be committed
@@ -242,6 +246,41 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         }
 
         #endregion
+
+        protected void IgnoreStaticEnumTables()
+        {
+            // Avoid double insert for tables that should not be tracked
+            foreach (var entity in ChangeTracker.Entries<Enumeration>())
+            {
+                try
+                {
+                    entity.State = EntityState.Unchanged;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Enumeration as field, instead of separate table -> No need to set it as Unchanged - IE: see WeekdayEnum
+                    continue;
+                }
+            }
+        }
+
+        protected void IgnoreEmbeddedValueObjects()
+        {
+            // Value objects are part of the parent table
+            foreach (var entity in ChangeTracker.Entries<ValueObject>())
+            {
+                try
+                {
+                    if (entity.State == EntityState.Added)
+                        entity.State = EntityState.Modified;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Enumeration as field, instead of separate table -> No need to set it as Unchanged - IE: see WeekdayEnum
+                    continue;
+                }
+            }
+        }
 
 
         #region Transactions Management
@@ -304,7 +343,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             try
             {
-                await SaveChangesAsync();
+                await SaveAsync();
                 transaction.Commit();
             }
             catch

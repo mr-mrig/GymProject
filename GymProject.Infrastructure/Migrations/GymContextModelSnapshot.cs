@@ -237,15 +237,45 @@ namespace GymProject.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
+                            Id = 0,
+                            Description = "Not specified",
+                            Name = "Not Set"
+                        },
+                        new
+                        {
                             Id = 1,
-                            Description = "Variant of another plan",
-                            Name = "Variant"
+                            Description = "Generic week with no specific target",
+                            Name = "Generic"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Received by another user",
-                            Name = "Inherited"
+                            Description = "Active recovery week",
+                            Name = "Deload"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "No training week",
+                            Name = "Full Rest"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Relief phase before a test",
+                            Name = "Tapering"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "High stress week",
+                            Name = "Overreach"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Peak performance oriented week",
+                            Name = "Peak"
                         });
                 });
 
@@ -354,9 +384,6 @@ namespace GymProject.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<uint?>("HashtagId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<uint>("ProgressiveNumber")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("TrainingPlanId", "HashtagId");
@@ -1016,7 +1043,7 @@ namespace GymProject.Infrastructure.Migrations
 
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.TrainingPlanAggregate.TrainingPlanPhaseRelation", b =>
                 {
-                    b.HasOne("GymProject.Domain.TrainingDomain.TrainingHashtagAggregate.TrainingHashtagRoot", null)
+                    b.HasOne("GymProject.Domain.TrainingDomain.TrainingPhaseAggregate.TrainingPhaseRoot", null)
                         .WithMany()
                         .HasForeignKey("TrainingPhaseId")
                         .OnDelete(DeleteBehavior.Cascade)

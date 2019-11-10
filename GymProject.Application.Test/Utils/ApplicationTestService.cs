@@ -1,19 +1,21 @@
-﻿using FluentValidation;
-using GymProject.Domain.Base;
+﻿using GymProject.Domain.Base;
 using GymProject.Infrastructure.Persistence.EFContext;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace GymProject.Application.Test.Utils
 {
-    public static class StaticUtilities
+    internal static class ApplicationTestService
     {
+
+
+        //internal const string SQLiteDbTestConnectionString = @"DataSource=C:\Users\rigom\source\repos\GymProject\GymProject.Infrastructure\test.db;";
+        //internal const string SQLiteDbTestConnectionString = @"DataSource=..\..\..\..\GymProject.Infrastructure\test.db;";
+        
+
 
 
 
@@ -23,7 +25,7 @@ namespace GymProject.Application.Test.Utils
         /// <typeparam name="T">DbContext child</typeparam>
         /// <param name="dbname">The name of the DB options, should be unique to achieve isolation</param>
         /// <returns>The DbContextOptions</returns>
-        public static DbContextOptions GetInMemoryIsolatedDbContextOptions<T>([CallerMemberName] string dbname = "") 
+        internal static DbContextOptions GetInMemoryIsolatedDbContextOptions<T>([CallerMemberName] string dbname = "") 
             where T : DbContext
 
             => new DbContextOptionsBuilder<T>()
@@ -37,7 +39,7 @@ namespace GymProject.Application.Test.Utils
         /// <typeparam name="T">The command handler class</typeparam>
         /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
         /// <returns></returns>
-        public static (GymContext, IMediator, ILogger<T>) InitCommandTest<T>(string callerName)
+        internal static (GymContext, IMediator, ILogger<T>) InitCommandTest<T>(string callerName)
         {
             // Mocking
             var mediator = new Mock<IMediator>();
@@ -45,14 +47,13 @@ namespace GymProject.Application.Test.Utils
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>(callerName)
+                GetInMemoryIsolatedDbContextOptions<GymContext>(callerName)
                 , mediator.Object
                 , logger.Object));
+
             seed.SeedTrainingDomain();
 
-            GymContext context = seed.Context;
-
-            return(context, mediator.Object, logger.Object);
+            return(seed.Context, mediator.Object, logger.Object);
         }
 
 
@@ -61,32 +62,23 @@ namespace GymProject.Application.Test.Utils
         /// </summary>
         /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
         /// <returns></returns>
-        public static GymContext InitQueryTest(string callerName)
+        internal static GymContext InitQueryTest()
         {
+            // Application Test DB
+            DatabaseSeed seed = new DatabaseSeed(new ApplicationUnitTestContext());
 
-            // In memory DB
-            DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>(callerName)));
-            seed.SeedTrainingDomain();
+            // Seed it if necessary
+            if (!seed.IsDbReadyForUnitTesting())
+                seed.SeedTrainingDomain();
 
-            GymContext context = seed.Context;
-
-            return context;
+            return seed.Context;
         }
 
 
-        public static T GetSourceAggregate<T>(IRepository<T> repo, uint id) where T : class, IAggregateRoot
+        internal static T GetSourceAggregate<T>(IRepository<T> repo, uint id) where T : class, IAggregateRoot
 
             => repo.Find(id) as T;
 
-
-        //public static void TestcommandValidator<TCommand,TValidator,Z>() where TValidator : AbstractValidator<TCommand>
-        //{
-        //    ILogger<TCommand> loggerValidator;
-        //    Mock<ILogger<TValidator>> logger = new Mock<ILogger<TValidator>>();
-        //    TValidator validator = new TValidator(logger.Object);
-        //    Assert.False(validator.Validate(command).IsValid);
-        //}
 
     }
 }

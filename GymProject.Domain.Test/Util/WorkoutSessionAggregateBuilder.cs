@@ -1,6 +1,7 @@
 ﻿using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
+using GymProject.Infrastructure.Utils;
 using System.Collections.Generic;
 
 namespace GymProject.Domain.Test.Util

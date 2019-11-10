@@ -6,6 +6,7 @@ using GymProject.Domain.TrainingDomain.TrainingPlanMessageAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate;
 using GymProject.Domain.TrainingDomain.WorkingSetNote;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
+using GymProject.Infrastructure.Utils;
 using Xunit;
 
 namespace GymProject.Domain.Test.UnitTest

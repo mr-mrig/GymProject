@@ -10,6 +10,7 @@ using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain;
+using GymProject.Infrastructure.Utils;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory;
@@ -28,14 +29,6 @@ namespace GymProject.Application.Test.UnitTest.CQRS
     {
 
 
-        //private string _databaseName;
-
-
-        //public TrainingDomainCommandsTest(string inMemoryDatabaseName)
-        //{
-        //    _databaseName = inMemoryDatabaseName;
-        //}
-
 
 
         [Fact]
@@ -44,7 +37,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanDraftWorkoutCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanDraftWorkoutCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanDraftWorkoutCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
 
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
@@ -84,7 +77,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanDraftWorkoutCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanDraftWorkoutCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanDraftWorkoutCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
@@ -192,7 +185,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -220,44 +213,6 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         }
 
 
-        //[Fact]
-        //public async Task DeleteTrainingPlanCommandSuccess()
-        //{
-        //    // Mocking
-        //    var mediator = new Mock<IMediator>();
-        //    var logger = new Mock<ILogger<DeleteTrainingPlanCommandHandler>>();
-
-        //    // In memory DB
-        //    DatabaseSeed seed = new DatabaseSeed(new GymContext(
-        //        StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
-        //        , mediator.Object
-        //        , logger.Object));
-        //    seed.SeedTrainingDomain();
-
-        //    GymContext context = seed.Context;
-        //    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
-        //    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-
-        //    // Test
-        //    uint planId = 1;
-        //    TrainingPlanRoot removed = planRepository.Find(planId);
-
-        //    DeleteTrainingPlanCommand command = new DeleteTrainingPlanCommand(planId);
-        //    DeleteTrainingPlanCommandHandler handler = new DeleteTrainingPlanCommandHandler(
-        //        workoutRepository, planRepository, logger.Object);
-
-        //    Assert.True(await handler.Handle(command, default));
-
-        //    // Check new training plan
-        //    Assert.Equal(seed.TrainingPlans.Count() - 1, context.TrainingPlans.Count());
-        //    Assert.Equal(seed.WorkoutTemplates.Count() - removed.WorkoutIds.Count(), context.WorkoutTemplates.Count());
-        //    Assert.DoesNotContain(removed, context.TrainingPlans);
-            
-        //    foreach(uint? workoutId in removed.WorkoutIds)
-        //        Assert.DoesNotContain(workoutId, context.WorkoutTemplates.ToList().Select(x => x.Id));
-        //}
-
-
         [Fact]
         public async Task AddWorkingSetIntensityTechniqueCommandSuccess()
         {
@@ -266,7 +221,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -306,7 +261,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -354,7 +309,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -389,7 +344,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -426,7 +381,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -461,7 +416,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -495,7 +450,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -531,7 +486,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -566,7 +521,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // In memory DB
             DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                StaticUtilities.GetInMemoryIsolatedDbContextOptions<GymContext>()
+                ApplicationTestService.GetInMemoryIsolatedDbContextOptions<GymContext>()
                 , mediator.Object
                 , logger.Object));
             seed.SeedTrainingDomain();
@@ -598,7 +553,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<DetachTrainingPlanNoteCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<DetachTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<DetachTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var planRepo = new SQLTrainingPlanRepository(context);
 
@@ -652,7 +607,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanDraftExcerciseCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanDraftExcerciseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanDraftExcerciseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -679,7 +634,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanTrainingWeekCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanTrainingWeekCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanTrainingWeekCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -709,7 +664,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         {
             GymContext context;
 
-            (context, _, _) = StaticUtilities.InitCommandTest<PlanTrainingWeekCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, _) = ApplicationTestService.InitCommandTest<PlanTrainingWeekCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -732,7 +687,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanWorkingSetCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanWorkingSetCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanWorkingSetCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -804,7 +759,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanWorkingSetCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanWorkingSetCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanWorkingSetCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -854,7 +809,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             ILogger<PlanWorkingSetEffortCommandHandler> logger;
             var loggerValidator = new Mock<ILogger<PlanWorkingSetEffortCommandValidator>>();
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanWorkingSetEffortCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanWorkingSetEffortCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -890,7 +845,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             ILogger<PlanWorkingSetRepetitionsCommandHandler> logger;
             var loggerValidator = new Mock<ILogger<PlanWorkingSetRepetitionsCommandValidator>>();
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanWorkingSetRepetitionsCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanWorkingSetRepetitionsCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -925,7 +880,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<PlanWorkingSetTempoCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<PlanWorkingSetTempoCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<PlanWorkingSetTempoCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -955,7 +910,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<RemoveWorkingSetIntensityTechniqueCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<RemoveWorkingSetIntensityTechniqueCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<RemoveWorkingSetIntensityTechniqueCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLWorkoutTemplateRepository(context);
 
@@ -987,7 +942,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<TagTrainingPlanAsHashtagCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<TagTrainingPlanAsHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<TagTrainingPlanAsHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1015,7 +970,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<TagTrainingPlanAsNewHashtagCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<TagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<TagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var planRepo = new SQLTrainingPlanRepository(context);
             var hashtagRepo = new SQLTrainingHashtagRepository(context);
@@ -1053,7 +1008,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<TagTrainingPlanAsNewHashtagCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<TagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<TagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             uint id = 1;
             var repo = new SQLWorkoutTemplateRepository(context);
@@ -1102,7 +1057,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<UntagTrainingPlanAsHashtagCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<UntagTrainingPlanAsHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<UntagTrainingPlanAsHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var planRepo = new SQLTrainingPlanRepository(context);
             var hashtagRepo = new SQLTrainingHashtagRepository(context);
@@ -1136,7 +1091,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<CreateTrainingPhaseCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<CreateTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<CreateTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPhaseRepository(context);
 
@@ -1163,7 +1118,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<CreateTrainingPhaseCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<CreateTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<CreateTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPhaseRepository(context);
 
@@ -1184,7 +1139,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<TagTrainingPlanWithTrainingPhaseCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<TagTrainingPlanWithTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<TagTrainingPlanWithTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1215,7 +1170,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<UntagTrainingPlanWithTrainingPhaseCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<UntagTrainingPlanWithTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<UntagTrainingPlanWithTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1244,7 +1199,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<TagTrainingPlanWithProficiencyCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<TagTrainingPlanWithProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<TagTrainingPlanWithProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1275,7 +1230,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<UntagTrainingPlanWithProficiencyCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<UntagTrainingPlanWithProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<UntagTrainingPlanWithProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1306,7 +1261,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<TagTrainingPlanWithMuscleFocusCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<TagTrainingPlanWithMuscleFocusCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<TagTrainingPlanWithMuscleFocusCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 
@@ -1337,7 +1292,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             GymContext context;
             ILogger<UntagTrainingPlanWithMuscleFocusCommandHandler> logger;
 
-            (context, _, logger) = StaticUtilities.InitCommandTest<UntagTrainingPlanWithMuscleFocusCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitCommandTest<UntagTrainingPlanWithMuscleFocusCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var repo = new SQLTrainingPlanRepository(context);
 

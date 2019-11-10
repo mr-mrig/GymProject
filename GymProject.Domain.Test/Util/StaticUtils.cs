@@ -11,6 +11,7 @@ using GymProject.Domain.Utils.Extensions;
 using Xunit;
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using GymProject.Domain.Test.UnitTest;
+using GymProject.Infrastructure.Utils;
 
 namespace GymProject.Domain.Test.Util
 {

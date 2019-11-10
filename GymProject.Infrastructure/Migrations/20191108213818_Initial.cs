@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GymProject.Infrastructure.Migrations
 {
-    public partial class Test : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -348,8 +348,7 @@ namespace GymProject.Infrastructure.Migrations
                 columns: table => new
                 {
                     TrainingPlanId = table.Column<uint>(nullable: false),
-                    HashtagId = table.Column<uint>(nullable: false),
-                    ProgressiveNumber = table.Column<uint>(nullable: false)
+                    HashtagId = table.Column<uint>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -409,10 +408,10 @@ namespace GymProject.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_TrainingPlanPhase", x => new { x.TrainingPlanId, x.TrainingPhaseId });
                     table.ForeignKey(
-                        name: "FK_TrainingPlanPhase_TrainingHashtag_TrainingPhaseId",
+                        name: "FK_TrainingPlanPhase_TrainingPhase_TrainingPhaseId",
                         column: x => x.TrainingPhaseId,
                         principalSchema: "GymApp",
-                        principalTable: "TrainingHashtag",
+                        principalTable: "TrainingPhase",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -822,12 +821,6 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "EntryStatusType",
                 columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 5, "Entry belonging to the DB release", "Native" });
-
-            migrationBuilder.InsertData(
-                schema: "GymApp",
-                table: "EntryStatusType",
-                columns: new[] { "Id", "Description", "Name" },
                 values: new object[] { 4, "Banned entry, visible to nobody", "Banned" });
 
             migrationBuilder.InsertData(
@@ -840,13 +833,19 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "EntryStatusType",
                 columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 2, "Public entry waiting for approval", "Pending" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "EntryStatusType",
+                columns: new[] { "Id", "Description", "Name" },
                 values: new object[] { 1, "The entry is visible only to the Owner", "Private" });
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
                 table: "EntryStatusType",
                 columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 2, "Public entry waiting for approval", "Pending" });
+                values: new object[] { 5, "Entry belonging to the DB release", "Native" });
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
@@ -906,13 +905,13 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "MuscleGroup",
                 columns: new[] { "Id", "Abbreviation", "Name" },
-                values: new object[] { 12u, "Calf", "Calves" });
+                values: new object[] { 11u, "Hams", "Hamstrings" });
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
                 table: "MuscleGroup",
                 columns: new[] { "Id", "Abbreviation", "Name" },
-                values: new object[] { 11u, "Hams", "Hamstrings" });
+                values: new object[] { 12u, "Calf", "Calves" });
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
@@ -930,19 +929,13 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "TrainingEffortType",
                 columns: new[] { "Id", "Abbreviation", "Description", "Name" },
-                values: new object[] { 3, "RPE", "Self-assessed measure of the difficulty of a training set", "RPE" });
+                values: new object[] { 2, "RM", "The most weight you can lift for a defined number of exercise movements", "RM" });
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
                 table: "TrainingEffortType",
                 columns: new[] { "Id", "Abbreviation", "Description", "Name" },
-                values: new object[] { 2, "RM", "The most weight you can lift for a defined number of exercise movements", "RM" });
-
-            migrationBuilder.InsertData(
-                schema: "GymApp",
-                table: "TrainingPlanType",
-                columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 1, "Variant of another plan", "Variant" });
+                values: new object[] { 3, "RPE", "Self-assessed measure of the difficulty of a training set", "RPE" });
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
@@ -952,7 +945,7 @@ namespace GymProject.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 schema: "GymApp",
-                table: "TrainingWeekType",
+                table: "TrainingPlanType",
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[] { 1, "Variant of another plan", "Variant" });
 
@@ -960,7 +953,43 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp",
                 table: "TrainingWeekType",
                 columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 2, "Received by another user", "Inherited" });
+                values: new object[] { 4, "Relief phase before a test", "Tapering" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingWeekType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 5, "High stress week", "Overreach" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingWeekType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 3, "No training week", "Full Rest" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingWeekType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 2, "Active recovery week", "Deload" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingWeekType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 1, "Generic week with no specific target", "Generic" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingWeekType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 6, "Peak performance oriented week", "Peak" });
+
+            migrationBuilder.InsertData(
+                schema: "GymApp",
+                table: "TrainingWeekType",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 0, "Not specified", "Not Set" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Excercise_EntryStatusId",
@@ -1159,10 +1188,6 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
-                name: "TrainingPhase",
-                schema: "GymApp");
-
-            migrationBuilder.DropTable(
                 name: "TrainingPlanHashtag",
                 schema: "GymApp");
 
@@ -1196,6 +1221,10 @@ namespace GymProject.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "TrainingHashtag",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "TrainingPhase",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(

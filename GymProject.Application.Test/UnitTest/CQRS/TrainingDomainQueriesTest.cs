@@ -64,5 +64,53 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         }
 
 
+        [Fact]
+        public async Task GetTraininPlanPlannedWorkoutDays()
+        {
+            IEnumerable<WorkoutFullPlanDto> results;
+            string workoutName;
+
+            GymContext context = ApplicationTestService.InitQueryTest();
+            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
+
+            //List<uint> weekIds = context.TrainingPlans.Find(planId).TrainingWeeks as List<uint>;
+            List<uint> weekIds = new List<uint> { 14, 1, 6, 10 };
+
+            // Dummy case1:  Fake weeks -> No results
+            results = await queries.GetTraininPlanPlannedWorkoutDays(new List<uint>() { uint.MaxValue }, "");
+            Assert.Equal(default, results.First().Id);
+
+            // Dummy case2:  Fake name -> No results
+            workoutName = "FAKE NAME";
+            results = await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName);
+            Assert.Equal(default, results.First().Id);
+
+            // Standard case
+            workoutName = "DAY A";
+            results = await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName);
+
+            Assert.NotEmpty(results);
+
+            // Get expected results
+            //var planIds = context.TrainingPlans.Where(x => x.OwnerId == weekIds).Select(x => x.Id);
+            //var nhashtags = context.TrainingPlanHashtags.Count(x => planIds.Contains(x.TrainingPlanId));
+            //var nphases = context.TrainingPlanPhases.Count(x => planIds.Contains(x.TrainingPlanId));
+            //var nproficiencies = context.TrainingPlanProficiencies.Count(x => planIds.Contains(x.TrainingPlanId));
+
+            //// Check
+            //Assert.Equal(planIds.Count(), results.Count());
+            //Assert.Equal(nhashtags, results.SelectMany(x => x.Hashtags).Count());
+            //Assert.Equal(nphases, results.SelectMany(x => x.TargetPhases).Count());
+            //Assert.Equal(nproficiencies, results.SelectMany(x => x.TargetProficiencies).Count());
+
+            //// Ad-hoc case
+            //uint specialId = 1;
+            //Assert.Equal(4.5f, results.Single(x => x.TrainingPlanId == specialId).AvgWorkoutDays.Value, 2);
+            //Assert.Equal(36, results.Single(x => x.TrainingPlanId == specialId).AvgWorkingSets.Value);
+
+        }
+
+
+
     }
 }

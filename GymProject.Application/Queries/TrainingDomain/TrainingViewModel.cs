@@ -18,8 +18,8 @@ namespace GymProject.Application.Queries.TrainingDomain
         public ICollection<HashtagDto> Hashtags { get; set; }
         public ICollection<ProficiencyDto> TargetProficiencies { get; set; }
         public ICollection<PhaseDto> TargetPhases { get; set; }
-        public float? AvgWorkoutDays{ get; set; }
-        public float? AvgWorkingSets{ get; set; }
+        public float? AvgWorkoutDays { get; set; }
+        public float? AvgWorkingSets { get; set; }
         public float? AvgIntensityPercentage { get; set; }
         public DateTime? LastWorkoutTimestamp { get; set; }
     }
@@ -52,11 +52,12 @@ namespace GymProject.Application.Queries.TrainingDomain
 
     public class WorkoutFullPlanDto : BaseIdentifiedDto
     {
-        public uint ProgressiveNumber { get; set; }
-        public string Name { get; set; }
         public uint TrainingWeekId { get; set; }
+        public uint ProgressiveNumber { get; set; }
+        //public string Name { get; set; }
+        public int? SpecificWeekdayId { get; set; }
 
-        public IEnumerable<WorkUnitDto> WorkUnits;
+        public ICollection<WorkUnitDto> WorkUnits;
     }
 
 
@@ -72,7 +73,7 @@ namespace GymProject.Application.Queries.TrainingDomain
         public WorkUnitNoteDto Note { get; set; }
         public WorkUnitExcerciseDto Excercise { get; set; }
 
-        public IEnumerable<WorkingSetDto> WorkingSets { get; set; }
+        public ICollection<WorkingSetDto> WorkingSets { get; set; }
     }
 
 
@@ -86,7 +87,7 @@ namespace GymProject.Application.Queries.TrainingDomain
         public int? Rest { get; set; }
         public string LiftingTempo { get; set; }
         public EffortDto Effort { get; set; }
-        public IEnumerable<IntensityTechniqueDto> IntensityTechniques { get; set; }
+        public ICollection<IntensityTechniqueDto> IntensityTechniques { get; set; }
     }
 
 
@@ -143,7 +144,7 @@ namespace GymProject.Application.Queries.TrainingDomain
 
     public class EffortDto : BaseIdentifiedDto
     {
-        public int Value { get; set; }
+        public int? Value { get; set; }
         public string Name { get; set; }
     }
 

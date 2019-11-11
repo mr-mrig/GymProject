@@ -416,6 +416,7 @@ namespace GymProject.Application.Test.Utils
                             switch(iexc)
                             {
                                 case 0:
+                                    workout.AttachWorkUnitNote(iexc, 1);
                                     workout.ReviseWorkingSetEffort(iexc, iws, TrainingEffortValue.AsRM(12));
                                     workout.ReviseWorkingSetRestPeriod(iexc, iws, RestPeriodValue.SetRest(120, TimeMeasureUnitEnum.Seconds));
                                     break;

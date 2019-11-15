@@ -67,7 +67,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// </summary>
         public IReadOnlyCollection<WorkUnitTemplateEntity> WorkUnits
         {
-            get => _workUnits?.ToList().AsReadOnly()
+            get => _workUnits?.Clone().ToList().AsReadOnly()
                 ?? new List<WorkUnitTemplateEntity>().AsReadOnly();
         }
 

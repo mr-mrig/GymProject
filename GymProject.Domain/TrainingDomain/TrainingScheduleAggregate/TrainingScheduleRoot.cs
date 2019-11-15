@@ -28,7 +28,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
 
 
-        private ICollection<TrainingScheduleFeedbackEntity> _feedbacks = new List<TrainingScheduleFeedbackEntity>();
+        private List<TrainingScheduleFeedbackEntity> _feedbacks = new List<TrainingScheduleFeedbackEntity>();
 
         /// <summary>
         /// The Feedbacks of the Training Schedule

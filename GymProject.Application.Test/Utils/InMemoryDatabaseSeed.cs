@@ -23,7 +23,12 @@ using System.Threading.Tasks;
 
 namespace GymProject.Application.Test.Utils
 {
-    internal class DatabaseSeed : IDatabaseSeed
+
+
+    /// <summary>
+    /// Way smaller GymContext so it can be seeded on-the-fly without slowing the Unit Test process
+    /// </summary>
+    internal class InMemoryDatabaseSeed : IDatabaseSeed
     {
 
 
@@ -62,11 +67,13 @@ namespace GymProject.Application.Test.Utils
 
 
 
+
         /// <summary>
-        /// Database seeding for the physical Application Test DB, which might require more articulated test cases.
+        /// Database seeding specific for in-memory DBs, which are supposed to be created every time.
+        /// The DB is way smaller in order not to delay the tests execution.
         /// </summary>
-        /// <param name="context">The DB Context</param>
-        public DatabaseSeed(GymContext context)
+        /// <param name="context">The In-memory DB Context</param>
+        public InMemoryDatabaseSeed(GymContext context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(GymContext));
         }
@@ -77,12 +84,8 @@ namespace GymProject.Application.Test.Utils
         /// Check whether the Unit Test Database has the test cases loaded or it must be seeded in order to start the tests.
         /// This method just checks a sample query, hence the developer must ensure that all the queries have been seeded.
         /// </summary>
-        /// <returns>True if Db ready, false if seeding is needed</returns>
-        public bool IsDbReadyForUnitTesting()
-
-            => Context.TrainingPlans.Count() > 0
-                && Context.WorkoutTemplates.Count() > 0;
-                // Insert other checks here....
+        /// <returns>Always returns true</returns>
+        public bool IsDbReadyForUnitTesting() => true;
         
 
 
@@ -250,23 +253,11 @@ namespace GymProject.Application.Test.Utils
             TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User1", true, 1);
             TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan("Plan2 User1 Variant of Plan1", false, 1);
             TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Plan3 User1 Variant of Plan2", false, 1);
-            TrainingPlanRoot plan4 = TrainingPlanRoot.CreateTrainingPlan("Plan4 User1", true, 1);
-            TrainingPlanRoot plan5 = TrainingPlanRoot.CreateTrainingPlan("Plan5 User1 Variant of Plan1 - never scheduled", true, 1);
-            TrainingPlanRoot plan6 = TrainingPlanRoot.CreateTrainingPlan("Plan6 User2", false, 2);
-            TrainingPlanRoot plan7 = TrainingPlanRoot.CreateTrainingPlan("Plan7 User2 Inherited from 1", false, 2);
-            TrainingPlanRoot plan8 = TrainingPlanRoot.CreateTrainingPlan("Plan8 User2 Inherited from 2", false, 2);
-            TrainingPlanRoot plan9 = TrainingPlanRoot.CreateTrainingPlan("Plan9 User2 Inherited from 3", false, 2);
-            TrainingPlanRoot plan10 = TrainingPlanRoot.CreateTrainingPlan("Plan10 User2 Variant of Plan9", false, 2);
-            TrainingPlanRoot plan11 = TrainingPlanRoot.CreateTrainingPlan("Plan11 User2", false, 2);
-            TrainingPlanRoot plan12 = TrainingPlanRoot.CreateTrainingPlan("Plan12 User3 Inherited from 2", false, 3);
-            TrainingPlanRoot plan13 = TrainingPlanRoot.CreateTrainingPlan("Plan12 User3 Inherited from 8", false, 3);
-
 
 
             TrainingPlans = new List<TrainingPlanRoot>()
             {
-                plan1, plan2, plan3, plan4, plan5, plan6, plan7, plan8, plan9,
-                plan10, plan11, plan12, plan13,
+                plan1, plan2, plan3
             };
 
             plan1.TagAs(2);
@@ -316,16 +307,9 @@ namespace GymProject.Application.Test.Utils
 
             // Seed Training Plan Relations
             plan1.AttachChildPlan(plan3.Id, TrainingPlanTypeEnum.Variant);
-            plan1.AttachChildPlan(plan6.Id, TrainingPlanTypeEnum.Inherited);
-            plan3.AttachChildPlan(plan7.Id, TrainingPlanTypeEnum.Inherited);
-            plan3.AttachChildPlan(plan5.Id, TrainingPlanTypeEnum.Variant);
-            plan5.AttachChildPlan(plan8.Id, TrainingPlanTypeEnum.Inherited);
-            plan8.AttachChildPlan(plan9.Id, TrainingPlanTypeEnum.Variant);
 
             Context.Update(plan1);
             Context.Update(plan3);
-            Context.Update(plan5);
-            Context.Update(plan8);
             await Context.SaveAsync();
         }
 
@@ -500,24 +484,6 @@ namespace GymProject.Application.Test.Utils
 
             TrainingSchedules.Add(schedule);
             Context.Update(schedule);
-            await Context.SaveAsync();
-
-            adHocPlan.ScheduleTraining(schedule.Id);
-            Context.Update(adHocPlan);
-            await Context.SaveAsync();
-
-            // Plan7 -> 2 feedbacks
-            adHocPlan = TrainingPlans.Single(x => x.Id == 7);
-
-            schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
-            schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, TrainingPlans.First().Id, schedulePeriod);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), PersonalNoteValue.Write("Comment User1"));
-            schedule.ProvideFeedback(feedback);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(2), PersonalNoteValue.Write("Comment User2"));
-            schedule.ProvideFeedback(feedback);
-
-            TrainingSchedules.Add(schedule);
-            Context.Add(schedule);
             await Context.SaveAsync();
 
             adHocPlan.ScheduleTraining(schedule.Id);

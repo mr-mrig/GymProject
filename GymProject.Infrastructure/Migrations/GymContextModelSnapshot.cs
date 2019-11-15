@@ -813,6 +813,7 @@ namespace GymProject.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<uint>("ProgressiveNumber")
@@ -828,6 +829,8 @@ namespace GymProject.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasAlternateKey("Name", "TrainingWeekId");
 
                     b.HasAlternateKey("ProgressiveNumber", "TrainingWeekId");
 

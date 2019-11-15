@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GymProject.Infrastructure.Migrations
 {
     [DbContext(typeof(GymContext))]
-    [Migration("20191108213818_Initial")]
+    [Migration("20191114204928_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -815,6 +815,7 @@ namespace GymProject.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<uint>("ProgressiveNumber")
@@ -830,6 +831,8 @@ namespace GymProject.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasAlternateKey("Name", "TrainingWeekId");
 
                     b.HasAlternateKey("ProgressiveNumber", "TrainingWeekId");
 

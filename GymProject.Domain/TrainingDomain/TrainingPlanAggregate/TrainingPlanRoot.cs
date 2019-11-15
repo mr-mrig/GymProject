@@ -84,7 +84,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint? OwnerId { get; private set; } = null;
 
 
-        private ICollection<uint?> _trainingScheduleIds = new List<uint?>();
+        private List<uint?> _trainingScheduleIds = new List<uint?>();
 
         /// <summary>
         /// FK to the Training Schedules
@@ -97,7 +97,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private  ICollection<TrainingPlanRelation> _relationsWithChildPlans = new List<TrainingPlanRelation>();
+        private  List<TrainingPlanRelation> _relationsWithChildPlans = new List<TrainingPlanRelation>();
 
         /// <summary>
         /// Get the relations which occur with the child plans - if any - of this one
@@ -109,7 +109,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private  ICollection<TrainingPlanRelation> _relationsWithParentPlans = new List<TrainingPlanRelation>();
+        private List<TrainingPlanRelation> _relationsWithParentPlans = new List<TrainingPlanRelation>();
 
         /// <summary>
         /// Get the relations which occur with the child plans - if any - of this one
@@ -121,7 +121,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private  ICollection<TrainingPlanPhaseRelation> _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
+        private List<TrainingPlanPhaseRelation> _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
 
         /// <summary>
         /// FK to the Training Plan target Phases
@@ -134,7 +134,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private  ICollection<TrainingPlanProficiencyRelation> _trainingPlanProficiencies = new List<TrainingPlanProficiencyRelation>();
+        private List<TrainingPlanProficiencyRelation> _trainingPlanProficiencies = new List<TrainingPlanProficiencyRelation>();
 
         /// <summary>
         /// FK to the Training target Proficiencies
@@ -147,7 +147,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private  ICollection<TrainingPlanMuscleFocusRelation> _trainingPlanMuscleFocusIds = new List<TrainingPlanMuscleFocusRelation>();
+        private List<TrainingPlanMuscleFocusRelation> _trainingPlanMuscleFocusIds = new List<TrainingPlanMuscleFocusRelation>();
 
         /// <summary>
         /// FK to the Training Muscle focus
@@ -160,7 +160,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         }
 
 
-        private  ICollection<TrainingPlanHashtagRelation> _trainingPlanHashtags = new List<TrainingPlanHashtagRelation>();
+        private List<TrainingPlanHashtagRelation> _trainingPlanHashtags = new List<TrainingPlanHashtagRelation>();
 
         /// <summary>
         /// FK to the Training Hashtags

@@ -586,13 +586,14 @@ namespace GymProject.Infrastructure.Migrations
                     Id = table.Column<uint>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ProgressiveNumber = table.Column<uint>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
                     SpecificWeekday = table.Column<int>(nullable: true, defaultValue: 0),
                     TrainingWeekId = table.Column<uint>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkoutTemplate", x => x.Id);
+                    table.UniqueConstraint("AK_WorkoutTemplate_Name_TrainingWeekId", x => new { x.Name, x.TrainingWeekId });
                     table.UniqueConstraint("AK_WorkoutTemplate_ProgressiveNumber_TrainingWeekId", x => new { x.ProgressiveNumber, x.TrainingWeekId });
                     table.ForeignKey(
                         name: "FK_WorkoutTemplate_TrainingWeek_TrainingWeekId",

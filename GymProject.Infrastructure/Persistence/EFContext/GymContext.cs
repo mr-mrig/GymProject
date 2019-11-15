@@ -136,7 +136,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             // Should be configured elsewhere?
             //optionsBuilder.UseSqlite(@"DataSource=C:\Users\Admin\Source\Repos\GymProject\GymProject.Infrastructure\test.db;");  // EF needs this - commaent again after the DB build
-            //optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - commaent again after the DB build
+            //optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - comment again after the DB build
         }
 
 

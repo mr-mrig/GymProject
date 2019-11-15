@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace GymProject.Application.Test.Utils
 {
@@ -34,26 +35,45 @@ namespace GymProject.Application.Test.Utils
 
 
         /// <summary>
-        /// Command Unit test initial setup. It insulates each test environment according to the test name
+        /// Command Unit test initial setup on a in-memory DB. It insulates each test environment according to the test name
         /// </summary>
         /// <typeparam name="T">The command handler class</typeparam>
         /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
         /// <returns></returns>
-        internal static (GymContext, IMediator, ILogger<T>) InitCommandTest<T>(string callerName)
+        internal static (GymContext, IMediator, ILogger<T>) InitInMemoryCommandTest<T>(string callerName)
         {
             // Mocking
             var mediator = new Mock<IMediator>();
             var logger = new Mock<ILogger<T>>();
 
-            // In memory DB
-            DatabaseSeed seed = new DatabaseSeed(new GymContext(
-                GetInMemoryIsolatedDbContextOptions<GymContext>(callerName)
-                , mediator.Object
-                , logger.Object));
+            IDatabaseSeed seed = new InMemoryDatabaseSeed(new GymContext(
+                GetInMemoryIsolatedDbContextOptions<GymContext>(callerName), mediator.Object, logger.Object));
 
             seed.SeedTrainingDomain();
 
-            return(seed.Context, mediator.Object, logger.Object);
+            return (seed.Context, mediator.Object, logger.Object);
+        }
+
+
+        /// <summary>
+        /// Command Unit test initial setup on the Application Test DB. It insulates each test environment according to the test name
+        /// </summary>
+        /// <typeparam name="T">The command handler class</typeparam>
+        /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
+        /// <returns></returns>
+        internal static (GymContext, IMediator, ILogger<T>) InitCommandTest<T>()
+        {
+            // Mocking
+            var mediator = new Mock<IMediator>();
+            var logger = new Mock<ILogger<T>>();
+
+            IDatabaseSeed seed = new DatabaseSeed(new ApplicationUnitTestContext());
+
+            // Seed it if necessary
+            if (!seed.IsDbReadyForUnitTesting())
+                seed.SeedTrainingDomain();
+
+            return (seed.Context, mediator.Object, logger.Object);
         }
 
 
@@ -62,14 +82,14 @@ namespace GymProject.Application.Test.Utils
         /// </summary>
         /// <param name="callerName">The name of the test. This is mandatory to insulate each context avoiding exceptions</param>
         /// <returns></returns>
-        internal static GymContext InitQueryTest()
+        internal static async Task<GymContext> InitQueryTest()
         {
             // Application Test DB
-            DatabaseSeed seed = new DatabaseSeed(new ApplicationUnitTestContext());
+            IDatabaseSeed seed = new DatabaseSeed(new ApplicationUnitTestContext());
 
             // Seed it if necessary
             if (!seed.IsDbReadyForUnitTesting())
-                seed.SeedTrainingDomain();
+                await seed.SeedTrainingDomain();
 
             return seed.Context;
         }

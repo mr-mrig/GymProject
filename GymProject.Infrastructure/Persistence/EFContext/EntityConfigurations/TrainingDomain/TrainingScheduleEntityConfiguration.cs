@@ -46,6 +46,17 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 //);
             });
 
+            builder.HasMany(s => s.Feedbacks)
+                .WithOne()
+                .HasForeignKey("TrainingScheduleId")
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            var navigation = builder.Metadata.FindNavigation(nameof(TrainingScheduleRoot.Feedbacks));
+            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+
+
             builder.HasIndex(s => s.TrainingPlanId)
                 .HasName("IX_TrainingSchedule_TrainingPlanId");
 

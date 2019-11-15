@@ -28,7 +28,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             IEnumerable<TrainingPlanSummaryDto> results;
             uint id;
 
-            GymContext context = ApplicationTestService.InitQueryTest();
+            GymContext context = await ApplicationTestService.InitQueryTest();
             TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
 
             // Dummy case:  No results
@@ -70,7 +70,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             IEnumerable<WorkoutFullPlanDto> results;
             string workoutName;
 
-            GymContext context = ApplicationTestService.InitQueryTest();
+            GymContext context = await ApplicationTestService.InitQueryTest();
             TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
 
             //List<uint> weekIds = context.TrainingPlans.Find(planId).TrainingWeeks as List<uint>;
@@ -78,12 +78,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // Dummy case1:  Fake weeks -> No results
             results = await queries.GetTraininPlanPlannedWorkoutDays(new List<uint>() { uint.MaxValue }, "");
-            Assert.Equal(default, results.First().Id);
+            Assert.Equal(default, results.First().TrainingWeekId);
 
             // Dummy case2:  Fake name -> No results
             workoutName = "FAKE NAME";
             results = await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName);
-            Assert.Equal(default, results.First().Id);
+            Assert.Equal(default, results.First().TrainingWeekId);
 
             // Standard case
             workoutName = "DAY A";

@@ -31,11 +31,14 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                     //.IsRequired(false)
                     .HasMaxLength(PersonalNoteValue.DefaultMaximumLength));
 
-            builder.HasOne<TrainingScheduleRoot>()
-                .WithMany(s => s.Feedbacks)
-                .IsRequired()
-                .HasForeignKey("TrainingScheduleId")
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne<TrainingScheduleRoot>()
+            //    .WithMany(s => s.Feedbacks)
+            //    .IsRequired()
+            //    .HasForeignKey("TrainingScheduleId")
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property<uint>("TrainingScheduleId")
+                .IsRequired();
 
 
             builder.HasOne<UserRoot>()

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GymProject.Application.Test.Utils
+namespace GymProject.Application.Test.UnitTestEnvironment
 {
     public class ApplicationUnitTestContext : GymContext
     {

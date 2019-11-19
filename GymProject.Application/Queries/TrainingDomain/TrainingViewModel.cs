@@ -43,7 +43,7 @@ namespace GymProject.Application.Queries.TrainingDomain
         public float? AvgWorkingSets { get; set; }
         public float? AvgIntensityPercentage { get; set; }
         public string LastWorkoutTimestamp { get; set; }
-        public int? TrainingWeeksNumber { get; set; }
+        public int? TrainingWeeksCounter { get; set; }
         public ICollection<HashtagDto> Hashtags { get; set; }
         public ICollection<TrainingProficiencyDto> TargetProficiencies { get; set; }
         public ICollection<TrainingPhaseDto> TargetPhases { get; set; }
@@ -59,7 +59,7 @@ namespace GymProject.Application.Queries.TrainingDomain
         public uint? ParentPlanId { get; set; }
         public uint? ParentPlanOwnerId { get; set; }
         public uint? RelationTypeId { get; set; }
-        public uint? TrainingWeeksNumber  { get; set; }
+        public uint? TrainingWeeksCounter  { get; set; }
 
         public ICollection<MuscleFocusDto> MusclesFocuses { get; set; }
     }
@@ -93,11 +93,11 @@ namespace GymProject.Application.Queries.TrainingDomain
     {
         public uint WorkUnitId { get; set; }
         public uint WorkUnitProgressiveNumber { get; set; }
-        public uint WuIntensityTechniqueId { get; set; }
+        public uint? WuIntensityTechniqueId { get; set; }
         public string WuIntensityTechniqueAbbreviation { get; set; }
-        public uint NoteId { get; set; }
+        public uint? NoteId { get; set; }
         public string NoteBody { get; set; }
-        public uint ExcerciseId { get; set; }
+        public uint? ExcerciseId { get; set; }
         public string ExcerciseName { get; set; }
 
         public ICollection<WorkingSetDto> WorkingSets { get; set; }

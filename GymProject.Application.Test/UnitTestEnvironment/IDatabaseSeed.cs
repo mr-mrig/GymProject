@@ -1,7 +1,7 @@
 ﻿using GymProject.Infrastructure.Persistence.EFContext;
 using System.Threading.Tasks;
 
-namespace GymProject.Application.Test.Utils
+namespace GymProject.Application.Test.UnitTestEnvironment
 {
     public interface IDatabaseSeed
     {

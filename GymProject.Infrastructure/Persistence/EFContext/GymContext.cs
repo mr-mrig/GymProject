@@ -30,6 +30,8 @@ using MediatR;
 using GymProject.Infrastructure.Mediator;
 using Microsoft.EntityFrameworkCore.Design;
 using GymProject.Domain.Base.Mediator;
+using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
+using GymProject.Domain.TrainingDomain.UserPhaseAggregate;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -66,7 +68,32 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         public GymContext(DbContextOptions options) : base(options) { }
 
+//        internal void Upsert(object entity)
+//        {
+//            ChangeTracker.TrackGraph(entity, e =>
+//            {
+//                if (e.Entry.IsKeySet)
+//                {
+//                    e.Entry.State = EntityState.Modified;
+//                }
+//                else
+//                {
+//                    e.Entry.State = EntityState.Added;
+//                }
+//            });
 
+//#if DEBUG
+//            foreach (var entry in ChangeTracker.Entries())
+//            {
+//                Debug.WriteLine($"Entity: {entry.Entity.GetType().Name} State: {entry.State.ToString()}");
+//            }
+//#endif
+
+
+//            var existing = _db.Entities.Find(ent.ID); //Find the original 
+//            _dbContext.Entry(existing).CurrentValues.SetValues(ent); //Update all of the basic values 
+//            existing.ChangeValueObject(ent.ValueObject);
+//        }
 
         #region Entites
 
@@ -76,8 +103,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public virtual DbSet<EntryStatusTypeEnum> EntryStatusTypes { get; set; }
 
 
+
         public virtual DbSet<TrainingPlanRoot> TrainingPlans { get; set; }
         public virtual DbSet<TrainingPlanNoteRoot> TrainingPlanNotes { get; set; }
+        public virtual DbSet<WorkUnitTemplateNoteRoot> WorkUnitTemplateNotes { get; set; }
         public virtual DbSet<TrainingPlanRelation> TrainingPlanRelations { get; set; }
         public virtual DbSet<TrainingPlanTypeEnum> TrainingPlanTypes { get; set; }
 
@@ -250,11 +279,11 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         protected void IgnoreStaticEnumTables()
         {
             // Avoid double insert for tables that should not be tracked
-            foreach (var entity in ChangeTracker.Entries<Enumeration>())
+            foreach (var entry in ChangeTracker.Entries<Enumeration>())
             {
                 try
                 {
-                    entity.State = EntityState.Unchanged;
+                    entry.State = EntityState.Unchanged;
                 }
                 catch (InvalidOperationException)
                 {
@@ -266,19 +295,33 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         protected void IgnoreEmbeddedValueObjects()
         {
+            //bool isError = false;
             // Value objects are part of the parent table
-            foreach (var entity in ChangeTracker.Entries<ValueObject>())
+            foreach (var entry in ChangeTracker.Entries<ValueObject>())
             {
                 try
                 {
-                    if (entity.State == EntityState.Added)
-                        entity.State = EntityState.Modified;
+                    if (entry.Entity is RestPeriodValue)
+                        System.Diagnostics.Debugger.Break();
+
+                    if (entry.State == EntityState.Added)
+                        entry.State = EntityState.Modified;
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException exc)
                 {
-                    // Enumeration as field, instead of separate table -> No need to set it as Unchanged - IE: see WeekdayEnum
+                    //isError = true;
+                    //_logger.LogWarning("IgnoreEmbeddedValueObjects - Could not change the Entry State of {@entry} because of {@exc}", entry, exc.Message);
+                    //Console.WriteLine("Exception: " + exc.Message);
+                    //System.Diagnostics.Debugger.Break();
                     continue;
                 }
+                //finally
+                //{
+                //    if (!isError)
+                //        System.Diagnostics.Debugger.Break();
+
+                //    isError = false;
+                //}
             }
         }
 

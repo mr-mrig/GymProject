@@ -74,11 +74,11 @@ namespace GymProject.Domain.Test.UnitTest
             OwnerEntity owner = OwnerEntity.Register("user", "mypic");
             DateRangeValue period = DateRangeValue.RangeBetween(startDate, startDate.AddDays(days));
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.PlanPhasePrivate(null, owner, period));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.PlanPhasePublic(null, owner, period));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.PlanPhasePrivate(null, owner, period));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.PlanPhasePublic(null, owner, period));
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.StartPhasePrivate(null, owner, startDate));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.StartPhasePublic(null, owner, startDate));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.StartPhasePrivate(null, owner, startDate));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.StartPhasePublic(null, owner, startDate));
         }
 
 
@@ -90,11 +90,11 @@ namespace GymProject.Domain.Test.UnitTest
             DateTime startDate = DateTime.Today;
             DateRangeValue period = DateRangeValue.RangeBetween(startDate, startDate.AddDays(days));
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.PlanPhasePrivate(phaseId, null, period));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.PlanPhasePublic(phaseId, null, period));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.PlanPhasePrivate(phaseId, null, period));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.PlanPhasePublic(phaseId, null, period));
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.StartPhasePrivate(phaseId, null, startDate));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.StartPhasePublic(phaseId, null, startDate));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.StartPhasePrivate(phaseId, null, startDate));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.StartPhasePublic(phaseId, null, startDate));
         }
 
 
@@ -105,11 +105,11 @@ namespace GymProject.Domain.Test.UnitTest
             DateTime startDate = DateTime.MinValue;
             OwnerEntity owner = OwnerEntity.Register("user", "mypic");
 
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.PlanPhasePrivate(phaseId, owner, null));
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserPhaseRoot.PlanPhasePublic(phaseId, owner, null));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.PlanPhasePrivate(phaseId, owner, null));
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPhaseRoot.PlanPhasePublic(phaseId, owner, null));
 
-            Assert.Throws<ValueObjectInvariantViolationException>(() => UserPhaseRoot.StartPhasePrivate(phaseId, owner, startDate));
-            Assert.Throws<ValueObjectInvariantViolationException>(() => UserPhaseRoot.StartPhasePublic(phaseId, owner, startDate));
+            Assert.Throws<ValueObjectInvariantViolationException>(() => UserTrainingPhaseRoot.StartPhasePrivate(phaseId, owner, startDate));
+            Assert.Throws<ValueObjectInvariantViolationException>(() => UserTrainingPhaseRoot.StartPhasePublic(phaseId, owner, startDate));
         }
 
 
@@ -123,7 +123,7 @@ namespace GymProject.Domain.Test.UnitTest
             DateRangeValue period = DateRangeValue.RangeBetween(startDate, startDate.AddDays(days));
             PersonalNoteValue note = PersonalNoteValue.Write("Little-note.");
 
-            UserPhaseRoot phasePrivate = UserPhaseRoot.PlanPhasePrivate(phaseId, owner, period);
+            UserTrainingPhaseRoot phasePrivate = UserTrainingPhaseRoot.PlanPhasePrivate(phaseId, owner, period);
 
             Assert.NotNull(phasePrivate);
             Assert.Equal(owner, phasePrivate.Owner);
@@ -135,7 +135,7 @@ namespace GymProject.Domain.Test.UnitTest
             phasePrivate.WriteNote(note.Body);
             Assert.Equal(note, phasePrivate.OwnerNote);
 
-            UserPhaseRoot phasePublic = UserPhaseRoot.PlanPhasePublic(phaseId, owner, period, note);
+            UserTrainingPhaseRoot phasePublic = UserTrainingPhaseRoot.PlanPhasePublic(phaseId, owner, period, note);
 
             Assert.NotNull(phasePublic);
             Assert.Equal(owner, phasePublic.Owner);
@@ -155,7 +155,7 @@ namespace GymProject.Domain.Test.UnitTest
             OwnerEntity owner = OwnerEntity.Register("user", "mypic");
             PersonalNoteValue note = PersonalNoteValue.Write("Little-note.");
 
-            UserPhaseRoot phasePrivate = UserPhaseRoot.StartPhasePrivate(phaseId, owner, startDate);
+            UserTrainingPhaseRoot phasePrivate = UserTrainingPhaseRoot.StartPhasePrivate(phaseId, owner, startDate);
 
             Assert.NotNull(phasePrivate);
             Assert.Equal(owner, phasePrivate.Owner);
@@ -168,7 +168,7 @@ namespace GymProject.Domain.Test.UnitTest
             phasePrivate.WriteNote(note.Body);
             Assert.Equal(note, phasePrivate.OwnerNote);
 
-            UserPhaseRoot phasePublic = UserPhaseRoot.StartPhasePublic(phaseId, owner, startDate, note);
+            UserTrainingPhaseRoot phasePublic = UserTrainingPhaseRoot.StartPhasePublic(phaseId, owner, startDate, note);
 
             Assert.NotNull(phasePublic);
             Assert.Equal(owner, phasePublic.Owner);

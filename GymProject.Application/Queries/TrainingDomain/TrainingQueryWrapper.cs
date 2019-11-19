@@ -196,8 +196,8 @@ namespace GymProject.Application.Queries.TrainingDomain
             string sql = @"SELECT 
                 WT.TrainingWeekId, WT.Id as WorkoutId,
                 WT.Name as WorkoutName, WT.SpecificWeekday AS SpecificWeekdayId,
-                WUTN.Id as NoteId, WUTN.Body as NoteBody,
                 WUT.Id as WorkUnitId, WUT.ProgressiveNumber as WorkUnitProgressiveNumber, 
+                WUTN.Id as NoteId, WUTN.Body as NoteBody,
                 IT1.Id as WuIntensityTechniqueId, IT1.Abbreviation as WuIntensityTechniqueAbbreviation,
                 E.Id as ExcerciseId, E.Name as ExcerciseName,
                 WST.Id as WorkingSetId, WST.ProgressiveNumber as WsProgressiveNumber, WST.TargetRepetitions, WST.Rest, WST.Cadence AS LiftingTempo, WST.Effort,

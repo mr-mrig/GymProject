@@ -5,7 +5,7 @@ using System;
 
 namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 {
-    public class UserPhaseRoot : StatusTrackingEntity<uint?>, IAggregateRoot
+    public class UserTrainingPhaseRoot : StatusTrackingEntity<uint?>, IAggregateRoot
     {
 
 
@@ -44,7 +44,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
         #region Ctors
 
-        private UserPhaseRoot(uint? phaseId, OwnerEntity owner, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue note) 
+        private UserTrainingPhaseRoot(uint? phaseId, OwnerEntity owner, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue note) 
             : base(null, entryStatus)
         {
             PhaseId = phaseId;
@@ -80,9 +80,9 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="entryStatus">The status of the phase entry</param>
         /// <param name="trainerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        protected static UserPhaseRoot PlanPhase(uint? phaseId, OwnerEntity trainer, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
+        protected static UserTrainingPhaseRoot PlanPhase(uint? phaseId, OwnerEntity trainer, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
 
-            => new UserPhaseRoot(phaseId, trainer, period, entryStatus, trainerNote);
+            => new UserTrainingPhaseRoot(phaseId, trainer, period, entryStatus, trainerNote);
 
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="owner">The one who set the Phase</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserPhaseRoot StartPhasePublic(uint? phaseId, OwnerEntity owner, DateTime startingFrom, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRoot StartPhasePublic(uint? phaseId, OwnerEntity owner, DateTime startingFrom, PersonalNoteValue ownerNote = null)
 
             => PlanPhase(phaseId, owner, DateRangeValue.RangeStartingFrom(startingFrom), EntryStatusTypeEnum.Pending, ownerNote);
 
@@ -106,7 +106,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="owner">The one who set the Phase</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserPhaseRoot StartPhasePrivate(uint? phaseId, OwnerEntity owner, DateTime startingFrom, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRoot StartPhasePrivate(uint? phaseId, OwnerEntity owner, DateTime startingFrom, PersonalNoteValue ownerNote = null)
 
             => PlanPhase(phaseId, owner, DateRangeValue.RangeStartingFrom(startingFrom), EntryStatusTypeEnum.Private, ownerNote);
 
@@ -119,7 +119,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="owner">The one who set the Phase</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserPhaseRoot PlanPhasePublic(uint? phaseId, OwnerEntity owner, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRoot PlanPhasePublic(uint? phaseId, OwnerEntity owner, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
 
             => PlanPhase(phaseId, owner, phasePeriod, EntryStatusTypeEnum.Pending, ownerNote);
 
@@ -132,7 +132,7 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="owner">The one who set the Phase</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserPhaseRoot PlanPhasePrivate(uint? phaseId, OwnerEntity owner, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRoot PlanPhasePrivate(uint? phaseId, OwnerEntity owner, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
 
             => PlanPhase(phaseId, owner, phasePeriod, EntryStatusTypeEnum.Private, ownerNote);
 

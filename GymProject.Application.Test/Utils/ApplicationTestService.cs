@@ -1,9 +1,11 @@
-﻿using GymProject.Domain.Base;
+﻿using GymProject.Application.Test.UnitTestEnvironment;
+using GymProject.Domain.Base;
 using GymProject.Infrastructure.Persistence.EFContext;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -98,6 +100,25 @@ namespace GymProject.Application.Test.Utils
         internal static T GetSourceAggregate<T>(IRepository<T> repo, uint id) where T : class, IAggregateRoot
 
             => repo.Find(id) as T;
+
+
+
+        /// <summary>
+        /// Unit test ad-hoc JSON serializer which ignores all the properties marked in the <cref="ApplicationTestJsonContractResolver"></cref>
+        /// As the Unit Test DB seeding does not guarantee insertion orders, most of the IDs might differ from one seedin to the other,
+        /// hence comparing the IDs to pre-set ones might lead to false negatives.
+        /// </summary>
+        /// <param name="input">The object to be serialized to a JSON string</param>
+        /// <returns>The string representation of the output JSON</returns>
+        internal static string JsonUnitTestSafeSerializer(object input)
+        {
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = ApplicationTestJsonContractResolver.Instance,
+            };
+
+            return JsonConvert.SerializeObject(input, settings);
+        }
 
 
     }

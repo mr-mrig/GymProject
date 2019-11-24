@@ -273,8 +273,8 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.True(range.Includes(range2));
             Assert.False(range2.Includes(range));
-            Assert.True(range.Includes(test));
-            Assert.False(range2.Includes(test));
+            Assert.True(range.IncludesStrinctly(test));
+            Assert.False(range2.IncludesStrinctly(test));
         }
 
         [Fact]

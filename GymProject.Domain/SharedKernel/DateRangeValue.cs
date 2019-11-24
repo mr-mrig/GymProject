@@ -143,23 +143,33 @@ namespace GymProject.Domain.SharedKernel
 
         /// <summary>
         /// Checks wether the specified date is included in the range or not
+        /// IE: if one of the range boundares are undefined then it just check the other one
         /// </summary>
         /// <param name="toCheck">The date to be checked</param>
         /// <returns>True if date inside DateRange boundaries</returns>
-        //public bool Includes(DateTime toCheck)
-        //{
-        //    if (Start == null)
-        //        return toCheck <= (End ?? toCheck);
-
-        //    if (End == null)
-        //        return toCheck >= (Start ?? toCheck);
-
-        //    return toCheck >= Start.Value && toCheck <= End.Value;
-        //}
         public bool Includes(DateTime toCheck)
+        {
+            if (Start == null)
+                return toCheck <= (End ?? toCheck);
+
+            if (End == null)
+                return toCheck >= (Start ?? toCheck);
+
+            return IncludesStrinctly(toCheck);
+        }
+
+
+        /// <summary>
+        /// Checks wether the specified date is strinctly included in the range or not.
+        /// This raise an exception if one of the period boundaries are null.
+        /// </summary>
+        /// <param name="toCheck">The date to be checked</param>
+        /// <returns>True if date inside DateRange boundaries</returns>
+        public bool IncludesStrinctly(DateTime toCheck)
         {
             return toCheck >= Start.Value && toCheck <= End.Value;
         }
+
 
         /// <summary>
         /// Checks wether the specified daterange is included in the range or not
@@ -183,7 +193,7 @@ namespace GymProject.Domain.SharedKernel
         //}
         public bool Includes(DateRangeValue toCheck)
         {
-            return Includes(toCheck.Start.Value) && Includes(toCheck.End.Value);
+            return IncludesStrinctly(toCheck.Start.Value) && IncludesStrinctly(toCheck.End.Value);
         }
 
 
@@ -218,7 +228,7 @@ namespace GymProject.Domain.SharedKernel
         //}
         public bool Overlaps(DateRangeValue toCheck)
         {
-            return toCheck.Includes(Start.Value) || toCheck.Includes(End.Value) || Includes(toCheck);
+            return toCheck.IncludesStrinctly(Start.Value) || toCheck.IncludesStrinctly(End.Value) || Includes(toCheck);
         }
 
 

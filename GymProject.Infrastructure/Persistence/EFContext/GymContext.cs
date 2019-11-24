@@ -18,8 +18,6 @@ using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutSessionAggregate;
 using GymProject.Domain.TrainingDomain.WorkingSetNote;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System;
@@ -28,10 +26,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using GymProject.Infrastructure.Mediator;
-using Microsoft.EntityFrameworkCore.Design;
 using GymProject.Domain.Base.Mediator;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
-using GymProject.Domain.TrainingDomain.UserPhaseAggregate;
+using GymProject.Domain.TrainingDomain.AthleteAggregate;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -68,32 +65,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         public GymContext(DbContextOptions options) : base(options) { }
 
-//        internal void Upsert(object entity)
-//        {
-//            ChangeTracker.TrackGraph(entity, e =>
-//            {
-//                if (e.Entry.IsKeySet)
-//                {
-//                    e.Entry.State = EntityState.Modified;
-//                }
-//                else
-//                {
-//                    e.Entry.State = EntityState.Added;
-//                }
-//            });
-
-//#if DEBUG
-//            foreach (var entry in ChangeTracker.Entries())
-//            {
-//                Debug.WriteLine($"Entity: {entry.Entity.GetType().Name} State: {entry.State.ToString()}");
-//            }
-//#endif
-
-
-//            var existing = _db.Entities.Find(ent.ID); //Find the original 
-//            _dbContext.Entry(existing).CurrentValues.SetValues(ent); //Update all of the basic values 
-//            existing.ChangeValueObject(ent.ValueObject);
-//        }
 
         #region Entites
 
@@ -102,6 +73,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         public virtual DbSet<EntryStatusTypeEnum> EntryStatusTypes { get; set; }
 
+
+
+        public virtual DbSet<UserTrainingPhaseRelation> UserPhases { get; set; }
+        public virtual DbSet<UserTrainingProficiencyRelation> UserProficiencies { get; set; }
 
 
         public virtual DbSet<TrainingPlanRoot> TrainingPlans { get; set; }
@@ -164,8 +139,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             //});
 
             // Should be configured elsewhere?
-            //optionsBuilder.UseSqlite(@"DataSource=C:\Users\Admin\Source\Repos\GymProject\GymProject.Infrastructure\test.db;");  // EF needs this - commaent again after the DB build
-            //optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - comment again after the DB build
+            optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - comment again after the DB build
         }
 
 
@@ -178,6 +152,11 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             // User Aggregate
             modelBuilder.ApplyConfiguration(new AccountStatusTypeEntityConfiguration());
             modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
+
+            // User Training
+            modelBuilder.ApplyConfiguration(new AthleteEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new UserTrainingPhaseEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new UserTrainingProficiencyEntityConfiguration());
 
             // Training Plan Aggregate
             modelBuilder.ApplyConfiguration(new TrainingPlanEntityConfiguration());

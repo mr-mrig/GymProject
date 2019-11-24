@@ -2,10 +2,11 @@
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using System;
+using System.Collections.Generic;
 
-namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
+namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
-    public class UserTrainingPhaseRoot : StatusTrackingEntity<uint?>, IAggregateRoot
+    public class UserTrainingPhaseRelation : ValueObject, ICloneable
     {
 
 
@@ -23,15 +24,9 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
 
         /// <summary>
-        /// The entry creation date
+        /// The Entry visibility
         /// </summary>
-        public DateTime CreatedOn{ get; private set; } = DateTime.MinValue;
-
-
-        /// <summary>
-        /// The Author of the Phase
-        /// </summary>
-        public OwnerEntity Owner { get; private set; } = null;
+        public EntryStatusTypeEnum EntryStatus { get; private set; } = null;
 
 
         /// <summary>
@@ -44,21 +39,22 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
         #region Ctors
 
-        private UserTrainingPhaseRoot(uint? phaseId, OwnerEntity owner, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue note) 
-            : base(null, entryStatus)
+        private UserTrainingPhaseRelation()
+        {
+
+        }
+
+        private UserTrainingPhaseRelation(uint? phaseId, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue note) 
         {
             PhaseId = phaseId;
-            Owner = owner;
+
             Period = period;
             OwnerNote = note;
+            EntryStatus = entryStatus;
 
-            CreatedOn = DateTime.UtcNow;
 
             if (PhaseId == null)
                 throw new TrainingDomainInvariantViolationException($"Cannot create a UserPhase object without a Phase linked to it");
-
-            if (Owner == null)
-                throw new TrainingDomainInvariantViolationException($"Cannot create a UserPhase object without an owner");
 
             if (Period == null || !Period.IsLeftBounded())
                 throw new TrainingDomainInvariantViolationException($"Cannot create a UserPhase object with an invalid period");
@@ -72,17 +68,31 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
 
         /// <summary>
-        /// Factory method - PROTECTED: the caller should choose among the allowed Statuses by calling the proper factory
+        /// Factory method - INTERNAL: the caller should choose among the allowed Statuses by calling the proper factory
         /// </summary>
         /// <param name="period">The phase period</param>
+        /// <param name="phaseId">The ID of the phase to be started</param>
+        /// <param name="athlete">The Athlete which the phase refers to</param>
+        /// <param name="entryStatus">The status of the phase entry</param>
+        /// <param name="trainerNote">The owner's note</param>
+        /// <returns>A new UserPhase instance</returns>
+        internal static UserTrainingPhaseRelation PlanPhase(uint? phaseId, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
+
+            => new UserTrainingPhaseRelation(phaseId, period, entryStatus, trainerNote);
+
+
+        /// <summary>
+        /// Factory method - INTERNAL: the caller should choose among the allowed Statuses by calling the proper factory
+        /// </summary>
+        /// <param name="startingFrom">The starting date</param>
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="trainer">The one who set the Phase</param>
         /// <param name="entryStatus">The status of the phase entry</param>
         /// <param name="trainerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        protected static UserTrainingPhaseRoot PlanPhase(uint? phaseId, OwnerEntity trainer, DateRangeValue period, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
+        internal static UserTrainingPhaseRelation StartPhase(uint? phaseId, DateTime startingFrom, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
 
-            => new UserTrainingPhaseRoot(phaseId, trainer, period, entryStatus, trainerNote);
+            => new UserTrainingPhaseRelation(phaseId, DateRangeValue.RangeStartingFrom(startingFrom), entryStatus, trainerNote);
 
 
         /// <summary>
@@ -91,11 +101,12 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="startingFrom">The starting date</param>
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="owner">The one who set the Phase</param>
+        /// <param name="athlete">The Athlete which the phase refers to</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRoot StartPhasePublic(uint? phaseId, OwnerEntity owner, DateTime startingFrom, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation StartPhasePublic(uint? phaseId, DateTime startingFrom, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, owner, DateRangeValue.RangeStartingFrom(startingFrom), EntryStatusTypeEnum.Pending, ownerNote);
+            => PlanPhase(phaseId, DateRangeValue.RangeStartingFrom(startingFrom), EntryStatusTypeEnum.Pending, ownerNote);
 
 
         /// <summary>
@@ -104,11 +115,12 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="startingFrom">The starting date</param>
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="owner">The one who set the Phase</param>
+        /// <param name="athlete">The Athlete which the phase refers to</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRoot StartPhasePrivate(uint? phaseId, OwnerEntity owner, DateTime startingFrom, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation StartPhasePrivate(uint? phaseId, DateTime startingFrom, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, owner, DateRangeValue.RangeStartingFrom(startingFrom), EntryStatusTypeEnum.Private, ownerNote);
+            => PlanPhase(phaseId, DateRangeValue.RangeStartingFrom(startingFrom), EntryStatusTypeEnum.Private, ownerNote);
 
 
         /// <summary>
@@ -117,11 +129,12 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="phasePeriod">The phase planned period</param>
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="owner">The one who set the Phase</param>
+        /// <param name="athlete">The Athlete which the phase refers to</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRoot PlanPhasePublic(uint? phaseId, OwnerEntity owner, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation PlanPhasePublic(uint? phaseId, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, owner, phasePeriod, EntryStatusTypeEnum.Pending, ownerNote);
+            => PlanPhase(phaseId, phasePeriod, EntryStatusTypeEnum.Pending, ownerNote);
 
 
         /// <summary>
@@ -130,11 +143,12 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
         /// <param name="phasePeriod">The Phase planned period</param>
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="owner">The one who set the Phase</param>
+        /// <param name="athlete">The Athlete which the phase refers to</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRoot PlanPhasePrivate(uint? phaseId, OwnerEntity owner, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation PlanPhasePrivate(uint? phaseId, DateRangeValue phasePeriod, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, owner, phasePeriod, EntryStatusTypeEnum.Private, ownerNote);
+            => PlanPhase(phaseId, phasePeriod, EntryStatusTypeEnum.Private, ownerNote);
 
         #endregion
 
@@ -170,5 +184,25 @@ namespace GymProject.Domain.TrainingDomain.UserPhaseAggregate
 
         #endregion
 
+
+
+        #region IClonable Implementation
+
+        public object Clone()
+
+            => PlanPhase(PhaseId, Period, EntryStatus, OwnerNote);
+
+
+        #endregion
+
+
+
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            yield return Period;
+            yield return OwnerNote;
+            yield return EntryStatus;
+            yield return PhaseId;
+        }
     }
 }

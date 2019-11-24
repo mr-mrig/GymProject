@@ -167,6 +167,52 @@ namespace GymProject.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.AthleteAggregate.AthleteRoot", b =>
+                {
+                    b.Property<uint?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("User","GymApp");
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.AthleteAggregate.UserTrainingPhaseRelation", b =>
+                {
+                    b.Property<uint>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint?>("PhaseId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EntryStatusId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserId", "PhaseId");
+
+                    b.HasIndex("EntryStatusId");
+
+                    b.HasIndex("PhaseId");
+
+                    b.ToTable("UserTrainingPhase","GymApp");
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.AthleteAggregate.UserTrainingProficiencyRelation", b =>
+                {
+                    b.Property<uint>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint?>("ProficiencyId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserId", "ProficiencyId");
+
+                    b.HasIndex("ProficiencyId");
+
+                    b.ToTable("UserTrainingProficiency","GymApp");
+                });
+
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.Common.TrainingEffortTypeEnum", b =>
                 {
                     b.Property<int>("Id")
@@ -919,6 +965,122 @@ namespace GymProject.Infrastructure.Migrations
                     b.HasIndex("AccountStatusTypeId");
 
                     b.ToTable("User","GymApp");
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.AthleteAggregate.AthleteRoot", b =>
+                {
+                    b.HasOne("GymProject.Domain.UserAccountDomain.UserAggregate.UserRoot", null)
+                        .WithOne()
+                        .HasForeignKey("GymProject.Domain.TrainingDomain.AthleteAggregate.AthleteRoot", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.AthleteAggregate.UserTrainingPhaseRelation", b =>
+                {
+                    b.HasOne("GymProject.Domain.SharedKernel.EntryStatusTypeEnum", "EntryStatus")
+                        .WithMany()
+                        .HasForeignKey("EntryStatusId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("GymProject.Domain.TrainingDomain.TrainingPhaseAggregate.TrainingPhaseRoot", null)
+                        .WithMany()
+                        .HasForeignKey("PhaseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("GymProject.Domain.TrainingDomain.AthleteAggregate.AthleteRoot", null)
+                        .WithMany("TrainingPhases")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("GymProject.Domain.SharedKernel.DateRangeValue", "Period", b1 =>
+                        {
+                            b1.Property<uint>("UserTrainingPhaseRelationUserId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<uint>("UserTrainingPhaseRelationPhaseId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<DateTime?>("End")
+                                .HasColumnName("EndDate")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<DateTime?>("Start")
+                                .IsRequired()
+                                .HasColumnName("StartDate")
+                                .HasColumnType("INTEGER");
+
+                            b1.HasKey("UserTrainingPhaseRelationUserId", "UserTrainingPhaseRelationPhaseId");
+
+                            b1.ToTable("UserTrainingPhase");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserTrainingPhaseRelationUserId", "UserTrainingPhaseRelationPhaseId");
+                        });
+
+                    b.OwnsOne("GymProject.Domain.SharedKernel.PersonalNoteValue", "OwnerNote", b1 =>
+                        {
+                            b1.Property<uint>("UserTrainingPhaseRelationUserId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<uint>("UserTrainingPhaseRelationPhaseId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("Body")
+                                .HasColumnName("OwnerNote")
+                                .HasColumnType("TEXT")
+                                .HasMaxLength(1000);
+
+                            b1.HasKey("UserTrainingPhaseRelationUserId", "UserTrainingPhaseRelationPhaseId");
+
+                            b1.ToTable("UserTrainingPhase");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserTrainingPhaseRelationUserId", "UserTrainingPhaseRelationPhaseId");
+                        });
+                });
+
+            modelBuilder.Entity("GymProject.Domain.TrainingDomain.AthleteAggregate.UserTrainingProficiencyRelation", b =>
+                {
+                    b.HasOne("GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate.TrainingProficiencyRoot", null)
+                        .WithMany()
+                        .HasForeignKey("ProficiencyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("GymProject.Domain.TrainingDomain.AthleteAggregate.AthleteRoot", null)
+                        .WithMany("TrainingProficiencies")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("GymProject.Domain.SharedKernel.DateRangeValue", "Period", b1 =>
+                        {
+                            b1.Property<uint>("UserTrainingProficiencyRelationUserId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<uint>("UserTrainingProficiencyRelationProficiencyId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<DateTime?>("End")
+                                .HasColumnName("EndDate")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<DateTime?>("Start")
+                                .IsRequired()
+                                .HasColumnName("StartDate")
+                                .HasColumnType("INTEGER");
+
+                            b1.HasKey("UserTrainingProficiencyRelationUserId", "UserTrainingProficiencyRelationProficiencyId");
+
+                            b1.ToTable("UserTrainingProficiency");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserTrainingProficiencyRelationUserId", "UserTrainingProficiencyRelationProficiencyId");
+                        });
                 });
 
             modelBuilder.Entity("GymProject.Domain.TrainingDomain.ExcerciseAggregate.ExcerciseRoot", b =>

@@ -343,6 +343,70 @@ namespace GymProject.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserTrainingPhase",
+                schema: "GymApp",
+                columns: table => new
+                {
+                    PhaseId = table.Column<uint>(nullable: false),
+                    UserId = table.Column<uint>(nullable: false),
+                    StartDate = table.Column<DateTime>(type: "INTEGER", nullable: true),
+                    EndDate = table.Column<DateTime>(type: "INTEGER", nullable: true),
+                    OwnerNote = table.Column<string>(maxLength: 1000, nullable: true),
+                    EntryStatusId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTrainingPhase", x => new { x.UserId, x.PhaseId });
+                    table.ForeignKey(
+                        name: "FK_UserTrainingPhase_EntryStatusType_EntryStatusId",
+                        column: x => x.EntryStatusId,
+                        principalSchema: "GymApp",
+                        principalTable: "EntryStatusType",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserTrainingPhase_TrainingPhase_PhaseId",
+                        column: x => x.PhaseId,
+                        principalSchema: "GymApp",
+                        principalTable: "TrainingPhase",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserTrainingPhase_User_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "GymApp",
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTrainingProficiency",
+                schema: "GymApp",
+                columns: table => new
+                {
+                    ProficiencyId = table.Column<uint>(nullable: false),
+                    UserId = table.Column<uint>(nullable: false),
+                    StartDate = table.Column<DateTime>(type: "INTEGER", nullable: true),
+                    EndDate = table.Column<DateTime>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTrainingProficiency", x => new { x.UserId, x.ProficiencyId });
+                    table.ForeignKey(
+                        name: "FK_UserTrainingProficiency_TrainingProficiency_ProficiencyId",
+                        column: x => x.ProficiencyId,
+                        principalSchema: "GymApp",
+                        principalTable: "TrainingProficiency",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserTrainingProficiency_User_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "GymApp",
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TrainingPlanHashtag",
                 schema: "GymApp",
                 columns: table => new
@@ -1107,6 +1171,24 @@ namespace GymProject.Infrastructure.Migrations
                 column: "AccountStatusTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserTrainingPhase_EntryStatusId",
+                schema: "GymApp",
+                table: "UserTrainingPhase",
+                column: "EntryStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserTrainingPhase_PhaseId",
+                schema: "GymApp",
+                table: "UserTrainingPhase",
+                column: "PhaseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserTrainingProficiency_ProficiencyId",
+                schema: "GymApp",
+                table: "UserTrainingProficiency",
+                column: "ProficiencyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkingSet_NoteId",
                 schema: "GymApp",
                 table: "WorkingSet",
@@ -1213,6 +1295,14 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
+                name: "UserTrainingPhase",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "UserTrainingProficiency",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
                 name: "WorkingSet",
                 schema: "GymApp");
 
@@ -1225,14 +1315,6 @@ namespace GymProject.Infrastructure.Migrations
                 schema: "GymApp");
 
             migrationBuilder.DropTable(
-                name: "TrainingPhase",
-                schema: "GymApp");
-
-            migrationBuilder.DropTable(
-                name: "TrainingProficiency",
-                schema: "GymApp");
-
-            migrationBuilder.DropTable(
                 name: "TrainingPlanType",
                 schema: "GymApp");
 
@@ -1242,6 +1324,14 @@ namespace GymProject.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "TrainingSchedule",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "TrainingPhase",
+                schema: "GymApp");
+
+            migrationBuilder.DropTable(
+                name: "TrainingProficiency",
                 schema: "GymApp");
 
             migrationBuilder.DropTable(

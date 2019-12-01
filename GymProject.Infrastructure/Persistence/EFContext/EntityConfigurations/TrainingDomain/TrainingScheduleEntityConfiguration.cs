@@ -57,7 +57,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
 
 
-            builder.HasIndex(s => s.TrainingPlanId)
+            builder.HasIndex(s => s.UserTrainingPlanId)
                 .HasName("IX_TrainingSchedule_TrainingPlanId");
 
 

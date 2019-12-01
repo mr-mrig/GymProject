@@ -158,8 +158,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         /// <summary>
         /// Close the Phase as a new one is started.
+        /// The previous Phase level finishes the day before the current one
         /// </summary>
-        public void Close() => Period = DateRangeValue.RangeBetween(Period.Start, DateTime.Now);
+        public void Close() => Period = DateRangeValue.RangeBetween(Period.Start, DateTime.UtcNow.AddDays(-1));
 
 
         /// <summary>
@@ -177,10 +178,18 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         {
             if (Period.IsRightBounded())
                 Period = DateRangeValue.RangeBetween(newStartDate, Period.End);
-
             else
                 Period = DateRangeValue.RangeStartingFrom(newStartDate);
         }
+
+
+        /// <summary>
+        /// Change the status of this entry
+        /// </summary>
+        /// <param name="newStartDate">The new start date</param>
+        public void ChangeStatus(EntryStatusTypeEnum status)
+
+            => EntryStatus = status;
 
         #endregion
 

@@ -1,9 +1,9 @@
 ﻿using GymProject.Domain.Base;
 using System.Collections.Generic;
 
-namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
+namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
-    public class TrainingPlanProficiencyRelation : ValueObject
+    public class TrainingPlanMuscleFocusRelation : ValueObject
     {
 
 
@@ -16,25 +16,25 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Navigation Property to the Training Plan
         /// </summary>
-        public TrainingPlanRoot TrainingPlan { get; private set; } = null;
+        public UserTrainingPlanEntity TrainingPlan { get; private set; } = null;
 
         /// <summary>
-        /// Navigation Property to the Training Proficiency
+        /// Navigation Property to the Muscle
         /// </summary>
-        public uint? TrainingProficiencyId { get; private set; } = null;
+        public uint? MuscleGroupId { get; private set; } = null;
 
 
 
 
         #region Ctors
 
-        private TrainingPlanProficiencyRelation() { }
+        private TrainingPlanMuscleFocusRelation() { }
 
 
-        private TrainingPlanProficiencyRelation(TrainingPlanRoot trainingPlan, uint? proficiencyId)
+        private TrainingPlanMuscleFocusRelation(UserTrainingPlanEntity trainingPlan, uint? muscleId)
         {
             TrainingPlan = trainingPlan;
-            TrainingProficiencyId = proficiencyId;
+            MuscleGroupId = muscleId;
             TrainingPlanId = trainingPlan.Id;
         }
 
@@ -44,14 +44,14 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Factories
 
         /// <summary>
-        /// Perform a link between the two entities, by applying a Many-to-MAny relation
+        /// Perform a link between the two entities, by applying a Many-to-Many relation
         /// </summary>
         /// <param name="trainingPlan">The left entity</param>
-        /// <param name="proficiencyId">Tha right entity</param>
+        /// <param name="muscleId">Tha right entity</param>
         /// <returns>The TrainingPlanMuscleFocus isntance</returns>
-        public static TrainingPlanProficiencyRelation BuildLink(TrainingPlanRoot trainingPlan, uint? proficiencyId)
+        public static TrainingPlanMuscleFocusRelation BuildLink(UserTrainingPlanEntity trainingPlan, uint? muscleId)
 
-            => new TrainingPlanProficiencyRelation(trainingPlan, proficiencyId);
+            => new TrainingPlanMuscleFocusRelation(trainingPlan, muscleId);
 
         #endregion
 
@@ -60,7 +60,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         protected override IEnumerable<object> GetAtomicValues()
         {
             yield return TrainingPlan;
-            yield return TrainingProficiencyId;
+            yield return MuscleGroupId;
             //yield return TrainingPlanId;  // Not necessary
         }
     }

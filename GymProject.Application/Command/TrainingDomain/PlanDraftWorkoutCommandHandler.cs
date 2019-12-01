@@ -16,14 +16,14 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         private readonly IWorkoutTemplateRepository _workoutRepository;
-        private readonly ITrainingPlanRepository _planRepository;
+        private readonly ITrainingProgramRepository _planRepository;
         private readonly ILogger<PlanDraftWorkoutCommandHandler> _logger;
 
 
 
         public PlanDraftWorkoutCommandHandler(
             IWorkoutTemplateRepository workoutTemplateRepository,
-            ITrainingPlanRepository planRepository,
+            ITrainingProgramRepository planRepository,
             ILogger<PlanDraftWorkoutCommandHandler> logger)
         {
             _workoutRepository = workoutTemplateRepository ?? throw new ArgumentNullException(nameof(workoutTemplateRepository));

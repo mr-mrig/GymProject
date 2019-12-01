@@ -45,7 +45,7 @@ namespace GymProject.Domain.Test.UnitTest
                 {
                     trainingHashtag = TrainingHashtagRoot.TagWith(hashtag);
                     Assert.Null(trainingHashtag.Id);
-                    Assert.Null(trainingHashtag.EntryStatus);
+                    Assert.Equal(EntryStatusTypeEnum.Pending, trainingHashtag.EntryStatus);
                 }
                 else
                 {
@@ -57,7 +57,7 @@ namespace GymProject.Domain.Test.UnitTest
                     else
                     {
                         trainingHashtag = TrainingHashtagRoot.TagWith(id, hashtag);
-                        Assert.Null(trainingHashtag.EntryStatus);
+                        Assert.Equal(EntryStatusTypeEnum.Pending, trainingHashtag.EntryStatus);
                     }
                     Assert.Equal(id, trainingHashtag.Id);
                 }

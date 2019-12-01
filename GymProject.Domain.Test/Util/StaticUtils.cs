@@ -3,15 +3,14 @@ using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
-using GymProject.Domain.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GymProject.Domain.Utils.Extensions;
 using Xunit;
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using GymProject.Domain.Test.UnitTest;
 using GymProject.Infrastructure.Utils;
+using GymProject.Infrastructure.Persistence.EFContext.Model;
 
 namespace GymProject.Domain.Test.Util
 {
@@ -22,10 +21,59 @@ namespace GymProject.Domain.Test.Util
         /// Checks current timestamp is as expected
         /// </summary>
         /// <param name="toBeChecked">The datetime object storing the current timestamp</param>
-        internal static void CheckCurrentTimestamp(DateTime toBeChecked)
+        internal static void CheckTimestamp(DateTime toBeChecked)
         {
-            Assert.InRange(toBeChecked, DateTime.Now.Subtract(TimeSpan.FromSeconds(1)), DateTime.Now);
+            //Assert.InRange(toBeChecked, DateTime.Now.Subtract(TimeSpan.FromSeconds(1)), DateTime.Now);
+            Assert.Equal(toBeChecked, DateTime.UtcNow, new TimeSpan(100));
         }
+        
+
+        /// <summary>
+        /// Checks two DateRangeValues are equals
+        /// </summary>
+        /// <param name="left">The first DateRangeValue</param>
+        /// <param name="right">The second DateRangeValue</param>
+        /// <param name="strictlyEqual">Wether to use strictly equality comparator or to left a small precision margin</param>
+        internal static void CheckDateRangeValue(DateRangeValue left, DateRangeValue right, bool strictlyEqual = false)
+        {
+            DateTime leftStart = left.Start.HasValue ? left.Start.Value : DateTime.MinValue;
+            DateTime leftEnd = left.End.HasValue ? left.End.Value : DateTime.MinValue;
+            DateTime rightStart = right.Start.HasValue ? right.Start.Value : DateTime.MinValue;
+            DateTime rightEnd = right.End.HasValue ? right.End.Value : DateTime.MinValue;
+
+            if(strictlyEqual)
+            {
+                Assert.Equal(leftStart, rightStart);
+                Assert.Equal(leftEnd, rightEnd);
+            }
+            else
+            {
+                Assert.Equal(leftStart, rightStart, new TimeSpan(TimeSpan.TicksPerSecond / 2));
+                Assert.Equal(leftEnd, rightEnd, new TimeSpan(TimeSpan.TicksPerSecond / 2));
+            }
+
+        }
+
+
+        /// <summary>
+        /// Checks that the DateRangeVaues in the lists are sequentially equal
+        /// </summary>
+        /// <param name="left">The first DateRangeValue list</param>
+        /// <param name="right">The second DateRangeValue list</param>
+        /// <param name="strictlyEqual">Wether to use strictly equality comparator or to left a small precision margin</param>
+        internal static void CheckDateRangeValuesInLists(IEnumerable<DateRangeValue> left, IEnumerable<DateRangeValue> right, bool strictlyEqual = false)
+        {
+            var leftEnumerator = left.GetEnumerator();
+            var rightEnumerator = right.GetEnumerator();
+
+            Assert.Equal(left.Count(), right.Count());
+
+            while (leftEnumerator.MoveNext() && rightEnumerator.MoveNext())
+            {
+                CheckDateRangeValue(leftEnumerator.Current, rightEnumerator.Current, strictlyEqual);
+            }
+        }
+
 
         /// <summary>
         /// Checks that two values are inside a specific tolerance.
@@ -303,7 +351,7 @@ namespace GymProject.Domain.Test.Util
             if (checkAsserts)
             {
                 Assert.Equal(period, result.ScheduledPeriod);
-                Assert.Equal(planId, result.TrainingPlanId);
+                Assert.Equal(planId, result.UserTrainingPlanId);
 
                 if(!isTransient)
                     Assert.Equal(id, result.Id);
@@ -317,48 +365,6 @@ namespace GymProject.Domain.Test.Util
 
             return result;
         }
-
-        internal static ICollection<TrainingPlanRelation> BuildTrainingPlanRelations(uint? parentId)
-        {
-            int childsMin = 1, childsMax = 10;
-            int childIdsMin = 1, childIdsMax = 4574678;
-            int childPlansNumber = RandomFieldGenerator.RandomInt(childsMin, childsMax);
-
-            List<TrainingPlanRelation> ret = new List<TrainingPlanRelation>();
-            List<int> childIds = new List<int>();
-
-            for (int irel = 0; irel < childPlansNumber; irel++)
-            {
-                TrainingPlanRelation relation = BuildTrainingPlanRelation(parentId,
-                   (uint?)(RandomFieldGenerator.RandomIntValueExcluded(childIdsMin, childIdsMax, childIds)));
-
-                ret.Add(relation);
-                childIds.Add((int)relation.ChildPlanId.Value);
-            }
-
-            return ret;
-        }
-
-
-        internal static TrainingPlanRelation BuildTrainingPlanRelation(uint? parentId, uint? childId = null, TrainingPlanTypeEnum relationType = null, uint? messageId = null)
-        {
-            int childIdMin = 1, childIdMax = 5555;
-            int messageIdMin = 1, messageIdMax = 3;
-
-            relationType = relationType ?? TrainingPlanTypeEnum.From(RandomFieldGenerator.RandomInt(1, 2));
-
-            if (messageId == 0)
-            {
-                messageId = relationType == TrainingPlanTypeEnum.Inherited
-                ? (uint?)(RandomFieldGenerator.RandomInt(messageIdMin, messageIdMax))
-                : null;
-            }
-            childId = childId ?? (uint?)RandomFieldGenerator.RandomIntValueExcluded(childIdMin, childIdMax, (int)parentId);
-
-            return TrainingPlanRelation.EnstablishRelation(parentId, childId, relationType, messageId);
-        }
-
-
 
     }
 }

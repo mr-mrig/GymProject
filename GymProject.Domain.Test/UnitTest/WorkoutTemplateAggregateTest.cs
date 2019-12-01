@@ -463,8 +463,8 @@ namespace GymProject.Domain.Test.UnitTest
             workout.AttachWorkUnitNote(workUnit.ProgressiveNumber, newNoteId);
 
             // Check WU changes
-            Assert.Equal(newNoteId, workUnit.WorkUnitNoteId);
-            Assert.Equal(newExcerciseId, workUnit.ExcerciseId);
+            Assert.Equal(newNoteId, workout.CloneWorkUnit(workUnit.ProgressiveNumber).WorkUnitNoteId);
+            Assert.Equal(newExcerciseId, workout.CloneWorkUnit(workUnit.ProgressiveNumber).ExcerciseId);
 
             workout.DetachWorkUnitNote(workUnit.ProgressiveNumber);
             Assert.Null(workout.CloneWorkUnit(workUnit.ProgressiveNumber).WorkUnitNoteId);
@@ -646,20 +646,24 @@ namespace GymProject.Domain.Test.UnitTest
             {
                 uint toChangePnum = (uint)RandomFieldGenerator.RandomInt(0, workUnit.WorkingSets.Count - 1);
 
-                WorkingSetTemplateEntity workingSetBefeore = finalSets.Single(x => x.ProgressiveNumber == toChangePnum);
-                WorkingSetTemplateEntity newWorkingSet = WorkoutTemplateAggregateBuilder.BuildRandomWorkingSetTemplate(
-                    isTransient ? 1 : workingSetBefeore.Id.Value, (int)toChangePnum, isTransient, TrainingEffortTypeEnum.RM);
+                WorkingSetTemplateEntity workingSetBefore = finalSets.SingleOrDefault(x => x.ProgressiveNumber == toChangePnum);
 
-                workingSetBefeore = newWorkingSet;
+                if(workingSetBefore != null)
+                {
+                    WorkingSetTemplateEntity newWorkingSet = WorkoutTemplateAggregateBuilder.BuildRandomWorkingSetTemplate(
+                        isTransient ? 1 : workingSetBefore.Id.Value, (int)toChangePnum, isTransient, TrainingEffortTypeEnum.RM);
 
-                workout.ReviseWorkingSetEffort(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Effort);
-                workout.ReviseWorkingSetLiftingTempo(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Tempo);
-                workout.ReviseWorkingSetRepetitions(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Repetitions);
-                workout.ReviseWorkingSetRestPeriod(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Rest);
+                    workingSetBefore = newWorkingSet;
 
-                WorkUnitTemplateEntity workUnitAfter = workout.CloneWorkUnit(toCheck.ProgressiveNumber);
+                    workout.ReviseWorkingSetEffort(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Effort);
+                    workout.ReviseWorkingSetLiftingTempo(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Tempo);
+                    workout.ReviseWorkingSetRepetitions(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Repetitions);
+                    workout.ReviseWorkingSetRestPeriod(workUnit.ProgressiveNumber, toChangePnum, newWorkingSet.Rest);
 
-                CheckWorkUnitSets(workUnitAfter, finalSets, isTransient, null, false);
+                    WorkUnitTemplateEntity workUnitAfter = workout.CloneWorkUnit(toCheck.ProgressiveNumber);
+
+                    CheckWorkUnitSets(workUnitAfter, finalSets, isTransient, null, false);
+                }
             }
         }
 

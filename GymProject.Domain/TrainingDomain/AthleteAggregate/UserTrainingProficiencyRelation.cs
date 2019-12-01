@@ -52,14 +52,14 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method for assigning a Training Proficiency - PROTECTED
+        /// Factory method for assigning a Training Proficiency
         /// </summary>
         /// <param name="period">The period which the Proficiency level is valid over</param>
         /// <param name="proficiencyId">The ID of the Training Proficiency</param>
         /// <param name="owner">The one who is setting the Proficiency</param>
         /// <param name="athlete">The athlete which this Proficiency level refers to</param>
         /// <returns>A new UserPhase instance</returns>
-        protected static UserTrainingProficiencyRelation AssignTrainingProficiencsy(uint? proficiencyId, DateRangeValue period)
+        public static UserTrainingProficiencyRelation AssignTrainingProficiency(uint? proficiencyId, DateRangeValue period)
 
             => new UserTrainingProficiencyRelation(proficiencyId, period);
 
@@ -83,9 +83,10 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #region Business Methods
 
         /// <summary>
-        /// Close the Phase as a new one is started.
+        /// Close the Proficiency as a new one is started.
+        /// The previous Proficiency level finishes the day before the current one
         /// </summary>
-        public void Close() => Period = DateRangeValue.RangeBetween(Period.Start, DateTime.Now);
+        public void Close() => Period = DateRangeValue.RangeBetween(Period.Start, DateTime.UtcNow.AddDays(-1));
 
 
         /// <summary>
@@ -113,6 +114,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         public object Clone()
 
-            => AssignTrainingProficiencsy(ProficiencyId, Period);
+            => AssignTrainingProficiency(ProficiencyId, Period);
     }
 }

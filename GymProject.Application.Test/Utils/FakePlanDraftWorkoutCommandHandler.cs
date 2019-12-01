@@ -16,7 +16,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         private readonly IWorkoutTemplateRepository _workoutRepository;
-        private readonly ITrainingPlanRepository _planRepository;
+        private readonly ITrainingProgramRepository _planRepository;
         private readonly ILogger<FakePlanDraftWorkoutCommandHandler> _logger;
         private readonly int _fakeWeekProgressiveNumber;
 
@@ -24,7 +24,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
         public FakePlanDraftWorkoutCommandHandler(
             IWorkoutTemplateRepository workoutTemplateRepository,
-            ITrainingPlanRepository planRepository,
+            ITrainingProgramRepository planRepository,
             ILogger<FakePlanDraftWorkoutCommandHandler> logger,
             int fakeWeekProgressiveNumber)
         {

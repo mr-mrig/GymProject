@@ -19,7 +19,7 @@ namespace GymProject.Domain.Test.UnitTest
 
 
 
-        public const int ntests = 500;
+        public const int ntests = 1000;
 
 
 
@@ -129,11 +129,11 @@ namespace GymProject.Domain.Test.UnitTest
                     schedule.Reschedule(newStartDate);
                     Assert.Equal(newStartDate, schedule.ScheduledPeriod.Start);
                 }
-                    
+
                 schedule.Complete(newEndDate);
                 Assert.Equal(newEndDate, schedule.ScheduledPeriod.End);
 
-                if(newEndDate < DateTime.Now)
+                if (newEndDate < DateTime.Now)
                     Assert.True(schedule.IsCompleted());
                 else
                     Assert.False(schedule.IsCompleted());

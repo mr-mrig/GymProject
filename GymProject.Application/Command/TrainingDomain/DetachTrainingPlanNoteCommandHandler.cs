@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,14 +11,14 @@ namespace GymProject.Application.Command.TrainingDomain
     public class DetachTrainingPlanNoteCommandHandler : IRequestHandler<DetachTrainingPlanNoteCommand, bool>
     {
 
-        private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly IAthleteRepository _athleteRepository;
         private readonly ILogger<DetachTrainingPlanNoteCommandHandler> _logger;
 
 
 
-        public DetachTrainingPlanNoteCommandHandler(ITrainingPlanRepository trainingPlanRepository, ILogger<DetachTrainingPlanNoteCommandHandler> logger)
+        public DetachTrainingPlanNoteCommandHandler(IAthleteRepository athleteRepository, ILogger<DetachTrainingPlanNoteCommandHandler> logger)
         {
-            _trainingPlanRepository = trainingPlanRepository ?? throw new ArgumentNullException(nameof(trainingPlanRepository));
+            _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -26,23 +27,23 @@ namespace GymProject.Application.Command.TrainingDomain
         {
             bool result = false;
 
-            TrainingPlanRoot plan = _trainingPlanRepository.Find(message.TrainingPlanId);
+            AthleteRoot athlete = _athleteRepository.Find(message.UserId);
 
-            if (plan == null)
+            if (athlete == null)
                 return false;
 
             try
             {
-                plan.CleanNote();
+                athlete.CleanTrainingPlanNote(message.TrainingPlanId);
 
-                _logger.LogInformation("----- Detaching TrainingPlanNote to {@TrainingPlanId}", message.TrainingPlanId);
+                _logger.LogInformation("----- Detaching TrainingPlanNote from {@UserTrainingPlanId} of {@UserId}", message.TrainingPlanId, message.UserId);
 
-                _trainingPlanRepository.Modify(plan);
-                result = await _trainingPlanRepository.UnitOfWork.SaveAsync(cancellationToken);
+                _athleteRepository.Modify(athlete);
+                result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {
-                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _trainingPlanRepository.UnitOfWork);
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepository.UnitOfWork);
                 result = false;
             }
 

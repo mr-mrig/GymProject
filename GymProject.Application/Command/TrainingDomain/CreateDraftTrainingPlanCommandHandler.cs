@@ -15,7 +15,7 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
-        private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly ITrainingProgramRepository _trainingPlanRepository;
         private readonly ILogger<CreateDraftTrainingPlanCommandHandler> _logger;
 
 
@@ -23,7 +23,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         public CreateDraftTrainingPlanCommandHandler(
-            ITrainingPlanRepository trainingPlanRepository,
+            ITrainingProgramRepository trainingPlanRepository,
             ILogger<CreateDraftTrainingPlanCommandHandler> logger
             )
         {

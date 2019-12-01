@@ -27,6 +27,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             builder.HasMany(x => x.TrainingPhases)
                 .WithOne()
                 .HasForeignKey("UserId");
+
+            builder.HasMany(x => x.TrainingPlans)
+                .WithOne()
+                .HasForeignKey("UserId");
         }
     }
 }

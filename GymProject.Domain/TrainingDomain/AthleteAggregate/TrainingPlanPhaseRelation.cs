@@ -1,7 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using System.Collections.Generic;
 
-namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
+namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
     public class TrainingPlanPhaseRelation : ValueObject
     {
@@ -16,7 +16,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Navigation Property to the Training Plan
         /// </summary>
-        public TrainingPlanRoot TrainingPlan { get; private set; } = null;
+        public UserTrainingPlanEntity TrainingPlan { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Training Phase
@@ -31,7 +31,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private TrainingPlanPhaseRelation() { }
 
 
-        private TrainingPlanPhaseRelation(TrainingPlanRoot trainingPlan, uint? phaseId)
+        private TrainingPlanPhaseRelation(UserTrainingPlanEntity trainingPlan, uint? phaseId)
         {
             TrainingPlan = trainingPlan;
             TrainingPhaseId = phaseId;
@@ -49,7 +49,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="trainingPlan">The left entity</param>
         /// <param name="phaseId">Tha right entity</param>
         /// <returns>The TrainingPlanMuscleFocus isntance</returns>
-        public static TrainingPlanPhaseRelation BuildLink(TrainingPlanRoot trainingPlan, uint? phaseId)
+        public static TrainingPlanPhaseRelation BuildLink(UserTrainingPlanEntity trainingPlan, uint? phaseId)
 
             => new TrainingPlanPhaseRelation(trainingPlan, phaseId);
 

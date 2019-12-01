@@ -1,4 +1,4 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,7 +14,7 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
-        private readonly ITrainingPlanRepository _planRepository;
+        private readonly IAthleteRepository _athleteRepo;
         private readonly ILogger<UntagTrainingPlanWithProficiencyCommandHandler> _logger;
 
 
@@ -22,11 +22,11 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         public UntagTrainingPlanWithProficiencyCommandHandler(
-            ITrainingPlanRepository planRepository,
+            IAthleteRepository athleteRepository,
             ILogger<UntagTrainingPlanWithProficiencyCommandHandler> logger
             )
         {
-            _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));
+            _athleteRepo = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -39,18 +39,18 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                TrainingPlanRoot plan = _planRepository.Find(message.TrainingPlanId);
+                AthleteRoot athlete = _athleteRepo.Find(message.UserId);
 
-                _logger.LogInformation("----- Tagging {@TrainingPlan} with Proficiency {@ProficiencyId}", plan, message.ProficiencyId);
+                _logger.LogInformation("----- Tagging {@UserTrainingPlan} of {@Athlete} with Proficiency {@ProficiencyId}", message.TrainingPlanId, athlete, message.ProficiencyId);
 
-                plan.UnlinkTargetProficiency(message.ProficiencyId);
-                _planRepository.Modify(plan);
+                athlete.UnlinkTrainingPlanTargetProficiency(message.TrainingPlanId, message.ProficiencyId);
+                _athleteRepo.Modify(athlete);
 
-                result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
+                result = await _athleteRepo.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch(Exception exc)
             {
-                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _planRepository.UnitOfWork);
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepo.UnitOfWork);
                 result = false;
             }
 

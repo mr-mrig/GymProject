@@ -1,4 +1,4 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,7 +19,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.Property(rel => rel.TrainingProficiencyId);
 
-            builder.HasOne(rel => rel.TrainingPlan)
+            builder.HasOne(rel => rel.UserTrainingPlan)
                 .WithMany("_trainingPlanProficiencies")
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);

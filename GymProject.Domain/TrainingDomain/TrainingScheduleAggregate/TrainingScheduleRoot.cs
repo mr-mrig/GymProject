@@ -22,9 +22,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
 
         /// <summary>
-        /// FK to the Training Plan
+        /// FK to the User Training Plan relation ID
         /// </summary>
-        public uint? TrainingPlanId { get; private set; } = null;
+        public uint? UserTrainingPlanId { get; private set; } = null;
 
 
 
@@ -52,7 +52,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         private TrainingScheduleRoot(uint? id, uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks) : base(id)
         {
             ScheduledPeriod = scheduledPeriod;
-            TrainingPlanId = trainingPlanId;
+            UserTrainingPlanId = trainingPlanId;
 
             _feedbacks = feedbacks?.Clone().ToList() ?? new List<TrainingScheduleFeedbackEntity>();
 
@@ -301,7 +301,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// The Schedule must refer to a non-NULL Training Plan.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool NonNullTrainingPlan() => TrainingPlanId != null;
+        private bool NonNullTrainingPlan() => UserTrainingPlanId != null;
 
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         public object Clone()
 
-            => ScheduleTrainingPlan(Id, TrainingPlanId, ScheduledPeriod, _feedbacks);
+            => ScheduleTrainingPlan(Id, UserTrainingPlanId, ScheduledPeriod, _feedbacks);
 
         #endregion
     }

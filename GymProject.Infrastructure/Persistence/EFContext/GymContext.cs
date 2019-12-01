@@ -75,14 +75,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
 
 
+        public virtual DbSet<AthleteRoot> Athletes { get; set; }
         public virtual DbSet<UserTrainingPhaseRelation> UserPhases { get; set; }
+        public virtual DbSet<UserTrainingPlanEntity> UserTrainingPlans { get; set; }
         public virtual DbSet<UserTrainingProficiencyRelation> UserProficiencies { get; set; }
 
 
         public virtual DbSet<TrainingPlanRoot> TrainingPlans { get; set; }
         public virtual DbSet<TrainingPlanNoteRoot> TrainingPlanNotes { get; set; }
         public virtual DbSet<WorkUnitTemplateNoteRoot> WorkUnitTemplateNotes { get; set; }
-        public virtual DbSet<TrainingPlanRelation> TrainingPlanRelations { get; set; }
         public virtual DbSet<TrainingPlanTypeEnum> TrainingPlanTypes { get; set; }
 
         public virtual DbSet<TrainingScheduleRoot> TrainingSchedules { get; set; }
@@ -155,14 +156,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             // User Training
             modelBuilder.ApplyConfiguration(new AthleteEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new UserTrainingPlanEntityConfiguration());
             modelBuilder.ApplyConfiguration(new UserTrainingPhaseEntityConfiguration());
             modelBuilder.ApplyConfiguration(new UserTrainingProficiencyEntityConfiguration());
 
             // Training Plan Aggregate
             modelBuilder.ApplyConfiguration(new TrainingPlanEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingPlanNoteEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanRelationEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new TrainingPlanTypeEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanRelationEntityConfiguration());
+            //modelBuilder.ApplyConfiguration(new TrainingPlanTypeEntityConfiguration());
 
             modelBuilder.ApplyConfiguration(new TrainingWeekEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingWeekTypeEntityConfiguration());

@@ -6,14 +6,16 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
+        public uint UserId { get; private set; }
         public uint TrainingPlanId { get; private set; }
         public uint TrainingPlanNoteId { get; private set; }
 
 
 
 
-        public AttachTrainingPlanNoteCommand(uint trainingPlanId, uint trainingPlanNoteId)
+        public AttachTrainingPlanNoteCommand(uint userId, uint trainingPlanId, uint trainingPlanNoteId)
         {
+            UserId = userId;
             TrainingPlanId = trainingPlanId;
             TrainingPlanNoteId = trainingPlanNoteId;
         }

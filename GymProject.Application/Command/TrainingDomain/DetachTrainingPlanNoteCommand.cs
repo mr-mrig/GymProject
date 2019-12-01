@@ -7,13 +7,15 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
+        public uint UserId { get; private set; }
         public uint TrainingPlanId { get; private set; }
 
 
 
 
-        public DetachTrainingPlanNoteCommand(uint trainingPlanId)
+        public DetachTrainingPlanNoteCommand(uint userId, uint trainingPlanId)
         {
+            UserId = userId;
             TrainingPlanId = trainingPlanId;
         }
 

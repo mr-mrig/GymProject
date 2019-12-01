@@ -1,7 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using System.Collections.Generic;
 
-namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
+namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
     public class TrainingPlanHashtagRelation : ValueObject
     {
@@ -16,7 +16,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <summary>
         /// Navigation Property to the Training Plan
         /// </summary>
-        public TrainingPlanRoot TrainingPlan { get; private set; } = null;
+        public UserTrainingPlanEntity TrainingPlan { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Hashtag
@@ -36,7 +36,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         private TrainingPlanHashtagRelation() { }
 
 
-        private TrainingPlanHashtagRelation(TrainingPlanRoot trainingPlan, uint progressiveNumber, uint? hashtagId)
+        private TrainingPlanHashtagRelation(UserTrainingPlanEntity trainingPlan, uint progressiveNumber, uint? hashtagId)
         {
             TrainingPlan = trainingPlan;
             HashtagId = hashtagId;
@@ -56,7 +56,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <param name="hashtagId">The right entity</param>
         /// <param name="progressiveNumber">The progressive number which identifies the display order</param>
         /// <returns>The TrainingPlanHashtag isntance</returns>
-        public static TrainingPlanHashtagRelation BuildLink(TrainingPlanRoot trainingPlan, uint progressiveNumber, uint? hashtagId)
+        public static TrainingPlanHashtagRelation BuildLink(UserTrainingPlanEntity trainingPlan, uint progressiveNumber, uint? hashtagId)
 
             => new TrainingPlanHashtagRelation(trainingPlan, progressiveNumber, hashtagId);
 

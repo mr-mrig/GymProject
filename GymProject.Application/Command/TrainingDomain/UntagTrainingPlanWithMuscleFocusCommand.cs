@@ -7,14 +7,16 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
+        public uint UserId { get; private set; }
         public uint TrainingPlanId { get; private set; }
         public uint MuscleId { get; private set; }
 
 
 
 
-        public UntagTrainingPlanWithMuscleFocusCommand(uint trainingPlanId, uint muscleId)
+        public UntagTrainingPlanWithMuscleFocusCommand(uint userId, uint trainingPlanId, uint muscleId)
         {
+            UserId = userId;
             TrainingPlanId = trainingPlanId;
             MuscleId = muscleId;
         }

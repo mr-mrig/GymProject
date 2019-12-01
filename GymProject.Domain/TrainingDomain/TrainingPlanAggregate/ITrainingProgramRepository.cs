@@ -2,7 +2,7 @@
 
 namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 {
-    public interface ITrainingPlanRepository : IRepository<TrainingPlanRoot>
+    public interface ITrainingProgramRepository : IRepository<TrainingPlanRoot>
     {
 
 

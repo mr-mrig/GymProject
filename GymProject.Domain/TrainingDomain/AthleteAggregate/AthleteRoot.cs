@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
-    public class AthleteRoot : Entity<uint?>, IAggregateRoot
+    public class AthleteRoot : Entity<uint?>, IAggregateRoot, ICloneable
     {
 
 
@@ -41,17 +41,27 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
                 
 
 
-        private List<uint?> _trainingPlansIds = new List<uint?>();
+        private List<UserTrainingPlanEntity> _trainingPlans = new List<UserTrainingPlanEntity>();
 
         /// <summary>
         /// FK to the trainning plans belonging tu the user library
         /// </summary>
-        public IReadOnlyCollection<uint?> TrainingPlansIds
+        public IReadOnlyCollection<UserTrainingPlanEntity> TrainingPlans
         {
-            get => _trainingPlansIds?.AsReadOnly() ?? new List<uint?>().AsReadOnly();
+            get => _trainingPlans?.AsReadOnly() ?? new List<UserTrainingPlanEntity>().AsReadOnly();
         }
 
 
+        /// <summary>
+        /// The ID of the Training Plan the user is currently on
+        /// </summary>
+        public uint? CurrentTrainingPlanId { get; private set; }
+
+
+        /// <summary>
+        /// The ID of the Training Week the user is currently on
+        /// </summary>
+        public uint? CurrentTrainingWeekId { get; private set; }
 
 
 
@@ -62,16 +72,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         {
             _trainingPhases =  new List<UserTrainingPhaseRelation>();
             _trainingProficiencies =  new List<UserTrainingProficiencyRelation>();
-            _trainingPlansIds = new List<uint?>();
+            _trainingPlans = new List<UserTrainingPlanEntity>();
         }
 
 
-        private AthleteRoot(uint? id, IEnumerable<UserTrainingPhaseRelation> trainingPhasesHistory, IEnumerable<UserTrainingProficiencyRelation>proficienciesHistory,
-            IEnumerable<uint?> trainingPlansIds) : base(id)
+        private AthleteRoot(uint? id, IEnumerable<UserTrainingPhaseRelation> trainingPhasesHistory = null, IEnumerable<UserTrainingProficiencyRelation>proficienciesHistory = null,
+            IEnumerable<UserTrainingPlanEntity> trainingPlans = null) : base(id)
         {
             _trainingPhases = trainingPhasesHistory?.Clone().ToList() ?? new List<UserTrainingPhaseRelation>();
             _trainingProficiencies = proficienciesHistory?.Clone().ToList() ?? new List<UserTrainingProficiencyRelation>();
-            _trainingPlansIds = trainingPlansIds?.ToList() ?? new List<uint?>();
+            _trainingPlans = trainingPlans?.ToList() ?? new List<UserTrainingPlanEntity>();
 
             TestBusinessRules();
         }
@@ -86,10 +96,33 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// Factory Method
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The new instance</returns>
         public static AthleteRoot RegisterAthlete()
 
             => new AthleteRoot();
+
+        /// <summary>
+        /// Factory Method
+        /// </summary>
+        /// <param name="userId">The ID of the Athlete</param>
+        /// <returns>The new instance</returns>
+        public static AthleteRoot RegisterAthlete(uint userId)
+
+            => new AthleteRoot(userId);
+
+
+        /// <summary>
+        /// Factory Method
+        /// </summary>
+        /// <param name="userId">The ID of the Athlete</param>
+        /// <param name="trainingPhasesHistory">The history of the Training Phases the athlete has performed</param>
+        /// <param name="proficienciesHistory">The history of the Proficiencies the athlete has achieved</param>
+        /// <param name="trainingPlansRelations">The training plans in the user library</param>
+        /// <returns>The new instance</returns>
+        public static AthleteRoot RegisterAthlete(uint? userId, IEnumerable<UserTrainingPhaseRelation> trainingPhasesHistory = null, IEnumerable<UserTrainingProficiencyRelation> proficienciesHistory = null,
+            IEnumerable<UserTrainingPlanEntity> trainingPlansRelations = null)
+
+            => new AthleteRoot(userId, trainingPhasesHistory, proficienciesHistory, trainingPlansRelations);
 
         #endregion
 
@@ -141,21 +174,20 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             => _trainingProficiencies.SingleOrDefault(x => x.Period.Includes(date))?.Clone() as UserTrainingProficiencyRelation;
 
 
+        /// <summary>
+        /// Get the value copy of the TrainingPlan library entry with the specified ID. It returns NULL if no entry was found.
+        /// </summary>
+        /// <param name="trainingPlanId">The TrianingPlan Id</param>
+        /// <returns>The copy of the UserTrainingPlanEntity or NULL if not found</returns>
+        /// <exception cref="InvalidOperationException">If more than one element found</exception>
+        public UserTrainingPlanEntity CloneTrainingPlanOrDefault(uint trainingPlanId)
 
-        public uint? GetCurrentTrainingPlan()
-
-            => throw new NotImplementedException();
-
-
-        public bool GetTrainingPlans()
-        {
-            throw new NotImplementedException();
-        }
+            => _trainingPlans.SingleOrDefault(x => x.TrainingPlanId == trainingPlanId)?.Clone() as UserTrainingPlanEntity;
 
         #endregion
 
 
-        #region Business Methods
+        #region Phases Methods
 
         /// <summary>
         /// Assign the Training Phase to the user planning it according to the period specified:
@@ -197,6 +229,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             TestBusinessRules();
         }
 
+
         /// <summary>
         /// Close all the phases still not completed
         /// </summary>
@@ -205,6 +238,41 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             => CloseOpenPhases(DateTime.UtcNow);
 
 
+        /// <summary>
+        /// Change the start date of the Training Phase currently starting from
+        /// </summary>
+        /// <param name="newStartDate">The new start date</param>
+        /// <param name="oldStartdate">The date which the phase currently stats from</param>
+        /// <exception cref="ValueObjectInvariantViolationException">If chronological order violated</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If business rule violated</exception>
+        /// <exception cref="InvalidOperationException">If could not find any Training Phase accordint o the start date specified</exception>
+        public void ShiftTrainingPhaseStartDate(DateTime oldStartdate, DateTime newStartDate)
+        {
+            UserTrainingPhaseRelation userPhase = FindPhaseStartingFrom(oldStartdate);
+            userPhase.ShiftStartDate(newStartDate);
+            TestBusinessRules();
+        }
+
+
+        /// <summary>
+        /// Attach the note of the owner
+        /// </summary>
+        /// <param name="newNote">The Owner's note</param>
+        //public void WriteNote(string newNote) => OwnerNote = PersonalNoteValue.Write(newNote);
+
+
+        /// <summary>
+        /// Change the status of this entry
+        /// </summary>
+        /// <param name="newStartDate">The new start date</param>
+        //public void ChangeStatus(EntryStatusTypeEnum status)
+        //{
+
+        //}
+        #endregion
+
+
+        #region Proficiencies Methods
 
         /// <summary>
         /// Assign a new Training Proficiency level to the user starting from the current date.
@@ -228,28 +296,244 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         }
 
 
-        public void StartTrainingPlan()
-        {
+        /// <summary>
+        /// Close the Proficiency as a new one is started.
+        /// The previous Proficiency level finishes the day before the current one
+        /// </summary>
+        //public void Close()
+        //{ }
 
+
+        /// <summary>
+        /// Change the start date
+        /// </summary>
+        /// <param name="newStartDate">The new start date</param>
+        //public void ShiftStartDate(DateTime newStartDate)
+        //{
+
+        //}
+
+        #endregion
+
+
+        #region Training Plans Methods
+
+        /// <summary>
+        /// Pin the Training Plan as the one the user is currently performing
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the UserTrainingPlan entity, which must be in the User Training Plans library</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void StartTrainingPlan(uint trainingPlanId)
+        {
+            CurrentTrainingPlanId = trainingPlanId;
+            TestBusinessRules();
+        }
+
+        
+        /// <summary>
+        /// Unpin the current Training Plan
+        /// </summary>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void AbortTrainingPlan()
+        {
+            CurrentTrainingPlanId = null;
+            TestBusinessRules();
         }
 
 
-        public void AddTrainingPlanToLibrary()
-        {
+        /// <summary>
+        /// Add the training plan with the specified ID to the User library.
+        /// If the ID is already present, then do nothing.
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the TrainingPlanRoot entity</param>
+        /// <exception cref="InvalidOperationException">If more than one element with the same ID</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void AddTrainingPlanToLibrary(uint trainingPlanId)
 
+            => AddTrainingPlanToLibrary(UserTrainingPlanEntity.NewDraft(trainingPlanId));
+
+
+        /// <summary>
+        /// Add the training plan with the specified ID to the User library.
+        /// If the ID is already present, then do nothing.
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the TrainingPlanRoot entity</param>
+        /// <exception cref="InvalidOperationException">If more than one element with the same ID</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void AddTrainingPlanToLibrary(UserTrainingPlanEntity userPlanRelation)
+        {
+            if (CloneTrainingPlanOrDefault(userPlanRelation.TrainingPlanId) != default)
+                return;
+
+            _trainingPlans.Add(userPlanRelation);
+
+            TestBusinessRules();
         }
 
 
-        public void RemoveTrainingPlanFromLibrary()
+        /// <summary>
+        /// Remove the training plan with the specified ID from the User library - if any.
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the TrainingPlanRoot entity</param>
+        /// <exception cref="InvalidOperationException">If no, or more than one, UserPlan with the specified TrainingPlan ID</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void RemoveTrainingPlanFromLibrary(uint trainingPlanId)
         {
-
+            if (_trainingPlans.Remove(FindTrainingPlan(trainingPlanId)))
+                TestBusinessRules();
         }
+
+        /// <summary>
+        /// Assign the name to the Training Plan
+        /// </summary>
+        /// <param name="trainingPlanName">The Training Plan name</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void RenameTrainingPlan(uint trainingPlanId, string trainingPlanName) => FindTrainingPlan(trainingPlanId).GiveName(trainingPlanName);
+
+
+        /// <summary>
+        /// Assign the IsBookmarked flag
+        /// </summary>
+        /// <param name="bookmarkedFlag">The flag</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        public void MakeTrainingPlanBookmarked(uint trainingPlanId, bool bookmarkedFlag) => FindTrainingPlan(trainingPlanId).ChangeBookmarkedFlag(bookmarkedFlag);
+
+
+        /// <summary>
+        /// Assign the Training Plan Note with the specified ID to the Selected User Training Plan
+        /// </summary>
+        /// <param name="trainingPlanNoteId">The note ID</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        public void AttachTrainingPlanNote(uint trainingPlanId, uint? trainingPlanNoteId) => FindTrainingPlan(trainingPlanId).AttachNote(trainingPlanNoteId);
+
+
+        /// <summary>
+        /// Remove the Training Plan Note ID
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        public void CleanTrainingPlanNote(uint trainingPlanId) => FindTrainingPlan(trainingPlanId).CleanNote();
+
+
+        /// <summary>
+        /// Make the Training Plan a variant of the speicified one
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <param name="parentPlanId">The ID of the User Training Plan which is the parent of this one</param>
+        public void MakeTrainingPlanVariantOf(uint trainingPlanId, uint parentPlanId) => FindTrainingPlan(trainingPlanId).MakeItVariantOf(parentPlanId);
+
+
+        /// <summary>
+        /// Make the Training Plan not a Variant anymore
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        public void MakeTrainingPlanNotVariantOfAny(uint trainingPlanId) => FindTrainingPlan(trainingPlanId).RemoveVariantOf();
+
+
+        /// <summary>
+        /// Schedule the Training Plan by assigning a Schedule ID
+        /// </summary>
+        /// <param name="scheduleId">The Schedule ID to be added</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void ScheduleTraining(uint trainingPlanId, uint scheduleId) => FindTrainingPlan(trainingPlanId).ScheduleTraining(scheduleId);
+
+
+        /// <summary>
+        /// Schedule the Training Plan by assigning a Schedule ID
+        /// </summary>
+        /// <param name="scheduleId">The Schedule ID to be added</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void UnscheduleTraining(uint trainingPlanId, uint scheduleId) => FindTrainingPlan(trainingPlanId).UnscheduleTraining(scheduleId);
+
+
+        /// <summary>
+        /// Give focus to the Muscle
+        /// </summary>
+        /// <param name="muscleId">The Muscle ID to be added</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void FocusTrainingPlanOnMuscle(uint trainingPlanId, uint muscleId) => FindTrainingPlan(trainingPlanId).FocusOnMuscle(muscleId);
+
+
+
+        /// <summary>
+        /// Remove the focus to the Muscle
+        /// </summary>
+        /// <param name="muscleId">The Muscle ID to be removed</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void UnfocusTrainingPlanFromMuscle(uint trainingPlanId, uint muscleId) => FindTrainingPlan(trainingPlanId).UnfocusMuscle(muscleId);
+
+
+        /// <summary>
+        /// Link the Proficiency to the Training Plan
+        /// </summary>
+        /// <param name="proficiencyId">The Proficiency ID to be added</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void MarkTrainingPlanAsSuitableForProficiencyLevel(uint trainingPlanId, uint proficiencyId) => FindTrainingPlan(trainingPlanId).LinkTargetProficiency(proficiencyId);
+
+
+        /// <summary>
+        /// Unlink the Proficiency from the Training Plan
+        /// </summary>
+        /// <param name="proficiencyId">The Proficiency ID to be removed</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void UnlinkTrainingPlanTargetProficiency(uint trainingPlanId, uint proficiencyId) => FindTrainingPlan(trainingPlanId).UnlinkTargetProficiency(proficiencyId);
+
+        /// <summary>
+        /// Add the Hasw to the Training Plan
+        /// </summary>
+        /// <param name="hashtagId">The Hashtag ID to be added</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void TagTrainingPlanAs(uint trainingPlanId, uint hashtagId) => FindTrainingPlan(trainingPlanId).TagAs(hashtagId);
+
+
+        /// <summary>
+        /// Remove the Hastag from the Training Plan
+        /// </summary>
+        /// <param name="hashtagId">The Hashtag ID to be removed - non NULL</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void UntagTrainingPlan(uint trainingPlanId, uint hashtagId) =>  FindTrainingPlan(trainingPlanId).Untag(hashtagId);
+
+
+        /// <summary>
+        /// Link the Phase to the Training Plan
+        /// </summary>
+        /// <param name="phaseId">The Phase ID to be added</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void TagTrainingPlanWithPhase(uint trainingPlanId, uint phaseId) => FindTrainingPlan(trainingPlanId).TagPhase(phaseId);
+
+
+        /// <summary>
+        /// Unlink the Phase from the Training Plan
+        /// </summary>
+        /// <param name="phaseId">The Hashtag ID to be removed</param>
+        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
+        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        public void UntagTrainingPlanWithPhase(uint trainingPlanId, uint phaseId) => FindTrainingPlan(trainingPlanId).UntagPhase(phaseId);
+
 
         #endregion
 
 
         #region Private Methods
-
 
         /// <summary>
         /// Close all the phases still not completed at the specified date
@@ -268,8 +552,30 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="checkDate">The date</param>
         private void CloseTrainingProficiencyLevel()
         {
-            _trainingProficiencies.SingleOrDefault(x => !x.Period.IsRightBounded()).Close();     // Do not use the public method as we need the reference, not the value copy   
+            _trainingProficiencies.SingleOrDefault(x => !x.Period.IsRightBounded())?.Close();     // Do not use the public method as we need the reference, not the value copy   
         }
+
+
+        /// <summary>
+        /// Get the Training Plan with the specified ID
+        /// </summary>
+        /// <param name="trainingPlanId">the ID</param>
+        /// <returns>The UserTrainingPlan reference instance</returns>
+        /// <exception cref="InvalidOperationException">If no entity with the specified search key</exception>
+        private UserTrainingPhaseRelation FindPhaseStartingFrom(DateTime startDate)
+
+            => _trainingPhases.Single(x => x.Period.Start == startDate);
+
+
+        /// <summary>
+        /// Get the Training Plan with the specified ID
+        /// </summary>
+        /// <param name="trainingPlanId">the ID</param>
+        /// <returns>The UserTrainingPlan reference instance</returns>
+        /// <exception cref="InvalidOperationException">If no entity with the specified search key</exception>
+        private UserTrainingPlanEntity FindTrainingPlan(uint trainingPlanId)
+
+            => _trainingPlans.Single(x => x.TrainingPlanId == trainingPlanId);
 
         #endregion
 
@@ -280,6 +586,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         private bool AtMostOneTrainingPhaseOpen()
 
             => _trainingPhases.Count(x => !x.Period.IsRightBounded() || x.Period.Includes(DateTime.UtcNow)) <= 1;
+
+        
+        private bool NoOverlappingPhases()
+
+            => !_trainingPhases.Any(x => _trainingPhases.Where(y => y != x)
+                    .Any(y => y.Period.Overlaps(x.Period)));
+
+            // Faster version, but it works only if ordered elements - which actually should be
+            //=> !_trainingPhases.Any(x => _trainingPhases.SkipWhile(y => y.Period.End <= x.Period.End)
+            //    .Any(y => y.Period.Overlaps(x.Period)));
 
 
         private bool NoNullTrainingPhases()
@@ -295,6 +611,26 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         private bool AtMostOneTrainingProficiencyAtTheSameTime()
 
             => _trainingProficiencies.Count(x => !x.Period.IsRightBounded()) <= 1;
+        
+        private bool NoOverlappingProficiencies()
+
+            => !_trainingProficiencies.Any(x => _trainingProficiencies.Where(y => y != x)
+                .Any(y => y.Period.Overlaps(x.Period)));
+
+        // Faster version, but it works only if ordered elements - which actually should be
+        //=> !_trainingProficiencies.Any(x => _trainingProficiencies.SkipWhile(y => y.Period.End <= x.Period.End)
+        //    .Any(y => y.Period.Overlaps(x.Period)));
+
+        private bool NoDuplicateTrainingPlans()
+
+            //=> !_trainingPlans.Any(x => _trainingPlans.Count(y => y.TrainingPlanId == x.TrainingPlanId) > 1);
+            => _trainingPlans.GroupBy(x => x.TrainingPlanId).All(g => g.Count() == 1);  // Might be faster 
+
+        private bool CurrentPlanIsInUserPlansLibrary()
+
+            => CurrentTrainingPlanId == null
+                || _trainingPlans.SingleOrDefault(x => x.TrainingPlanId == CurrentTrainingPlanId) != default;
+
 
 
 
@@ -305,6 +641,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
             if (!AtMostOneTrainingPhaseOpen())
                 throw new TrainingDomainInvariantViolationException($"A user can have no more than one Training Phase open.");
+            
+            if (!NoOverlappingPhases())
+                throw new TrainingDomainInvariantViolationException($"A user cannot have overlapping phases");
 
             
             //if (!NoNullTrainingProficiencies())
@@ -312,13 +651,25 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
             if (!AtMostOneTrainingProficiencyAtTheSameTime())
                 throw new TrainingDomainInvariantViolationException($"A user can have no more than one Training Proficiency levels at the same time.");
+                    
+            if (!NoOverlappingProficiencies())
+                throw new TrainingDomainInvariantViolationException($"A user cannot have overlapping proficiencies");
+    
+            if (!NoDuplicateTrainingPlans())
+                throw new TrainingDomainInvariantViolationException($"The same training plan cannot be included to the User library more than once.");    
 
-
-            throw new NotImplementedException();
+            if (!CurrentPlanIsInUserPlansLibrary())
+                throw new TrainingDomainInvariantViolationException($"The User cannot have a Training Plan which is not in its library as the current one.");
         }
 
         #endregion
 
 
+        #region ICloneable Implementation
+
+        public object Clone()
+            => RegisterAthlete(Id, _trainingPhases, _trainingProficiencies, _trainingPlans);
+
+        #endregion
     }
 }

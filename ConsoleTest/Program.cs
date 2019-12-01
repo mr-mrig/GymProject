@@ -204,110 +204,110 @@ namespace ConsoleTest
         }
 
 
-        internal void BuildTrainingPlanTestCase()
-        {
+        //internal void BuildTrainingPlanTestCase()
+        //{
 
-            _logger.LogInformation("Training Plan Start");
+        //    _logger.LogInformation("Training Plan Start");
 
-            using (GymContext context = new GymContext())
-            {
-                uint weekProgressiveNumber = 0;
-                uint excerciseId;
-                uint wunitProgressiveNumber;
+        //    using (GymContext context = new GymContext())
+        //    {
+        //        uint weekProgressiveNumber = 0;
+        //        uint excerciseId;
+        //        uint wunitProgressiveNumber;
 
-                TestServiceLayer service = new TestServiceLayer(context);
+        //        TestServiceLayer service = new TestServiceLayer(context);
 
-                UserRoot owner = context.Users.Single(x => x.Id == 2);
+        //        UserRoot owner = context.Users.Single(x => x.Id == 2);
 
-                TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan("Test plan", true, owner.Id);
-                plan.LinkTargetProficiency(2);
-                plan.TagAs(1);
-                plan.TagAs(2);
+        //        TrainingPlanRoot plan = TrainingPlanRoot.CreateTrainingPlan("Test plan", true, owner.Id);
+        //        plan.LinkTargetProficiency(2);
+        //        plan.TagAs(1);
+        //        plan.TagAs(2);
 
-                context.Update(plan);
-                context.SaveChanges();
+        //        context.Update(plan);
+        //        context.SaveChanges();
 
 
-                WorkoutTemplateRoot wo = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber);
-                service.ModifyWorkoutAttributes(wo.Id.Value, "WO1", WeekdayEnum.Monday);
+        //        WorkoutTemplateRoot wo = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber);
+        //        service.ModifyWorkoutAttributes(wo.Id.Value, "WO1", WeekdayEnum.Monday);
 
-                // Work Unit 0
-                excerciseId = 1;
-                wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>(), ownerNoteId: 1);
-                context.Update(wo);
-                context.SaveChanges();
+        //        // Work Unit 0
+        //        excerciseId = 1;
+        //        wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>(), ownerNoteId: 1);
+        //        context.Update(wo);
+        //        context.SaveChanges();
 
-                wunitProgressiveNumber = 0;
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
-                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
-                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        wunitProgressiveNumber = 0;
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
 
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
-                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
-                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
 
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
-                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
-                service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
+        //        service.AddLinkedSet(wo.Id.Value, wunitProgressiveNumber, 3, WSRepetitionsValue.TrackRepetitionSerie(8));
 
-                // Work Unit 1
-                excerciseId = 10;
-                wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
-                context.Update(wo);
-                context.SaveChanges();
+        //        // Work Unit 1
+        //        excerciseId = 10;
+        //        wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
+        //        context.Update(wo);
+        //        context.SaveChanges();
 
-                wunitProgressiveNumber++;
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        wunitProgressiveNumber++;
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(12), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
 
-                // Work Unit 2
-                excerciseId = 2;
-                wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
-                context.Update(wo);
-                context.SaveChanges();
+        //        // Work Unit 2
+        //        excerciseId = 2;
+        //        wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
+        //        context.Update(wo);
+        //        context.SaveChanges();
 
-                wunitProgressiveNumber++;
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
-                service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        wunitProgressiveNumber++;
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
+        //        service.AddWorkingSet(wo.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(6), RestPeriodValue.SetFullRecoveryRest(), TrainingEffortValue.AsRM(10));
 
-                // Work Unit 3 - Empty
-                wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
-                context.Update(wo);
-                context.SaveChanges();
+        //        // Work Unit 3 - Empty
+        //        wo.PlanTransientExcercise(excerciseId, new List<WorkingSetTemplateEntity>());
+        //        context.Update(wo);
+        //        context.SaveChanges();
 
-                // WO2
-                WorkoutTemplateRoot wo1 = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber);
-                service.ModifyWorkoutAttributes(wo1.Id.Value, "WO2");
+        //        // WO2
+        //        WorkoutTemplateRoot wo1 = service.PlanWorkout(plan.Id.Value, weekProgressiveNumber);
+        //        service.ModifyWorkoutAttributes(wo1.Id.Value, "WO2");
 
-                // Work Unit 0
-                excerciseId = 1;
-                wo1.PlanTransientExcercise(excerciseId, null);
-                context.Update(wo1);
-                context.SaveChanges();
+        //        // Work Unit 0
+        //        excerciseId = 1;
+        //        wo1.PlanTransientExcercise(excerciseId, null);
+        //        context.Update(wo1);
+        //        context.SaveChanges();
 
-                wunitProgressiveNumber = 0;
-                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
-                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
-                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)
-                    , intensityTechniques: new List<uint?>() { 5 });
+        //        wunitProgressiveNumber = 0;
+        //        service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
+        //        service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
+        //        service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)
+        //            , intensityTechniques: new List<uint?>() { 5 });
 
-                // Work Unit 1 - SS with WU0
-                excerciseId = 2;
-                service.AddLinkedExcercise(wo1.Id.Value, excerciseId, 1);
+        //        // Work Unit 1 - SS with WU0
+        //        excerciseId = 2;
+        //        service.AddLinkedExcercise(wo1.Id.Value, excerciseId, 1);
 
-                wunitProgressiveNumber = 1;
-                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
-                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
-                service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)
-                    , intensityTechniques: new List<uint?>() { 5 });
-            }
+        //        wunitProgressiveNumber = 1;
+        //        service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(20));
+        //        service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(15));
+        //        service.AddWorkingSet(wo1.Id.Value, wunitProgressiveNumber, WSRepetitionsValue.TrackRepetitionSerie(10)
+        //            , intensityTechniques: new List<uint?>() { 5 });
+        //    }
 
-            _logger.LogInformation("Training Plan End");
-        }
+        //    _logger.LogInformation("Training Plan End");
+        //}
 
         internal void SeedData()
         {

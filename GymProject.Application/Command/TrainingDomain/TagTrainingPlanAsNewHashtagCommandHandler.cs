@@ -1,7 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
+using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
-using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,7 +17,7 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
-        private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly IAthleteRepository _athleteRepo;
         private readonly ITrainingHashtagRepository _hashtagRepository;
         private readonly ILogger<TagTrainingPlanAsNewHashtagCommandHandler> _logger;
 
@@ -26,12 +26,12 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         public TagTrainingPlanAsNewHashtagCommandHandler(
-            ITrainingPlanRepository trainingPlanRepository,
+            IAthleteRepository athleteRepository,
             ITrainingHashtagRepository hashtagRepository,
             ILogger<TagTrainingPlanAsNewHashtagCommandHandler> logger
             )
         {
-            _trainingPlanRepository = trainingPlanRepository ?? throw new ArgumentNullException(nameof(trainingPlanRepository));
+            _athleteRepo = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _hashtagRepository = hashtagRepository ?? throw new ArgumentNullException(nameof(hashtagRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -67,18 +67,18 @@ namespace GymProject.Application.Command.TrainingDomain
             }
             try
             {
-                TrainingPlanRoot plan = _trainingPlanRepository.Find(message.TrainingPlanId);
-                plan.TagAs(hashtag.Id);
+                AthleteRoot athlete = _athleteRepo.Find(message.UserId);
+                athlete.TagTrainingPlanAs(message.TrainingPlanId, hashtag.Id.Value);
 
-                _logger.LogInformation("----- Tagging {@TrainingPlan} with {@HashtagId}", plan, hashtag.Id);
+                _logger.LogInformation("----- Tagging {@UserTrainingPlanId} of {@Athlete} with {@HashtagId}", message.TrainingPlanId, athlete, hashtag.Id);
 
-                _trainingPlanRepository.Modify(plan);
+                _athleteRepo.Modify(athlete);
 
-                result = await _trainingPlanRepository.UnitOfWork.SaveAsync(cancellationToken);
+                result = await _athleteRepo.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {
-                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _trainingPlanRepository.UnitOfWork);
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepo.UnitOfWork);
                 result = false;
             }
             return result;

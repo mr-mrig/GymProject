@@ -1,4 +1,4 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,14 +10,14 @@ namespace GymProject.Application.Command.TrainingDomain
     public class AttachTrainingPlanNoteCommandHandler : IRequestHandler<AttachTrainingPlanNoteCommand, bool>
     {
 
-        private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly IAthleteRepository _athleteRepository;
         private readonly ILogger<AttachTrainingPlanNoteCommandHandler> _logger;
 
 
 
-        public AttachTrainingPlanNoteCommandHandler(ITrainingPlanRepository trainingPlanRepository, ILogger<AttachTrainingPlanNoteCommandHandler> logger)
+        public AttachTrainingPlanNoteCommandHandler(IAthleteRepository athleteRepository, ILogger<AttachTrainingPlanNoteCommandHandler> logger)
         {
-            _trainingPlanRepository = trainingPlanRepository ?? throw new ArgumentNullException(nameof(trainingPlanRepository));
+            _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -26,23 +26,23 @@ namespace GymProject.Application.Command.TrainingDomain
         {
             bool result = false;
 
-            TrainingPlanRoot plan = _trainingPlanRepository.Find(message.TrainingPlanId);
+            AthleteRoot athlete = _athleteRepository.Find(message.UserId);
 
-            if (plan == null)
+            if (athlete == null)
                 return false;
 
             try
             {
-                plan.WriteNote(message.TrainingPlanNoteId);
+                athlete.AttachTrainingPlanNote(message.TrainingPlanId, message.TrainingPlanNoteId);
 
-                _logger.LogInformation("----- Attaching {@NoteId} to {@TrainingPlanId}", message.TrainingPlanNoteId, message.TrainingPlanId);
+                _logger.LogInformation("----- Attaching {@NoteId} to {@TrainingPlanId} of {@UserId}", message.TrainingPlanNoteId, message.TrainingPlanId, message.UserId);
 
-                _trainingPlanRepository.Modify(plan);
-                result = await _trainingPlanRepository.UnitOfWork.SaveAsync(cancellationToken);
+                _athleteRepository.Modify(athlete);
+                result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {
-                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _trainingPlanRepository.UnitOfWork);
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepository.UnitOfWork);
                 result = false;
             }
 

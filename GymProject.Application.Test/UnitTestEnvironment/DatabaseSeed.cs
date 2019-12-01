@@ -1,5 +1,6 @@
 ﻿using GymProject.Domain.BodyDomain.MuscleGroupAggregate;
 using GymProject.Domain.SharedKernel;
+using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
 using GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate;
@@ -29,11 +30,13 @@ namespace GymProject.Application.Test.UnitTestEnvironment
 
 
         public GymContext Context { get; private set; }
+        public DatabaseSeedService SeedingService { get; private set; }
 
 
         #region Seeding
 
         public IEnumerable<UserRoot> Users { get; protected set; }
+        public ICollection<AthleteRoot> Athletes { get; protected set; }
         public IEnumerable<ExcerciseRoot> Excercises { get; protected set; }
         public IEnumerable<MuscleGroupRoot> Muscles { get; protected set; }
         public IEnumerable<TrainingPlanRoot> TrainingPlans { get; protected set; }
@@ -70,6 +73,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         public DatabaseSeed(GymContext context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(GymContext));
+            SeedingService = new DatabaseSeedService(context);
         }
 
 
@@ -245,49 +249,72 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
 
+        public async Task SeedAthlete()
+        {
+            AthleteRoot athlete;
+
+            foreach (UserRoot user in Users)
+            {
+                athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
+                Athletes.Add(athlete);
+                Context.Add(athlete);
+                await Context.SaveAsync();
+            }
+
+            List<uint> hashtags1 = new List<uint> { 2, 3, 4};
+            List<uint> phases1 = new List<uint> { 1, 2 };
+            List<uint> proficiencies1 = new List<uint> { 1, 2 };
+            List<uint> focuses1 = new List<uint> { 1, 3 };
+
+            List<uint> hashtags = new List<uint> { 4 };
+            List<uint> proficiencies = new List<uint> { 3 };
+
+            athlete = Athletes.Single(x => x.Id == 1);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 1, "Plan1 User1", true, null, 1,  hashtags1, proficiencies1, phases1, focuses1);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan2 User1 Variant of Plan1", false, 1, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 3, "Plan3 User1 Variant of Plan2", false, 1, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 4, "Plan4 User1", true, null, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 5, "Plan5 User1 Variant of Plan1 - never scheduled", true, 1, null, hashtags, proficiencies);
+
+            athlete = Athletes.Single(x => x.Id == 2);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 6, "Plan6 User2", false, null, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 1, "Plan7 User2 Inherited from 1", false, null, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan8 User2 Inherited from 2", false, null, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 3, "Plan9 User2 Inherited from 3", false, null, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 7, "Plan10 User2 Variant of Plan9", false, 3, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 8, "Plan11 User2", false, null, null, hashtags, proficiencies);
+
+            athlete = Athletes.Single(x => x.Id == 3);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan12 User3 Inherited from 2", false, null, null, hashtags, proficiencies);
+            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan12 User3 Inherited from 8", false, null, null, hashtags, proficiencies);
+
+        }
+
+
+
         public async Task SeedTrainingPlan()
         {
             // Seed Training Plans
-            TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan("Plan1 User1", true, 1);
-            TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan("Plan2 User1 Variant of Plan1", false, 1);
-            TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan("Plan3 User1 Variant of Plan2", false, 1);
-            TrainingPlanRoot plan4 = TrainingPlanRoot.CreateTrainingPlan("Plan4 User1", true, 1);
-            TrainingPlanRoot plan5 = TrainingPlanRoot.CreateTrainingPlan("Plan5 User1 Variant of Plan1 - never scheduled", true, 1);
-            TrainingPlanRoot plan6 = TrainingPlanRoot.CreateTrainingPlan("Plan6 User2", false, 2);
-            TrainingPlanRoot plan7 = TrainingPlanRoot.CreateTrainingPlan("Plan7 User2 Inherited from 1", false, 2);
-            TrainingPlanRoot plan8 = TrainingPlanRoot.CreateTrainingPlan("Plan8 User2 Inherited from 2", false, 2);
-            TrainingPlanRoot plan9 = TrainingPlanRoot.CreateTrainingPlan("Plan9 User2 Inherited from 3", false, 2);
-            TrainingPlanRoot plan10 = TrainingPlanRoot.CreateTrainingPlan("Plan10 User2 Variant of Plan9", false, 2);
-            TrainingPlanRoot plan11 = TrainingPlanRoot.CreateTrainingPlan("Plan11 User2", false, 2);
-            TrainingPlanRoot plan12 = TrainingPlanRoot.CreateTrainingPlan("Plan12 User3 Inherited from 2", false, 3);
-            TrainingPlanRoot plan13 = TrainingPlanRoot.CreateTrainingPlan("Plan12 User3 Inherited from 8", false, 3);
+            TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan(1);
+            TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan(1);
+            TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan(1);
+            TrainingPlanRoot plan4 = TrainingPlanRoot.CreateTrainingPlan(1);
+            TrainingPlanRoot plan5 = TrainingPlanRoot.CreateTrainingPlan(1);
+            TrainingPlanRoot plan6 = TrainingPlanRoot.CreateTrainingPlan(2);
+            //TrainingPlanRoot plan7 = TrainingPlanRoot.CreateTrainingPlan("Plan7 User2 Inherited from 1", false, 2);
+            //TrainingPlanRoot plan8 = TrainingPlanRoot.CreateTrainingPlan("Plan8 User2 Inherited from 2", false, 2);
+            //TrainingPlanRoot plan9 = TrainingPlanRoot.CreateTrainingPlan("Plan9 User2 Inherited from 3", false, 2);
+            TrainingPlanRoot plan10 = TrainingPlanRoot.CreateTrainingPlan(2);
+            TrainingPlanRoot plan11 = TrainingPlanRoot.CreateTrainingPlan(2);
+            //TrainingPlanRoot plan12 = TrainingPlanRoot.CreateTrainingPlan("Plan12 User3 Inherited from 2", false, 3);
+            //TrainingPlanRoot plan13 = TrainingPlanRoot.CreateTrainingPlan("Plan12 User3 Inherited from 8", false, 3);
 
 
 
             TrainingPlans = new List<TrainingPlanRoot>()
             {
-                plan1, plan2, plan3, plan4, plan5, plan6, plan7, plan8, plan9,
-                plan10, plan11, plan12, plan13,
+                plan1, plan2, plan3, plan4, plan5, plan6, plan10, plan11,
             };
-
-            plan1.TagAs(2);
-            plan1.TagAs(3);
-            plan1.TagAs(4);
-
-            plan1.TagPhase(1);
-            plan1.TagPhase(2);
-
-            plan1.LinkTargetProficiency(1);
-            plan1.LinkTargetProficiency(2);
-
-            plan1.FocusOnMuscle(1);
-            plan1.FocusOnMuscle(3);
-
-            foreach (var plan in TrainingPlans.Skip(1))
-            {
-                plan.TagAs(4);
-                plan.LinkTargetProficiency(3);
-            }
 
             // Ad-hoc plans - training weeks
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
@@ -318,22 +345,22 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             Context.WorkoutTemplates.UpdateRange(WorkoutTemplates);
             await Context.SaveAsync();
 
-            // Seed Training Plan Relations
-            plan1.AttachChildPlan(plan3.Id, TrainingPlanTypeEnum.Variant);
-            plan1.AttachChildPlan(plan6.Id, TrainingPlanTypeEnum.Inherited);
-            plan3.AttachChildPlan(plan7.Id, TrainingPlanTypeEnum.Inherited);
-            plan3.AttachChildPlan(plan5.Id, TrainingPlanTypeEnum.Variant);
-            plan5.AttachChildPlan(plan8.Id, TrainingPlanTypeEnum.Inherited);
-            plan8.AttachChildPlan(plan9.Id, TrainingPlanTypeEnum.Variant);
+            //// Seed Training Plan Relations
+            //plan1.AttachChildPlan(plan3.Id, TrainingPlanTypeEnum.Variant);
+            //plan1.AttachChildPlan(plan6.Id, TrainingPlanTypeEnum.Inherited);
+            //plan3.AttachChildPlan(plan7.Id, TrainingPlanTypeEnum.Inherited);
+            //plan3.AttachChildPlan(plan5.Id, TrainingPlanTypeEnum.Variant);
+            //plan5.AttachChildPlan(plan8.Id, TrainingPlanTypeEnum.Inherited);
+            //plan8.AttachChildPlan(plan9.Id, TrainingPlanTypeEnum.Variant);
 
-            Context.Update(plan1);
-            await Context.SaveAsync();
-            Context.Update(plan3);
-            await Context.SaveAsync();
-            Context.Update(plan5);
-            await Context.SaveAsync();
-            Context.Update(plan8);
-            await Context.SaveAsync();
+            //Context.Update(plan1);
+            //await Context.SaveAsync();
+            //Context.Update(plan3);
+            //await Context.SaveAsync();
+            //Context.Update(plan5);
+            //await Context.SaveAsync();
+            //Context.Update(plan8);
+            //await Context.SaveAsync();
         }
 
 
@@ -514,75 +541,93 @@ namespace GymProject.Application.Test.UnitTestEnvironment
 
         private async Task SeedTrainingSchedule()
         {
-            DateRangeValue schedulePeriod;
-            TrainingScheduleRoot schedule;
-            TrainingScheduleFeedbackEntity feedback;
-            TrainingPlanRoot adHocPlan;
             TrainingSchedules = new List<TrainingScheduleRoot>();
 
-            // Plan1 schedule 1 -> 2 feedbacks
-            adHocPlan = TrainingPlans.Single(x => x.Id == 1);
+            //uint userId = 1;
+            //uint planId = 1;
+            //athlete = Athletes.Single(a => a.Id == userId);
 
-            schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
-            schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, TrainingPlans.First().Id, schedulePeriod);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(4), null);
-            schedule.ProvideFeedback(feedback);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(5), PersonalNoteValue.Write("Perfect!"));
-            schedule.ProvideFeedback(feedback);
+            //schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
+            //schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, TrainingPlans.First().Id, schedulePeriod);
+            //feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(4), null);
+            //schedule.ProvideFeedback(feedback);
+            //feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(5), PersonalNoteValue.Write("Perfect!"));
+            //schedule.ProvideFeedback(feedback);
 
-            TrainingSchedules.Add(schedule);
-            Context.Add(schedule);
-            await Context.SaveAsync();
+            //TrainingSchedules.Add(schedule);
+            //Context.Add(schedule);
+            //await Context.SaveAsync();
 
-            adHocPlan.ScheduleTraining(schedule.Id);
+            //athlete.ScheduleTraining(planId, schedule.Id.Value);
 
-            // Plan1 schedule 2 -> 1 feedback
-            schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2019, 1, 1), new DateTime(2019, 2, 15));
-            schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, TrainingPlans.First().Id, schedulePeriod);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), null);
-            schedule.ProvideFeedback(feedback);
 
-            TrainingSchedules.Add(schedule);
-            Context.Update(schedule);
-            await Context.SaveAsync();
+            // UserPlan1: User1 - Plan1 - Schedule1 -> 2 feedbacks
+            TrainingSchedules.Add(
+                await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 1), 1, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
+                    new List<TrainingScheduleFeedbackEntity>
+                    {
+                        TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(4), null),
+                        TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(5),  PersonalNoteValue.Write("Perfect!")),
+                    }));
 
-            adHocPlan.ScheduleTraining(schedule.Id);
-            Context.Update(adHocPlan);
-            await Context.SaveAsync();
+            // UserPlan1: User1 - Plan1 - Schedule2 -> 1 feedback
+            TrainingSchedules.Add(
+                await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 1), 1, new DateTime(2019, 1, 1), new DateTime(2019, 2, 15),
+                    new List<TrainingScheduleFeedbackEntity>
+                    {
+                        TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), null),
+                    }));
 
-            // Plan7 -> 2 feedbacks
-            adHocPlan = TrainingPlans.Single(x => x.Id == 7);
+            // UserPlan7:  User2 - Plan1 - Schedule1 -> 2 feedbacks
+            TrainingSchedules.Add(
+                await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 2), 7, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
+                    new List<TrainingScheduleFeedbackEntity>
+                    {
+                        TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), PersonalNoteValue.Write("Comment User1")),
+                        TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(2), PersonalNoteValue.Write("Comment User2")),
+                    }));
 
-            schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
-            schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, TrainingPlans.First().Id, schedulePeriod);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), PersonalNoteValue.Write("Comment User1"));
-            schedule.ProvideFeedback(feedback);
-            feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(2), PersonalNoteValue.Write("Comment User2"));
-            schedule.ProvideFeedback(feedback);
-
-            TrainingSchedules.Add(schedule);
-            Context.Add(schedule);
-            await Context.SaveAsync();
-
-            adHocPlan.ScheduleTraining(schedule.Id);
-            Context.Update(adHocPlan);
-            await Context.SaveAsync();
 
             // Other ones: 1 schedule, 1 feedback
-            foreach (TrainingPlanRoot plan in TrainingPlans.Skip(1).Where(x => x.Id != 5 && x.Id != 7))
+            foreach (AthleteRoot ath in Athletes)
             {
-                schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2019, 1, 1), new DateTime(2019, 2, 15));  // Don't move it outside the loop or EF will go nuts!
-
-                schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, plan.Id, schedulePeriod);
-                feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(3), PersonalNoteValue.Write("Comment"));
-
-                TrainingSchedules.Add(schedule);
-                schedule.ProvideFeedback(feedback);
-
-                Context.Add(schedule);
-                Context.Update(plan);
-                await Context.SaveAsync();
+                foreach(UserTrainingPlanEntity userPlan in ath.TrainingPlans.Where(x => x.Id != 1 && x.Id != 7))
+                {
+                    TrainingSchedules.Add(
+                        await SeedingService.ScheduleTrainingPlan(ath, userPlan.Id.Value, new DateTime(2019, 1, 1), new DateTime(2019, 2, 15),
+                            new List<TrainingScheduleFeedbackEntity>
+                            {
+                                TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(3), PersonalNoteValue.Write("Comment")),
+                            }));
+                }
             }
+            //// Other ones: 1 schedule, 1 feedback
+            //foreach (UserTrainingPlanEntity plan in Athletes.SelectMany(x => x.TrainingPlans))
+            //{
+            //    // Already Seeded
+            //    if (plan.Id == 1 && plan.Id == 7)
+            //        continue;
+
+            //    schedulePeriod = DateRangeValue.RangeBetween(new DateTime(2019, 1, 1), new DateTime(2019, 2, 15));  // Don't move it outside the loop or EF will go nuts!
+
+            //    schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, plan.Id, schedulePeriod);
+            //    feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(3), PersonalNoteValue.Write("Comment"));
+
+            //    TrainingSchedules.Add(schedule);
+            //    schedule.ProvideFeedback(feedback);
+
+            //    Context.Add(schedule);
+            //    Context.Update(plan);
+            //    await Context.SaveAsync();
+
+            //    TrainingSchedules.Add(
+            //        await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 2), 1, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
+            //            new List<TrainingScheduleFeedbackEntity>
+            //            {
+            //                TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), PersonalNoteValue.Write("Comment User1")),
+            //                TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(2), PersonalNoteValue.Write("Comment User2")),
+            //            }));
+            //}
         }
 
 
@@ -590,6 +635,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         public async Task SeedTrainingDomain()
         {
             await SeedUser();
+            await SeedAthlete();
             // await SeedMuscle();
             await SeedExcercise();
             await SeedNotes();

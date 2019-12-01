@@ -22,21 +22,11 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .ValueGeneratedOnAdd();
 
             builder.Ignore(plan => plan.DomainEvents);
-            builder.Ignore(plan => plan.IsTemplate);
             builder.Ignore(plan => plan.WorkoutIds);
-
-            builder.Property(plan => plan.IsBookmarked)
-                .HasColumnType("INTEGER")
-                .HasDefaultValue(false)
-                .HasConversion(new BoolToZeroOneConverter<int>());
-
-            builder.Property(plan => plan.Name)
-                .HasColumnType("TEXT")
-                .IsRequired(false);
 
             builder.HasMany<TrainingScheduleRoot>()
                 .WithOne()
-                .HasForeignKey(x => x.TrainingPlanId)
+                .HasForeignKey(x => x.UserTrainingPlanId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -45,12 +35,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasForeignKey(plan => plan.OwnerId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasOne<TrainingPlanNoteRoot>()
-                .WithMany()
-                .HasForeignKey(plan => plan.TrainingPlanNoteId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(plan => plan.TrainingWeeks)
                 .WithOne()
@@ -61,11 +45,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             var navigation = builder.Metadata.FindNavigation(nameof(TrainingPlanRoot.TrainingWeeks));
             navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasIndex(plan => new
-            {
-                plan.OwnerId,
-                plan.TrainingPlanNoteId,
-            });
+            //builder.HasIndex(plan => new
+            //{
+            //    plan.OwnerId,
+            //});
         }
 
     }

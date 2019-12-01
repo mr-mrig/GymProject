@@ -1,5 +1,5 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
-using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
+using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

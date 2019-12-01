@@ -7,14 +7,16 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
+        public uint UserId { get; private set; }
         public uint TrainingPlanId { get; private set; }
         public uint ProficiencyId { get; private set; }
 
 
 
 
-        public TagTrainingPlanWithProficiencyCommand(uint trainingPlanId, uint proficiencyId)
+        public TagTrainingPlanWithProficiencyCommand(uint userId, uint trainingPlanId, uint proficiencyId)
         {
+            UserId = userId;
             TrainingPlanId = trainingPlanId;
             ProficiencyId = proficiencyId;
         }

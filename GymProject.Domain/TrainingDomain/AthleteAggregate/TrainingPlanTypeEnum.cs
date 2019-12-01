@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
+namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
     public class TrainingPlanTypeEnum : Enumeration
     {

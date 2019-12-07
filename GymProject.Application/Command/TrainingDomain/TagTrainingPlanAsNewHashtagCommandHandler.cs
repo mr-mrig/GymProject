@@ -67,10 +67,10 @@ namespace GymProject.Application.Command.TrainingDomain
             }
             try
             {
-                AthleteRoot athlete = _athleteRepo.Find(message.UserId);
+                AthleteRoot athlete = _athleteRepo.Find(message.AthleteId);
                 athlete.TagTrainingPlanAs(message.TrainingPlanId, hashtag.Id.Value);
 
-                _logger.LogInformation("----- Tagging {@UserTrainingPlanId} of {@Athlete} with {@HashtagId}", message.TrainingPlanId, athlete, hashtag.Id);
+                _logger.LogInformation("----- Tagging {@TrainingPlanId} of {@Athlete} with {@HashtagId}", message.TrainingPlanId, athlete, hashtag.Id);
 
                 _athleteRepo.Modify(athlete);
 

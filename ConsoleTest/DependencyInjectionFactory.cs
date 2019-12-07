@@ -74,7 +74,7 @@ namespace ConsoleTest
                 container.Register<IMediatorService, MediatorWrapper>();
 
                 //container.Register(typeof(INotificationHandler<>), typeof(NotificationWrapper<>));
-                container.Register<ITrainingProgramRepository, SQLTrainingPlanRepository>();
+                container.Register<ITrainingPlanRepository, SQLTrainingPlanRepository>();
 
                 //container.Register<INotificationHandler<>, LinkWorkoutToTrainingPlanWhenCreatedDomainEventHandler>();
 

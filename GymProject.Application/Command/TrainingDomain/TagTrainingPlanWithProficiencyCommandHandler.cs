@@ -39,9 +39,9 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                AthleteRoot athlete = _athleteRepo.Find(message.UserId);
+                AthleteRoot athlete = _athleteRepo.Find(message.AthleteId);
 
-                _logger.LogInformation("----- Tagging {@UserTrainingPlanId} of {@Athlete} with Proficiency {@ProficiencyId}", message.TrainingPlanId, athlete, message.ProficiencyId);
+                _logger.LogInformation("----- Tagging {@TrainingPlanId} of {@Athlete} with Proficiency {@ProficiencyId}", message.TrainingPlanId, athlete, message.ProficiencyId);
 
                 athlete.MarkTrainingPlanAsSuitableForProficiencyLevel(message.TrainingPlanId, message.ProficiencyId);
                 _athleteRepo.Modify(athlete);

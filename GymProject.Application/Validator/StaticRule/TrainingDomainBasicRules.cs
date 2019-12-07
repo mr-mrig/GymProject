@@ -28,6 +28,11 @@ namespace GymProject.Application.Validator.StaticRule
         internal static bool IsValidWeekType(uint? weekTypeEnumId)
 
             => weekTypeEnumId == null
-                || TrainingWeekTypeEnum.List().Select(e => e.Id).Contains((int)weekTypeEnumId.Value);
+                || TrainingWeekTypeEnum.List().Select(e => e.Id).Contains((int)weekTypeEnumId.Value);        
+
+        internal static bool IsValidEntryStatusType(uint? entryStatusId)
+
+            => entryStatusId == null
+                || EntryStatusTypeEnum.List().Select(e => e.Id).Contains((int)entryStatusId.Value);
     }
 }

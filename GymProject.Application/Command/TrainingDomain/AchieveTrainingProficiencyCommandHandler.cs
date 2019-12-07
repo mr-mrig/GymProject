@@ -10,18 +10,18 @@ namespace GymProject.Application.Command.TrainingDomain
 {
 
 
-    public class StartTrainingPhaseCommandHandler : IRequestHandler<StartTrainingPhaseCommand, bool>
+    public class AchieveTrainingProficiencyCommandHandler : IRequestHandler<AchieveTrainingProficiencyCommand, bool>
     {
 
 
         private readonly IAthleteRepository _athleteRepository;
-        private readonly ILogger<StartTrainingPhaseCommandHandler> _logger;
+        private readonly ILogger<AchieveTrainingProficiencyCommandHandler> _logger;
 
 
 
 
 
-        public StartTrainingPhaseCommandHandler(IAthleteRepository athleteRepository,ILogger<StartTrainingPhaseCommandHandler> logger)
+        public AchieveTrainingProficiencyCommandHandler(IAthleteRepository athleteRepository,ILogger<AchieveTrainingProficiencyCommandHandler> logger)
         {
             _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -30,28 +30,24 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        public async Task<bool> Handle(StartTrainingPhaseCommand message, CancellationToken cancellationToken)
+        public async Task<bool> Handle(AchieveTrainingProficiencyCommand message, CancellationToken cancellationToken)
         {
-            bool result;
-
             try
             {
                 AthleteRoot athlete = _athleteRepository.Find(message.AthleteId);
 
-                _logger.LogInformation("----- Starting Training Phase {@PhaseId} for Athlete {@Athlete}", message.TrainingPhaseId, athlete);
+                _logger.LogInformation("----- Achieving Training Proficiency {@ProficiencyId} for Athlete {@Athlete}", message.TrainingProficiencyId, athlete);
 
-                athlete.StartTrainingPhase(message.TrainingPhaseId, EntryStatusTypeEnum.From((int)message.EntryStatusId), ownerNote: PersonalNoteValue.Write(message.OwnerNote));
+                athlete.AchieveTrainingProficiency(message.TrainingProficiencyId);
                 _athleteRepository.Modify(athlete);
 
-                result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
+                return await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {
                 _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepository.UnitOfWork);
-                result = false;
+                return false;
             }
-
-            return result;
         }
     }
 

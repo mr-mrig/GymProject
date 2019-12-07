@@ -380,7 +380,10 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         public void RemoveTrainingPlanFromLibrary(uint trainingPlanId)
         {
             if (_trainingPlans.Remove(FindTrainingPlan(trainingPlanId)))
+            {
                 TestBusinessRules();
+                AddDomainEvent(new TrainingPlanRemovedFromLibraryDomainEvent(trainingPlanId));
+            }
         }
 
         /// <summary>
@@ -397,7 +400,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// </summary>
         /// <param name="bookmarkedFlag">The flag</param>
         /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
-        public void MakeTrainingPlanBookmarked(uint trainingPlanId, bool bookmarkedFlag) => FindTrainingPlan(trainingPlanId).ChangeBookmarkedFlag(bookmarkedFlag);
+        public void BookmarkTrainingPlan(uint trainingPlanId, bool bookmarkedFlag = true) => FindTrainingPlan(trainingPlanId).ChangeBookmarkedFlag(bookmarkedFlag);
 
 
         /// <summary>

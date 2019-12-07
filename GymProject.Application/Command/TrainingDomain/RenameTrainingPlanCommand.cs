@@ -3,22 +3,22 @@
 namespace GymProject.Application.Command.TrainingDomain
 {
 
-    public class TagTrainingPlanWithMuscleFocusCommand : IRequest<bool>
+    public class RenameTrainingPlanCommand : IRequest<bool>
     {
 
 
         public uint AthleteId { get; private set; }
         public uint TrainingPlanId { get; private set; }
-        public uint MuscleId { get; private set; }
+        public string TrainingPlanName { get; private set; }
 
 
 
 
-        public TagTrainingPlanWithMuscleFocusCommand(uint athleteId, uint trainingPlanId, uint muscleId)
+        public RenameTrainingPlanCommand(uint athleteId, uint trainingPlanId, string trainingPlanName)
         {
             AthleteId = athleteId;
             TrainingPlanId = trainingPlanId;
-            MuscleId = muscleId;
+            TrainingPlanName = trainingPlanName;
         }
 
     }

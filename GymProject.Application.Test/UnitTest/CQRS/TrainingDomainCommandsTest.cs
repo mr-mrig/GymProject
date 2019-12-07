@@ -41,7 +41,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<PlanDraftWorkoutCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
 
-            ITrainingProgramRepository planRepository = new SQLTrainingPlanRepository(context);
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
 
             // Test
@@ -80,7 +80,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<PlanDraftWorkoutCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
-            ITrainingProgramRepository planRepository = new SQLTrainingPlanRepository(context);
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
 
             // Test 1: Cannot create workout
@@ -125,13 +125,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<CreateDraftTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
-            ITrainingProgramRepository planRepository = new SQLTrainingPlanRepository(context);
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
 
             // Test
             uint userId = 1;
 
             CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(userId);
-            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, logger);
+            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, null, logger);
 
             Assert.True(await handler.Handle(command, default));
 
@@ -257,13 +257,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<CreateDraftTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
-            ITrainingProgramRepository planRepository = new SQLTrainingPlanRepository(context);
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
 
             // Test
             uint ownerId = 3;
 
             CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(ownerId);
-            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, logger);
+            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, null, logger);
 
             Assert.True(await handler.Handle(command, default));
 
@@ -341,7 +341,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<DeleteTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-            ITrainingProgramRepository planRepository = new SQLTrainingPlanRepository(context);
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
 
             // Test
             uint id = 1;
@@ -370,7 +370,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<DeleteTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-            ITrainingProgramRepository planRepository = new SQLTrainingPlanRepository(context);
+            ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
 
             // Test
             uint id = uint.MaxValue;

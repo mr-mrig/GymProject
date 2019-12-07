@@ -536,15 +536,17 @@ namespace GymProject.Domain.Test.UnitTest
             AthleteRoot athlete;
             List<UserTrainingProficiencyRelation> proficiencies = null;
             List<UserTrainingPhaseRelation> phases = null;
-
+            
             // Only one plan
             List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
             {
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(removeId),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+           
             athlete.RemoveTrainingPlanFromLibrary(removeId);
             Assert.Empty(athlete.TrainingPlans);
+            Assert.Single(athlete.DomainEvents);
 
             // More plans
             plans = new List<UserTrainingPlanEntity>
@@ -558,7 +560,7 @@ namespace GymProject.Domain.Test.UnitTest
             athlete.RemoveTrainingPlanFromLibrary(removeId);
 
             Assert.Equal(plans.Except(plans.Where(x => x.TrainingPlanId == removeId)), athlete.TrainingPlans, new UserTrainingPlanEqualityComparer());
-
+            Assert.Single(athlete.DomainEvents);
         }
 
 
@@ -661,11 +663,11 @@ namespace GymProject.Domain.Test.UnitTest
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            athlete.MakeTrainingPlanBookmarked(planId, true);
+            athlete.BookmarkTrainingPlan(planId, true);
 
             Assert.True(athlete.CloneTrainingPlanOrDefault(planId).IsBookmarked);
 
-            athlete.MakeTrainingPlanBookmarked(planId, false);
+            athlete.BookmarkTrainingPlan(planId, false);
             Assert.False(athlete.CloneTrainingPlanOrDefault(planId).IsBookmarked);
         }
 

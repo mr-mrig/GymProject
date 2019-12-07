@@ -7,16 +7,16 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
-        public uint UserId { get; private set; }
+        public uint AthleteId { get; private set; }
         public uint TrainingPlanId { get; private set; }
         public string HashtagBody { get; private set; }
 
 
 
 
-        public TagTrainingPlanAsNewHashtagCommand(uint userId, uint trainingPlanId, string hashtagBody)
+        public TagTrainingPlanAsNewHashtagCommand(uint athleteId, uint trainingPlanId, string hashtagBody)
         {
-            UserId = userId;
+            AthleteId = athleteId;
             TrainingPlanId = trainingPlanId;
             HashtagBody = hashtagBody;
         }

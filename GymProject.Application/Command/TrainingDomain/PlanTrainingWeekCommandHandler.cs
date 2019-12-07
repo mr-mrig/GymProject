@@ -13,13 +13,13 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
-        private readonly ITrainingProgramRepository _planRepository;
+        private readonly ITrainingPlanRepository _planRepository;
         private readonly ILogger<PlanTrainingWeekCommandHandler> _logger;
 
 
 
         public PlanTrainingWeekCommandHandler(
-            ITrainingProgramRepository planRepository,
+            ITrainingPlanRepository planRepository,
             ILogger<PlanTrainingWeekCommandHandler> logger)
         {
             _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));

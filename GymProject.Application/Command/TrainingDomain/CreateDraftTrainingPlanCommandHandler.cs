@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,8 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
-        private readonly ITrainingProgramRepository _trainingPlanRepository;
+        private readonly ITrainingPlanRepository _trainingPlanRepository;
+        private readonly IAthleteRepository _athleteRepository;
         private readonly ILogger<CreateDraftTrainingPlanCommandHandler> _logger;
 
 
@@ -23,11 +25,13 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
         public CreateDraftTrainingPlanCommandHandler(
-            ITrainingProgramRepository trainingPlanRepository,
+            ITrainingPlanRepository trainingPlanRepository,
+            IAthleteRepository athleteRepository,
             ILogger<CreateDraftTrainingPlanCommandHandler> logger
             )
         {
             _trainingPlanRepository = trainingPlanRepository ?? throw new ArgumentNullException(nameof(trainingPlanRepository));
+            _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -36,13 +40,36 @@ namespace GymProject.Application.Command.TrainingDomain
 
         public async Task<bool> Handle(CreateDraftTrainingPlanCommand message, CancellationToken cancellationToken)
         {
-            TrainingPlanRoot plan = TrainingPlanRoot.NewDraft(message.OwnerId);
+            TrainingPlanRoot plan;
 
-            _logger.LogInformation("----- Creating Training Plan - Plan: {@Plan}", plan);
+            try
+            {
+                plan = TrainingPlanRoot.NewDraft(message.OwnerId);
+                _logger.LogInformation("----- Creating Training Plan - Plan: {@Plan}", plan);
 
-            _trainingPlanRepository.Add(plan);
+                _trainingPlanRepository.Add(plan);
+            }
+            catch (Exception exc)
+            {
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _trainingPlanRepository.UnitOfWork);
+                return false;
+            }
 
-            return await _trainingPlanRepository.UnitOfWork.SaveAsync(cancellationToken);
+            try
+            {
+                AthleteRoot athlete = _athleteRepository.Find(message.OwnerId);
+                _logger.LogInformation("----- Adding Training Plan {@Plan} to User Library {@Athlete}", plan, athlete);
+
+                athlete.AddTrainingPlanToLibrary(plan.Id.Value);
+
+                _athleteRepository.Modify(athlete);
+                return await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
+            }
+            catch (Exception exc)
+            {
+                _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepository.UnitOfWork);
+                return false;
+            }
         }
     }
 

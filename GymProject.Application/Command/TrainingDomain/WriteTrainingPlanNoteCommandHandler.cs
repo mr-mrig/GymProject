@@ -10,12 +10,12 @@ namespace GymProject.Application.Command.TrainingDomain
     public class WriteTrainingPlanNoteCommandHandler : IRequestHandler<WriteTrainingPlanNoteCommand, bool>
     {
 
-        private readonly ITrainingProgramRepository _trainingPlanRepository;
+        private readonly ITrainingPlanRepository _trainingPlanRepository;
         private readonly ILogger<WriteTrainingPlanNoteCommandHandler> _logger;
 
 
 
-        public WriteTrainingPlanNoteCommandHandler(ITrainingProgramRepository trainingPlanRepository, ILogger<WriteTrainingPlanNoteCommandHandler> logger)
+        public WriteTrainingPlanNoteCommandHandler(ITrainingPlanRepository trainingPlanRepository, ILogger<WriteTrainingPlanNoteCommandHandler> logger)
         {
             _trainingPlanRepository = trainingPlanRepository ?? throw new ArgumentNullException(nameof(trainingPlanRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

@@ -39,9 +39,9 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                AthleteRoot athlete = _athleteRepo.Find(message.UserId);
+                AthleteRoot athlete = _athleteRepo.Find(message.AthleteId);
 
-                _logger.LogInformation("----- Tagging {@UserTrainingPlanId} of {@Athlete} with Phase {@PhaseId}", message.TrainingPlanId, athlete, message.PhaseId);
+                _logger.LogInformation("----- Tagging {@TrainingPlanId} of {@Athlete} with Phase {@PhaseId}", message.TrainingPlanId, athlete, message.PhaseId);
 
                 athlete.TagTrainingPlanWithPhase(message.TrainingPlanId, message.PhaseId);
                 _athleteRepo.Modify(athlete);

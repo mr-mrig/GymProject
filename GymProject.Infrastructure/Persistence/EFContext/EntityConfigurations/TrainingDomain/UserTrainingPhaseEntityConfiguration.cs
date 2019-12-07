@@ -17,7 +17,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Property("UserId");
             builder.Property(rel => rel.PhaseId);
 
-            builder.HasKey("UserId", "PhaseId");
+            builder.HasKey("UserId", "PhaseId", "StartDate");
 
 
             builder.OwnsOne(p => p.OwnerNote, n =>

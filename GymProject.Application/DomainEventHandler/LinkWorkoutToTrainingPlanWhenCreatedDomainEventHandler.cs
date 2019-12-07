@@ -15,11 +15,11 @@ namespace GymProject.Application.DomainEventHandler
 
 
         private readonly ILoggerFactory _logger;
-        private readonly ITrainingProgramRepository _trainingPlanRepository;
+        private readonly ITrainingPlanRepository _trainingPlanRepository;
 
 
 
-        public LinkWorkoutToTrainingPlanWhenCreatedDomainEventHandler(ILoggerFactory logger, ITrainingProgramRepository trainingPlanRepository)
+        public LinkWorkoutToTrainingPlanWhenCreatedDomainEventHandler(ILoggerFactory logger, ITrainingPlanRepository trainingPlanRepository)
         {
             _logger = logger 
                 ?? throw new ArgumentNullException(nameof(logger));

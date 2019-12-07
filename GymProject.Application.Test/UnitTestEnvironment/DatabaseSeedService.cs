@@ -35,7 +35,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             await _context.SaveAsync();
 
             athlete.RenameTrainingPlan(planId, planName);
-            athlete.MakeTrainingPlanBookmarked(planId, isBookmarked);
+            athlete.BookmarkTrainingPlan(planId, isBookmarked);
             athlete.AttachTrainingPlanNote(planId, planNoteId);
 
             if (parentPlanId != null)

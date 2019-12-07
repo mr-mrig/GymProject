@@ -5,7 +5,7 @@ using System;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
-    public class SQLTrainingPlanRepository : ITrainingProgramRepository
+    public class SQLTrainingPlanRepository : ITrainingPlanRepository
     {
 
 

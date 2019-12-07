@@ -39,10 +39,10 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                AthleteRoot athlete = _athleteRepo.Find(message.UserId);
+                AthleteRoot athlete = _athleteRepo.Find(message.AthleteId);
                 athlete.UntagTrainingPlan(message.TrainingPlanId, message.TrainingHashtagId);
 
-                _logger.LogInformation("----- Unagging {@UserTrainingPlanId} of {@Athlete} with {@HashtagId}", message.TrainingPlanId, athlete, message.TrainingHashtagId);
+                _logger.LogInformation("----- Unagging {@TrainingPlanId} of {@Athlete} with {@HashtagId}", message.TrainingPlanId, athlete, message.TrainingHashtagId);
 
                 _athleteRepo.Modify(athlete);
 

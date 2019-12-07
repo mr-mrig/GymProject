@@ -2,6 +2,7 @@
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using System;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -55,7 +56,16 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         {
             _context.Remove(athlete);
         }
+
         #endregion
 
+
+        #region IAthleteRepository Implementation
+
+        public int CountAthletesWithTrainingPlanInLibrary(uint trainingPlanId)
+        
+            => _context.Athletes.SelectMany(x => x.TrainingPlans).Where(x => x.TrainingPlanId == trainingPlanId).Count();
+        
+        #endregion
     }
 }

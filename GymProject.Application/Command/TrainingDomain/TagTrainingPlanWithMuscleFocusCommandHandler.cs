@@ -39,9 +39,9 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
-                AthleteRoot athlete = _athleteRepository.Find(message.UserId);
+                AthleteRoot athlete = _athleteRepository.Find(message.AthleteId);
 
-                _logger.LogInformation("----- Tagging {@UserTrainingPlanId} of {@User} with Muscle Focus {@MuscleId}", message.TrainingPlanId, athlete, message.MuscleId);
+                _logger.LogInformation("----- Tagging {@TrainingPlanId} of {@User} with Muscle Focus {@MuscleId}", message.TrainingPlanId, athlete, message.MuscleId);
 
                 athlete.FocusTrainingPlanOnMuscle(message.TrainingPlanId, message.MuscleId);
                 _athleteRepository.Modify(athlete);

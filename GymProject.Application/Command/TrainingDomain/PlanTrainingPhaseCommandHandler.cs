@@ -10,18 +10,18 @@ namespace GymProject.Application.Command.TrainingDomain
 {
 
 
-    public class StartTrainingPhaseCommandHandler : IRequestHandler<StartTrainingPhaseCommand, bool>
+    public class PlanTrainingPhaseCommandHandler : IRequestHandler<PlanTrainingPhaseCommand, bool>
     {
 
 
         private readonly IAthleteRepository _athleteRepository;
-        private readonly ILogger<StartTrainingPhaseCommandHandler> _logger;
+        private readonly ILogger<PlanTrainingPhaseCommandHandler> _logger;
 
 
 
 
 
-        public StartTrainingPhaseCommandHandler(IAthleteRepository athleteRepository,ILogger<StartTrainingPhaseCommandHandler> logger)
+        public PlanTrainingPhaseCommandHandler(IAthleteRepository athleteRepository,ILogger<PlanTrainingPhaseCommandHandler> logger)
         {
             _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -30,7 +30,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        public async Task<bool> Handle(StartTrainingPhaseCommand message, CancellationToken cancellationToken)
+        public async Task<bool> Handle(PlanTrainingPhaseCommand message, CancellationToken cancellationToken)
         {
             bool result;
 
@@ -38,9 +38,12 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 AthleteRoot athlete = _athleteRepository.Find(message.AthleteId);
 
-                _logger.LogInformation("----- Starting Training Phase {@PhaseId} for Athlete {@Athlete}", message.TrainingPhaseId, athlete);
+                _logger.LogInformation("----- Planning Training Phase {@PhaseId} for Athlete {@Athlete} from {@StartDate} to {@EndDate}", message.TrainingPhaseId, athlete, message.StartDate, message.EndDate);
 
-                athlete.StartTrainingPhase(message.TrainingPhaseId, EntryStatusTypeEnum.From((int)message.EntryStatusId), ownerNote: PersonalNoteValue.Write(message.OwnerNote));
+                athlete.StartTrainingPhase(message.TrainingPhaseId, 
+                    EntryStatusTypeEnum.From((int)message.EntryStatusId), 
+                    DateRangeValue.RangeBetween(message.StartDate, message.EndDate),
+                    PersonalNoteValue.Write(message.OwnerNote));
                 _athleteRepository.Modify(athlete);
 
                 result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);

@@ -14,14 +14,14 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
         private readonly IWorkoutTemplateRepository _workoutRepository;
-        private readonly ITrainingProgramRepository _planRepository;
+        private readonly ITrainingPlanRepository _planRepository;
         private readonly ILogger<DeleteTrainingPlanCommandHandler> _logger;
 
 
 
         public DeleteTrainingPlanCommandHandler(
             IWorkoutTemplateRepository workoutTemplateRepository,
-            ITrainingProgramRepository planRepository,
+            ITrainingPlanRepository planRepository,
             ILogger<DeleteTrainingPlanCommandHandler> logger)
         {
             _workoutRepository = workoutTemplateRepository ?? throw new ArgumentNullException(nameof(workoutTemplateRepository));
@@ -56,7 +56,7 @@ namespace GymProject.Application.Command.TrainingDomain
                 // Delete the training plan aggregate
                 _planRepository.Remove(plan);
 
-                result = await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);
+                result = await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);      // Can I use just one SaveAsync for both _plan and _workout?
 
                 if(result)
                     result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);

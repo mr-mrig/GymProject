@@ -1,5 +1,4 @@
 ﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
-using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,20 +10,20 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
     // Regular CommandHandler
-    public class UntagTrainingPlanWithMuscleFocusCommandHandler : IRequestHandler<UntagTrainingPlanWithMuscleFocusCommand, bool>
+    public class BookmarkTrainingPlanCommandHandler : IRequestHandler<BookmarkTrainingPlanCommand, bool>
     {
 
 
         private readonly IAthleteRepository _athleteRepo;
-        private readonly ILogger<UntagTrainingPlanWithMuscleFocusCommandHandler> _logger;
+        private readonly ILogger<BookmarkTrainingPlanCommandHandler> _logger;
 
 
 
 
 
-        public UntagTrainingPlanWithMuscleFocusCommandHandler(
+        public BookmarkTrainingPlanCommandHandler(
             IAthleteRepository athleteRepository,
-            ILogger<UntagTrainingPlanWithMuscleFocusCommandHandler> logger
+            ILogger<BookmarkTrainingPlanCommandHandler> logger
             )
         {
             _athleteRepo = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
@@ -34,27 +33,26 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        public async Task<bool> Handle(UntagTrainingPlanWithMuscleFocusCommand message, CancellationToken cancellationToken)
+        public async Task<bool> Handle(BookmarkTrainingPlanCommand message, CancellationToken cancellationToken)
         {
-            bool result;
+            bool result = false;
 
             try
             {
                 AthleteRoot athlete = _athleteRepo.Find(message.AthleteId);
+                athlete.BookmarkTrainingPlan(message.TrainingPlanId, message.MakeBookmarked);
 
-                _logger.LogInformation("----- Untagging {@TrainingPlanId} of {@Athlete} with Muscle Focus {@MuscleId}", message.TrainingPlanId, athlete, message.MuscleId);
+                _logger.LogInformation("----- Bookmarking {@TrainingPlanId} of {@Athlete} with {@IsBookmarked}", message.TrainingPlanId, athlete, message.MakeBookmarked);
 
-                athlete.UnfocusTrainingPlanFromMuscle(message.TrainingPlanId, message.MuscleId);
                 _athleteRepo.Modify(athlete);
 
                 result = await _athleteRepo.UnitOfWork.SaveAsync(cancellationToken);
             }
-            catch(Exception exc)
+            catch (Exception exc)
             {
                 _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _athleteRepo.UnitOfWork);
                 result = false;
             }
-
             return result;
         }
     }

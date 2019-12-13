@@ -233,7 +233,7 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
         [Fact]
-        public void DateRangeBetweenOverlaps()
+        public void DateRange_Overlaps()
         {
             int days = 10;
             DateTime left = DateTime.Now;
@@ -246,26 +246,123 @@ namespace GymProject.Domain.Test.UnitTest
             DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
 
             Assert.True(range2.Overlaps(range));
-
-            DateTime left3 = right;
-            DateTime right3 = left3.AddDays(days);
-
-            DateRangeValue range3 = DateRangeValue.RangeBetween(left3, right3);
-
-            Assert.True(range3.Overlaps(range));
         }
 
         [Fact]
-        public void DateRangeBetweenIncludes()
+        public void DateRange_Overlaps_SharingOneBoundary()
+        {
+            int days = 10;
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = right;
+            DateTime right2 = right.AddDays(days);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+
+            Assert.True(range2.Overlaps(range));
+        }
+        
+        [Fact]
+        public void DateRange_Overlaps_UnboundedCase()
+        {
+            int days = 10;
+
+            // No right boundary
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = left.AddDays(1);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeStartingFrom(left2);
+
+            Assert.True(range2.Overlaps(range));
+
+            // No left boundary
+            DateTime right3 = left.AddDays(1);
+
+            DateRangeValue range3 = DateRangeValue.RangeUpTo(right3);
+
+            Assert.True(range3.Overlaps(range));
+        }  
+
+        [Fact]
+        public void DateRange_DoesNotOverlap()
         {
             int days = 10;
 
             DateTime left = DateTime.Now;
             DateTime right = DateTime.Now.AddDays(days);
 
-            DateTime test = left.AddDays(1);
+            DateTime right2 = left.AddDays(-1);
+            DateTime left2 = right2.AddDays(-10);
 
-            DateTime left2 = left.AddDays(2);
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+
+            Assert.False(range2.Overlaps(range));
+        }
+        
+        [Fact]
+        public void DateRange_DoesNotOverlap_UnboundedCase()
+        {
+            int days = 10;
+
+            // No right boundary
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = right.AddDays(10);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeStartingFrom(left2);
+
+            Assert.False(range2.Overlaps(range));
+
+            // No left boundary
+            DateTime right3 = left.AddDays(-1);
+
+            DateRangeValue range3 = DateRangeValue.RangeUpTo(right3);
+
+            Assert.False(range3.Overlaps(range));
+        }
+
+        [Fact]
+        public void DateRange_Includes_Date()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+
+            DateTime dateIncluded = left.AddDays(1);
+            DateTime pastDate = left.AddDays(-1);
+            DateTime futureDate = right.AddDays(1);
+
+            Assert.True(range.Includes(dateIncluded));
+            Assert.True(range.IncludesStrictly(dateIncluded));            
+            Assert.False(range.Includes(pastDate));
+            Assert.False(range.IncludesStrictly(pastDate));            
+            Assert.False(range.Includes(futureDate));
+            Assert.False(range.IncludesStrictly(futureDate));        
+            Assert.True(range.Includes(left));
+            Assert.True(range.IncludesStrictly(left));
+            Assert.True(range.Includes(right));
+            Assert.True(range.IncludesStrictly(right));
+        }
+
+        [Fact]
+        public void DateRange_Includes_Range()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime left2 = left.AddDays(1);
             DateTime right2 = right.AddDays(-1);
 
             DateRangeValue range = DateRangeValue.RangeBetween(left, right);
@@ -273,8 +370,64 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.True(range.Includes(range2));
             Assert.False(range2.Includes(range));
-            Assert.True(range.IncludesStrinctly(test));
-            Assert.False(range2.IncludesStrinctly(test));
+        }
+
+        [Fact]
+        public void DateRange_Includes_RangeSharingOneBoundary()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+            DateTime left2 = left;
+            DateTime right2 = right.AddDays(-1);    
+            DateTime left3 = left.AddDays(1);
+            DateTime right3 = right;
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+            DateRangeValue range3 = DateRangeValue.RangeBetween(left3, right3);
+
+            Assert.True(range.Includes(range2));
+            Assert.False(range2.Includes(range));            
+            Assert.True(range.Includes(range3));
+            Assert.False(range3.Includes(range));
+        }
+
+        [Fact]
+        public void DateRange_DoesNotInclude_Range()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+
+            DateTime right2 = left.AddDays(-1);
+            DateTime left2 = right2.AddDays(-11);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeBetween(left2, right2);
+
+            Assert.False(range.Includes(range2));
+            Assert.False(range2.Includes(range));
+        }
+
+        [Fact]
+        public void DateRange_DoesNotInclude_Unbounded()
+        {
+            int days = 10;
+
+            DateTime left = DateTime.Now;
+            DateTime right = DateTime.Now.AddDays(days);
+            DateTime right2 = left.AddDays(-1);
+            DateTime left3 = right.AddDays(1);
+
+            DateRangeValue range = DateRangeValue.RangeBetween(left, right);
+            DateRangeValue range2 = DateRangeValue.RangeUpTo(right2);
+            DateRangeValue range3 = DateRangeValue.RangeStartingFrom(left3);
+
+            Assert.False(range.Includes(range2));
+            Assert.False(range.Includes(range3));
         }
 
         [Fact]

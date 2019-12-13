@@ -143,7 +143,7 @@ namespace GymProject.Domain.SharedKernel
 
         /// <summary>
         /// Checks wether the specified date is included in the range or not
-        /// IE: if one of the range boundares are undefined then it just check the other one
+        /// IE: if one of the range boundares are null then it just check the other one
         /// </summary>
         /// <param name="toCheck">The date to be checked</param>
         /// <returns>True if date inside DateRange boundaries</returns>
@@ -155,20 +155,20 @@ namespace GymProject.Domain.SharedKernel
             if (End == null)
                 return toCheck >= (Start ?? toCheck);
 
-            return IncludesStrinctly(toCheck);
+            return IncludesStrictly(toCheck);
         }
 
 
         /// <summary>
         /// Checks wether the specified date is strinctly included in the range or not.
-        /// This raise an exception if one of the period boundaries are null.
+        /// This is different from <see cref="Includes(DateTime)"/> as it does not work with null boundaries.
         /// </summary>
         /// <param name="toCheck">The date to be checked</param>
         /// <returns>True if date inside DateRange boundaries</returns>
-        public bool IncludesStrinctly(DateTime toCheck)
-        {
-            return toCheck >= Start.Value && toCheck <= End.Value;
-        }
+        /// <exception cref="InvalidOperationException">If one of the boundaries is null</exception>
+        public bool IncludesStrictly(DateTime toCheck)
+
+            => IsDateBetween(toCheck, Start.Value, End.Value);
 
 
         /// <summary>
@@ -176,24 +176,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="toCheck">The date range to be checked</param>
         /// <returns>True if the DateRange encloses the one specified</returns>
-        //public bool Includes(DateRangeValue toCheck)
-        //{
-        //    if(!toCheck.IsLeftBounded())
-        //    {
-        //        if (!toCheck.IsRightBounded())
-        //            return false;
-
-        //        return Includes(toCheck.End.Value);
-        //    }
-
-        //    if (!toCheck.IsRightBounded())
-        //        return Includes(toCheck.Start.Value);
-
-        //    return Includes(toCheck.Start.Value) && Includes(toCheck.End.Value);
-        //}
         public bool Includes(DateRangeValue toCheck)
         {
-            return IncludesStrinctly(toCheck.Start.Value) && IncludesStrinctly(toCheck.End.Value);
+            return IncludesStrictly(toCheck.Start.Value) && IncludesStrictly(toCheck.End.Value);
         }
 
 
@@ -203,33 +188,9 @@ namespace GymProject.Domain.SharedKernel
         /// </summary>
         /// <param name="toCheck">The date range to be checked</param>
         /// <returns>True if the DetaRange objects are overlapping</returns>
-        //public bool Overlaps(DateRangeValue toCheck)
-        //{
-        //    if (!toCheck.IsLeftBounded())
-        //    {
-        //        if (!toCheck.IsRightBounded())
-        //            return true;
-
-        //        if (End.HasValue)
-        //            toCheck.Includes(End.Value);
-        //        else
-        //            return true;
-        //    }
-
-        //    if (!toCheck.IsRightBounded())
-        //    {
-        //        if (Start.HasValue)
-        //            toCheck.Includes(Start.Value);
-        //        else
-        //            return true;
-        //    }
-
-        //    return toCheck.Includes(Start.Value) || toCheck.Includes(End.Value) || Includes(toCheck);
-        //}
         public bool Overlaps(DateRangeValue toCheck)
-        {
-            return toCheck.IncludesStrinctly(Start.Value) || toCheck.IncludesStrinctly(End.Value) || Includes(toCheck);
-        }
+
+            => AreOverlapping(toCheck, this);
 
 
         /// <summary>
@@ -333,6 +294,33 @@ namespace GymProject.Domain.SharedKernel
 
 
         #region Private Methods
+        #endregion
+
+
+        #region Static Utils
+
+        /// <summary>
+        /// Check whether the specified date is between the two edge ones.
+        /// Returns true even when the date is strictly equal to one of the boundaries.
+        /// Does not check for invalid dates.
+        /// </summary>
+        /// <param name="toCheck">The date to be checked</param>
+        /// <param name="startDate">The left boundary of the period to check</param>
+        /// <param name="endDate">The right boundary of the period to check</param>
+        /// <returns>True if the date occurs between - or at - the edge dates</returns>
+        public static bool IsDateBetween(DateTime toCheck, DateTime startDate, DateTime endDate) => toCheck >= startDate && toCheck <= endDate;
+
+
+        /// <summary>
+        /// Check whether the specified period are overlapping.
+        /// </summary>
+        /// <param name="first">The first period</param>
+        /// <param name="second">The second period</param>
+        /// <returns>True if the periods overlap.
+        public static bool AreOverlapping(DateRangeValue first, DateRangeValue second) 
+            
+            => first.IncludesStrictly(second.Start.Value) || first.IncludesStrictly(second.End.Value) || second.Includes(first);
+
         #endregion
 
 

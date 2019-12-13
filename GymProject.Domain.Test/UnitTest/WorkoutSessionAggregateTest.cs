@@ -230,7 +230,7 @@ namespace GymProject.Domain.Test.UnitTest
                     }
                     else
                     {
-                        planned = RandomFieldGenerator.RandomDate(DateTime.Now.AddDays(-1), DateTime.Now.AddDays(300));
+                        planned = RandomFieldGenerator.RandomDate(DateTime.Now, DateTime.Now.AddDays(300));
                         workout.ScheduleToDate(planned);
                         Assert.Equal(planned, workout.PlannedDate);
                     }
@@ -319,7 +319,7 @@ namespace GymProject.Domain.Test.UnitTest
                             // Duplicate Id
                             if(!isTransient)
                             {
-                                wsId = (uint)RandomFieldGenerator.ChooseAmong(originalWorkUnit.WorkingSets.Where(x => x.Id.HasValue).Select(x => (int?)x.Id));
+                                wsId = (uint)RandomFieldGenerator.ChooseAmong(originalWorkUnit.WorkingSets.Where(x => x.Id.HasValue).Select(x => (int?)x.Id ?? 1));
 
                                 ws = WorkoutSessionAggregateBuilder.BuildRandomWorkingSet(wsId, originalWorkUnit.WorkingSets.Count, isTransient);
                                 Assert.Throws<ArgumentException>(() => workout.TrackWorkingSet(pnumToChange, ws));

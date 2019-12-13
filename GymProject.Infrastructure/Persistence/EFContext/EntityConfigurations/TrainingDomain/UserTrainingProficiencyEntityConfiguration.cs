@@ -2,45 +2,40 @@
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
     internal class UserTrainingProficiencyEntityConfiguration : IEntityTypeConfiguration<UserTrainingProficiencyRelation>
     {
 
+        private string _thisTableName = "UserTrainingProficiency";
+
+
 
         public void Configure(EntityTypeBuilder<UserTrainingProficiencyRelation> builder)
         {
-            builder.ToTable("UserTrainingProficiency", GymContext.DefaultSchema);
+            builder.ToTable(_thisTableName, GymContext.DefaultSchema);
+            builder.HasKey("UserId", "StartDate");
 
             builder.Property("UserId");
             builder.Property(rel => rel.ProficiencyId);
 
-            builder.HasKey("UserId", "ProficiencyId");
+            builder.Property(rel => rel.StartDate)
+                .HasColumnType("INTEGER")
+                .IsRequired();
 
-            builder.OwnsOne(p => p.Period, per =>
-            {
-                per.Property(p => p.Start)
-                    .HasColumnName("StartDate")
-                    .HasColumnType("INTEGER")
-                    .IsRequired(true);
+            builder.Property(rel => rel.EndDate)
+                .HasColumnType("INTEGER");
 
-                per.Property(p => p.End)
-                    .HasColumnName("EndDate")
-                    .HasColumnType("INTEGER")
-                    .IsRequired(false);
-            });
             builder.HasOne<TrainingProficiencyRoot>()
                 .WithMany()
                 .HasForeignKey(rel => rel.ProficiencyId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
-            //builder.HasOne<AthleteRoot>()
-            //    .WithMany()
-            //    .HasForeignKey<AthleteRoot>(x => x.id)
-            //    .OnDelete(DeleteBehavior.NoAction)
-            //    .IsRequired();
+            builder.HasIndex("UserId", "EndDate", "StartDate");
+
         }
     }
 }

@@ -21,10 +21,25 @@ namespace GymProject.Domain.Test.Util
         /// Checks current timestamp is as expected
         /// </summary>
         /// <param name="toBeChecked">The datetime object storing the current timestamp</param>
-        internal static void CheckTimestamp(DateTime toBeChecked)
+        internal static void CheckTimestamp(DateTime toBeChecked, bool isUtc = true)
         {
             //Assert.InRange(toBeChecked, DateTime.Now.Subtract(TimeSpan.FromSeconds(1)), DateTime.Now);
-            Assert.Equal(toBeChecked, DateTime.UtcNow, new TimeSpan(100));
+            CheckDateTimes(toBeChecked, isUtc ? DateTime.UtcNow : DateTime.Now);
+        }
+
+
+        /// <summary>
+        /// Checks the datetimes are eqivalent but for a specific margin
+        /// </summary>
+        /// <param name="left">The first datetime</param>
+        /// <param name="right">The second datetime</param>
+        /// <param name="toleranceMilliseconds">The tolerance in milliseconds for the datetimes to be considered equals</param>
+        internal static void CheckDateTimes(DateTime? left, DateTime? right, int toleranceMilliseconds = 100)
+        {
+            if (left.HasValue && right.HasValue)
+                Assert.Equal(left.Value, right.Value, new TimeSpan(toleranceMilliseconds * 10));
+            else
+                Assert.Equal(left, right);
         }
         
 

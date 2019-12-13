@@ -105,7 +105,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.Users.AddRange(Users);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
@@ -121,7 +121,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.MuscleGroups.AddRange(Muscles);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
@@ -137,7 +137,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.Excercises.AddRange(Excercises);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
@@ -154,7 +154,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.IntensityTechniques.AddRange(IntensityTechniques);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
@@ -171,7 +171,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.TrainingHashtags.AddRange(TrainingHashtags);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
 
 
             TrainingPhases = new List<TrainingPhaseRoot>()
@@ -187,7 +187,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.TrainingPhases.AddRange(TrainingPhases);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
 
 
             TrainingProficiencies = new List<TrainingProficiencyRoot>()
@@ -199,7 +199,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.TrainingProficiencies.AddRange(TrainingProficiencies);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
@@ -225,7 +225,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.TrainingPlanNotes.AddRange(TrainingPlanNotes);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
 
             WorkingSetNotes = new List<WorkingSetNoteRoot>()
             {
@@ -236,7 +236,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.WorkingSetNotes.AddRange(WorkingSetNotes);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
 
             TrainingPlanMessages = new List<TrainingPlanMessageRoot>()
             {
@@ -247,34 +247,86 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             };
 
             Context.TrainingPlanMessages.AddRange(TrainingPlanMessages);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
         public async Task SeedAthlete()
         {
-            AthleteRoot athlete;
-
-            foreach (UserRoot user in Users)
+            try
             {
-                athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
-                Athletes.Add(athlete);
-                Context.Add(athlete);
-                await Context.SaveAsync();
+                AthleteRoot athlete;
+                Athletes = new List<AthleteRoot>();
+
+                foreach (UserRoot user in Users)
+                {
+                    athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
+                    Athletes.Add(athlete);
+                    Context.Add(athlete);
+                    await Context.SaveAsync().ConfigureAwait(false);
+                }
+
+                List<uint> hashtags1 = new List<uint> { 2, 3, 4 };
+                List<uint> phases1 = new List<uint> { 1, 2 };
+                List<uint> proficiencies1 = new List<uint> { 1, 2 };
+                List<uint> focuses1 = new List<uint> { 1, 3 };
+
+                List<uint> hashtags = new List<uint> { 4 };
+                List<uint> proficiencies = new List<uint> { 3 };
+
+                // User Training Plans
+                athlete = Athletes.Single(x => x.Id == 1);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 1, "Plan1 User1", true, null, 1, hashtags1, proficiencies1, phases1, focuses1).ConfigureAwait(false);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan2 User1 Variant of Plan1", false, 1, null, hashtags, proficiencies).ConfigureAwait(false);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 3, "Plan3 User1", false, 1, null, hashtags, proficiencies).ConfigureAwait(false);
+
+                athlete = Athletes.Single(x => x.Id == 2);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 6, "Plan6 User2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
+
+                athlete = Athletes.Single(x => x.Id == 3);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan12 User3 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
+
+                // User Phases
+                uint athleteId = 1;
+                uint phaseId = 1;
+                athlete = Athletes.Single(x => x.Id == athleteId);
+                //athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, 
+                //    DateRangeValue.RangeStartingFrom(DateTime.Today.AddDays(-100)), 
+                //    PersonalNoteValue.Write($"Athlete{athleteId.ToString()} - Phase{phaseId.ToString()}"));
+                athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private);
+
+                Context.Update(athlete);
+                await Context.SaveAsync().ConfigureAwait(false);
+
+                athleteId = 2;
+                phaseId = 1;
+                athlete = Athletes.Single(x => x.Id == athleteId);
+                athlete.StartTrainingPhase(athleteId, EntryStatusTypeEnum.Pending);
+
+                Context.Update(athlete);
+                await Context.SaveAsync().ConfigureAwait(false);
+
+                // User Proficiencies
+                athleteId = 1;
+                uint proficiencyId = 3;
+                athlete = Athletes.Single(x => x.Id == athleteId);
+                athlete.AchieveTrainingProficiency(proficiencyId);
+
+                Context.Update(athlete);
+                await Context.SaveAsync().ConfigureAwait(false);
+
+                athleteId = 2;
+                proficiencyId = 1;
+                athlete = Athletes.Single(x => x.Id == athleteId);
+                athlete.AchieveTrainingProficiency(proficiencyId);
+
+                Context.Update(athlete);
+                await Context.SaveAsync().ConfigureAwait(false);
             }
-
-            List<uint> hashtags1 = new List<uint> { 2, 3, 4 };
-            List<uint> phases1 = new List<uint> { 1, 2 };
-            List<uint> proficiencies1 = new List<uint> { 1, 2 };
-            List<uint> focuses1 = new List<uint> { 1, 3 };
-
-            List<uint> hashtags = new List<uint> { 4 };
-            List<uint> proficiencies = new List<uint> { 3 };
-
-            athlete = Athletes.Single(x => x.Id == 1);
-            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 1, "Plan1 User1", true, null, 1, hashtags1, proficiencies1, phases1, focuses1);
-            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan2 User1 Variant of Plan1", false, 1, null, hashtags, proficiencies);
-            await SeedingService.AddTrainingPlanToUserLibrary(athlete, 3, "Plan3 User1", false, 1, null, hashtags, proficiencies);
+            catch(Exception exc)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
         }
 
 
@@ -513,15 +565,15 @@ namespace GymProject.Application.Test.UnitTestEnvironment
 
         public async Task SeedTrainingDomain()
         {
-            await SeedUser();
-            await SeedAthlete();
+            await SeedUser().ConfigureAwait(false);
+            await SeedAthlete().ConfigureAwait(false);
             //SeedMuscle();
-            await SeedExcercise();
-            await SeedNotes();
-            await SeedIntensityTechnique();
-            await SeedHashtags();
-            await SeedTrainingPlan();
-            await SeedTrainingSchedule();
+            await SeedExcercise().ConfigureAwait(false);
+            await SeedNotes().ConfigureAwait(false);
+            await SeedIntensityTechnique().ConfigureAwait(false);
+            await SeedHashtags().ConfigureAwait(false);
+            await SeedTrainingPlan().ConfigureAwait(false);
+            await SeedTrainingSchedule().ConfigureAwait(false);
         }
 
 

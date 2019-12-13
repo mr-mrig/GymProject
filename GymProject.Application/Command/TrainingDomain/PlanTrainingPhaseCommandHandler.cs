@@ -42,7 +42,8 @@ namespace GymProject.Application.Command.TrainingDomain
 
                 athlete.StartTrainingPhase(message.TrainingPhaseId, 
                     EntryStatusTypeEnum.From((int)message.EntryStatusId), 
-                    DateRangeValue.RangeBetween(message.StartDate, message.EndDate),
+                    message.StartDate, 
+                    message.EndDate,
                     PersonalNoteValue.Write(message.OwnerNote));
                 _athleteRepository.Modify(athlete);
 

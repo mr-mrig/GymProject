@@ -140,7 +140,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             //});
 
             // Should be configured elsewhere?
-            optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - comment again after the DB build
+            //optionsBuilder.UseSqlite(@"DataSource=test.db;");  // EF needs this - comment again after the DB build
         }
 
 

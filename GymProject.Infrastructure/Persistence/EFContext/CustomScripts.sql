@@ -7,6 +7,10 @@
 
 --TrainingPlanMessage -> Body NOT NULL
 
+-- UserTrainingPhase -> UQ: (UserId, Start)
+
+-- UserTrainingProficiency -> UQ: (UserId, Start)
+
 --TrainingPlanNote -> Body NOT NULL
 
 --WorkUnitTemplateNote -> Body NOT NULL

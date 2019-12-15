@@ -37,8 +37,6 @@ namespace GymProject.Application.Command.TrainingDomain
 
         public async Task<bool> Handle(ExcludeTrainingPlanFromUserLibraryCommand message, CancellationToken cancellationToken)
         {
-            bool transactionOk = false;
-
             try
             {
                 AthleteRoot athlete = _athleteRepository.Find(message.UserId);
@@ -48,7 +46,7 @@ namespace GymProject.Application.Command.TrainingDomain
                 athlete.RemoveTrainingPlanFromLibrary(message.TrainingPlanId);      // Domain event is raised
                 _athleteRepository.Modify(athlete);
 
-                transactionOk = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
+                await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch(Exception exc)
             {
@@ -59,17 +57,14 @@ namespace GymProject.Application.Command.TrainingDomain
             // Check if the Training Plan should be deleted as well
             try
             {
-                if (transactionOk)
+                if (_athleteRepository.CountAthletesWithTrainingPlanInLibrary(message.TrainingPlanId) == 0)   // Data read might be stale - Should we do this here or maybe run a schedudled script for orphans removing?
                 {
-                    if (_athleteRepository.CountAthletesWithTrainingPlanInLibrary(message.TrainingPlanId) == 0)   // Data read might be stale - Should we do this here or maybe run a schedudled script for orphans removing?
-                    {
-                        TrainingPlanRoot plan = _planRepository.Find(message.TrainingPlanId);
+                    TrainingPlanRoot plan = _planRepository.Find(message.TrainingPlanId);
 
-                        _logger.LogInformation("----- Removing Training Plan {@TrainingPlan} ", plan);
-                        _planRepository.Remove(plan);
+                    _logger.LogInformation("----- Removing Training Plan {@TrainingPlan} ", plan);
+                    _planRepository.Remove(plan);
 
-                        return await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
-                    }
+                    return await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
                 }
             }
             catch (Exception exc)
@@ -77,7 +72,7 @@ namespace GymProject.Application.Command.TrainingDomain
                 _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _planRepository.UnitOfWork);
                 return false;
             }
-            return transactionOk;
+            return true;
         }
     }
 

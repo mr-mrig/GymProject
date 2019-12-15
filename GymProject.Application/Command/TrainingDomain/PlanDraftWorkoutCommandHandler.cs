@@ -50,18 +50,14 @@ namespace GymProject.Application.Command.TrainingDomain
                 _logger.LogInformation("----- Creating Workout Template - {@Workout}", workout);
 
                 workout = _workoutRepository.Add(workout);
-                result = await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);
 
                 try
                 {
                     // Link to the workout
-                    if (result)
-                    {
-                        plan.PlanWorkout(message.TrainingWeekProgressiveNumber, workout.Id.Value);
-                        _planRepository.Modify(plan);
+                    plan.PlanWorkout(message.TrainingWeekProgressiveNumber, workout.Id.Value);
+                    _planRepository.Modify(plan);
 
-                        result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
-                    }
+                    result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
                 }
                 catch (Exception exc)
                 {

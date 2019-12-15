@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+﻿using GymProject.Application.Command.TrainingDomain;
+using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -6,21 +7,21 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GymProject.Application.Command.TrainingDomain
+namespace GymProject.Application.Test.FakeCommands
 {
-    public class DeleteTrainingPlanCommandHandler : IRequestHandler<DeleteTrainingPlanCommand, bool>
+    public class FakeDeleteTrainingPlanCommandHandler : IRequestHandler<DeleteTrainingPlanCommand, bool>
     {
 
         private readonly IWorkoutTemplateRepository _workoutRepository;
         private readonly ITrainingPlanRepository _planRepository;
-        private readonly ILogger<DeleteTrainingPlanCommandHandler> _logger;
+        private readonly ILogger<FakeDeleteTrainingPlanCommandHandler> _logger;
 
 
 
-        public DeleteTrainingPlanCommandHandler(
+        public FakeDeleteTrainingPlanCommandHandler(
             IWorkoutTemplateRepository workoutTemplateRepository,
             ITrainingPlanRepository planRepository,
-            ILogger<DeleteTrainingPlanCommandHandler> logger)
+            ILogger<FakeDeleteTrainingPlanCommandHandler> logger)
         {
             _workoutRepository = workoutTemplateRepository ?? throw new ArgumentNullException(nameof(workoutTemplateRepository));
             _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));
@@ -31,13 +32,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
         public async Task<bool> Handle(DeleteTrainingPlanCommand message, CancellationToken cancellationToken)
         {
-            bool result = true;
-
             TrainingPlanRoot plan = _planRepository.Find(message.TrainingPlanId);
-
-            if (plan == null)
-                return false;
-
 
             _logger.LogInformation("----- Deleting Training Plan - {@Plan}", plan);
 
@@ -50,19 +45,16 @@ namespace GymProject.Application.Command.TrainingDomain
                     _workoutRepository.Remove(workout);
                 }
 
+                throw new Exception("Testing transactional failure");
+
                 // Delete the training plan aggregate
                 _planRepository.Remove(plan);
-
-                result = await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {
                 _logger.LogError(exc, "ERROR handling message: {ExceptionMessage} - Context: {@ExceptionContext}", exc.Message, _workoutRepository.UnitOfWork);
-                result = false;
+                return false;
             }
-
-            //TrainingPlanDeleted(workout.Id);     // Delete the WO linked to it
-            return result;
         }
 
 

@@ -9,21 +9,26 @@ using System.Threading.Tasks;
 
 namespace GymProject.Application.Command.TrainingDomain
 {
-    public class WriteWorkUnitTemplateNoteCommandHandler : IRequestHandler<WriteWorkUnitTemplateNoteCommand, bool>
+    public class FakeWriteWorkUnitTemplateNoteCommandHandler : IRequestHandler<WriteWorkUnitTemplateNoteCommand, bool>
     {
 
         private readonly IWorkoutTemplateRepository _workoutRepository;
         private readonly IWorkUnitTemplateNoteRepository _noteRepository;
-        private readonly ILogger<WriteWorkUnitTemplateNoteCommandHandler> _logger;
+        private readonly ILogger<FakeWriteWorkUnitTemplateNoteCommandHandler> _logger;
+        bool _failStep1 = false;
+        bool _failStep2 = false;
 
 
 
-        public WriteWorkUnitTemplateNoteCommandHandler(
-            IWorkoutTemplateRepository workoutRepository, IWorkUnitTemplateNoteRepository workUnitNoteRepository, ILogger<WriteWorkUnitTemplateNoteCommandHandler> logger)
+        public FakeWriteWorkUnitTemplateNoteCommandHandler(
+            IWorkoutTemplateRepository workoutRepository, IWorkUnitTemplateNoteRepository workUnitNoteRepository, ILogger<FakeWriteWorkUnitTemplateNoteCommandHandler> logger,
+            bool failStep1, bool failStep2)
         {
             _workoutRepository = workoutRepository ?? throw new ArgumentNullException(nameof(workoutRepository));
             _noteRepository = workUnitNoteRepository ?? throw new ArgumentNullException(nameof(workUnitNoteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _failStep1 = failStep1;
+            _failStep2 = failStep2;
         }
 
 
@@ -31,13 +36,15 @@ namespace GymProject.Application.Command.TrainingDomain
         {
             _logger.LogInformation("----- Writing new note for {@WorkUnitProgressiveNumber} of {@WorkoutId}", message.WorkUnitProgressiveNumber, message.WorkoutTemplateId);
 
-            WorkoutTemplateRoot workout = _workoutRepository.Find(message.WorkoutTemplateId);
             WorkUnitTemplateNoteRoot note;
 
             try
             {
-                note = WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write(message.NoteBody));
+                note = WorkUnitTemplateNoteRoot.WriteTransient(PersonalNoteValue.Write(message.NoteBody));
                 _noteRepository.Add(note);
+
+                if (_failStep1)
+                    throw new Exception();
             }
             catch (Exception exc)
             {
@@ -46,7 +53,11 @@ namespace GymProject.Application.Command.TrainingDomain
             }
             try
             {
+                WorkoutTemplateRoot workout = _workoutRepository.Find(message.WorkoutTemplateId);
                 workout.AttachWorkUnitNote(message.WorkUnitProgressiveNumber, note.Id);
+
+                if (_failStep2)
+                    throw new Exception();
 
                 _workoutRepository.Modify(workout);
                 return await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);

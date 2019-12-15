@@ -1,6 +1,7 @@
 using GymProject.Application.Command;
 using GymProject.Application.Command.TrainingDomain;
 using GymProject.Application.MediatorBehavior;
+using GymProject.Application.Test.FakeCommands;
 using GymProject.Application.Test.Utils;
 using GymProject.Application.Validator.TrainingDomain;
 using GymProject.Domain.SharedKernel;
@@ -43,6 +44,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+ 
 
             // Test
             uint planId = 1;
@@ -60,11 +62,11 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             // Check new workout
             WorkoutTemplateRoot added = context.WorkoutTemplates.Last();
+
             Assert.Equal(trainingPlansNumberBefore, context.TrainingPlans.Count());
             Assert.Equal(workoutsNumberBefore + 1, context.WorkoutTemplates.Count());
             Assert.Equal(planWorkouts.Count() + 1, planRepository.Find(planId).WorkoutIds.Count);
             Assert.Contains(context.TrainingWeeks.Find(weekId).WorkoutIds.Last().Value, planRepository.Find(planId).WorkoutIds);
-
 
             // Check link with plan
             TrainingWeekEntity week = context.TrainingWeeks.Find(weekId);
@@ -125,21 +127,30 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<CreateDraftTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
+            IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
+            int workoutsNumberBefore = context.TrainingPlans.Count();
 
             // Test
             uint userId = 1;
 
             CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(userId);
-            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, null, logger);
+            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, athleteRepo, logger);
 
             Assert.True(await handler.Handle(command, default));
 
             // Check new training plan
             TrainingPlanRoot added = context.TrainingPlans.Last();
+            int workoutsNumberAfter = context.TrainingPlans.Count();
+
+            Assert.Equal(workoutsNumberBefore + 1, workoutsNumberAfter);
             Assert.Equal(userId, added.OwnerId);
             Assert.Equal(1, added.TrainingWeeks.Count);
             Assert.Empty(added.TrainingWeeks.SelectMany(x => x.WorkoutIds));
+
+            // Check training plan in user library
+            AthleteRoot athlete = context.Athletes.Find(userId);
+            Assert.Contains(added.Id.Value, athlete.TrainingPlans.Select(x => x.TrainingPlanId));
         }
 
 
@@ -257,23 +268,29 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<CreateDraftTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
+            IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
 
             // Test
             uint ownerId = 3;
 
             CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(ownerId);
-            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, null, logger);
+            CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, athleteRepo, logger);
 
             Assert.True(await handler.Handle(command, default));
 
-            // Check modifications
+            // Check Training Plan Created
             TrainingPlanRoot dest = context.TrainingPlans.Last();
 
             Assert.NotNull(dest);
             Assert.Empty(dest.WorkoutIds);
             Assert.Single(dest.TrainingWeeks);
             // Not testing everything ...
+
+            // Check Trainin Plan in User Library
+            AthleteRoot destAthlete = context.Athletes.Find(ownerId);
+
+            Assert.Contains(dest.Id.Value, destAthlete.TrainingPlans.Select(x => x.TrainingPlanId));
         }
 
 
@@ -358,8 +375,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS
                 Assert.Null(workoutRepository.Find(workoutId));
 
             Assert.Null(planRepository.Find(id));
+            Assert.DoesNotContain(id, context.TrainingPlans.Select(x => x.Id.Value));
         }
-
 
         [Fact]
         public async Task DeleteTrainingPlanCommandFail()
@@ -516,10 +533,6 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             PlanTrainingWeekCommand command = new PlanTrainingWeekCommand(id, weekTypeId);
             PlanTrainingWeekCommandHandler handler = new PlanTrainingWeekCommandHandler(
                 repo, logger);
-
-            var loggerValidator = new Mock<ILogger<PlanTrainingWeekCommandValidator>>();
-            PlanTrainingWeekCommandValidator validator = new PlanTrainingWeekCommandValidator(loggerValidator.Object);
-            Assert.True(validator.Validate(command).IsValid);
 
             Assert.True(await handler.Handle(command, default));
 
@@ -850,6 +863,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             uint userId = 1;
             uint planId = 1;
             string hashtagBody = "MyHashtag";
+            var planHashtagsBefore = athleteRepo.Find(userId).TrainingPlans.Single(x => x.TrainingPlanId == planId).HashtagIds;
 
             TagTrainingPlanAsNewHashtagCommand command = new TagTrainingPlanAsNewHashtagCommand(userId, planId, hashtagBody);
             TagTrainingPlanAsNewHashtagCommandHandler handler = new TagTrainingPlanAsNewHashtagCommandHandler(athleteRepo, hashtagRepo, logger);
@@ -857,17 +871,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             Assert.True(await handler.Handle(command, default));
 
             // Check
-            var newPlanRel = athleteRepo.Find(userId).TrainingPlans.Single(x => x.TrainingPlanId == planId);
+            var planHashtagsAfter = athleteRepo.Find(userId).TrainingPlans.Single(x => x.TrainingPlanId == planId).HashtagIds;
             var newHashtag = context.TrainingHashtags.Last();
 
             Assert.Equal(hashtagBody, newHashtag.Hashtag.Body);
             Assert.Equal("#" + hashtagBody, newHashtag.Hashtag.ToFullHashtag());
 
-            Assert.NotEmpty(newPlanRel.HashtagIds);
-            Assert.Equal(newHashtag.Id, newPlanRel.HashtagIds.Last());
+            Assert.Equal(planHashtagsBefore.Count + 1, planHashtagsAfter.Count);
+            Assert.Equal(newHashtag.Id, planHashtagsAfter.Last());
             //Assert.Equal(newPlan.HashtagIds.Count - 1,
             //    (int)context.TrainingPlanHashtags.Single(x => x.HashtagId == newHashtag.Id && x.TrainingPlanId == id).ProgressiveNumber);
         }
+   
 
 
         [Fact]
@@ -1197,6 +1212,76 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             Assert.DoesNotContain(muscleId, dest.MuscleFocusIds);
         }
 
+        
 
+        [Fact]
+        public async Task WriteTrainingPlanNoteCommandSuccess()
+        {
+            GymContext context;
+            ILogger<WriteTrainingPlanNoteCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<WriteTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+            var notes = new SQLTrainingPlanNoteRepository(context);
+            var notesBefore = context.TrainingPlanNotes.ToList();
+
+            // Test
+            uint userId = 1;
+            uint planId = 1;
+            string note = "my short note";
+
+            WriteTrainingPlanNoteCommand command = new WriteTrainingPlanNoteCommand(userId, planId, note);
+            WriteTrainingPlanNoteCommandHandler handler = new WriteTrainingPlanNoteCommandHandler(athletes, notes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var notesAfter = context.TrainingPlanNotes.ToList();
+            var added = notesAfter.Last();
+            Assert.Equal(notesBefore.Count + 1, notesAfter.Count);
+            Assert.Equal(note, added.Body.Body);
+
+            // Check note attached to plan
+            var planAfter = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
+
+            Assert.Equal(added.Id, planAfter.TrainingPlanNoteId.Value);
+        }
+                      
+
+        [Fact]
+        public async Task WriteWorkUnitTemplateNoteCommandSuccess()
+        {
+            GymContext context;
+            ILogger<WriteWorkUnitTemplateNoteCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<WriteWorkUnitTemplateNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var workouts = new SQLWorkoutTemplateRepository(context);
+            var notes = new SQLWorkUnitTemplateNoteRepository(context);
+            var notesBefore = context.WorkUnitTemplateNotes.ToList();
+
+            // Test
+            uint workoutId = 1;
+            uint workUnitPnum = 1;
+            string note = "my short work unit note!";
+
+            WriteWorkUnitTemplateNoteCommand command = new WriteWorkUnitTemplateNoteCommand(workoutId, workUnitPnum, note);
+            WriteWorkUnitTemplateNoteCommandHandler handler = new WriteWorkUnitTemplateNoteCommandHandler(workouts, notes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var notesAfter = context.WorkUnitTemplateNotes.ToList();
+            var added = notesAfter.Last();
+            Assert.Equal(notesBefore.Count + 1, notesAfter.Count);
+            Assert.Equal(note, added.Body.Body);
+
+            // Check note attached to plan
+            var workUnitAfter = workouts.Find(workoutId).CloneWorkUnit(workUnitPnum);
+            Assert.Equal(added.Id, workUnitAfter.WorkUnitNoteId);
+        }
+       
+        
     }
 }

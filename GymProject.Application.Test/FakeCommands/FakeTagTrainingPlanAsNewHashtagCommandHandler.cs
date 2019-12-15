@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.Base;
+﻿using GymProject.Application.Command.TrainingDomain;
+using GymProject.Domain.Base;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
@@ -8,32 +9,36 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GymProject.Application.Command.TrainingDomain
+namespace GymProject.Application.Test.FakeCommands
 {
 
 
     // Regular CommandHandler
-    public class TagTrainingPlanAsNewHashtagCommandHandler : IRequestHandler<TagTrainingPlanAsNewHashtagCommand, bool>
+    public class FakeTagTrainingPlanAsNewHashtagCommandHandler : IRequestHandler<TagTrainingPlanAsNewHashtagCommand, bool>
     {
 
 
         private readonly IAthleteRepository _athleteRepo;
         private readonly ITrainingHashtagRepository _hashtagRepository;
-        private readonly ILogger<TagTrainingPlanAsNewHashtagCommandHandler> _logger;
+        private readonly ILogger<FakeTagTrainingPlanAsNewHashtagCommandHandler> _logger;
+        private bool _failStep1;
+        private bool _failStep2;
 
 
 
 
-
-        public TagTrainingPlanAsNewHashtagCommandHandler(
+        public FakeTagTrainingPlanAsNewHashtagCommandHandler(
             IAthleteRepository athleteRepository,
             ITrainingHashtagRepository hashtagRepository,
-            ILogger<TagTrainingPlanAsNewHashtagCommandHandler> logger
+            ILogger<FakeTagTrainingPlanAsNewHashtagCommandHandler> logger,
+            bool failStep1, bool failStep2
             )
         {
             _athleteRepo = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _hashtagRepository = hashtagRepository ?? throw new ArgumentNullException(nameof(hashtagRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _failStep2 = failStep2;
+            _failStep1 = failStep1;
         }
 
 
@@ -49,6 +54,9 @@ namespace GymProject.Application.Command.TrainingDomain
 
                 _logger.LogInformation("----- Creating {@TrainingHashtag}", hashtag);
                 _hashtagRepository.Add(hashtag);
+
+                if (_failStep1)
+                    throw new Exception();
             }
             catch (Exception exc)
             {
@@ -63,6 +71,9 @@ namespace GymProject.Application.Command.TrainingDomain
                 _logger.LogInformation("----- Tagging {@TrainingPlanId} of {@Athlete} with {@HashtagId}", message.TrainingPlanId, athlete, hashtag.Id);
 
                 _athleteRepo.Modify(athlete);
+
+                if (_failStep2)
+                    throw new Exception("Testing transaction failure");
 
                 return await _athleteRepo.UnitOfWork.SaveAsync(cancellationToken);
             }

@@ -9,20 +9,25 @@ using System.Threading.Tasks;
 
 namespace GymProject.Application.Command.TrainingDomain
 {
-    public class WriteTrainingPlanNoteCommandHandler : IRequestHandler<WriteTrainingPlanNoteCommand, bool>
+    public class FakeWriteTrainingPlanNoteCommandHandler : IRequestHandler<WriteTrainingPlanNoteCommand, bool>
     {
 
         private readonly IAthleteRepository _athleteRepository;
         private readonly ITrainingPlanNoteRepository _noteRepository;
-        private readonly ILogger<WriteTrainingPlanNoteCommandHandler> _logger;
+        private readonly ILogger<FakeWriteTrainingPlanNoteCommandHandler> _logger;
+        private bool _failStep1 = false;
+        private bool _failStep2 = false;
 
 
 
-        public WriteTrainingPlanNoteCommandHandler(IAthleteRepository athleteRepository, ITrainingPlanNoteRepository noteRepository, ILogger<WriteTrainingPlanNoteCommandHandler> logger)
+        public FakeWriteTrainingPlanNoteCommandHandler(IAthleteRepository athleteRepository, ITrainingPlanNoteRepository noteRepository, ILogger<FakeWriteTrainingPlanNoteCommandHandler> logger,
+            bool failStep1, bool failStep2)
         {
             _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
             _noteRepository = noteRepository ?? throw new ArgumentNullException(nameof(noteRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _failStep1 = failStep1;
+            _failStep2 = failStep2;
         }
 
 
@@ -34,6 +39,9 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 note = TrainingPlanNoteRoot.WriteTransient(PersonalNoteValue.Write(message.NoteBody));
                 _noteRepository.Add(note);
+
+                if (_failStep1)
+                    throw new Exception();
             }
             catch (Exception exc)
             {
@@ -44,6 +52,9 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 AthleteRoot athlete = _athleteRepository.Find(message.UserId);
                 athlete.AttachTrainingPlanNote(message.TrainingPlanId, note.Id);
+
+                if (_failStep2)
+                    throw new Exception();
 
                 _athleteRepository.Modify(athlete);
                 return await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);

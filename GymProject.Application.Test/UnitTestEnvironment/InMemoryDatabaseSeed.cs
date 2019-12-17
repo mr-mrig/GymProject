@@ -260,7 +260,10 @@ namespace GymProject.Application.Test.UnitTestEnvironment
 
                 foreach (UserRoot user in Users)
                 {
-                    athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
+                    UserTrainingProficiencyRelation prof = UserTrainingProficiencyRelation.AchieveTrainingProficiency(1, new DateTime(2019, 1, 1));
+                    UserTrainingPhaseRelation phase = UserTrainingPhaseRelation.StartPhasePublic(4, new DateTime(2019, 6, 6));
+                    athlete = AthleteRoot.RegisterAthlete(user.Id.Value, new List<UserTrainingPhaseRelation> { phase }, new List<UserTrainingProficiencyRelation> { prof });
+                    //athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
                     Athletes.Add(athlete);
                     Context.Add(athlete);
                     await Context.SaveAsync().ConfigureAwait(false);
@@ -282,43 +285,19 @@ namespace GymProject.Application.Test.UnitTestEnvironment
 
                 athlete = Athletes.Single(x => x.Id == 2);
                 await SeedingService.AddTrainingPlanToUserLibrary(athlete, 6, "Plan6 User2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
+                //await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan22 User2 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
 
                 athlete = Athletes.Single(x => x.Id == 3);
-                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan12 User3 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan32 User3 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
 
                 // User Phases
-                uint athleteId = 1;
-                uint phaseId = 1;
-                athlete = Athletes.Single(x => x.Id == athleteId);
-                //athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, 
-                //    DateRangeValue.RangeStartingFrom(DateTime.Today.AddDays(-100)), 
-                //    PersonalNoteValue.Write($"Athlete{athleteId.ToString()} - Phase{phaseId.ToString()}"));
-                athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private);
-
-                Context.Update(athlete);
-                await Context.SaveAsync().ConfigureAwait(false);
-
-                athleteId = 2;
-                phaseId = 1;
-                athlete = Athletes.Single(x => x.Id == athleteId);
-                athlete.StartTrainingPhase(athleteId, EntryStatusTypeEnum.Pending);
-
-                Context.Update(athlete);
-                await Context.SaveAsync().ConfigureAwait(false);
-
-                // User Proficiencies
-                athleteId = 1;
-                uint proficiencyId = 3;
-                athlete = Athletes.Single(x => x.Id == athleteId);
-                athlete.AchieveTrainingProficiency(proficiencyId);
-
-                Context.Update(athlete);
-                await Context.SaveAsync().ConfigureAwait(false);
-
-                athleteId = 2;
-                proficiencyId = 1;
-                athlete = Athletes.Single(x => x.Id == athleteId);
-                athlete.AchieveTrainingProficiency(proficiencyId);
+                //uint athleteId = 1;
+                //uint phaseId = 3;
+                //athlete = Athletes.Single(x => x.Id == athleteId);
+                ////athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, 
+                ////    DateRangeValue.RangeStartingFrom(DateTime.Today.AddDays(-100)), 
+                ////    PersonalNoteValue.Write($"Athlete{athleteId.ToString()} - Phase{phaseId.ToString()}"));
+                //athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private);
 
                 Context.Update(athlete);
                 await Context.SaveAsync().ConfigureAwait(false);

@@ -44,7 +44,7 @@ namespace GymProject.Application.Command.TrainingDomain
                     EntryStatusTypeEnum.From((int)message.EntryStatusId), 
                     message.StartDate, 
                     message.EndDate,
-                    PersonalNoteValue.Write(message.OwnerNote));
+                    message.OwnerNote == null ? null : PersonalNoteValue.Write(message.OwnerNote));
                 _athleteRepository.Modify(athlete);
 
                 result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);

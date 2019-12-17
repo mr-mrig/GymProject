@@ -13,19 +13,19 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
     // Regular CommandHandler
-    public class ExcludeTrainingPlanFromUserLibraryCommandHandler : IRequestHandler<ExcludeTrainingPlanFromUserLibraryCommand, bool>
+    public class FakeExcludeTrainingPlanFromUserLibraryCommandHandler : IRequestHandler<ExcludeTrainingPlanFromUserLibraryCommand, bool>
     {
 
 
         private readonly IAthleteRepository _athleteRepository;
         private readonly ITrainingPlanRepository _planRepository;
-        private readonly ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> _logger;
+        private readonly ILogger<FakeExcludeTrainingPlanFromUserLibraryCommandHandler> _logger;
 
 
 
 
 
-        public ExcludeTrainingPlanFromUserLibraryCommandHandler(IAthleteRepository athleteRepository, ITrainingPlanRepository planRepository, ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> logger)
+        public FakeExcludeTrainingPlanFromUserLibraryCommandHandler(IAthleteRepository athleteRepository, ITrainingPlanRepository planRepository, ILogger<FakeExcludeTrainingPlanFromUserLibraryCommandHandler> logger)
         {
             _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));
             _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));
@@ -62,7 +62,7 @@ namespace GymProject.Application.Command.TrainingDomain
                     _logger.LogInformation("----- Removing Training Plan {@TrainingPlan} ", plan);
                     _planRepository.Remove(plan);
 
-                    return await _planRepository.UnitOfWork.SaveAsync(cancellationToken);
+                    throw new Exception();
                 }
                 else
                     await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);

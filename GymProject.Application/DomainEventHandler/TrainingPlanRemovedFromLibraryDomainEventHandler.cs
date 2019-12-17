@@ -20,8 +20,8 @@ namespace GymProject.Application.DomainEventHandler
 
 
 
-        public TrainingPlanRemovedFromLibraryDomainEventHandler(ILogger<TrainingPlanRemovedFromLibraryDomainEventHandler> logger, 
-            ITrainingPlanRepository trainingPlanRepository, IAthleteRepository athleteRepository, IWorkoutTemplateRepository workoutRepository)
+        public TrainingPlanRemovedFromLibraryDomainEventHandler(ITrainingPlanRepository trainingPlanRepository, IAthleteRepository athleteRepository, IWorkoutTemplateRepository workoutRepository,
+            ILogger<TrainingPlanRemovedFromLibraryDomainEventHandler> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _athleteRepository = athleteRepository ?? throw new ArgumentNullException(nameof(athleteRepository));

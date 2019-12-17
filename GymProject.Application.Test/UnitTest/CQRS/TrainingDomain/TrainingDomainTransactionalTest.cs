@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace GymProject.Application.Test.UnitTest.CQRS
+namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 {
     public class TrainingDomainTransactionalTest
     {
@@ -284,6 +284,32 @@ namespace GymProject.Application.Test.UnitTest.CQRS
         }
 
 
+
+        [Fact]
+        public async Task ExcludeTrainingPlanFromUserLibraryCommand_LastOne_TransactionFail()
+        {
+            GymContext context;
+            ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ExcludeTrainingPlanFromUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+            var plans = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint athleteId = 1;
+            uint planId = 1;        // This plan is owned by this user only
+
+            ExcludeTrainingPlanFromUserLibraryCommand command = new ExcludeTrainingPlanFromUserLibraryCommand(planId, athleteId);
+            ExcludeTrainingPlanFromUserLibraryCommandHandler handler = new ExcludeTrainingPlanFromUserLibraryCommandHandler(athletes, plans, logger);
+
+            Assert.False(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(athleteId);
+            Assert.Contains(planId, modified.TrainingPlans.Select(x => x.TrainingPlanId));
+            Assert.Contains(planId, context.TrainingPlans.Select(x => x.Id));
+        }
 
 
     }

@@ -17,7 +17,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace GymProject.Application.Test.UnitTest.CQRS
+namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 {
     public class TrainingDomainQueriesTest
     {

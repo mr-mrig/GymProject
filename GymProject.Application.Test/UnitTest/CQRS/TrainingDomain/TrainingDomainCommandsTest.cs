@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace GymProject.Application.Test.UnitTest.CQRS
+namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 {
     public class TrainingDomainCommandsTest
     {
@@ -44,7 +44,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
- 
+
 
             // Test
             uint planId = 1;
@@ -404,7 +404,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             Assert.Equal(planNum, context.TrainingPlans.Count());
             Assert.Equal(woNum, context.WorkoutTemplates.Count());
         }
-        
+
 
         [Fact]
         public async Task DeleteWorkingSetTemplateCommandSuccess()
@@ -430,7 +430,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             // Check
             WorkoutTemplateRoot dest = workoutRepository.Find(id);
             Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count() + 1);
-        }        
+        }
 
 
         [Fact]
@@ -580,14 +580,14 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             uint workUnitPnum = 0;
             var src = repo.Find(id).Clone() as WorkoutTemplateRoot;
 
-            for(int itest = 0; itest < ntests; itest++)
+            for (int itest = 0; itest < ntests; itest++)
             {
                 int reps = RandomFieldGenerator.RandomInt(1, 30);
                 int? workType = RandomFieldGenerator.ChooseAmongNullable(TimeMeasureUnitEnum.List().Select(x => (int?)x.Id), 0.25f);
                 int? rest = RandomFieldGenerator.RandomIntNullable(30, 360, 0.25f);
                 int? restMeas = RandomFieldGenerator.ChooseAmongNullable(TimeMeasureUnitEnum.List().Select(x => (int?)x.Id), 0.25f);
                 int? effort = RandomFieldGenerator.RandomIntNullable(2, 15, 0.25f);
-                int? effortType = RandomFieldGenerator.RollEventWithProbability(0.25f) 
+                int? effortType = RandomFieldGenerator.RollEventWithProbability(0.25f)
                     ? null
                     : (int?)TrainingEffortTypeEnum.RM.Id;
                 string tempo = RandomFieldGenerator.RollEventWithProbability(0.25f)
@@ -595,9 +595,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS
                     : TUTValue.GenericTempo;
                 IEnumerable<uint?> techniques = RandomFieldGenerator.RollEventWithProbability(0.25f)
                     ? null
-                    : Enumerable.Range(1, 3).Select(x => (uint?)x); 
+                    : Enumerable.Range(1, 3).Select(x => (uint?)x);
 
-                PlanWorkingSetCommand command = new PlanWorkingSetCommand(id, workUnitPnum, reps, 
+                PlanWorkingSetCommand command = new PlanWorkingSetCommand(id, workUnitPnum, reps,
                     workType, rest, restMeas, effort, effortType, tempo, techniques);
                 PlanWorkingSetCommandHandler handler = new PlanWorkingSetCommandHandler(
                     repo, logger);
@@ -621,12 +621,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS
                 if (effort.HasValue)
                     Assert.Equal(
                         TrainingEffortValue.FromEffort(effort.Value, effortType.HasValue ? TrainingEffortTypeEnum.From(effortType.Value) : TrainingEffortTypeEnum.IntensityPercentage)
-                        ,wsAdded.Effort);
+                        , wsAdded.Effort);
 
                 if (string.IsNullOrWhiteSpace(tempo))
                     Assert.Null(wsAdded.Tempo);
                 else
-                    Assert.Equal(TUTValue.PlanTUT(tempo) , wsAdded.Tempo);
+                    Assert.Equal(TUTValue.PlanTUT(tempo), wsAdded.Tempo);
 
                 if (techniques == null)
                     Assert.Empty(wsAdded.IntensityTechniqueIds);
@@ -716,7 +716,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             // Check
             var dest = repo.Find(id);
             Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
-            Assert.Equal(TrainingEffortValue.FromEffort(effort.Value, TrainingEffortTypeEnum.From(effortTypeId.Value)), 
+            Assert.Equal(TrainingEffortValue.FromEffort(effort.Value, TrainingEffortTypeEnum.From(effortTypeId.Value)),
                 dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).Effort);
         }
 
@@ -752,7 +752,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             // Check
             var dest = repo.Find(id);
             Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
-            Assert.Equal(WSRepetitionsValue.TrackWork(reps, WSWorkTypeEnum.From(workTypeId.Value)), 
+            Assert.Equal(WSRepetitionsValue.TrackWork(reps, WSWorkTypeEnum.From(workTypeId.Value)),
                 dest.CloneWorkUnit(workUnitPnum).CloneWorkingSet(wsPnum).Repetitions);
         }
 
@@ -843,7 +843,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
             Assert.NotEmpty(dest.HashtagIds);
             Assert.Equal(hashtagId, dest.HashtagIds.Last());
-            Assert.Equal(dest.HashtagIds.Count - 1, 
+            Assert.Equal(dest.HashtagIds.Count - 1,
                 (int)context.TrainingPlanHashtags.Single(x => x.HashtagId == hashtagId && x.TrainingPlanId == userId).ProgressiveNumber);
         }
 
@@ -882,7 +882,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             //Assert.Equal(newPlan.HashtagIds.Count - 1,
             //    (int)context.TrainingPlanHashtags.Single(x => x.HashtagId == newHashtag.Id && x.TrainingPlanId == id).ProgressiveNumber);
         }
-   
+
 
 
         [Fact]
@@ -1212,7 +1212,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             Assert.DoesNotContain(muscleId, dest.MuscleFocusIds);
         }
 
-        
+
 
         [Fact]
         public async Task WriteTrainingPlanNoteCommandSuccess()
@@ -1247,7 +1247,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS
 
             Assert.Equal(added.Id, planAfter.TrainingPlanNoteId.Value);
         }
-                      
+
 
         [Fact]
         public async Task WriteWorkUnitTemplateNoteCommandSuccess()
@@ -1281,7 +1281,419 @@ namespace GymProject.Application.Test.UnitTest.CQRS
             var workUnitAfter = workouts.Find(workoutId).CloneWorkUnit(workUnitPnum);
             Assert.Equal(added.Id, workUnitAfter.WorkUnitNoteId);
         }
-       
-        
+
+
+        [Fact]
+        public async Task AchieveTrainingProficiencyCommandSuccess()
+        {
+            GymContext context;
+            ILogger<AchieveTrainingProficiencyCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<AchieveTrainingProficiencyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint athleteId = 1;
+            uint proficiencyId = 1;
+
+            AchieveTrainingProficiencyCommand command = new AchieveTrainingProficiencyCommand(athleteId, proficiencyId);
+            AchieveTrainingProficiencyCommandHandler handler = new AchieveTrainingProficiencyCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var added = athletes.Find(athleteId).TrainingProficiencies.Last();
+            Assert.Equal(proficiencyId, added.ProficiencyId);
+            Assert.Equal(DateTime.UtcNow, added.StartDate, new TimeSpan(0, 0, 0, 0, 500));
+            Assert.Null(added.EndDate);
+        }
+
+
+        [Fact]
+        public async Task BookmarkTrainingPlanCommand_Success()
+        {
+            GymContext context;
+            ILogger<BookmarkTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<BookmarkTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint athleteId = 1;
+            uint planId = 1;
+            bool isBookmarked = !athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId).IsBookmarked;
+
+            BookmarkTrainingPlanCommand command = new BookmarkTrainingPlanCommand(athleteId, planId, isBookmarked);
+            BookmarkTrainingPlanCommandHandler handler = new BookmarkTrainingPlanCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId);
+            Assert.Equal(isBookmarked, modified.IsBookmarked);
+        }
+
+
+        [Fact]
+        public async Task ExcludeTrainingPlanFromUserLibraryCommand_NotLastOne_Success()
+        {
+            GymContext context;
+            ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ExcludeTrainingPlanFromUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+            var plans = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint athleteId = 1;
+            uint planId = 2;        // This plan is owned by more than one users
+
+            ExcludeTrainingPlanFromUserLibraryCommand command = new ExcludeTrainingPlanFromUserLibraryCommand(planId, athleteId);
+            ExcludeTrainingPlanFromUserLibraryCommandHandler handler = new ExcludeTrainingPlanFromUserLibraryCommandHandler(athletes, plans, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(athleteId);
+            Assert.DoesNotContain(planId, modified.TrainingPlans.Select(x => x.TrainingPlanId));
+            Assert.Contains(planId, context.TrainingPlans.Select(x => x.Id));
+        }
+
+
+        [Fact]
+        public async Task ExcludeTrainingPlanFromUserLibraryCommand_LastOne_Success()
+        {
+            GymContext context;
+            ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ExcludeTrainingPlanFromUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+            var plans = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint athleteId = 1;
+            uint planId = 1;        // This plan is owned by this user only
+
+            ExcludeTrainingPlanFromUserLibraryCommand command = new ExcludeTrainingPlanFromUserLibraryCommand(planId, athleteId);
+            ExcludeTrainingPlanFromUserLibraryCommandHandler handler = new ExcludeTrainingPlanFromUserLibraryCommandHandler(athletes, plans, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(athleteId);
+            Assert.DoesNotContain(planId, modified.TrainingPlans.Select(x => x.TrainingPlanId));
+            Assert.DoesNotContain(planId, context.TrainingPlans.Select(x => x.Id));
+        }
+
+
+        [Fact]
+        public async Task ExcludeTrainingPlanFromUserLibraryCommand_PlanNotInUserLibrary()
+        {
+            GymContext context;
+            ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ExcludeTrainingPlanFromUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+            var plans = new SQLTrainingPlanRepository(context);
+
+            // Test
+            uint athleteId = 1;
+            uint planId = 6;        // This plan is not owned by this user
+
+            ExcludeTrainingPlanFromUserLibraryCommand command = new ExcludeTrainingPlanFromUserLibraryCommand(planId, athleteId);
+            ExcludeTrainingPlanFromUserLibraryCommandHandler handler = new ExcludeTrainingPlanFromUserLibraryCommandHandler(athletes, plans, logger);
+
+            Assert.False(await handler.Handle(command, default));
+        }
+
+
+        [Fact]
+        public async Task IncludeTrainingPlanInUserLibraryCommandHandler_Success()
+        {
+            GymContext context;
+            ILogger<IncludeTrainingPlanInUserLibraryCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<IncludeTrainingPlanInUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint planId = 6;
+            uint userId = 1;
+
+            IncludeTrainingPlanInUserLibraryCommand command = new IncludeTrainingPlanInUserLibraryCommand(planId, userId);
+            IncludeTrainingPlanInUserLibraryCommandHandler handler = new IncludeTrainingPlanInUserLibraryCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(userId);
+            Assert.Contains(planId, modified.TrainingPlans.Select(x => x.Id));
+        }
+
+
+        [Fact]
+        public async Task IncludeTrainingPlanInUserLibraryCommandHandler_PlanAlreadyIncUserLibrary()
+        {
+            GymContext context;
+            ILogger<IncludeTrainingPlanInUserLibraryCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<IncludeTrainingPlanInUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint planId = 1;
+            uint userId = 1;
+            var athleteBefore = athletes.Find(userId);
+
+            IncludeTrainingPlanInUserLibraryCommand command = new IncludeTrainingPlanInUserLibraryCommand(planId, userId);
+            IncludeTrainingPlanInUserLibraryCommandHandler handler = new IncludeTrainingPlanInUserLibraryCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check nothing happened
+            var modified = athletes.Find(userId);
+            Assert.True(athleteBefore.TrainingPlans.SequenceEqual(modified.TrainingPlans));
+        }
+
+
+        [Fact]
+        public async Task MakeTrainingPlanNotVariantOfAnyCommand_Success()
+        {
+            GymContext context;
+            ILogger<MakeTrainingPlanNotVariantOfAnyCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<MakeTrainingPlanNotVariantOfAnyCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint planId = 2;
+            uint userId = 1;
+            var planBefore = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
+
+            MakeTrainingPlanNotVariantOfAnyCommand command = new MakeTrainingPlanNotVariantOfAnyCommand(planId, userId);
+            MakeTrainingPlanNotVariantOfAnyCommandHandler handler = new MakeTrainingPlanNotVariantOfAnyCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(userId);
+            Assert.Null(modified.CloneTrainingPlanOrDefault(planId).ParentPlanId);
+        }
+
+
+        [Fact]
+        public async Task MakeTrainingPlanVariantOfCommand_Success()
+        {
+            GymContext context;
+            ILogger<MakeTrainingPlanVariantOfCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<MakeTrainingPlanVariantOfCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint planId = 2;
+            uint userId = 1;
+            uint parentId = 3;
+            var planBefore = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
+
+            MakeTrainingPlanVariantOfCommand command = new MakeTrainingPlanVariantOfCommand(planId, userId, parentId);
+            MakeTrainingPlanVariantOfCommandHandler handler = new MakeTrainingPlanVariantOfCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            var modified = athletes.Find(userId);
+            Assert.Equal(parentId, modified.CloneTrainingPlanOrDefault(planId).ParentPlanId);
+            Assert.NotEqual(planBefore.ParentPlanId, modified.CloneTrainingPlanOrDefault(planId).ParentPlanId);
+        }
+
+
+        [Fact]
+        public async Task PlanTrainingPhaseCommand_NoEndDateSuccess()
+        {
+            GymContext context;
+            ILogger<PlanTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<PlanTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint userId = 1;
+            uint phaseId = 1;
+            uint entryStatusId = 1;
+            string note = "The note";
+            DateTime startDate = DateTime.UtcNow.AddDays(1);
+            DateTime? endDate = null;
+
+            PlanTrainingPhaseCommand command = new PlanTrainingPhaseCommand(userId, phaseId, entryStatusId, note, startDate, endDate);
+            PlanTrainingPhaseCommandHandler handler = new PlanTrainingPhaseCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check phase started
+            var modified = athletes.Find(userId);
+            Assert.Equal(phaseId, modified.TrainingPhases.Last().PhaseId);
+            Assert.Equal(startDate, modified.TrainingPhases.Last().StartDate, new TimeSpan(0, 0, 1));
+            Assert.Null(modified.TrainingPhases.Last().EndDate);
+            Assert.Equal(DateTime.UtcNow.AddDays(-1), modified.TrainingPhases.First().EndDate.Value, new TimeSpan(0, 0, 1));
+            Assert.Equal(note, modified.TrainingPhases.Last().OwnerNote.Body);
+        }
+
+        [Fact]
+        public async Task PlanTrainingPhaseCommand_EndDateSuccess()
+        {
+            GymContext context;
+            ILogger<PlanTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<PlanTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint userId = 1;
+            uint phaseId = 1;
+            uint entryStatusId = 1;
+            string note = null;
+            DateTime startDate = DateTime.UtcNow.AddDays(1);
+            DateTime? endDate = startDate.AddDays(100);
+
+            PlanTrainingPhaseCommand command = new PlanTrainingPhaseCommand(userId, phaseId, entryStatusId, note, startDate, endDate);
+            PlanTrainingPhaseCommandHandler handler = new PlanTrainingPhaseCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check phase started
+            var modified = athletes.Find(userId);
+            Assert.Equal(phaseId, modified.TrainingPhases.Last().PhaseId);
+            Assert.Equal(startDate, modified.TrainingPhases.Last().StartDate, new TimeSpan(0, 0, 1));
+            Assert.Equal(endDate.Value, modified.TrainingPhases.Last().EndDate.Value, new TimeSpan(0, 0, 1));
+            Assert.Equal(DateTime.UtcNow.AddDays(-1), modified.TrainingPhases.First().EndDate.Value, new TimeSpan(0, 0, 1));
+            Assert.Null(modified.TrainingPhases.Last().OwnerNote);
+        }
+
+
+        [Fact]
+        public async Task RenameTrainingPlanCommand_Success()
+        {
+            GymContext context;
+            ILogger<RenameTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<RenameTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint userId = 1;
+            uint planId = 1;
+            string name = "my plan";
+
+            RenameTrainingPlanCommand command = new RenameTrainingPlanCommand(userId, planId, name);
+            RenameTrainingPlanCommandHandler handler = new RenameTrainingPlanCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check note added
+            Assert.Equal(name, athletes.Find(userId).CloneTrainingPlanOrDefault(planId).Name);
+        }
+
+        [Fact]
+        public async Task RenameTrainingPlanCommand_PlanNotFound_Fail()
+        {
+            GymContext context;
+            ILogger<RenameTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<RenameTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint userId = 1;
+            uint planId = 6;
+            string name = "my plan";
+
+            RenameTrainingPlanCommand command = new RenameTrainingPlanCommand(userId, planId, name);
+            RenameTrainingPlanCommandHandler handler = new RenameTrainingPlanCommandHandler(athletes, logger);
+
+            Assert.False(await handler.Handle(command, default));
+        }
+
+
+        [Fact]
+        public async Task ScheduleTrainingPlanCommand_StartDateOnly_Success()
+        {
+            throw new NotImplementedException("Need to implement the commmand handler");
+            //GymContext context;
+            //ILogger<ScheduleTrainingPlanCommandHandler> logger;
+
+            //(context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ScheduleTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            //var athletes = new SQLAthleteRepository(context);
+            //var schedules = new SQLTrainingScheduleRepository(context);
+            //var notesBefore = context.WorkUnitTemplateNotes.ToList();
+
+            //// Test
+            //uint planId = 1;
+            //uint userId = 1;
+            //DateTime start = new DateTime(2019, 1, 1);
+            //DateTime? end = null;
+
+            //ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(planId, userId, start, end);
+            //ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(athletes, schedules, logger);
+
+            //Assert.True(await handler.Handle(command, default));
+
+            //// Check note added
+            //var notesAfter = context.WorkUnitTemplateNotes.ToList();
+            //var added = notesAfter.Last();
+            //Assert.Equal(notesBefore.Count + 1, notesAfter.Count);
+            //Assert.Equal(note, added.Body.Body);
+
+            //// Check note attached to plan
+            //var workUnitAfter = athletes.Find(planId).CloneWorkUnit(userId);
+            //Assert.Equal(added.Id, workUnitAfter.WorkUnitNoteId);
+        }
+
+
+        [Fact]
+        public async Task StartTrainingPhaseCommand_Success()
+        {
+            GymContext context;
+            ILogger<StartTrainingPhaseCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<StartTrainingPhaseCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var athletes = new SQLAthleteRepository(context);
+
+            // Test
+            uint userId = 1;
+            uint phaseId = 1;
+            uint entryStatusId = 1;
+            string note = "The note";
+
+            StartTrainingPhaseCommand command = new StartTrainingPhaseCommand(userId, phaseId, entryStatusId, note);
+            StartTrainingPhaseCommandHandler handler = new StartTrainingPhaseCommandHandler(athletes, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check phase started
+            var modified = athletes.Find(userId);
+            Assert.Equal(phaseId, modified.TrainingPhases.Last().PhaseId);
+            Assert.Equal(DateTime.UtcNow, modified.TrainingPhases.Last().StartDate, new TimeSpan(0, 0, 1));
+            Assert.Null(modified.TrainingPhases.Last().EndDate);
+            Assert.Equal(DateTime.UtcNow.AddDays(-1), modified.TrainingPhases.First().EndDate.Value, new TimeSpan(0, 0, 1));
+            Assert.Equal(note, modified.TrainingPhases.Last().OwnerNote.Body);
+        }
+
+
     }
 }

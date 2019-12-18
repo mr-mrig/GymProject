@@ -13,7 +13,9 @@ namespace GymProject.Application.Validator.TrainingDomain
         public WriteTrainingPlanNoteCommandValidator(ILogger<WriteTrainingPlanNoteCommandValidator> logger)
         {
             RuleFor(x => x.TrainingPlanId).NotEmpty();
-            RuleFor(x => x.NoteBody).MaximumLength(PersonalNoteValue.DefaultMaximumLength);
+            RuleFor(x => x.NoteBody)
+                .MaximumLength(PersonalNoteValue.DefaultMaximumLength)
+                .WithMessage(x => $"Too long Feedback comment: {x.NoteBody.Length} - It must be shorter than {PersonalNoteValue.DefaultMaximumLength}"); ;
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

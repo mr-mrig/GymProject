@@ -9,7 +9,7 @@ namespace GymProject.Application.Validator.TrainingDomain
     public class PlanTrainingPhaseCommandValidator : AbstractValidator<PlanTrainingPhaseCommand>
     {
 
-        public PlanTrainingPhaseCommandValidator(ILogger<PlanTrainingPhaseCommand> logger)
+        public PlanTrainingPhaseCommandValidator(ILogger<PlanTrainingPhaseCommandValidator> logger)
         {
             RuleFor(x => x.StartDate)
                 .LessThan(x => x.EndDate)

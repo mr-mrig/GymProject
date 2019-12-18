@@ -14,7 +14,9 @@ namespace GymProject.Application.Validator.TrainingDomain
         {
             RuleFor(x => x.WorkoutTemplateId).NotEmpty();
             RuleFor(x => x.WorkUnitProgressiveNumber).NotEmpty();
-            RuleFor(x => x.NoteBody).MaximumLength(PersonalNoteValue.DefaultMaximumLength);
+            RuleFor(x => x.NoteBody)
+                .MaximumLength(PersonalNoteValue.DefaultMaximumLength)
+                .WithMessage(x => $"Too long Feedback comment: {x.NoteBody.Length} - It must be shorter than {PersonalNoteValue.DefaultMaximumLength}"); ;
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

@@ -9,7 +9,7 @@ namespace GymProject.Application.Validator.TrainingDomain
     public class RenameTrainingPlanCommandValidator : AbstractValidator<RenameTrainingPlanCommand>
     {
 
-        public RenameTrainingPlanCommandValidator(ILogger<RenameTrainingPlanCommand> logger)
+        public RenameTrainingPlanCommandValidator(ILogger<RenameTrainingPlanCommandValidator> logger)
         {
 
             //RuleFor(x => x.TrainingPlanName)

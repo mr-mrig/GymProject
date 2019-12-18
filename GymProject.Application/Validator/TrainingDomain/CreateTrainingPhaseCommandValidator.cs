@@ -12,7 +12,7 @@ namespace GymProject.Application.Validator.TrainingDomain
     public class CreateTrainingPhaseCommandValidator : AbstractValidator<CreateTrainingPhaseCommand>
     {
 
-        public CreateTrainingPhaseCommandValidator(ILogger<CreateTrainingPhaseCommand> logger)
+        public CreateTrainingPhaseCommandValidator(ILogger<CreateTrainingPhaseCommandValidator> logger)
         {
 
             RuleFor(x => x.EntryStatusId)

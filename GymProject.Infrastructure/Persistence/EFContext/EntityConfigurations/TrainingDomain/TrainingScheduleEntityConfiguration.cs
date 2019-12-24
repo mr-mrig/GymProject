@@ -1,6 +1,9 @@
-﻿using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
+﻿using GymProject.Domain.TrainingDomain.AthleteAggregate;
+using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
+using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.TrainingDomain
 {
@@ -17,34 +20,38 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.Property(s => s.Id)
                 .ValueGeneratedOnAdd();
 
-
             builder.Ignore(s => s.DomainEvents);
 
+            //builder.OwnsOne(s => s.ScheduledPeriod, sp =>
+            //{
+            //    //// Shadow property - Workoround to build Indexes with values from Owned Entities, See the fllowing HasIndex
+            //    //sp.Property<uint>("TrainingPlanId")
+            //    //    .HasColumnName("TrainingPlanId")
+            //    //    .IsRequired()
+            //    //    .HasColumnType("INTEGER");
 
-            builder.OwnsOne(s => s.ScheduledPeriod, sp =>
-            {
-                //// Shadow property - Workoround to build Indexes with values from Owned Entities, See the fllowing HasIndex
-                //sp.Property<uint>("TrainingPlanId")
-                //    .HasColumnName("TrainingPlanId")
-                //    .IsRequired()
-                //    .HasColumnType("INTEGER");
+            //    sp.Property(p => p.Start)
+            //        .HasColumnName("StartDate")
+            //        .HasColumnType("INTEGER")
+            //        .IsRequired(true);
 
-                sp.Property(p => p.Start)
-                    .HasColumnName("StartDate")
+            //    sp.Property(p => p.End)
+            //        .HasColumnName("EndDate")
+            //        .HasColumnType("INTEGER")
+            //        .IsRequired(false);
+
+            //    // DOES NOT WORK
+            //    //sp.HasIndex(
+            //    //    "Start",
+            //    //    "TrainingPlanId"
+            //    //);
+            //});
+            builder.Property(s => s.StartDate)
                     .HasColumnType("INTEGER")
                     .IsRequired(true);
-
-                sp.Property(p => p.End)
-                    .HasColumnName("EndDate")
+            builder.Property(s => s.EndDate)
                     .HasColumnType("INTEGER")
                     .IsRequired(false);
-
-                // DOES NOT WORK
-                //sp.HasIndex(
-                //    "Start",
-                //    "TrainingPlanId"
-                //);
-            });
 
             builder.HasMany(s => s.Feedbacks)
                 .WithOne()
@@ -55,10 +62,26 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             var navigation = builder.Metadata.FindNavigation(nameof(TrainingScheduleRoot.Feedbacks));
             navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
 
+            builder.HasOne<TrainingPlanRoot>()
+                .WithMany()
+                .HasForeignKey(x => x.TrainingPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<AthleteRoot>()
+                .WithMany()
+                .HasForeignKey(x => x.AthleteId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasAlternateKey(x => new
+            {
+                x.TrainingPlanId,
+                x.AthleteId,
+                x.StartDate
+            });
 
 
-            builder.HasIndex(s => s.UserTrainingPlanId)
-                .HasName("IX_TrainingSchedule_TrainingPlanId");
+            //builder.HasIndex(s => s.TrainingPlanId)
+            //    .HasName("IX_TrainingSchedule_TrainingPlanId");
 
 
             //builder.HasIndex(s => new

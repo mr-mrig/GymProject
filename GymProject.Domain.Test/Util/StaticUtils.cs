@@ -327,59 +327,60 @@ namespace GymProject.Domain.Test.Util
         }
 
 
-        internal static TrainingScheduleRoot BuildRandomSchedule(uint id, bool isTransient, bool checkAsserts = true)
-        {
-            TrainingScheduleRoot result;
-            int feedbacksMin = 0, feedbacksMax = 5;
+        //internal static TrainingScheduleRoot BuildRandomSchedule(uint id, bool isTransient, bool checkAsserts = true)
+        //{
+        //    TrainingScheduleRoot result;
+        //    int feedbacksMin = 0, feedbacksMax = 5;
 
-            float rightUnboundedScheduleProbability = 0.5f;
+        //    float rightUnboundedScheduleProbability = 0.5f;
 
-            int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
+        //    int feedbacksNumber = RandomFieldGenerator.RandomInt(feedbacksMin, feedbacksMax);
 
-            List<TrainingScheduleFeedbackEntity> initialFeedbacks = new List<TrainingScheduleFeedbackEntity>();
+        //    List<TrainingScheduleFeedbackEntity> initialFeedbacks = new List<TrainingScheduleFeedbackEntity>();
 
-            // Init Feedbacks
-            if (RandomFieldGenerator.RollEventWithProbability(0.1f))
-                initialFeedbacks = null;
-            else
-            {
-                for (uint ifeed = 0; ifeed < feedbacksNumber; ifeed++)
-                    initialFeedbacks.Add(BuildRandomFeedback(ifeed + 1, isTransient));
-            }
+        //    // Init Feedbacks
+        //    if (RandomFieldGenerator.RollEventWithProbability(0.1f))
+        //        initialFeedbacks = null;
+        //    else
+        //    {
+        //        for (uint ifeed = 0; ifeed < feedbacksNumber; ifeed++)
+        //            initialFeedbacks.Add(BuildRandomFeedback(ifeed + 1, isTransient));
+        //    }
 
-            // Create the Schedule
-            uint planId = (uint)(RandomFieldGenerator.RandomInt(1, 1000000));
+        //    // Create the Schedule
+        //    uint planId = (uint)(RandomFieldGenerator.RandomInt(1, 1000000));
+        //    uint athleteId = (uint)(RandomFieldGenerator.RandomInt(1, 1000000));
 
-            DateTime startDate = RandomFieldGenerator.RandomDate(1000);
+        //    DateTime startDate = RandomFieldGenerator.RandomDate(1000);
 
-            DateRangeValue period = RandomFieldGenerator.RollEventWithProbability(rightUnboundedScheduleProbability)
-                ? DateRangeValue.RangeStartingFrom(startDate)
-                : DateRangeValue.RangeBetween(startDate, startDate.AddDays(RandomFieldGenerator.RandomInt(14, 100)));
+        //    DateRangeValue period = RandomFieldGenerator.RollEventWithProbability(rightUnboundedScheduleProbability)
+        //        ? DateRangeValue.RangeStartingFrom(startDate)
+        //        : DateRangeValue.RangeBetween(startDate, startDate.AddDays(RandomFieldGenerator.RandomInt(14, 100)));
                        
-            if (isTransient)
-                result = TrainingScheduleRoot.ScheduleTrainingPlanTransient(planId, period, initialFeedbacks);
-            else
-                result = TrainingScheduleRoot.ScheduleTrainingPlan(id, planId, period, initialFeedbacks);
+        //    if (isTransient)
+        //        result = TrainingScheduleRoot.ScheduleTrainingPlan(athleteId, planId, period, initialFeedbacks);
+        //    else
+        //        result = TrainingScheduleRoot.ScheduleTrainingPlan(id, planId, period, initialFeedbacks);
 
-            initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedbackEntity>();
+        //    initialFeedbacks = initialFeedbacks ?? new List<TrainingScheduleFeedbackEntity>();
 
-            if (checkAsserts)
-            {
-                Assert.Equal(period, result.ScheduledPeriod);
-                Assert.Equal(planId, result.UserTrainingPlanId);
+        //    if (checkAsserts)
+        //    {
+        //        Assert.Equal(period, result.ScheduledPeriod);
+        //        Assert.Equal(planId, result.TrainingPlanId);
 
-                if(!isTransient)
-                    Assert.Equal(id, result.Id);
+        //        if(!isTransient)
+        //            Assert.Equal(id, result.Id);
 
-                TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, result.Feedbacks);
+        //        TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, result.Feedbacks);
 
-                TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, 
-                    result.Feedbacks.Select(x => result.CloneFeedback(x.UserId)));
-            }
+        //        TrainingScheduleAggregateTest.CheckFeedbacks(initialFeedbacks, 
+        //            result.Feedbacks.Select(x => result.CloneFeedback(x.UserId)));
+        //    }
 
 
-            return result;
-        }
+        //    return result;
+        //}
 
     }
 }

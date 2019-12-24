@@ -31,11 +31,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasColumnType("TEXT")
                 .IsRequired(false);
 
-            builder.HasMany<TrainingScheduleRoot>()
-                .WithOne()
-                .HasForeignKey(x => x.UserTrainingPlanId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.NoAction);
+            //builder.HasMany<TrainingScheduleRoot>()
+            //    .WithOne()
+            //    .HasForeignKey(x => x.TrainingPlanId)
+            //    .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne<TrainingPlanNoteRoot>()
                 .WithMany()

@@ -26,7 +26,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.HasMany<TrainingScheduleRoot>()
                 .WithOne()
-                .HasForeignKey(x => x.UserTrainingPlanId)
+                .HasForeignKey(x => x.TrainingPlanId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 

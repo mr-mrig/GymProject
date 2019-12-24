@@ -65,7 +65,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
 
-
         #region Ctors
 
         private AthleteRoot() : base(null)
@@ -77,11 +76,12 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
         private AthleteRoot(uint? id, IEnumerable<UserTrainingPhaseRelation> trainingPhasesHistory = null, IEnumerable<UserTrainingProficiencyRelation>proficienciesHistory = null,
-            IEnumerable<UserTrainingPlanEntity> trainingPlans = null) : base(id)
+            IEnumerable<UserTrainingPlanEntity> trainingPlans = null, uint? currentPlanId = null) : base(id)
         {
             _trainingPhases = trainingPhasesHistory?.Clone().ToList() ?? new List<UserTrainingPhaseRelation>();
             _trainingProficiencies = proficienciesHistory?.Clone().ToList() ?? new List<UserTrainingProficiencyRelation>();
             _trainingPlans = trainingPlans?.ToList() ?? new List<UserTrainingPlanEntity>();
+            CurrentTrainingPlanId = currentPlanId;
 
             TestBusinessRules();
         }
@@ -112,17 +112,19 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
         /// <summary>
-        /// Factory Method
+        /// Factory Method, should be used for testing purposes only.
+        /// Deprecated: the entity should be either loaded from the DB or the parameterless ctor should be used
         /// </summary>
         /// <param name="userId">The ID of the Athlete</param>
         /// <param name="trainingPhasesHistory">The history of the Training Phases the athlete has performed</param>
         /// <param name="proficienciesHistory">The history of the Proficiencies the athlete has achieved</param>
-        /// <param name="trainingPlansRelations">The training plans in the user library</param>
+        /// <param name="trainingPlansRelations">The training plans in the user library - remember to set the Current Plan Id as weell to enssure consistency</param>
+        /// <param name="currentPlanId">The ID of the training plan which is currently on schedule</param>
         /// <returns>The new instance</returns>
         public static AthleteRoot RegisterAthlete(uint? userId, IEnumerable<UserTrainingPhaseRelation> trainingPhasesHistory = null, IEnumerable<UserTrainingProficiencyRelation> proficienciesHistory = null,
-            IEnumerable<UserTrainingPlanEntity> trainingPlansRelations = null)
+            IEnumerable<UserTrainingPlanEntity> trainingPlansRelations = null, uint? currentPlanId = null)
 
-            => new AthleteRoot(userId, trainingPhasesHistory, proficienciesHistory, trainingPlansRelations);
+            => new AthleteRoot(userId, trainingPhasesHistory, proficienciesHistory, trainingPlansRelations, currentPlanId);
 
         #endregion
 
@@ -189,6 +191,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         public UserTrainingPlanEntity CloneTrainingPlanOrDefault(uint trainingPlanId)
 
             => _trainingPlans.SingleOrDefault(x => x.TrainingPlanId == trainingPlanId)?.Clone() as UserTrainingPlanEntity;
+
 
         #endregion
 
@@ -324,27 +327,27 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         #region Training Plans Methods
 
-        /// <summary>
-        /// Pin the Training Plan as the one the user is currently performing
-        /// </summary>
-        /// <param name="trainingPlanId">The ID of the UserTrainingPlan entity, which must be in the User Training Plans library</param>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
-        public void StartTrainingPlan(uint trainingPlanId)
-        {
-            CurrentTrainingPlanId = trainingPlanId;
-            TestBusinessRules();
-        }
+        ///// <summary>
+        ///// Pin the Training Plan as the one the user is currently performing
+        ///// </summary>
+        ///// <param name="trainingPlanId">The ID of the UserTrainingPlan entity, which must be in the User Training Plans library</param>
+        ///// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        //public void StartTrainingPlan(uint trainingPlanId)
+        //{
+        //    CurrentTrainingPlanId = trainingPlanId;
+        //    TestBusinessRules();
+        //}
 
         
-        /// <summary>
-        /// Unpin the current Training Plan
-        /// </summary>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
-        public void AbortTrainingPlan()
-        {
-            CurrentTrainingPlanId = null;
-            TestBusinessRules();
-        }
+        ///// <summary>
+        ///// Unpin the current Training Plan
+        ///// </summary>
+        ///// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        //public void AbortTrainingPlan()
+        //{
+        //    CurrentTrainingPlanId = null;
+        //    TestBusinessRules();
+        //}
 
 
         /// <summary>
@@ -379,6 +382,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         /// <summary>
         /// Remove the training plan with the specified ID from the User library - if any.
+        /// If the plan was the current one also, then reset it
         /// </summary>
         /// <param name="trainingPlanId">The ID of the TrainingPlanRoot entity</param>
         /// <exception cref="InvalidOperationException">If no, or more than one, UserPlan with the specified TrainingPlan ID</exception>
@@ -387,6 +391,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         {
             if (_trainingPlans.Remove(FindTrainingPlan(trainingPlanId)))
             {
+                if (trainingPlanId == CurrentTrainingPlanId)
+                    CurrentTrainingPlanId = null;
+
                 TestBusinessRules();
                 AddDomainEvent(new TrainingPlanRemovedFromLibraryDomainEvent(trainingPlanId));
             }
@@ -440,23 +447,35 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
         /// <summary>
-        /// Schedule the Training Plan by assigning a Schedule ID
+        /// Schedule the Training Plan by assigning a Schedule ID.
+        /// The training plan is then marked as the current one.
         /// </summary>
         /// <param name="scheduleId">The Schedule ID to be added</param>
         /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ScheduleTraining(uint trainingPlanId, uint scheduleId) => FindTrainingPlan(trainingPlanId).ScheduleTraining(scheduleId);
+        public void ScheduleTraining(uint trainingPlanId, uint scheduleId)
+        {
+            FindTrainingPlan(trainingPlanId).ScheduleTraining(scheduleId);
+            CurrentTrainingPlanId = trainingPlanId;
+            TestBusinessRules();
+        }
 
 
         /// <summary>
-        /// Schedule the Training Plan by assigning a Schedule ID
+        /// Schedule the Training Plan by assigning a Schedule ID.
+        /// The current training plan is reset as well.
         /// </summary>
         /// <param name="scheduleId">The Schedule ID to be added</param>
         /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnscheduleTraining(uint trainingPlanId, uint scheduleId) => FindTrainingPlan(trainingPlanId).UnscheduleTraining(scheduleId);
+        public void UnscheduleTraining(uint trainingPlanId, uint scheduleId)
+        {
+            FindTrainingPlan(trainingPlanId).UnscheduleTraining(scheduleId);
+            CurrentTrainingPlanId = null;
+            TestBusinessRules();
+        }
 
 
         /// <summary>

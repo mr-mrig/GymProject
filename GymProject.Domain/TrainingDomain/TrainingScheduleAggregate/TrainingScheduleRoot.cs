@@ -15,16 +15,34 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
 
 
-        /// <summary>
-        /// The period which the Training Plan has been scheduled to 
-        /// </summary>
-        public DateRangeValue ScheduledPeriod { get; private set; } = null;
+        ///// <summary>
+        ///// The period which the Training Plan has been scheduled to 
+        ///// </summary>
+        //public DateRangeValue ScheduledPeriod { get; private set; } = null;
 
 
         /// <summary>
-        /// FK to the User Training Plan relation ID
+        /// The schedule start date
         /// </summary>
-        public uint? UserTrainingPlanId { get; private set; } = null;
+        public DateTime StartDate { get; private set; }
+
+
+        /// <summary>
+        /// The schedule end date, might be unbounded
+        /// </summary>
+        public DateTime? EndDate { get; private set; }
+
+
+        /// <summary>
+        /// FK to the Training Plan which this schedule refers to
+        /// </summary>
+        public uint? TrainingPlanId { get; private set; } = null;
+
+
+        /// <summary>
+        /// FK to the Athlete which follows this schedule
+        /// </summary>
+        public uint? AthleteId { get; private set; } = null;
 
 
 
@@ -49,10 +67,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         }
 
 
-        private TrainingScheduleRoot(uint? id, uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks) : base(id)
+        private TrainingScheduleRoot(uint? id, uint? athleteId, uint? trainingPlanId, DateTime startDate, DateTime? endDate, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks) : base(id)
         {
-            ScheduledPeriod = scheduledPeriod;
-            UserTrainingPlanId = trainingPlanId;
+            StartDate = startDate;
+            EndDate = endDate;
+            AthleteId = athleteId;
+            TrainingPlanId = trainingPlanId;
 
             _feedbacks = feedbacks?.Clone().ToList() ?? new List<TrainingScheduleFeedbackEntity>();
 
@@ -69,24 +89,28 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// </summary>
         /// <param name="id">The object ID</param>
         /// <param name="trainingPlanId">The ID of the Training Plan which the schedule refers to</param>
-        /// <param name="scheduledPeriod">The training plan scheduled duration</param>
+        /// <param name="startDate">The schedule start date</param>
+        /// <param name="endDate">The schedule end date, might be null in case of plans with no fixed number of weeks</param>
         /// <param name="feedbacks">The Feedbacks list</param>
+        /// <param name="athleteId">The ID of the athlete which is following this schedule</param>
         /// <returns>The TrainingSchedule instance</returns>
-        public static TrainingScheduleRoot ScheduleTrainingPlan(uint? id, uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
+        public static TrainingScheduleRoot ScheduleTrainingPlan(uint? id, uint? athleteId, uint? trainingPlanId, DateTime startDate, DateTime? endDate, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
 
-            => new TrainingScheduleRoot(id, trainingPlanId, scheduledPeriod, feedbacks);
+            => new TrainingScheduleRoot(id, athleteId, trainingPlanId, startDate, endDate, feedbacks);
 
 
         /// <summary>
         /// Factory method - Transient object
         /// </summary>
         /// <param name="trainingPlanId">The ID of the Training Plan which the schedule refers to</param>
-        /// <param name="scheduledPeriod">The training plan scheduled duration</param>
+        /// <param name="startDate">The schedule start date</param>
+        /// <param name="endDate">The schedule end date, might be null in case of plans with no fixed number of weeks</param>
         /// <param name="feedbacks">The Feedbacks list</param>
+        /// <param name="athleteId">The ID of the athlete which is following this schedule</param>
         /// <returns>The TrainingSchedule instance</returns>
-        public static TrainingScheduleRoot ScheduleTrainingPlanTransient(uint? trainingPlanId, DateRangeValue scheduledPeriod, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
+        public static TrainingScheduleRoot ScheduleTrainingPlan(uint? athleteId,uint? trainingPlanId, DateTime startDate, DateTime? endDate, IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
 
-            => ScheduleTrainingPlan(default, trainingPlanId, scheduledPeriod, feedbacks);
+            => ScheduleTrainingPlan(null, athleteId, trainingPlanId, startDate, endDate, feedbacks);
 
         #endregion
 
@@ -100,16 +124,22 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <returns>True if the training plan has been completed</returns>
         public bool IsCompleted()
 
-            => ScheduledPeriod.IsRightBounded() && ScheduledPeriod.End <= DateTime.Now;
+            => EndDate != null && EndDate <= DateTime.Now;
 
 
         /// <summary>
-        /// Reschedule the Training Plan to the day specified
+        /// Reschedule the Training Plan to the day specified.
+        /// This action cannot been performed on a completed schedule: cannot rewrite history.
         /// </summary>
         /// <param name="firstDate">The day the Training Schedule starts</param>
+        /// <exception cref="InvalidOperationException">If rescheduling a schedule whch has already been completed</exception>
+        /// <exception cref="TrainingDomainInvariantViolationException">If edge dates are cronologically invalid</exception>
         public void Reschedule(DateTime firstDate)
         {
-            ScheduledPeriod = ScheduledPeriod.RescheduleStart(firstDate);
+            if (IsCompleted())
+                throw new InvalidOperationException("Cannot reschedule what has already been completed");
+
+            StartDate = firstDate;
             TestBusinessRules();
         }
 
@@ -120,7 +150,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <param name="lastDay">The the day the Training Schedule ends</param>
         public void Complete(DateTime lastDay)
         {
-            ScheduledPeriod = ScheduledPeriod.RescheduleEnd(lastDay);
+            EndDate = lastDay;
             TestBusinessRules();
         }
 
@@ -130,7 +160,9 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         #region Feebacks Methods
 
         /// <summary>
-        /// Chnages a Feedback which has already been provided.
+        /// Changes a Feedback which has already been provided.
+        /// The feedback to be replaced is fetched by the user ID - which must be unique for each Schedule
+        /// NOTE: there is no way to change the owner of a feeedbak, hence that field is used only to find the feedback to be replaced.
         /// </summary>
         /// <param name="userId">The ID of the author of the Feedback</param>
         /// <param name="newRating">The Feedback rating</param>
@@ -153,11 +185,11 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
 
         /// <summary>
-        /// Chnages a Feedback which has already been provided.
+        /// Changes a Feedback which has already been provided.
+        /// The input feedback replaces the one in the feedback list with the same ID - which must be present in the list.
+        /// NOTE: there is no way to change the owner of a feeedbak, hence that field will be ignored.
         /// </summary>
-        /// <param name="feedbackId">The ID of the Feedback to be changed</param>
-        /// <param name="newRating">The Feedback rating</param>
-        /// <param name="newComment">The Feedback comment body</param>
+        /// <param name="updatedFeedback">The new feedback</param>
         /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
         /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
@@ -196,23 +228,20 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         }
 
 
-        /// <summary>
-        /// Remove the Feedback from the Training Schedule ones
-        /// </summary>
-        /// <param name="feedback">The Feedback to be added</param>
-        /// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
-        /// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void RemoveFeedback(TrainingScheduleFeedbackEntity feedback)
-        {
-            if(feedback == null)
-                throw new ArgumentNullException(nameof(feedback), $"Trying to remove a NULL Feedback.");
+        ///// <summary>
+        ///// Remove the Feedback from the Training Schedule ones
+        ///// </summary>
+        ///// <param name="feedbackId">The ID of the feedback to be removed</param>
+        ///// <exception cref="ArgumentNullException">If trying to remove a NULL Feedback</exception>
+        ///// <exception cref="InvalidOperationException">If zero or more than one Feedback from the same user</exception>
+        ///// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
+        //public void RemoveFeedback(uint feedbackId)
+        //{
+        //    TrainingScheduleFeedbackEntity toRemove = Feedbacks.SingleOrDefault(x => x.Id == feedbackId);
 
-            TrainingScheduleFeedbackEntity toRemove = FindFeedback(feedback);
-
-            if (_feedbacks.Remove(toRemove))
-                TestBusinessRules();
-        }
+        //    if (toRemove != null && _feedbacks.Remove(toRemove))
+        //        TestBusinessRules();
+        //}
 
 
         /// <summary>
@@ -301,7 +330,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// The Schedule must refer to a non-NULL Training Plan.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool NonNullTrainingPlan() => UserTrainingPlanId != null;
+        private bool NonNullTrainingPlan() => TrainingPlanId != null;
 
 
         /// <summary>
@@ -319,10 +348,17 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
 
         /// <summary>
-        /// The Schedule must refer to a non-NULL Training Plan.
+        /// The Training Plan must have a valid start date.
         /// </summary>
         /// <returns>True if business rule is met</returns>
-        private bool SchedulingStartDateIsValid() => ScheduledPeriod.IsLeftBounded();
+        private bool SchedulingStartDateIsValid() => StartDate != null;
+
+
+        /// <summary>
+        /// Start Date must prcede End Date
+        /// </summary>
+        /// <returns>True if business rule is met</returns>
+        private bool StartDateMustPrecedeEndDate() => EndDate == null || StartDate <= EndDate;
 
 
         /// <summary>
@@ -340,17 +376,20 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NonNullTrainingPlan())
-                throw new TrainingDomainInvariantViolationException($"The Schedule must refer to a non-NULL Training Plan.");
+            //if (!NonNullTrainingPlan())
+            //    throw new TrainingDomainInvariantViolationException($"The Schedule must refer to a non-NULL Training Plan.");
 
-            if (!NonNullFeedbacks())
-                throw new TrainingDomainInvariantViolationException($"The Training Schedule must have no NULL Feedbacks.");
+            //if (!NonNullFeedbacks())
+            //    throw new TrainingDomainInvariantViolationException($"The Training Schedule must have no NULL Feedbacks.");
 
             if (!NoDuplicateFeedbacks())
                 throw new TrainingDomainInvariantViolationException($"The Training Schedule cannot have Feebacks with duplicate IDs.");
 
             if (!SchedulingStartDateIsValid())
                 throw new TrainingDomainInvariantViolationException($"The Training Plan must have a valid start date.");
+            
+            if (!StartDateMustPrecedeEndDate())
+                throw new TrainingDomainInvariantViolationException($"Start Date must prcede End Date.");
 
             if (!OneUserProvidesOnlyOneFeedback())
                 throw new TrainingDomainInvariantViolationException($"A single User can provide one Training Scheule Feedback only.");
@@ -363,7 +402,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
 
         public object Clone()
 
-            => ScheduleTrainingPlan(Id, UserTrainingPlanId, ScheduledPeriod, _feedbacks);
+            => ScheduleTrainingPlan(Id, TrainingPlanId, StartDate, EndDate, _feedbacks);
 
         #endregion
     }

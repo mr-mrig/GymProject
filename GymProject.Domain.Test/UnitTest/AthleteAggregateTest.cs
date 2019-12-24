@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.SharedKernel;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.Test.Util;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.Exceptions;
@@ -565,67 +566,6 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         [Fact]
-        public void Athlete_StartTrainingPlan_Fail()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete.StartTrainingPlan(planId));
-        }
-
-
-        [Fact]
-        public void Athlete_StartTrainingPlan()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            athlete.StartTrainingPlan(planId);
-
-            Assert.Equal(athlete.CurrentTrainingPlanId, planId);
-        }
-
-
-
-        [Fact]
-        public void Athlete_AbortTrainingPlan()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            athlete.AbortTrainingPlan();
-
-            Assert.Null(athlete.CurrentTrainingPlanId);
-        }
-
-
-        [Fact]
         public void Athlete_RenameTrainingPlan()
         {
             uint userid = 1;
@@ -784,8 +724,31 @@ namespace GymProject.Domain.Test.UnitTest
             athlete.ScheduleTraining(planId, scheduleId);
 
             Assert.Equal(scheduleId, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Last());
+            Assert.Equal(planId, athlete.CurrentTrainingPlanId);
         }
 
+
+        [Fact]
+        public void Athlete_ScheduleTraining_Fail()
+        {
+            uint userid = 1;
+            uint planId = 1;
+            uint prevPlanId = 2;
+            uint scheduleId = 10;
+            AthleteRoot athlete;
+            List<UserTrainingProficiencyRelation> proficiencies = null;
+            List<UserTrainingPhaseRelation> phases = null;
+
+            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
+            {
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(prevPlanId),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 11,
+                    trainingScheduleIds: new List<uint?> { scheduleId, scheduleId + 12, scheduleId + 100 }),
+            };
+            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans, prevPlanId);
+            Assert.Throws<InvalidOperationException>(() => athlete.ScheduleTraining(planId, scheduleId));
+            Assert.Equal(prevPlanId, athlete.CurrentTrainingPlanId);
+        }
 
 
         [Fact]
@@ -811,12 +774,34 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Equal(prevschedules - 1, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Count);
             Assert.DoesNotContain(scheduleId, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds);
+            Assert.Null(athlete.CurrentTrainingPlanId);
+        }
 
-            // Schedule Not found -> do nothing
-            prevschedules = athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Count;
-            athlete.UnscheduleTraining(planId, scheduleId + 1000);
 
-            Assert.Equal(prevschedules, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Count);
+        [Fact]
+        public void Athlete_UnscheduleTraining_Fail()
+        {
+            uint userid = 1;
+            uint planId = 1;
+            uint scheduleId = 10;
+            uint prevScheduleId = 1;
+            uint prevPlanId = 2;
+            AthleteRoot athlete;
+            List<UserTrainingProficiencyRelation> proficiencies = null;
+            List<UserTrainingPhaseRelation> phases = null;
+
+            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
+            {
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(prevPlanId,
+                    trainingScheduleIds: new List<uint?> { prevScheduleId, scheduleId + 100 }),
+            };
+            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+
+            athlete.ScheduleTraining(prevPlanId, prevScheduleId);
+
+            Assert.Throws<InvalidOperationException>(() => athlete.UnscheduleTraining(planId, scheduleId));
+            Assert.Equal(prevPlanId, athlete.CurrentTrainingPlanId);
         }
 
 

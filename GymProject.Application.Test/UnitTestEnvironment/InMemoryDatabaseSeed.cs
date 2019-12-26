@@ -129,11 +129,11 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         {
             Excercises = new List<ExcerciseRoot>()
             {
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise1", null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise2", null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise3", null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise4", null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise5", null, EntryStatusTypeEnum.Banned),
+                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise1", null, 1, null, EntryStatusTypeEnum.Approved),
+                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise2", null, 1, null, EntryStatusTypeEnum.Approved),
+                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise3", null, 2, null, EntryStatusTypeEnum.Approved),
+                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise4", null, 3, null, EntryStatusTypeEnum.Approved),
+                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise5", null, 3, null, EntryStatusTypeEnum.Banned),
             };
 
             Context.Excercises.AddRange(Excercises);

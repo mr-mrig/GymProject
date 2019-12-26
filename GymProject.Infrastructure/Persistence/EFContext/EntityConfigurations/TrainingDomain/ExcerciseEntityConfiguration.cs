@@ -1,4 +1,5 @@
-﻿using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
+﻿using GymProject.Domain.BodyDomain.MuscleGroupAggregate;
+using GymProject.Domain.TrainingDomain.ExcerciseAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -37,6 +38,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .WithMany()
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne<MuscleGroupRoot>()
+                .WithMany()
+                .HasForeignKey(e => e.PrimaryMuscleId);
+
+            builder.Ignore(e => e.SecondaryMusclesIds);     // TODO
 
             builder.HasAlternateKey(e => e.Name);
 

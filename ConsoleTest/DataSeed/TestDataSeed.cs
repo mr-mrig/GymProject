@@ -123,7 +123,14 @@ namespace ConsoleTest.DataSeed
 
                 for (uint i = 0; i < 20; i++)
                 {
-                    entry = ExcerciseRoot.AddToExcerciseLibrary(i, $"Excercise {i.ToString()}", PersonalNoteValue.Write("Dummy"), native);
+                    uint muscleId = 3;
+
+                    if (i < 8)
+                        muscleId = 1;
+                    else if (i < 15)
+                        muscleId = 2;
+
+                    entry = ExcerciseRoot.AddToExcerciseLibrary(i, $"Excercise {i.ToString()}", PersonalNoteValue.Write("Dummy"), muscleId, null, native);
                     context.Add(entry);
                     context.SaveChanges();
                 }

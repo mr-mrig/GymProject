@@ -83,21 +83,21 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             => new List<ExcerciseRoot>()
             {
-                ExcerciseRoot.AddToExcerciseLibrary(1, "Bench Press", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(2, "Bench Press - Inclined", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(3, "Bench Press - Dumbell", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(4, "Cable Fyes", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(5, "Pec Dec", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(6, "Dips", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(7, "Squat", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(8, "Squat - Smith Machine", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(9, "Front Squat", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(10, "Overhead Squat", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(11, "Leg Extensions", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(12, "Sommersault Squat - Smith Machine", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(13, "Sissy Squat", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(14, "Military Press", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
-                ExcerciseRoot.AddToExcerciseLibrary(15, "Overhead Press - Dumbell", PersonalNoteValue.Write("Dummy"), EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(1, "Bench Press", PersonalNoteValue.Write("Dummy"), 1, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(2, "Bench Press - Inclined", PersonalNoteValue.Write("Dummy"), 1, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(3, "Bench Press - Dumbell", PersonalNoteValue.Write("Dummy"), 1, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(4, "Cable Fyes", PersonalNoteValue.Write("Dummy"), 1, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(5, "Pec Dec", PersonalNoteValue.Write("Dummy"), 1, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(6, "Dips", PersonalNoteValue.Write("Dummy"), 1, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(7, "Squat", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(8, "Squat - Smith Machine", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(9, "Front Squat", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(10, "Overhead Squat", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(11, "Leg Extensions", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(12, "Sommersault Squat - Smith Machine", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(13, "Sissy Squat", PersonalNoteValue.Write("Dummy"), 10, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(14, "Military Press", PersonalNoteValue.Write("Dummy"), 2, null, EntryStatusTypeEnum.Native),
+                ExcerciseRoot.AddToExcerciseLibrary(15, "Overhead Press - Dumbell", PersonalNoteValue.Write("Dummy"), 2, null, EntryStatusTypeEnum.Native),
                 // A lot more
             };
 

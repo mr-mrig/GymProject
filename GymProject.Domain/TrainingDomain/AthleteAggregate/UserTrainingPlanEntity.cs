@@ -38,20 +38,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         public uint? ParentPlanId { get; private set; } = null;
 
 
-        private List<uint?> _trainingScheduleIds = new List<uint?>();
-
-        /// <summary>
-        /// FK to the Training Schedules
-        /// Provides a value copy: the instance fields must be modified through the instance methods
-        /// </summary>
-        public IReadOnlyCollection<uint?> TrainingScheduleIds
-        {
-            get => _trainingScheduleIds?.ToList().AsReadOnly()
-                ?? new List<uint?>().AsReadOnly();
-        }
-
-
-
         private List<TrainingPlanPhaseRelation> _trainingPlanPhases = new List<TrainingPlanPhaseRelation>();
 
         /// <summary>
@@ -125,7 +111,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             bool isBookmarked,
             uint? parentPlanId = null,
             uint? personalNoteId = null,
-            IEnumerable<uint?> trainingScheduleIds = null,
             IEnumerable<uint?> trainingPhaseIds = null,
             IEnumerable<uint?> trainingPlanProficiencyIds = null,
             IEnumerable<uint?> trainingMuscleFocusIds = null,
@@ -136,8 +121,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             IsBookmarked = isBookmarked;
             TrainingPlanNoteId = personalNoteId;
             ParentPlanId = parentPlanId;
-
-            _trainingScheduleIds = trainingScheduleIds?.ToList() ?? new List<uint?>();
 
             _trainingPlanHashtags = new List<TrainingPlanHashtagRelation>();
             _trainingPlanMuscleFocusIds = new List<TrainingPlanMuscleFocusRelation>();
@@ -197,14 +180,13 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             bool isBookmarked = false,
             uint? parentPlanId = null,
             uint? personalNoteId = null,
-            IEnumerable<uint?> trainingScheduleIds = null,
             IEnumerable<uint?> trainingPhaseIds = null,
             IEnumerable<uint?> trainingPlanProficiencyIds = null,
             IEnumerable<uint?> trainingMuscleFocusIds = null,
             IEnumerable<uint?> hashtagIds = null)
 
             => new UserTrainingPlanEntity(null, trainingPlanId, name, isBookmarked, parentPlanId, personalNoteId,
-                trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds);
+                trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds);
 
 
         /// <summary>
@@ -228,14 +210,13 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             bool isBookmarked = false,
             uint? parentPlanId = null,
             uint? personalNoteId = null,
-            IEnumerable<uint?> trainingScheduleIds = null,
             IEnumerable<uint?> trainingPhaseIds = null,
             IEnumerable<uint?> trainingPlanProficiencyIds = null,
             IEnumerable<uint?> trainingMuscleFocusIds = null,
             IEnumerable<uint?> hashtagIds = null)
 
             => new UserTrainingPlanEntity(id, trainingPlanId, name, isBookmarked, parentPlanId, personalNoteId,
-                trainingScheduleIds, trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds);
+                trainingPhaseIds, trainingPlanProficiencyIds, trainingMuscleFocusIds, hashtagIds);
 
         #endregion
 
@@ -295,43 +276,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// Make the Training Plan not a Variant anymore
         /// </summary>
         public void RemoveVariantOf() => ParentPlanId = null;
-
-
-
-        /// <summary>
-        /// Schedule the Training Plan by assigning a Schedule ID
-        /// </summary>
-        /// <param name="scheduleId">The Schedule ID to be added</param>
-        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ScheduleTraining(uint? scheduleId)
-        {
-            if (scheduleId == null)
-                throw new ArgumentNullException($"Schedule ID must be non-NULL when tagging the Training Plan", nameof(scheduleId));
-
-            if (_trainingScheduleIds.Contains(scheduleId))
-                return;
-
-            _trainingScheduleIds.Add(scheduleId);
-            TestBusinessRules();
-        }
-        
-
-        /// <summary>
-        /// Schedule the Training Plan by assigning a Schedule ID
-        /// No Exception is raised if the Schedule ID is not present
-        /// </summary>
-        /// <param name="scheduleId">The Schedule ID to be added</param>
-        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnscheduleTraining(uint? scheduleId)
-        {
-            if (scheduleId == null)
-                throw new ArgumentNullException($"Schedule ID must be non-NULL when tagging the Training Plan", nameof(scheduleId));
-
-            if (_trainingScheduleIds.Remove(scheduleId))
-                TestBusinessRules();
-        }
 
         #endregion
 
@@ -553,13 +497,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// The Training Plan must have no NULL Training Schedules.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullSchedules() => _trainingScheduleIds.All(x => x != default);
-
-
-        /// <summary>
         /// The Training Plan must have no NULL Training Phases.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -635,7 +572,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         public object Clone()
 
             => InclueTrainingPlanInUserLibrary(
-                    Id, TrainingPlanId, Name, IsBookmarked, ParentPlanId, TrainingPlanNoteId, TrainingScheduleIds, TrainingPhaseIds, TrainingProficiencyIds, MuscleFocusIds, HashtagIds);
+                    Id, TrainingPlanId, Name, IsBookmarked, ParentPlanId, TrainingPlanNoteId, TrainingPhaseIds, TrainingProficiencyIds, MuscleFocusIds, HashtagIds);
 
         #endregion
     }

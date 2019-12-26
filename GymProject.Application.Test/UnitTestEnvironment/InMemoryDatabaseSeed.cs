@@ -499,45 +499,33 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         {
             TrainingSchedules = new List<TrainingScheduleRoot>();
 
-            // UserPlan1: User1 - Plan1 - Schedule1 -> 2 feedbacks
+            // User1 - Plan1 - Schedule1 -> 2 feedbacks
             TrainingSchedules.Add(
-                await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 1), 1, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
+                await SeedingService.ScheduleTrainingPlan(1, 1, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
                     new List<TrainingScheduleFeedbackEntity>
                     {
                         TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(4), null),
                         TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(5),  PersonalNoteValue.Write("Perfect!")),
                     }));
 
-            // UserPlan1: User1 - Plan1 - Schedule2 -> 1 feedback
+            // User1 - Plan1 - Schedule2 -> 1 feedback -> currently ongoing
             TrainingSchedules.Add(
-                await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 1), 1, new DateTime(2019, 1, 1), new DateTime(2019, 2, 15),
+                await SeedingService.ScheduleTrainingPlan(1, 1, new DateTime(2019, 1, 1), DateTime.UtcNow.AddDays(1),
                     new List<TrainingScheduleFeedbackEntity>
                     {
                         TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), null),
                     }));
 
-            // UserPlan7:  User2 - Plan1 - Schedule1 -> 2 feedbacks
+            // User2 - Plan1 - Schedule1 -> 2 feedbacks
             TrainingSchedules.Add(
-                await SeedingService.ScheduleTrainingPlan(Athletes.Single(a => a.Id == 2), 7, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
+                await SeedingService.ScheduleTrainingPlan(2, 1, new DateTime(2018, 1, 1), new DateTime(2018, 2, 15),
                     new List<TrainingScheduleFeedbackEntity>
                     {
                         TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(1), PersonalNoteValue.Write("Comment User1")),
                         TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(2), PersonalNoteValue.Write("Comment User2")),
                     }));
 
-            // Other ones: 1 schedule, 1 feedback
-            foreach (AthleteRoot ath in Athletes)
-            {
-                foreach (UserTrainingPlanEntity userPlan in ath.TrainingPlans.Where(x => x.Id != 1 && x.Id != 7))
-                {
-                    TrainingSchedules.Add(
-                        await SeedingService.ScheduleTrainingPlan(ath, userPlan.Id.Value, new DateTime(2019, 1, 1), new DateTime(2019, 2, 15),
-                            new List<TrainingScheduleFeedbackEntity>
-                            {
-                                TrainingScheduleFeedbackEntity.ProvideFeedback(null, 2, RatingValue.Rate(3), PersonalNoteValue.Write("Comment")),
-                            }));
-                }
-            }
+            // Other ones: no shcedules
         }
 
 

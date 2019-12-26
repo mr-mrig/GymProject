@@ -63,23 +63,16 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
         
-        public async Task<TrainingScheduleRoot> ScheduleTrainingPlan(AthleteRoot athlete, uint userPlanId, DateTime startDate, DateTime? endDate = null,
+        public async Task<TrainingScheduleRoot> ScheduleTrainingPlan(uint athleteId, uint trainingPlanId, DateTime startDate, DateTime? endDate = null,
             IEnumerable<TrainingScheduleFeedbackEntity> feedbacks = null)
         {
-            DateRangeValue schedulePeriod = endDate.HasValue 
-                ? DateRangeValue.RangeBetween(startDate, endDate.Value)
-                : DateRangeValue.RangeStartingFrom(startDate);
-
-            TrainingScheduleRoot schedule = TrainingScheduleRoot.ScheduleTrainingPlan(null, userPlanId, schedulePeriod);
-            //TrainingScheduleFeedbackEntity feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(null, 1, RatingValue.Rate(4), null);
+            TrainingScheduleRoot schedule = TrainingScheduleRoot.ScheduleTrainingPlan(athleteId, trainingPlanId, startDate, endDate);
 
             foreach(TrainingScheduleFeedbackEntity feedback in feedbacks ?? new List<TrainingScheduleFeedbackEntity>())
                 schedule.ProvideFeedback(feedback);
 
             _context.Add(schedule);
-            await _context.SaveAsync();
-
-            athlete.ScheduleTraining(userPlanId, schedule.Id.Value);
+            await _context.SaveAsync().ConfigureAwait(false);
 
             return schedule;
         }

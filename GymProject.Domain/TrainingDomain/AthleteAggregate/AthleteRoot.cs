@@ -447,38 +447,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
         /// <summary>
-        /// Schedule the Training Plan by assigning a Schedule ID.
-        /// The training plan is then marked as the current one.
-        /// </summary>
-        /// <param name="scheduleId">The Schedule ID to be added</param>
-        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
-        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void ScheduleTraining(uint trainingPlanId, uint scheduleId)
-        {
-            FindTrainingPlan(trainingPlanId).ScheduleTraining(scheduleId);
-            CurrentTrainingPlanId = trainingPlanId;
-            TestBusinessRules();
-        }
-
-
-        /// <summary>
-        /// Schedule the Training Plan by assigning a Schedule ID.
-        /// The current training plan is reset as well.
-        /// </summary>
-        /// <param name="scheduleId">The Schedule ID to be added</param>
-        /// <param name="trainingPlanId">The ID of the Training Plan Root entity which relation has to be modified</param>
-        /// <exception cref="ArgumentNullException">If the input ID is null</exception>
-        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void UnscheduleTraining(uint trainingPlanId, uint scheduleId)
-        {
-            FindTrainingPlan(trainingPlanId).UnscheduleTraining(scheduleId);
-            CurrentTrainingPlanId = null;
-            TestBusinessRules();
-        }
-
-
-        /// <summary>
         /// Give focus to the Muscle
         /// </summary>
         /// <param name="muscleId">The Muscle ID to be added</param>

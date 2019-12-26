@@ -86,7 +86,7 @@ namespace GymProject.Domain.Test.UnitTest
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1),
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(2),
                 UserTrainingPlanEntity.NewDraft(4),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 }, new List<uint?> { 3, 2 }),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 } ),
             };
 
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
@@ -482,7 +482,7 @@ namespace GymProject.Domain.Test.UnitTest
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1),
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(2),
                 UserTrainingPlanEntity.NewDraft(4),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 }, new List<uint?> { 3, 2 }),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 } ),
             };
             UserTrainingPlanEntity newPlan = UserTrainingPlanEntity.NewDraft(newPlanId);
 
@@ -498,10 +498,9 @@ namespace GymProject.Domain.Test.UnitTest
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1),
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(2),
                 UserTrainingPlanEntity.NewDraft(4),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 }, new List<uint?> { 3, 2 }),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 } ),
             };
             newPlan = UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(newPlanId, "Plan10", true, 1, 10,
-                trainingScheduleIds: null,
                 trainingPhaseIds: new List<uint?> { 4, 1, },
                 trainingPlanProficiencyIds: new List<uint?> { 20, 3, },
                 trainingMuscleFocusIds: new List<uint?> { 44 },
@@ -520,7 +519,7 @@ namespace GymProject.Domain.Test.UnitTest
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(newPlanId),  // Here
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(2),
                 UserTrainingPlanEntity.NewDraft(4),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 }, new List<uint?> { 3, 2 }),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 } ),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             athlete.AddTrainingPlanToLibrary(newPlan.TrainingPlanId);
@@ -555,7 +554,7 @@ namespace GymProject.Domain.Test.UnitTest
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(removeId + 1),
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(removeId + 2),
                 UserTrainingPlanEntity.NewDraft(removeId),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(removeId + 10, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 }, new List<uint?> { 3, 2 }),
+                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(removeId + 10, "plan3", true, 2, 1, new List<uint?> { 2, 1, }, new List<uint?> { 1, }, new List<uint?> { 5, }, new List<uint?> { 1, 6 } ),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             athlete.RemoveTrainingPlanFromLibrary(removeId);
@@ -702,106 +701,6 @@ namespace GymProject.Domain.Test.UnitTest
             athlete.MakeTrainingPlanNotVariantOfAny(planId);
 
             Assert.Null(athlete.CloneTrainingPlanOrDefault(planId).ParentPlanId);
-        }
-
-
-        [Fact]
-        public void Athlete_ScheduleTraining()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            uint scheduleId = 10;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            athlete.ScheduleTraining(planId, scheduleId);
-
-            Assert.Equal(scheduleId, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Last());
-            Assert.Equal(planId, athlete.CurrentTrainingPlanId);
-        }
-
-
-        [Fact]
-        public void Athlete_ScheduleTraining_Fail()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            uint prevPlanId = 2;
-            uint scheduleId = 10;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(prevPlanId),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 11,
-                    trainingScheduleIds: new List<uint?> { scheduleId, scheduleId + 12, scheduleId + 100 }),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans, prevPlanId);
-            Assert.Throws<InvalidOperationException>(() => athlete.ScheduleTraining(planId, scheduleId));
-            Assert.Equal(prevPlanId, athlete.CurrentTrainingPlanId);
-        }
-
-
-        [Fact]
-        public void Athlete_UnscheduleTraining()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            uint scheduleId = 10;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId,
-                    trainingScheduleIds: new List<uint?> { scheduleId, scheduleId + 12, scheduleId + 100 }),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-
-            int prevschedules = athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Count;
-            athlete.UnscheduleTraining(planId, scheduleId);
-
-            Assert.Equal(prevschedules - 1, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds.Count);
-            Assert.DoesNotContain(scheduleId, athlete.CloneTrainingPlanOrDefault(planId).TrainingScheduleIds);
-            Assert.Null(athlete.CurrentTrainingPlanId);
-        }
-
-
-        [Fact]
-        public void Athlete_UnscheduleTraining_Fail()
-        {
-            uint userid = 1;
-            uint planId = 1;
-            uint scheduleId = 10;
-            uint prevScheduleId = 1;
-            uint prevPlanId = 2;
-            AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPhaseRelation> phases = null;
-
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(planId + 10),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(prevPlanId,
-                    trainingScheduleIds: new List<uint?> { prevScheduleId, scheduleId + 100 }),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-
-            athlete.ScheduleTraining(prevPlanId, prevScheduleId);
-
-            Assert.Throws<InvalidOperationException>(() => athlete.UnscheduleTraining(planId, scheduleId));
-            Assert.Equal(prevPlanId, athlete.CurrentTrainingPlanId);
         }
 
 

@@ -37,7 +37,6 @@ namespace GymProject.Domain.Test.Util
             differences += x.MuscleFocusIds.SequenceEqual(y.MuscleFocusIds) ? 0 : 1;
             differences += x.TrainingPhaseIds.SequenceEqual(y.TrainingPhaseIds) ? 0 : 1;
             differences += x.TrainingProficiencyIds.SequenceEqual(y.TrainingProficiencyIds) ? 0 : 1;
-            differences += x.TrainingScheduleIds.SequenceEqual(y.TrainingScheduleIds) ? 0 : 1;
 
             return differences == 0;
         }

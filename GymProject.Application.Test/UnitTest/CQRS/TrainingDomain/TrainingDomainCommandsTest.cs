@@ -1631,36 +1631,98 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         [Fact]
         public async Task ScheduleTrainingPlanCommand_StartDateOnly_Success()
         {
-            throw new NotImplementedException("Need to implement the commmand handler");
-            //GymContext context;
-            //ILogger<ScheduleTrainingPlanCommandHandler> logger;
+            GymContext context;
+            ILogger<ScheduleTrainingPlanCommandHandler> logger;
 
-            //(context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ScheduleTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ScheduleTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
-            //var athletes = new SQLAthleteRepository(context);
-            //var schedules = new SQLTrainingScheduleRepository(context);
-            //var notesBefore = context.WorkUnitTemplateNotes.ToList();
+            var schedules = new SQLTrainingScheduleRepository(context);
 
-            //// Test
-            //uint planId = 1;
-            //uint userId = 1;
-            //DateTime start = new DateTime(2019, 1, 1);
-            //DateTime? end = null;
+            // Test
+            uint planId = 1;
+            uint userId = 2;
+            DateTime start = new DateTime(2019, 1, 1);
+            DateTime? end = null;
 
-            //ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(planId, userId, start, end);
-            //ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(athletes, schedules, logger);
+            ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(userId, planId, start, end);
+            ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(schedules, logger);
 
-            //Assert.True(await handler.Handle(command, default));
+            Assert.True(await handler.Handle(command, default));
 
-            //// Check note added
-            //var notesAfter = context.WorkUnitTemplateNotes.ToList();
-            //var added = notesAfter.Last();
-            //Assert.Equal(notesBefore.Count + 1, notesAfter.Count);
-            //Assert.Equal(note, added.Body.Body);
+            // Check
+            var added = context.TrainingSchedules.Last();
+            Assert.Equal(planId, added.TrainingPlanId);
+            Assert.Equal(userId, added.AthleteId);
+            Assert.Equal(start, added.StartDate);
+            Assert.Equal(end, added.EndDate);
+            Assert.Empty(added.Feedbacks);
+        }
 
-            //// Check note attached to plan
-            //var workUnitAfter = athletes.Find(planId).CloneWorkUnit(userId);
-            //Assert.Equal(added.Id, workUnitAfter.WorkUnitNoteId);
+        [Fact]
+        public async Task ScheduleTrainingPlanCommand_PlannedPeriod_Success()
+        {
+            GymContext context;
+            ILogger<ScheduleTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ScheduleTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var schedules = new SQLTrainingScheduleRepository(context);
+
+            // Test
+            uint planId = 1;
+            uint userId = 2;
+            DateTime start = new DateTime(2019, 1, 1);
+            DateTime? end = null;
+
+            ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(userId, planId, start, end);
+            ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(schedules, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var added = context.TrainingSchedules.Last();
+            Assert.Equal(planId, added.TrainingPlanId);
+            Assert.Equal(userId, added.AthleteId);
+            Assert.Equal(start, added.StartDate);
+            Assert.Equal(end, added.EndDate);
+            Assert.Empty(added.Feedbacks);
+        }
+
+        [Fact]
+        public async Task ScheduleTrainingPlanCommand_CurrentPlanNotcompleted_Success()
+        {
+            GymContext context;
+            ILogger<ScheduleTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ScheduleTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var schedules = new SQLTrainingScheduleRepository(context);
+
+            // Test
+            uint planId = 1;
+            uint userId = 1;    // User1 has an ongoing plan
+            DateTime start = DateTime.UtcNow.AddDays(1).Date;
+            DateTime? end = null;
+
+            var currentPlan = schedules.GetCurrentScheduleByAthleteOrDefault(userId);
+
+            if (currentPlan == null)
+                throw new ArgumentException("Test case not correct");
+
+            ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(userId, planId, start, end);
+            ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(schedules, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check
+            var added = context.TrainingSchedules.Last();
+            Assert.Equal(planId, added.TrainingPlanId);
+            Assert.Equal(start, added.StartDate);
+            Assert.Equal(end, added.EndDate);
+            Assert.Empty(added.Feedbacks);
+
+            // Check ongoing plan is now completed
+            Assert.Equal(DateTime.UtcNow.AddDays(-1).Date, currentPlan.EndDate);
         }
 
 
@@ -1692,6 +1754,63 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             Assert.Null(modified.TrainingPhases.Last().EndDate);
             Assert.Equal(DateTime.UtcNow.AddDays(-1), modified.TrainingPhases.First().EndDate.Value, new TimeSpan(0, 0, 1));
             Assert.Equal(note, modified.TrainingPhases.Last().OwnerNote.Body);
+        }
+
+
+        [Fact]
+        public async Task CompleteTrainingScheduleCommand_Success()
+        {
+            GymContext context;
+            ILogger<CompleteTrainingScheduleCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<CompleteTrainingScheduleCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var schedules = new SQLTrainingScheduleRepository(context);
+
+            // Test
+            uint scheduleId = 1;
+            DateTime endDate = DateTime.UtcNow.Date;
+
+            if (schedules.Find(scheduleId).EndDate == endDate)
+                throw new NotImplementedException("Wrong test case");
+
+            CompleteTrainingScheduleCommand command = new CompleteTrainingScheduleCommand(scheduleId, endDate);
+            CompleteTrainingScheduleCommandHandler handler = new CompleteTrainingScheduleCommandHandler(schedules, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check schedule
+            var modified = schedules.Find(scheduleId);
+            Assert.Equal(endDate, modified.EndDate);
+        }
+
+
+        [Fact]
+        public async Task RescheduleTrainingScheduleCommand_Success()
+        {
+            GymContext context;
+            ILogger<RescheduleTrainingPlanCommandHandler> logger;
+
+            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<RescheduleTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+
+            var schedules = new SQLTrainingScheduleRepository(context);
+
+            // Test
+            uint scheduleId = 2;
+            DateTime startDate = DateTime.UtcNow.Date;
+            var sched = schedules.Find(scheduleId);
+
+            if (sched.StartDate == startDate || sched.EndDate < startDate || sched.IsCompleted())
+                throw new NotImplementedException("Wrong test case");
+
+            RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(scheduleId, startDate);
+            RescheduleTrainingPlanCommandHandler handler = new RescheduleTrainingPlanCommandHandler(schedules, logger);
+
+            Assert.True(await handler.Handle(command, default));
+
+            // Check schedule
+            var modified = schedules.Find(scheduleId);
+            Assert.Equal(startDate, modified.StartDate);
         }
 
 

@@ -8,6 +8,7 @@ namespace GymProject.Application.Command.TrainingDomain
     {
 
 
+        //public uint UserTrainingPlanId { get; private set; }
         public uint TrainingPlanId { get; private set; }
         public uint AthleteId { get; private set; }
         public DateTime StartDate { get; private set; }
@@ -15,7 +16,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
 
 
-        public ScheduleTrainingPlanCommand(uint trainingPlanId, uint athleteId, DateTime startDate, DateTime? endDate)
+        public ScheduleTrainingPlanCommand(uint athleteId, uint trainingPlanId, DateTime startDate, DateTime? endDate)
         {
             TrainingPlanId = trainingPlanId;
             AthleteId = athleteId;

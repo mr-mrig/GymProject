@@ -72,12 +72,13 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasForeignKey(x => x.AthleteId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasAlternateKey(x => new
+            builder.HasIndex(x => new
             {
                 x.TrainingPlanId,
                 x.AthleteId,
                 x.StartDate
-            });
+            }).IsUnique();
+            // GetCurrentScheduleByAthleteOrDefault queries for the EndDate. Should we add a specific index?
 
 
             //builder.HasIndex(s => s.TrainingPlanId)

@@ -34,5 +34,10 @@ namespace GymProject.Application.Validator.StaticRule
 
             => entryStatusId == null
                 || EntryStatusTypeEnum.List().Select(e => e.Id).Contains((int)entryStatusId.Value);
+
+        internal static bool IsValidRating(float? value)
+
+            => value == null
+                || (value <= RatingValue.MaximumValue && value >= RatingValue.MinimumValue);
     }
 }

@@ -131,15 +131,15 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// Reschedule the Training Plan to the day specified.
         /// This action cannot been performed on a completed schedule: cannot rewrite history.
         /// </summary>
-        /// <param name="firstDate">The day the Training Schedule starts</param>
+        /// <param name="startDate">The day the Training Schedule starts</param>
         /// <exception cref="InvalidOperationException">If rescheduling a schedule whch has already been completed</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If edge dates are cronologically invalid</exception>
-        public void Reschedule(DateTime firstDate)
+        public void Reschedule(DateTime startDate)
         {
             if (IsCompleted())
                 throw new InvalidOperationException("Cannot reschedule what has already been completed");
 
-            StartDate = firstDate;
+            StartDate = startDate;
             TestBusinessRules();
         }
 

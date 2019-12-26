@@ -2,6 +2,7 @@
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using System;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -59,6 +60,14 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
             _context.Remove(trainingPlan);
         }
         #endregion
+
+
+        public TrainingScheduleRoot GetCurrentScheduleByAthleteOrDefault(uint athleteId)
+        {
+            return _context.TrainingSchedules
+                .Where(x => x.AthleteId == athleteId && x.EndDate > DateTime.UtcNow.Date)
+                .FirstOrDefault();
+        }
 
     }
 }

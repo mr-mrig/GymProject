@@ -4,9 +4,6 @@ using GymProject.Domain.SharedKernel;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
@@ -16,7 +13,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
     {
 
         [Fact]
-        public void WriteWorkUnitTemplateNoteCommand_ValidatorSuccess()
+        public void WriteWorkUnitTemplateNoteCommandValidator_Success()
         {
             // Test
             uint workoutId = 1;
@@ -32,7 +29,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
         
         [Fact]
-        public void WriteWorkUnitTemplateNoteCommand_ValidatorFail()
+        public void WriteWorkUnitTemplateNoteCommandValidator_Fail()
         {
             // Test
             uint workoutId = 1;
@@ -48,7 +45,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
 
         [Fact]
-        public void PlanTrainingWeekCommand_ValidatorSuccess()
+        public void PlanTrainingWeekCommandValidator_Success()
         {
             // Test
             uint id = 1;
@@ -63,7 +60,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         
 
         [Fact]
-        public void PlanTrainingWeekCommand_ValidatorFail()
+        public void PlanTrainingWeekCommandValidator_Fail()
         {
             // Test
             uint id = 1;
@@ -75,7 +72,155 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             PlanTrainingWeekCommandValidator validator = new PlanTrainingWeekCommandValidator(loggerValidator.Object);
             Assert.False(validator.Validate(command).IsValid);
         }
+        
 
+        [Fact]
+        public void ProvideTrainingScheduleFeedbackCommandValidator_Success()
+        {
+            // Test
+            ProvideTrainingScheduleFeedbackCommand command = new ProvideTrainingScheduleFeedbackCommand(1, 1, 5, null);
+
+            var loggerValidator = new Mock<ILogger<ProvideTrainingScheduleFeedbackCommandValidator>>();
+            ProvideTrainingScheduleFeedbackCommandValidator validator = new ProvideTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }        
+
+
+        [Fact]
+        public void ProvideTrainingScheduleFeedbackCommandValidator_NullRating_Success()
+        {
+            // Test
+            ProvideTrainingScheduleFeedbackCommand command = new ProvideTrainingScheduleFeedbackCommand(1, 1, null, null);
+
+            var loggerValidator = new Mock<ILogger<ProvideTrainingScheduleFeedbackCommandValidator>>();
+            ProvideTrainingScheduleFeedbackCommandValidator validator = new ProvideTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }
+        
+
+        [Fact]
+        public void ProvideTrainingScheduleFeedbackCommandValidator_InvalidRating_Fail()
+        {
+            // Test
+            ProvideTrainingScheduleFeedbackCommand command = new ProvideTrainingScheduleFeedbackCommand(1, 1, 5.1f, "my comment");
+
+            var loggerValidator = new Mock<ILogger<ProvideTrainingScheduleFeedbackCommandValidator>>();
+            ProvideTrainingScheduleFeedbackCommandValidator validator = new ProvideTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }    
+
+        [Fact]
+        public void ProvideTrainingScheduleFeedbackCommandValidator_InvalidComment_Fail()
+        {
+            // Test
+            ProvideTrainingScheduleFeedbackCommand command = new ProvideTrainingScheduleFeedbackCommand(1, 1, 1, "a".PadRight(PersonalNoteValue.DefaultMaximumLength + 1));
+
+            var loggerValidator = new Mock<ILogger<ProvideTrainingScheduleFeedbackCommandValidator>>();
+            ProvideTrainingScheduleFeedbackCommandValidator validator = new ProvideTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }
+        
+
+        [Fact]
+        public void ChangeTrainingScheduleFeedbackCommandValidator_Success()
+        {
+            // Test
+            ChangeTrainingScheduleFeedbackCommand command = new ChangeTrainingScheduleFeedbackCommand(1, 1, 5, null);
+
+            var loggerValidator = new Mock<ILogger<ChangeTrainingScheduleFeedbackCommandValidator>>();
+            ChangeTrainingScheduleFeedbackCommandValidator validator = new ChangeTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }        
+
+
+        [Fact]
+        public void ChangeTrainingScheduleFeedbackCommandValidator_NullRating_Success()
+        {
+            // Test
+            ChangeTrainingScheduleFeedbackCommand command = new ChangeTrainingScheduleFeedbackCommand(1, 1, null, null);
+
+            var loggerValidator = new Mock<ILogger<ChangeTrainingScheduleFeedbackCommandValidator>>();
+            ChangeTrainingScheduleFeedbackCommandValidator validator = new ChangeTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }
+        
+
+        [Fact]
+        public void ChangeTrainingScheduleFeedbackCommandValidator_InvalidRating_Fail()
+        {
+            // Test
+            ChangeTrainingScheduleFeedbackCommand command = new ChangeTrainingScheduleFeedbackCommand(1, 1, 5.1f, "my comment");
+
+            var loggerValidator = new Mock<ILogger<ChangeTrainingScheduleFeedbackCommandValidator>>();
+            ChangeTrainingScheduleFeedbackCommandValidator validator = new ChangeTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }    
+
+        [Fact]
+        public void ChangeTrainingScheduleFeedbackCommandValidator_InvalidComment_Fail()
+        {
+            // Test
+            ChangeTrainingScheduleFeedbackCommand command = new ChangeTrainingScheduleFeedbackCommand(1, 1, 1, "a".PadRight(PersonalNoteValue.DefaultMaximumLength + 1));
+
+            var loggerValidator = new Mock<ILogger<ChangeTrainingScheduleFeedbackCommandValidator>>();
+            ChangeTrainingScheduleFeedbackCommandValidator validator = new ChangeTrainingScheduleFeedbackCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void ScheduleTrainingPlanCommandValidator_TodayDate_Success()
+        {
+            // Test
+            CompleteTrainingScheduleCommand command = new CompleteTrainingScheduleCommand(1, DateTime.UtcNow.Date);
+
+            var loggerValidator = new Mock<ILogger<CompleteTrainingScheduleCommandValidator>>();
+            CompleteTrainingScheduleCommandValidator validator = new CompleteTrainingScheduleCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void ScheduleTrainingPlanCommandValidator_PastDate_Success()
+        {
+            // Test
+            CompleteTrainingScheduleCommand command = new CompleteTrainingScheduleCommand(1, DateTime.UtcNow.AddDays(-1).Date);
+
+            var loggerValidator = new Mock<ILogger<CompleteTrainingScheduleCommandValidator>>();
+            CompleteTrainingScheduleCommandValidator validator = new CompleteTrainingScheduleCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void ScheduleTrainingPlanCommandValidator_TomorrowDate_fail()
+        {
+            // Test
+            CompleteTrainingScheduleCommand command = new CompleteTrainingScheduleCommand(1, DateTime.UtcNow.AddDays(1).Date);
+
+            var loggerValidator = new Mock<ILogger<CompleteTrainingScheduleCommandValidator>>();
+            CompleteTrainingScheduleCommandValidator validator = new CompleteTrainingScheduleCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void RecheduleTrainingPlanCommandValidator_TodayDate_Success()
+        {
+            // Test
+            RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(1, DateTime.UtcNow.AddDays(-1).Date);
+
+            var loggerValidator = new Mock<ILogger<RescheduleTrainingPlanCommandValidator>>();
+            RescheduleTrainingPlanCommandValidator validator = new RescheduleTrainingPlanCommandValidator(loggerValidator.Object);
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void RecheduleTrainingPlanCommandValidator_PastDate_Fail()
+        {
+            // Test
+            RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(1, DateTime.UtcNow.AddDays(-1).Date);
+
+            var loggerValidator = new Mock<ILogger<RescheduleTrainingPlanCommandValidator>>();
+            RescheduleTrainingPlanCommandValidator validator = new RescheduleTrainingPlanCommandValidator(loggerValidator.Object);
+            Assert.False(validator.Validate(command).IsValid);
+        }
 
     }
 }

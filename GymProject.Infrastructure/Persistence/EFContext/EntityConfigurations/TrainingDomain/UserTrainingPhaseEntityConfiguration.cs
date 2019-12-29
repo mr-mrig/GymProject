@@ -16,10 +16,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
         public void Configure(EntityTypeBuilder<UserTrainingPhaseRelation> builder)
         {
             builder.ToTable(_thisTableName, GymContext.DefaultSchema);
-            builder.HasKey("UserId", "StartDate");
+            builder.HasKey(rel => new { rel.UserId, rel.StartDate });
 
-            builder.Property("UserId");
-            builder.Property(rel => rel.PhaseId);
+            builder.Property(rel => rel.UserId);
+            builder.Property(rel => rel.PhaseId).HasColumnName("TrainingPhaseId");
+
+            builder.Ignore(rel => rel.Id);
 
             builder.Property(rel => rel.StartDate)
                 .HasColumnType("INTEGER")
@@ -34,12 +36,19 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                     .HasMaxLength(PersonalNoteValue.DefaultMaximumLength)
             );
 
+
+            builder.HasOne(rel => rel.Athlete)
+                .WithMany("_trainingPhases")
+                .HasForeignKey(rel => rel.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field); ;
+
             builder.HasOne(e => e.EntryStatus)
                 .WithMany()
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasIndex("UserId", "EndDate", "StartDate");
+            builder.HasIndex(rel => new { rel.UserId, rel.EndDate, rel.StartDate });
 
 
             //var ownedBuilder = builder.OwnsOne(p => p.Period, per =>

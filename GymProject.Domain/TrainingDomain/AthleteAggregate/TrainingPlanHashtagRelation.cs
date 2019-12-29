@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
-    public class TrainingPlanHashtagRelation : ValueObject
+    public class TrainingPlanHashtagRelation : RelationEntity
     {
 
 
@@ -11,12 +11,12 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// /// The Training Plan ID
         /// </summary>
-        public uint? TrainingPlanId { get; private set; } = null;
+        public uint? UserTrainingPlanId { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Training Plan
         /// </summary>
-        public UserTrainingPlanEntity TrainingPlan { get; private set; } = null;
+        public UserTrainingPlanEntity UserTrainingPlan { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Hashtag
@@ -36,11 +36,11 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         private TrainingPlanHashtagRelation() { }
 
 
-        private TrainingPlanHashtagRelation(UserTrainingPlanEntity trainingPlan, uint progressiveNumber, uint? hashtagId)
+        private TrainingPlanHashtagRelation(UserTrainingPlanEntity userTrainingPlan, uint progressiveNumber, uint? hashtagId)
         {
-            TrainingPlan = trainingPlan;
+            UserTrainingPlan = userTrainingPlan;
             HashtagId = hashtagId;
-            TrainingPlanId = trainingPlan.Id;
+            UserTrainingPlanId = userTrainingPlan.Id;
             ProgressiveNumber = progressiveNumber;
         }
 
@@ -63,12 +63,5 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #endregion
 
 
-
-        protected override IEnumerable<object> GetAtomicValues()
-        {
-            yield return TrainingPlan; 
-            yield return HashtagId; 
-            //yield return TrainingPlanId;  // Not necessary
-        }
     }
 }

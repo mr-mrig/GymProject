@@ -1,9 +1,8 @@
 ﻿using GymProject.Domain.Base;
-using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
-    public class WorkingSetIntensityTechniqueRelation : ValueObject
+    public class WorkingSetIntensityTechniqueRelation : RelationEntity
     {
 
 
@@ -99,11 +98,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         //    : LinkedWorkValue.LinkTo(LinkedWorkingSet.Id.Value, IntensityTechniqueId.Value);
 
 
-        protected override IEnumerable<object> GetAtomicValues()
-        {
-            yield return WorkingSet;
-            yield return IntensityTechniqueId;
-            //yield return TrainingPlanId;  // Not necessary
-        }
+
     }
 }

@@ -13,13 +13,12 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
         {
             builder.ToTable("TrainingPlanMuscleFocus", GymContext.DefaultSchema);
 
-            builder.HasKey(rel => new { rel.TrainingPlanId, rel.MuscleGroupId });
+            builder.HasKey(rel => new { rel.UserTrainingPlanId, rel.MuscleGroupId });
 
-            builder.Property(rel => rel.TrainingPlanId);
-
+            builder.Ignore(rel => rel.Id);
             builder.Property(rel => rel.MuscleGroupId);
 
-            builder.HasOne(rel => rel.TrainingPlan)
+            builder.HasOne(rel => rel.UserTrainingPlan)
                 .WithMany("_trainingPlanMuscleFocusIds")
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);

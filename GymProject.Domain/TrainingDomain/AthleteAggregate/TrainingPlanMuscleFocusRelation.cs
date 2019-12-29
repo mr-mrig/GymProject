@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
-    public class TrainingPlanMuscleFocusRelation : ValueObject
+    public class TrainingPlanMuscleFocusRelation : RelationEntity
     {
 
 
@@ -11,12 +11,12 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// The Training Plan ID
         /// </summary>
-        public uint? TrainingPlanId { get; private set; } = null;
+        public uint? UserTrainingPlanId { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Training Plan
         /// </summary>
-        public UserTrainingPlanEntity TrainingPlan { get; private set; } = null;
+        public UserTrainingPlanEntity UserTrainingPlan { get; private set; } = null;
 
         /// <summary>
         /// Navigation Property to the Muscle
@@ -31,11 +31,11 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         private TrainingPlanMuscleFocusRelation() { }
 
 
-        private TrainingPlanMuscleFocusRelation(UserTrainingPlanEntity trainingPlan, uint? muscleId)
+        private TrainingPlanMuscleFocusRelation(UserTrainingPlanEntity userTrainingPlan, uint? muscleId)
         {
-            TrainingPlan = trainingPlan;
+            UserTrainingPlan = userTrainingPlan;
             MuscleGroupId = muscleId;
-            TrainingPlanId = trainingPlan.Id;
+            UserTrainingPlanId = userTrainingPlan.Id;
         }
 
         #endregion
@@ -55,13 +55,5 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         #endregion
 
-
-
-        protected override IEnumerable<object> GetAtomicValues()
-        {
-            yield return TrainingPlan;
-            yield return MuscleGroupId;
-            //yield return TrainingPlanId;  // Not necessary
-        }
     }
 }

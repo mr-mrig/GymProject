@@ -13,14 +13,15 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
         {
             builder.ToTable("TrainingPlanHashtag", GymContext.DefaultSchema);
 
-            builder.HasKey(rel => new { rel.TrainingPlanId, rel.HashtagId });
+            builder.HasKey(rel => new { rel.UserTrainingPlanId, rel.HashtagId });
 
-            builder.Property(rel => rel.TrainingPlanId);
+            builder.Ignore(rel => rel.Id);
+            builder.Property(rel => rel.UserTrainingPlanId);
             builder.Property(rel => rel.HashtagId);
             //builder.Property(rel => rel.ProgressiveNumber);
             builder.Ignore(rel => rel.ProgressiveNumber);
 
-            builder.HasOne(rel => rel.TrainingPlan)
+            builder.HasOne(rel => rel.UserTrainingPlan)
                 .WithMany("_trainingPlanHashtags")
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);

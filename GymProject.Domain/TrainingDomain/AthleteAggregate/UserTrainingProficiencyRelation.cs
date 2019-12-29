@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
 
-    public class UserTrainingProficiencyRelation : ValueObject, ICloneable
+    public class UserTrainingProficiencyRelation : RelationEntity, ICloneable
     {
 
 
@@ -122,14 +122,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         #endregion
 
-
-
-        protected override IEnumerable<object> GetAtomicValues()
-        {
-            yield return StartDate;
-            yield return EndDate;
-            yield return ProficiencyId;
-        }
 
 
         public object Clone()

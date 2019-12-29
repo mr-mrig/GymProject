@@ -244,7 +244,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             // Preliminary operations to ensure consistent operations
             IgnoreStaticEnumTables();
-            //IgnoreEmbeddedValueObjects();
+            EmbeddedValueObjectsAsPartOfParenTtable();
 
             // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
             // performed through the DbContext will be committed
@@ -274,35 +274,29 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             }
         }
 
-        protected void IgnoreEmbeddedValueObjects()
+        /// <summary>
+        /// Treat the value objects as part of the parent table, instead than an external one.
+        /// This fixes the exception when trying to add a value object in an akready existant parent entity  - which is in Modified rather than Added state.
+        /// Many-to-Many relations are not meant to be touched here
+        /// </summary>
+        protected void EmbeddedValueObjectsAsPartOfParenTtable()
         {
-            //bool isError = false;
-            // Value objects are part of the parent table
+            // All Value Objects are part of the parent table, but the Many-to-Many relations
             foreach (var entry in ChangeTracker.Entries<ValueObject>())
             {
                 try
                 {
-                    if (entry.Entity is RestPeriodValue)
-                        System.Diagnostics.Debugger.Break();
-
-                    if (entry.State == EntityState.Added)
+                    if (entry.State == EntityState.Added && entry.IsKeySet)
                         entry.State = EntityState.Modified;
                 }
                 catch (InvalidOperationException exc)
                 {
                     //isError = true;
-                    //_logger.LogWarning("IgnoreEmbeddedValueObjects - Could not change the Entry State of {@entry} because of {@exc}", entry, exc.Message);
-                    //Console.WriteLine("Exception: " + exc.Message);
-                    //System.Diagnostics.Debugger.Break();
+                    _logger.LogWarning("IgnoreEmbeddedValueObjects - Could not change the Entry State of {@entry} because of {@exc}", entry, exc.Message);
+                    Console.WriteLine("Exception: " + exc.Message);
+                    System.Diagnostics.Debugger.Break();
                     continue;
                 }
-                //finally
-                //{
-                //    if (!isError)
-                //        System.Diagnostics.Debugger.Break();
-
-                //    isError = false;
-                //}
             }
         }
 

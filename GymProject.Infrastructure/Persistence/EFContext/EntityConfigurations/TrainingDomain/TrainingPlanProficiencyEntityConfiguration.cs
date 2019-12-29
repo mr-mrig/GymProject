@@ -13,10 +13,9 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
         {
             builder.ToTable("TrainingPlanProficiency", GymContext.DefaultSchema);
 
-            builder.HasKey(rel => new { rel.TrainingPlanId, rel.TrainingProficiencyId });
+            builder.HasKey(rel => new { rel.UserTrainingPlanId, rel.TrainingProficiencyId });
 
-            builder.Property(rel => rel.TrainingPlanId);
-
+            builder.Ignore(rel => rel.Id);
             builder.Property(rel => rel.TrainingProficiencyId);
 
             builder.HasOne(rel => rel.UserTrainingPlan)

@@ -18,8 +18,9 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.ToTable(_thisTableName, GymContext.DefaultSchema);
             builder.HasKey("UserId", "StartDate");
 
+            builder.Ignore(rel => rel.Id);
             builder.Property("UserId");
-            builder.Property(rel => rel.ProficiencyId);
+            builder.Property(rel => rel.ProficiencyId).HasColumnName("TrainingProficiencyId");
 
             builder.Property(rel => rel.StartDate)
                 .HasColumnType("INTEGER")

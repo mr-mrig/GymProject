@@ -224,10 +224,10 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
                 if (startDate.Value < DateTime.UtcNow)
                     throw new InvalidOperationException($"Cannot start a Training Phase over an elapsed period: {startDate.Value.ToShortTimeString()} - {endDate.Value.ToShortTimeString()} ");
 
-                newPhase = UserTrainingPhaseRelation.PlanPhase(phaseId, startDate.Value, endDate, entryVisibility, ownerNote);
+                newPhase = UserTrainingPhaseRelation.PlanPhase(phaseId, this, startDate.Value, endDate, entryVisibility, ownerNote);
             }
             else
-                newPhase = UserTrainingPhaseRelation.StartPhase(phaseId, DateTime.UtcNow, entryVisibility, ownerNote);
+                newPhase = UserTrainingPhaseRelation.StartPhase(phaseId, this, DateTime.UtcNow, entryVisibility, ownerNote);
 
             // Close the previous phase, if any
             CloseOpenPhases(startDate ?? DateTime.UtcNow);

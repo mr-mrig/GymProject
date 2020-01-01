@@ -1,4 +1,5 @@
 ﻿using GymProject.Domain.Base;
+using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 {
@@ -97,7 +98,11 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         //    ? default
         //    : LinkedWorkValue.LinkTo(LinkedWorkingSet.Id.Value, IntensityTechniqueId.Value);
 
-
+        protected override IEnumerable<object> GetIdentifyingFields()
+        {
+            yield return WorkingSetId;
+            yield return IntensityTechniqueId;
+        }
 
     }
 }

@@ -123,11 +123,18 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #endregion
 
 
-
+        #region ICloneable Implementation
         public object Clone()
 
             => EndDate.HasValue 
                 ? AssignTrainingProficiency(ProficiencyId, StartDate, EndDate.Value)
                 : AchieveTrainingProficiency(ProficiencyId, StartDate);
+        #endregion
+
+        protected override IEnumerable<object> GetIdentifyingFields()
+        {
+            yield return ProficiencyId;
+            yield return StartDate;
+        }
     }
 }

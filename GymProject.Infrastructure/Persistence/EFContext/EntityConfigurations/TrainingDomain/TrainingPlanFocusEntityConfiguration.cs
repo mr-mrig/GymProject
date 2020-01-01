@@ -15,7 +15,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
 
             builder.HasKey(rel => new { rel.UserTrainingPlanId, rel.MuscleGroupId });
 
-            builder.Ignore(rel => rel.Id);
             builder.Property(rel => rel.MuscleGroupId);
 
             builder.HasOne(rel => rel.UserTrainingPlan)

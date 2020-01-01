@@ -16,7 +16,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.HasKey(rel => new { rel.WorkingSetId, rel.IntensityTechniqueId });
 
             builder.Ignore(rel => rel.LinkedWorkingSetId);
-            builder.Ignore(rel => rel.Id);
 
             builder.Property(rel => rel.WorkingSetId);
             builder.Property(rel => rel.IntensityTechniqueId);

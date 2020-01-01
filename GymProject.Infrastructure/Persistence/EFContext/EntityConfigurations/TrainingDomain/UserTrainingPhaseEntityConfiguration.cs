@@ -18,10 +18,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             builder.ToTable(_thisTableName, GymContext.DefaultSchema);
             builder.HasKey(rel => new { rel.UserId, rel.StartDate });
 
-            builder.Property(rel => rel.UserId);
+            //builder.Property(rel => rel.UserId);
             builder.Property(rel => rel.PhaseId).HasColumnName("TrainingPhaseId");
-
-            builder.Ignore(rel => rel.Id);
 
             builder.Property(rel => rel.StartDate)
                 .HasColumnType("INTEGER")
@@ -37,11 +35,21 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
             );
 
 
+            //builder.HasOne(rel => rel.Athlete)
+            //    .WithMany("_trainingPhases")
+            //    .OnDelete(DeleteBehavior.Cascade)
+            //    .IsRequired()
+            //    .HasForeignKey(rel => rel.UserId)
+            //    .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasOne(rel => rel.Athlete)
-                .WithMany("_trainingPhases")
-                .HasForeignKey(rel => rel.UserId)
+                .WithMany(a => a.TrainingPhases)
+                //.WithMany("_trainingPhases")
                 .OnDelete(DeleteBehavior.Cascade)
-                .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field); ;
+                .IsRequired()
+                .HasForeignKey(rel => rel.UserId);
+            //.Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
+
 
             builder.HasOne(e => e.EntryStatus)
                 .WithMany()

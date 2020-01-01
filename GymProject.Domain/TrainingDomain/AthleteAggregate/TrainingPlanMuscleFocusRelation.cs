@@ -53,7 +53,15 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
             => new TrainingPlanMuscleFocusRelation(trainingPlan, muscleId);
 
+
         #endregion
+
+
+        protected override IEnumerable<object> GetIdentifyingFields()
+        {
+            yield return MuscleGroupId;
+            yield return UserTrainingPlanId;
+        }
 
     }
 }

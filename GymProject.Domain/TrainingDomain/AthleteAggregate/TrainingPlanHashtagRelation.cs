@@ -63,5 +63,11 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #endregion
 
 
+        protected override IEnumerable<object> GetIdentifyingFields()
+        {
+            yield return UserTrainingPlanId;
+            yield return HashtagId;
+        }
+
     }
 }

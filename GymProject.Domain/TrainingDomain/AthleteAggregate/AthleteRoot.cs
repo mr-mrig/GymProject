@@ -140,7 +140,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <exception cref="InvalidOperationException">If more than one element found</exception>
         public UserTrainingPhaseRelation CloneCurrentTrainingPhase()
 
-            => CloneTrainingPhaseAt(DateTime.UtcNow);
+            => CloneTrainingPhaseAt(DateTime.UtcNow.Date);
 
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <exception cref="InvalidOperationException">If more than one element found</exception>
         public UserTrainingProficiencyRelation CloneCurrentTrainingProficiency()
 
-            => CloneTrainingProficiencyAt(DateTime.UtcNow);
+            => CloneTrainingProficiencyAt(DateTime.UtcNow.Date);
 
 
         /// <summary>
@@ -221,16 +221,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             if (startDate != null)
             {
                 // Removing this coinstraint would require the Domain to manage potentially overlapping phases
-                if (startDate.Value < DateTime.UtcNow)
+                if (startDate.Value < DateTime.UtcNow.Date)
                     throw new InvalidOperationException($"Cannot start a Training Phase over an elapsed period: {startDate.Value.ToShortTimeString()} - {endDate.Value.ToShortTimeString()} ");
 
-                newPhase = UserTrainingPhaseRelation.PlanPhase(phaseId, this, startDate.Value, endDate, entryVisibility, ownerNote);
+                newPhase = UserTrainingPhaseRelation.PlanPhase(this, phaseId, startDate.Value, endDate, entryVisibility, ownerNote);
             }
             else
-                newPhase = UserTrainingPhaseRelation.StartPhase(phaseId, this, DateTime.UtcNow, entryVisibility, ownerNote);
+                newPhase = UserTrainingPhaseRelation.StartPhase(this, phaseId, DateTime.UtcNow.Date, entryVisibility, ownerNote);
 
             // Close the previous phase, if any
-            CloseOpenPhases(startDate ?? DateTime.UtcNow);
+            CloseOpenPhase(startDate ?? DateTime.UtcNow.Date);
 
             // Start the new one
             _trainingPhases.Add(newPhase);
@@ -244,21 +244,25 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// </summary>
         public void CloseCurrentPhase()
 
-            => CloseOpenPhases(DateTime.UtcNow);
+            => CloseOpenPhase(DateTime.UtcNow.Date);
 
 
         /// <summary>
-        /// Change the start date of the Training Phase currently starting from
+        /// Change the start date of the Training Phase currently starting from.
+        /// Please notice that also the previous phase shifts according to new boundary - However shifting before the previous phase start date will raise an exception.
         /// </summary>
         /// <param name="newStartDate">The new start date</param>
         /// <param name="oldStartdate">The date which the phase currently stats from</param>
-        /// <exception cref="ValueObjectInvariantViolationException">If chronological order violated</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If business rule violated</exception>
         /// <exception cref="InvalidOperationException">If could not find any Training Phase accordint o the start date specified</exception>
         public void ShiftTrainingPhaseStartDate(DateTime oldStartdate, DateTime newStartDate)
         {
-            UserTrainingPhaseRelation userPhase = FindPhaseStartingFrom(oldStartdate);
-            userPhase.ShiftStartDate(newStartDate);
+            UserTrainingPhaseRelation phase = FindPhaseStartingFrom(oldStartdate);
+            UserTrainingPhaseRelation prevPhase = FindPhaseBeforeOrDefault(phase);
+
+            phase.ShiftStartDate(newStartDate);
+            prevPhase.Close(newStartDate);
+
             TestBusinessRules();
         }
 
@@ -293,7 +297,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <exception cref="InvalidOperationException">If try to start a phase over a past period</exception>
         public void AchieveTrainingProficiency(uint proficiencyId)
         {
-            UserTrainingProficiencyRelation proficiency = UserTrainingProficiencyRelation.AchieveTrainingProficiency(proficiencyId, DateTime.UtcNow);
+            UserTrainingProficiencyRelation proficiency = UserTrainingProficiencyRelation.AchieveTrainingProficiency(proficiencyId, DateTime.UtcNow.Date);
 
             // Close the previous proficiency level, if any
             CloseTrainingProficiencyLevel();
@@ -532,20 +536,33 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #region Private Methods
 
         /// <summary>
-        /// Close all the phases still not completed at the specified date
+        /// Close the phase still not completed at the specified date.
+        /// This might not corespond to the current date, as planned future phases must be considered as well.
         /// </summary>
         /// <param name="checkDate">The date</param>
-        private void CloseOpenPhases(DateTime checkDate)
+        /// <exception cref="InvalidOperationException">If trying to insert two phases starting on the same date</exception>
+        private void CloseOpenPhase(DateTime checkDate)
         {
-            _trainingPhases.SingleOrDefault(x => x.EndDate == null 
-                || DateRangeValue.IsDateBetween(checkDate, x.StartDate, x.EndDate.Value))?.Close();       // Do not use the public method as we need the reference, not the value copy   
+            UserTrainingPhaseRelation currentPhase = _trainingPhases.SingleOrDefault(x => 
+                DateRangeValue.IsDateBetween(checkDate, x.StartDate, x.EndDate));              // Do not use the public method as we need the reference, not the value copy
+
+            //UserTrainingPhaseRelation currentPhase = _trainingPhases.SingleOrDefault(x => x.EndDate == null
+            //    || DateRangeValue.IsDateBetween(checkDate, x.StartDate, x.EndDate.Value));              // Do not use the public method as we need the reference, not the value copy 
+
+            if (currentPhase != null)
+            {
+                if (currentPhase.StartDate.Date == checkDate.Date)
+                    throw new InvalidOperationException($"Cannot insert two phases starting on the same date. This case should be handled elsewhere.");
+                else 
+                    currentPhase.Close(checkDate);  
+            }
         }
 
 
         /// <summary>
-        /// Close all the phases still not completed at the specified date
+        /// Close the current User Training Proficiency
         /// </summary>
-        /// <param name="checkDate">The date</param>
+
         private void CloseTrainingProficiencyLevel()
         {
             _trainingProficiencies.SingleOrDefault(x => x.EndDate == null)?.Close();     // Do not use the public method as we need the reference, not the value copy   
@@ -553,14 +570,26 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
         /// <summary>
-        /// Get the Training Plan with the specified ID
+        /// Get the User Training Phase starting at the specified date
         /// </summary>
-        /// <param name="trainingPlanId">the ID</param>
-        /// <returns>The UserTrainingPlan reference instance</returns>
+        /// <param name="startDate">the starting date</param>
+        /// <returns>The UserTrainingPhaseRelation reference instance</returns>
         /// <exception cref="InvalidOperationException">If no entity with the specified search key</exception>
         private UserTrainingPhaseRelation FindPhaseStartingFrom(DateTime startDate)
 
             => _trainingPhases.Single(x => x.StartDate == startDate);
+
+
+        /// <summary>
+        /// Get the User Training Phase right before the specified one, namely the first phase which start date precedes it
+        /// </summary>
+        /// <param name="phase">The phase</param>
+        /// <returns>The UserTrainingPhaseRelation reference instance or null if nothing found</returns>
+        /// <exception cref="InvalidOperationException">If no entity with the specified search key</exception>
+        private UserTrainingPhaseRelation FindPhaseBeforeOrDefault(UserTrainingPhaseRelation phase)
+
+            => _trainingPhases?.OrderBy(x => x.StartDate)
+                .LastOrDefault(x => x.StartDate < phase.StartDate); 
 
 
         /// <summary>
@@ -581,7 +610,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         private bool AtMostOneTrainingPhaseOpen()
 
-            => _trainingPhases.Count(x => x.EndDate == null || DateRangeValue.IsDateBetween(DateTime.UtcNow, x.StartDate, x.EndDate.Value)) <= 1;
+            => _trainingPhases.Count(x => x.EndDate == null || DateRangeValue.IsDateStrictlyBetween(DateTime.UtcNow.Date, x.StartDate, x.EndDate.Value)) <= 1;
 
         
         private bool NoOverlappingPhases()
@@ -640,8 +669,8 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             //if (!NoNullTrainingPhases())
             //    throw new TrainingDomainInvariantViolationException($"A user cannot have no NULL Training Phases.");
 
-            if (!AtMostOneTrainingPhaseOpen())
-                throw new TrainingDomainInvariantViolationException($"A user can have no more than one Training Phase open.");
+            //if (!AtMostOneTrainingPhaseOpen())
+            //    throw new TrainingDomainInvariantViolationException($"A user can have no more than one Training Phase open.");
             
             if (!NoOverlappingPhases())
                 throw new TrainingDomainInvariantViolationException($"A user cannot have overlapping phases");

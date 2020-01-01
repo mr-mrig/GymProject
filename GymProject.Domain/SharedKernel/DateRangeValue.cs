@@ -148,15 +148,8 @@ namespace GymProject.Domain.SharedKernel
         /// <param name="toCheck">The date to be checked</param>
         /// <returns>True if date inside DateRange boundaries</returns>
         public bool Includes(DateTime toCheck)
-        {
-            if (Start == null)
-                return toCheck <= (End ?? toCheck);
 
-            if (End == null)
-                return toCheck >= (Start ?? toCheck);
-
-            return IncludesStrictly(toCheck);
-        }
+            => IsDateBetween(toCheck, Start, End);
 
 
         /// <summary>
@@ -168,7 +161,7 @@ namespace GymProject.Domain.SharedKernel
         /// <exception cref="InvalidOperationException">If one of the boundaries is null</exception>
         public bool IncludesStrictly(DateTime toCheck)
 
-            => IsDateBetween(toCheck, Start.Value, End.Value);
+            => IsDateStrictlyBetween(toCheck, Start.Value, End.Value);
 
 
         /// <summary>
@@ -308,8 +301,26 @@ namespace GymProject.Domain.SharedKernel
         /// <param name="startDate">The left boundary of the period to check</param>
         /// <param name="endDate">The right boundary of the period to check</param>
         /// <returns>True if the date occurs between - or at - the edge dates</returns>
-        public static bool IsDateBetween(DateTime toCheck, DateTime startDate, DateTime endDate) => toCheck >= startDate && toCheck <= endDate;
+        public static bool IsDateStrictlyBetween(DateTime toCheck, DateTime startDate, DateTime endDate) => toCheck >= startDate && toCheck <= endDate;
 
+        /// <summary>
+        /// Check whether the specified date is between the two edge ones, including the case when .
+        /// Returns true even when the date is strictly equal to one of the boundaries.
+        /// </summary>
+        /// <param name="toCheck">The date to be checked</param>
+        /// <param name="startDate">The left boundary of the period to check</param>
+        /// <param name="endDate">The right boundary of the period to check</param>
+        /// <returns>True if the date occurs between - or at - the edge dates</returns>
+        public static bool IsDateBetween(DateTime toCheck, DateTime? startDate, DateTime? endDate)
+        {
+            if (startDate == null)
+                return toCheck <= (endDate ?? toCheck);
+
+            if (endDate == null)
+                return toCheck >= (startDate ?? toCheck);
+
+            return IsDateStrictlyBetween(toCheck, startDate.Value, endDate.Value);
+        }
 
         /// <summary>
         /// Check whether the specified period are overlapping.

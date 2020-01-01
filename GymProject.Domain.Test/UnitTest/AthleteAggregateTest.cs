@@ -1,5 +1,4 @@
 ﻿using GymProject.Domain.SharedKernel;
-using GymProject.Domain.SharedKernel;
 using GymProject.Domain.Test.Util;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.Exceptions;
@@ -39,12 +38,12 @@ namespace GymProject.Domain.Test.UnitTest
             Assert.Equal(userid, athlete.Id);
         }
 
-
         [Fact]
         public void RegisterAthlete_Full()
         {
             uint userid = 1;
             AthleteRoot athlete;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
 
             // Null lists
             List<UserTrainingPhaseRelation> phases = null;
@@ -73,9 +72,9 @@ namespace GymProject.Domain.Test.UnitTest
             // Ordinary test
             phases = new List<UserTrainingPhaseRelation>()
             {
-               UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.Date.AddDays(-200), DateTime.UtcNow.Date.AddDays(-150), PersonalNoteValue.Write("note0")),
-               UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.Date.AddDays(-100), DateTime.UtcNow.Date, PersonalNoteValue.Write("note0")),
-               UserTrainingPhaseRelation.StartPhasePrivate(1, DateTime.UtcNow.AddDays(1)),
+               UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.Date.AddDays(-200), DateTime.UtcNow.Date.AddDays(-150), PersonalNoteValue.Write("note0")),
+               UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.Date.AddDays(-100), DateTime.UtcNow.Date, PersonalNoteValue.Write("note0")),
+               UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.AddDays(1)),
             };
             proficiencies = new List<UserTrainingProficiencyRelation>()
             {
@@ -98,6 +97,34 @@ namespace GymProject.Domain.Test.UnitTest
         }
 
 
+
+        [Fact]
+        public void RegisterAthlete_BusinessRuleFail_Phase()
+        {
+            uint userid = 1;
+            AthleteRoot athlete;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
+
+            // 1 At most one Phase open
+            List<UserTrainingProficiencyRelation> proficiencies = null;
+            List<UserTrainingPlanEntity> plans = null;
+            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
+            {
+                UserTrainingPhaseRelation.StartPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100)),
+                UserTrainingPhaseRelation.StartPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(10)),
+            };
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans));
+
+            // 2 No overlapping phases
+            phases = new List<UserTrainingPhaseRelation>
+            {
+                UserTrainingPhaseRelation.StartPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100)),
+                UserTrainingPhaseRelation.PlanPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.AddDays(-150), DateTime.UtcNow.AddDays(-50)),
+            };
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans));
+        }
+
+
         [Fact]
         public void RegisterAthlete_BusinessRuleFail_TrainingPlan()
         {
@@ -109,7 +136,7 @@ namespace GymProject.Domain.Test.UnitTest
 
             Assert.Throws<TrainingDomainInvariantViolationException>(() => UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1, parentPlanId: 1));
 
-            // 2 No duplicate training plans
+            //// 2 No duplicate training plans
             List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
             {
                 UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1),
@@ -117,34 +144,6 @@ namespace GymProject.Domain.Test.UnitTest
             };
             Assert.Throws<TrainingDomainInvariantViolationException>(() => AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans));
         }
-
-
-
-        [Fact]
-        public void RegisterAthlete_BusinessRuleFail_Phase()
-        {
-            uint userid = 1;
-            AthleteRoot athlete;
-
-            // 1 At most one Phase open
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPlanEntity> plans = null;
-            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.StartPhasePublic(1, DateTime.UtcNow.AddDays(-100)),
-                UserTrainingPhaseRelation.StartPhasePublic(1, DateTime.UtcNow.AddDays(10)),
-            };
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans));
-
-            // 2 No overlapping phases
-            phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.StartPhasePublic(1, DateTime.UtcNow.AddDays(-100)),
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-150), DateTime.UtcNow.AddDays(-50)),
-            };
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans));
-        }
-
 
 
 
@@ -179,25 +178,17 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint userid = 1;
             AthleteRoot athlete;
-            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>();
-            List<UserTrainingProficiencyRelation> proficiencies = new List<UserTrainingProficiencyRelation>();
 
             // 1 Training Plan cannot be parent of itself - One plan only
-            List<UserTrainingPlanEntity> plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+            athlete = AthleteRoot.RegisterAthlete(userid);
+            athlete.AddTrainingPlanToLibrary(1);
             Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete.MakeTrainingPlanVariantOf(1, 1));
 
             // 2 Training Plan cannot be parent of itself - More plans
-            plans = new List<UserTrainingPlanEntity>()
-            {
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(3),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(1),
-                UserTrainingPlanEntity.InclueTrainingPlanInUserLibrary(2),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+            athlete = AthleteRoot.RegisterAthlete(userid);
+            athlete.AddTrainingPlanToLibrary(3);
+            athlete.AddTrainingPlanToLibrary(1);
+            athlete.AddTrainingPlanToLibrary(2);
             Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete.MakeTrainingPlanVariantOf(1, 1));
         }
 
@@ -207,39 +198,25 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint userid = 1;
             AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
+            AthleteRoot dummyAthlete = athlete = AthleteRoot.RegisterAthlete(userid);
+
+            List <UserTrainingProficiencyRelation> proficiencies = null;
             List<UserTrainingPlanEntity> plans = null;
+            List<UserTrainingPhaseRelation> phases;
 
-            // 1 At most one Phase open - Two phasese only
-            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
+            // Cannot insert two phases starting on the same date
+            phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.StartPhasePublic(1, DateTime.UtcNow.AddDays(-100)),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.Date, DateTime.UtcNow.AddDays(10)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             Assert.Throws<InvalidOperationException>(() => athlete.StartTrainingPhase(5, EntryStatusTypeEnum.Pending, DateTime.UtcNow));
 
-            // 2 At most one Phase open - More phases
+            // Cannot insert two phases starting on the same date - More phases
             phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.StartPhasePublic(1, DateTime.UtcNow.AddDays(-100)),
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            Assert.Throws<InvalidOperationException>(() => athlete.StartTrainingPhase(5, EntryStatusTypeEnum.Pending, DateTime.UtcNow));
-
-            // 3 No overlapping phases - Two phases only
-            phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(10)),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            Assert.Throws<InvalidOperationException>(() => athlete.StartTrainingPhase(5, EntryStatusTypeEnum.Pending, DateTime.UtcNow));
-
-            // 4 No overlapping phases - More phases
-            phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(10)),
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-10)),
+                UserTrainingPhaseRelation.PlanPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.Date, DateTime.UtcNow.AddDays(10)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             Assert.Throws<InvalidOperationException>(() => athlete.StartTrainingPhase(5, EntryStatusTypeEnum.Pending, DateTime.UtcNow));
@@ -247,8 +224,8 @@ namespace GymProject.Domain.Test.UnitTest
             // 5 Start a Phase placed in the past
             phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(10)),
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(10)),
+                UserTrainingPhaseRelation.PlanPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             Assert.Throws<InvalidOperationException>(() => athlete.StartTrainingPhase(5, EntryStatusTypeEnum.Pending, DateTime.UtcNow.AddDays(-1000)));
@@ -256,8 +233,8 @@ namespace GymProject.Domain.Test.UnitTest
             // 6 Start a Phase placed in the past
             phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(10)),
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(10)),
+                UserTrainingPhaseRelation.PlanPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             Assert.Throws<InvalidOperationException>(() => athlete.StartTrainingPhase(5, EntryStatusTypeEnum.Pending, DateTime.UtcNow.AddDays(-1000), DateTime.UtcNow.AddDays(-900)));
@@ -337,46 +314,147 @@ namespace GymProject.Domain.Test.UnitTest
 
 
         [Fact]
+        public void Athlete_StartTrainingPhase_Legacy()
+        {
+            //uint userid = 1;
+            //uint newPhaseId = 5;
+            //AthleteRoot athlete;
+            //List<UserTrainingProficiencyRelation> proficiencies = null;
+            //List<UserTrainingPlanEntity> plans = null;
+
+            //// At most one Phase open - Two phasese only
+            //List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
+            //{
+            //    UserTrainingPhaseRelation.StartPhasePrivate(1, DateTime.UtcNow.AddDays(-100)),
+            //};
+            //athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+            //athlete.StartTrainingPhase(newPhaseId, EntryStatusTypeEnum.Pending, null, null, PersonalNoteValue.Write("note"));
+
+            //List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
+            //{
+            //    UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-1)),
+            //    UserTrainingPhaseRelation.StartPhasePublic(newPhaseId, DateTime.UtcNow, PersonalNoteValue.Write("note")),
+            //};
+
+            //CheckPhases(expected, athlete.TrainingPhases);
+
+            //// At most one Phase open - More phases
+            //phases = new List<UserTrainingPhaseRelation>
+            //{
+            //    UserTrainingPhaseRelation.StartPhasePrivate(1, DateTime.UtcNow.AddDays(-100)),
+            //    UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300),
+            //        PersonalNoteValue.Write("hello")),
+            //};
+            //athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+            //athlete.StartTrainingPhase(newPhaseId, EntryStatusTypeEnum.Pending, DateTime.UtcNow.AddDays(10));
+
+            //expected = new List<UserTrainingPhaseRelation>
+            //{
+            //    UserTrainingPhaseRelation.PlanPhasePrivate(1,DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-1)),
+            //    UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
+            //    UserTrainingPhaseRelation.StartPhasePublic(newPhaseId, DateTime.UtcNow.AddDays(10), PersonalNoteValue.Write("hello")),
+            //};
+            //CheckPhases(expected, athlete.TrainingPhases);
+        }
+
+        [Fact]
         public void Athlete_StartTrainingPhase()
         {
-            uint userid = 1;
-            uint newPhaseId = 5;
             AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPlanEntity> plans = null;
+            uint userid = 1;
+            uint phaseId = 1;
+            DateTime startDate1 = DateTime.UtcNow.AddDays(100).Date;
+            DateTime startDate2 = startDate1.AddDays(100).Date;
 
-            // At most one Phase open - Two phasese only
-            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, DateTime.UtcNow.AddDays(-100)),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            athlete.StartTrainingPhase(newPhaseId, EntryStatusTypeEnum.Pending, null, null, PersonalNoteValue.Write("note"));
+            athlete = AthleteRoot.RegisterAthlete(userid);
+            athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Pending, null, null, PersonalNoteValue.Write("note"));
+            athlete.StartTrainingPhase(phaseId + 1, EntryStatusTypeEnum.Pending, startDate1, startDate2.AddDays(-1));
+            athlete.StartTrainingPhase(phaseId + 2, EntryStatusTypeEnum.Pending, startDate2, null, PersonalNoteValue.Write("note"));
 
             List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-1)),
-                UserTrainingPhaseRelation.StartPhasePublic(newPhaseId, DateTime.UtcNow, PersonalNoteValue.Write("note")),
+                UserTrainingPhaseRelation.PlanPhasePublic(athlete, phaseId, DateTime.UtcNow.Date, startDate1.AddDays(-1), PersonalNoteValue.Write("note")),
+                UserTrainingPhaseRelation.PlanPhasePublic(athlete, phaseId + 1, startDate1, startDate2.AddDays(-1)),
+                UserTrainingPhaseRelation.PlanPhasePublic(athlete, phaseId + 2, startDate2, null),
             };
 
             CheckPhases(expected, athlete.TrainingPhases);
+        }
 
-            // At most one Phase open - More phases
-            phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, DateTime.UtcNow.AddDays(-100)),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300),
-                    PersonalNoteValue.Write("hello")),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            athlete.StartTrainingPhase(newPhaseId, EntryStatusTypeEnum.Pending, DateTime.UtcNow.AddDays(10));
+        [Fact]
+        public void Athlete_StartTrainingPhase_StartNotCronologicallyOrderedPhases_Fail()
+        {
+            // Here the user is starting two phases, one of them in the future
+            // Should the end date of the first phase be adjusted not to leave gaps
+            // or should the operation fail until the user selects and end date for it - see next test case - ?
+            // For now, we let the operation fail.
 
-            expected = new List<UserTrainingPhaseRelation>
+            AthleteRoot athlete;
+            uint userid = 1;
+            uint phaseId = 1;
+            DateTime startDate1 = DateTime.UtcNow.AddDays(100).Date;
+            DateTime startDate2 = DateTime.UtcNow.AddDays(10).Date;
+
+            athlete = AthleteRoot.RegisterAthlete(userid);
+            athlete.StartTrainingPhase(phaseId + 1, EntryStatusTypeEnum.Private, startDate1);
+            Assert.Throws<TrainingDomainInvariantViolationException>(() =>
+                athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, startDate2, null, PersonalNoteValue.Write("note")));
+
+            //List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
+            //{
+            //    UserTrainingPhaseRelation.PlanPhasePrivate(athlete, phaseId + 1, startDate1, null),
+            //    UserTrainingPhaseRelation.PlanPhasePrivate(athlete, phaseId, startDate2, startDate1.AddDays(-1), PersonalNoteValue.Write("note")),
+            //};
+
+            //CheckPhases(expected, athlete.TrainingPhases);
+        }
+
+        [Fact]
+        public void Athlete_StartTrainingPhase_PlanNotCronologicallyOrderedPhases_Success()
+        {
+            // Here the user is planning two future phases leaving a gap between them
+            // The operation must be allowed and the gap should be left as plnned, 
+            // since the user is taking the ownership of this operation by scheduling on specific periods
+
+            AthleteRoot athlete;
+            uint userid = 1;
+            uint phaseId = 1;
+            DateTime startDate1 = DateTime.UtcNow.AddDays(100).Date;
+            DateTime startDate2 = DateTime.UtcNow.Date;
+            DateTime endDate2 = startDate1.AddDays(-10);
+
+            athlete = AthleteRoot.RegisterAthlete(userid);
+            athlete.StartTrainingPhase(phaseId + 1, EntryStatusTypeEnum.Private, startDate1);
+            athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, startDate2, endDate2, PersonalNoteValue.Write("note"));
+
+            List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.PlanPhasePrivate(1,DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-1)),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-500), DateTime.UtcNow.AddDays(-300)),
-                UserTrainingPhaseRelation.StartPhasePublic(newPhaseId, DateTime.UtcNow.AddDays(10), PersonalNoteValue.Write("hello")),
+                UserTrainingPhaseRelation.PlanPhasePrivate(athlete, phaseId + 1, startDate1, null),
+                UserTrainingPhaseRelation.PlanPhasePrivate(athlete, phaseId, startDate2, endDate2, PersonalNoteValue.Write("note")),
             };
+
+            CheckPhases(expected, athlete.TrainingPhases);
+        }
+
+        [Fact]
+        public void Athlete_StartTrainingPhase_NonClosedPhases()
+        {
+            AthleteRoot athlete;
+            uint userid = 1;
+            uint phaseId = 1;
+            DateTime startDate1 = DateTime.UtcNow.AddDays(100);
+            DateTime endDate1 = startDate1.AddDays(100);
+
+            athlete = AthleteRoot.RegisterAthlete(userid);
+            athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, null, null, PersonalNoteValue.Write("this should be closed auotmatically"));
+            athlete.StartTrainingPhase(phaseId + 1, EntryStatusTypeEnum.Private, startDate1, endDate1);
+
+            List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
+            {
+                UserTrainingPhaseRelation.PlanPhasePrivate(athlete, phaseId, DateTime.UtcNow.Date, startDate1.AddDays(-1), PersonalNoteValue.Write("this should be closed auotmatically")),
+                UserTrainingPhaseRelation.PlanPhasePrivate(athlete, phaseId + 1, startDate1, endDate1),
+            };
+
             CheckPhases(expected, athlete.TrainingPhases);
         }
 
@@ -386,21 +464,22 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint userid = 1;
             AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
+            List <UserTrainingProficiencyRelation> proficiencies = null;
             List<UserTrainingPlanEntity> plans = null;
 
             List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, DateTime.UtcNow.AddDays(-10)),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.AddDays(-10)),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             athlete.CloseCurrentPhase();
 
             List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.PlanPhasePrivate(1, DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-1)),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
+                UserTrainingPhaseRelation.PlanPhasePrivate(dummyAthlete, 1, DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-1)),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
             };
 
             CheckPhases(expected, athlete.TrainingPhases);
@@ -414,29 +493,20 @@ namespace GymProject.Domain.Test.UnitTest
             DateTime phaseStartDate = DateTime.UtcNow.AddDays(-10);
             DateTime newStartDate = DateTime.UtcNow.AddDays(-2);
             AthleteRoot athlete;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
+
             List<UserTrainingProficiencyRelation> proficiencies = null;
             List<UserTrainingPlanEntity> plans = null;
 
             // Phase not found
             List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, phaseStartDate),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, phaseStartDate),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             Assert.Throws<InvalidOperationException>(() => athlete.ShiftTrainingPhaseStartDate(phaseStartDate.AddDays(100), newStartDate));
-
-
-            // Phase violating business rules
-            phases = new List<UserTrainingPhaseRelation>
-            {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, phaseStartDate),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
-            };
-            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
-            Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete.ShiftTrainingPhaseStartDate(phaseStartDate, newStartDate.AddDays(-70)));
         }
-
 
 
         [Fact]
@@ -446,24 +516,79 @@ namespace GymProject.Domain.Test.UnitTest
             DateTime phaseStartDate = DateTime.UtcNow.AddDays(-10);
             DateTime newStartDate = DateTime.UtcNow.AddDays(-2);
             AthleteRoot athlete;
-            List<UserTrainingProficiencyRelation> proficiencies = null;
-            List<UserTrainingPlanEntity> plans = null;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
 
+            List <UserTrainingProficiencyRelation> proficiencies = null;
+            List<UserTrainingPlanEntity> plans = null;
             List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, phaseStartDate),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, phaseStartDate),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
             };
             athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
             athlete.ShiftTrainingPhaseStartDate(phaseStartDate, newStartDate);
 
             List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
             {
-                UserTrainingPhaseRelation.StartPhasePrivate(1, newStartDate),
-                UserTrainingPhaseRelation.PlanPhasePublic(1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, newStartDate),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, DateTime.UtcNow.AddDays(-100), DateTime.UtcNow.AddDays(-50)),
             };
 
             CheckPhases(expected, athlete.TrainingPhases);
+        }
+
+
+        [Fact]
+        public void Athlete_ShiftTrainingPhaseStartDate_BeforePreviousPhaseEnds()
+        {
+            uint userid = 1;
+            DateTime phaseStartDate = DateTime.UtcNow.AddDays(-10);
+            DateTime phaseStartDate2 = DateTime.UtcNow.AddDays(-100);
+            DateTime newStartDate = DateTime.UtcNow.AddDays(-72);
+            AthleteRoot athlete;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
+
+            List<UserTrainingProficiencyRelation> proficiencies = null;
+            List<UserTrainingPlanEntity> plans = null;
+            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
+            {
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, phaseStartDate),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, phaseStartDate2, DateTime.UtcNow.AddDays(-50)),
+            };
+            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+            athlete.ShiftTrainingPhaseStartDate(phaseStartDate, newStartDate);
+
+            List<UserTrainingPhaseRelation> expected = new List<UserTrainingPhaseRelation>
+            {
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, newStartDate),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, phaseStartDate2, newStartDate.AddDays(-1)),
+            };
+
+            CheckPhases(expected, athlete.TrainingPhases);
+        }
+
+
+        [Fact]
+        public void Athlete_ShiftTrainingPhaseStartDate_BeforeOrEqualPreviousPhaseStarts_Fail()
+        {
+            // This test forces one phase to be one day only, which violates the business rules
+
+            uint userid = 1;
+            DateTime phaseStartDate = DateTime.UtcNow.AddDays(-10);
+            DateTime phaseStartDate2 = DateTime.UtcNow.AddDays(-100);
+            DateTime newStartDate = phaseStartDate2.AddDays(1);
+            AthleteRoot athlete;
+            AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(userid);
+
+            List<UserTrainingProficiencyRelation> proficiencies = null;
+            List<UserTrainingPlanEntity> plans = null;
+            List<UserTrainingPhaseRelation> phases = new List<UserTrainingPhaseRelation>
+            {
+                UserTrainingPhaseRelation.StartPhasePrivate(dummyAthlete, 1, phaseStartDate),
+                UserTrainingPhaseRelation.PlanPhasePublic(dummyAthlete, 1, phaseStartDate2, DateTime.UtcNow.AddDays(-50)),
+            };
+            athlete = AthleteRoot.RegisterAthlete(userid, phases, proficiencies, plans);
+            Assert.Throws<TrainingDomainInvariantViolationException>(() => athlete.ShiftTrainingPhaseStartDate(phaseStartDate, newStartDate));
         }
 
 

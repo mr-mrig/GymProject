@@ -2,6 +2,7 @@
 using GymProject.Domain.TrainingDomain.Exceptions;
 using GymProject.Domain.SharedKernel;
 using System;
+using System.Collections.Generic;
 
 namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 {
@@ -49,7 +50,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// FK to the User/Athlete
         /// </summary>
-        public uint? UserId { get; private set; } = null;
+        public uint? UserId { get; private set; } = null;       // Do not rename - EF core
 
         /// <summary>
         /// Navigation Property to the Athlete Aggregate Root
@@ -99,7 +100,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="entryStatus">The status of the phase entry</param>
         /// <param name="trainerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        internal static UserTrainingPhaseRelation PlanPhase(uint? phaseId, AthleteRoot athlete, DateTime startDate, DateTime? endDate, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
+        internal static UserTrainingPhaseRelation PlanPhase(AthleteRoot athlete, uint? phaseId,  DateTime startDate, DateTime? endDate, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
 
             => new UserTrainingPhaseRelation(phaseId, athlete, startDate, endDate, entryStatus, trainerNote);
 
@@ -112,7 +113,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="entryStatus">The status of the phase entry</param>
         /// <param name="trainerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        internal static UserTrainingPhaseRelation StartPhase(uint? phaseId, AthleteRoot athlete, DateTime startingFrom, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
+        internal static UserTrainingPhaseRelation StartPhase(AthleteRoot athlete, uint? phaseId, DateTime startingFrom, EntryStatusTypeEnum entryStatus, PersonalNoteValue trainerNote)
 
             => new UserTrainingPhaseRelation(phaseId, athlete, startingFrom, null, entryStatus, trainerNote);
 
@@ -124,9 +125,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRelation StartPhasePublic(uint? phaseId, AthleteRoot athlete, DateTime startingFrom, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation StartPhasePublic(AthleteRoot athlete, uint? phaseId, DateTime startingFrom, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, athlete, startingFrom, null, EntryStatusTypeEnum.Pending, ownerNote);
+            => PlanPhase(athlete, phaseId, startingFrom, null, EntryStatusTypeEnum.Pending, ownerNote);
 
 
         /// <summary>
@@ -136,9 +137,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRelation StartPhasePrivate(uint? phaseId, AthleteRoot athlete, DateTime startingFrom, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation StartPhasePrivate(AthleteRoot athlete, uint? phaseId, DateTime startingFrom, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, athlete, startingFrom, null, EntryStatusTypeEnum.Private, ownerNote);
+            => PlanPhase(athlete, phaseId, startingFrom, null, EntryStatusTypeEnum.Private, ownerNote);
 
 
         /// <summary>
@@ -149,9 +150,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRelation PlanPhasePublic(uint? phaseId, AthleteRoot athlete, DateTime startDate, DateTime? endDate, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation PlanPhasePublic(AthleteRoot athlete, uint? phaseId, DateTime startDate, DateTime? endDate, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, athlete, startDate, endDate, EntryStatusTypeEnum.Pending, ownerNote);
+            => PlanPhase(athlete, phaseId, startDate, endDate, EntryStatusTypeEnum.Pending, ownerNote);
 
 
         /// <summary>
@@ -162,9 +163,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="phaseId">The ID of the phase to be started</param>
         /// <param name="ownerNote">The owner's note</param>
         /// <returns>A new UserPhase instance</returns>
-        public static UserTrainingPhaseRelation PlanPhasePrivate(uint? phaseId, AthleteRoot athlete, DateTime startDate, DateTime? endDate, PersonalNoteValue ownerNote = null)
+        public static UserTrainingPhaseRelation PlanPhasePrivate(AthleteRoot athlete, uint? phaseId, DateTime startDate, DateTime? endDate, PersonalNoteValue ownerNote = null)
 
-            => PlanPhase(phaseId, athlete, startDate, endDate, EntryStatusTypeEnum.Private, ownerNote);
+            => PlanPhase(athlete, phaseId, startDate, endDate, EntryStatusTypeEnum.Private, ownerNote);
 
         #endregion
 
@@ -173,11 +174,14 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #region Business Methods
 
         /// <summary>
-        /// Close the Phase as a new one is started.
-        /// The previous Phase level finishes the day before the current one
+        /// Close the Phase as a new one is started, by setting its finish date to the day before of the new one
         /// </summary>
-        public void Close() => EndDate = DateTime.UtcNow.AddDays(-1);
-
+        /// <param name="newPhaseStartDate">The starting date of the phase which has just been planned</param>
+        public void Close(DateTime newPhaseStartDate)
+        {
+            EndDate = newPhaseStartDate.AddDays(-1);       // This forces the phases to be contiguous, hence non option to leave gaps! Is this correct?
+            TestBusinessRules();
+        }
 
         /// <summary>
         /// Attach the note of the owner
@@ -229,21 +233,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         public object Clone()
 
-            => PlanPhase(PhaseId, Athlete, StartDate, EndDate, EntryStatus, OwnerNote);
+            => PlanPhase(Athlete, PhaseId, StartDate, EndDate, EntryStatus, OwnerNote);
 
 
         #endregion
 
-
-
-        //protected override IEnumerable<object> GetAtomicValues()
-        //{
-        //    yield return StartDate;
-        //    yield return EndDate;
-        //    yield return OwnerNote;
-        //    yield return EntryStatus;
-        //    yield return PhaseId;
-        //    yield return Athlete;
-        //}
+        protected override IEnumerable<object> GetIdentifyingFields()
+        {
+            yield return UserId;
+            yield return PhaseId;
+            yield return StartDate;
+        }
     }
 }

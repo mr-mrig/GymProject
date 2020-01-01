@@ -13,8 +13,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             builder.HasKey(u => u.Id);
 
-            builder.Property(u => u.Id)
-                .ValueGeneratedOnAdd();
+            builder.Property(u => u.Id);
 
             builder.HasOne<UserRoot>()
                 .WithOne()
@@ -24,9 +23,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
                 .WithOne()
                 .HasForeignKey("UserId");
 
-            builder.HasMany(x => x.TrainingPhases)
-                .WithOne()
-                .HasForeignKey("UserId");
+
+            //builder.HasMany(x => x.TrainingPhases)
+            //    .WithOne()
+            //    .HasForeignKey(rel => rel.UserId);
 
             builder.HasMany(x => x.TrainingPlans)
                 .WithOne()

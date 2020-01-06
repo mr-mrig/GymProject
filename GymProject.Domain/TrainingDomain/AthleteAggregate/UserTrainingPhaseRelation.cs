@@ -18,13 +18,13 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
 
         /// <summary>
-        /// The Date the Phase begins
+        /// The Date the Phase begins as a plain date - no time
         /// </summary>
         public DateTime StartDate { get; private set; }
 
 
         /// <summary>
-        /// The Date the Phase ends
+        /// The Date the Phase ends as a plain date - no time
         /// </summary>
         public DateTime? EndDate { get; private set; }
 
@@ -72,8 +72,8 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             Athlete = athlete;
             UserId = athlete.Id;
 
-            StartDate = startDate;
-            EndDate = endDate;
+            StartDate = startDate.Date;
+            EndDate = endDate.HasValue ? endDate.Value.Date : endDate;
             OwnerNote = note;
             EntryStatus = entryStatus;
 
@@ -176,10 +176,10 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// Close the Phase as a new one is started, by setting its finish date to the day before of the new one
         /// </summary>
-        /// <param name="newPhaseStartDate">The starting date of the phase which has just been planned</param>
+        /// <param name="newPhaseStartDate">The starting datetime of the phase which has just been planned. It does not need to be a plain date.</param>
         public void Close(DateTime newPhaseStartDate)
         {
-            EndDate = newPhaseStartDate.AddDays(-1);       // This forces the phases to be contiguous, hence non option to leave gaps! Is this correct?
+            EndDate = newPhaseStartDate.AddDays(-1).Date;       // This forces the phases to be contiguous, hence non option to leave gaps! Is this correct?
             TestBusinessRules();
         }
 
@@ -193,10 +193,10 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// Change the start date
         /// </summary>
-        /// <param name="newStartDate">The new start date</param>
+        /// <param name="newStartDate">The new start datetime - the time part will be ignored.</param>
         public void ShiftStartDate(DateTime newStartDate)
         {
-            StartDate = newStartDate;
+            StartDate = newStartDate.Date;
             TestBusinessRules();
         }
 

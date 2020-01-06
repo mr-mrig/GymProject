@@ -207,8 +207,8 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// </summary>
         /// <param name="phaseId">The Phase ID to schedule</param>
         /// <param name="entryVisibility">The visibilty</param>
-        /// <param name="startDate">The start date the Phase is scheduled from - if not null it must not be placed in the past</param>
-        /// <param name="endDate">The end date the Phase is scheduled to</param>
+        /// <param name="startDate">The start datetime the Phase is scheduled from - if not null it must not be placed in the past. The time part will be ignored.</param>
+        /// <param name="endDate">The end datetime the Phase is scheduled to. The time part will be ignored.</param>
         /// <param name="ownerNote">The owner note - optional</param>
         /// <returns>A value copy of the UserTrainingPhaseRelation object or null if no phthing found</returns>
         /// <exception cref="TrainingDomainInvariantViolationException">If more open phases found</exception>
@@ -221,16 +221,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             if (startDate != null)
             {
                 // Removing this coinstraint would require the Domain to manage potentially overlapping phases
-                if (startDate.Value < DateTime.UtcNow.Date)
+                if (startDate.Value.Date < DateTime.UtcNow.Date)
                     throw new InvalidOperationException($"Cannot start a Training Phase over an elapsed period: {startDate.Value.ToShortTimeString()} - {endDate.Value.ToShortTimeString()} ");
 
                 newPhase = UserTrainingPhaseRelation.PlanPhase(this, phaseId, startDate.Value, endDate, entryVisibility, ownerNote);
             }
             else
-                newPhase = UserTrainingPhaseRelation.StartPhase(this, phaseId, DateTime.UtcNow.Date, entryVisibility, ownerNote);
+                newPhase = UserTrainingPhaseRelation.StartPhase(this, phaseId, DateTime.UtcNow, entryVisibility, ownerNote);
 
             // Close the previous phase, if any
-            CloseOpenPhase(startDate ?? DateTime.UtcNow.Date);
+            CloseOpenPhase(startDate ?? DateTime.UtcNow);
 
             // Start the new one
             _trainingPhases.Add(newPhase);
@@ -244,15 +244,15 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// </summary>
         public void CloseCurrentPhase()
 
-            => CloseOpenPhase(DateTime.UtcNow.Date);
+            => CloseOpenPhase(DateTime.UtcNow);
 
 
         /// <summary>
         /// Change the start date of the Training Phase currently starting from.
         /// Please notice that also the previous phase shifts according to new boundary - However shifting before the previous phase start date will raise an exception.
         /// </summary>
-        /// <param name="newStartDate">The new start date</param>
-        /// <param name="oldStartdate">The date which the phase currently stats from</param>
+        /// <param name="newStartDate">The new start datetime. The time part will be ignored.</param>
+        /// <param name="oldStartdate">The datetime which the phase currently stats from. The time part will be ignored.</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If business rule violated</exception>
         /// <exception cref="InvalidOperationException">If could not find any Training Phase accordint o the start date specified</exception>
         public void ShiftTrainingPhaseStartDate(DateTime oldStartdate, DateTime newStartDate)
@@ -539,19 +539,19 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// Close the phase still not completed at the specified date.
         /// This might not corespond to the current date, as planned future phases must be considered as well.
         /// </summary>
-        /// <param name="checkDate">The date</param>
+        /// <param name="checkDate">The datetime - it does not need to be a plain date</param>
         /// <exception cref="InvalidOperationException">If trying to insert two phases starting on the same date</exception>
         private void CloseOpenPhase(DateTime checkDate)
         {
             UserTrainingPhaseRelation currentPhase = _trainingPhases.SingleOrDefault(x => 
-                DateRangeValue.IsDateBetween(checkDate, x.StartDate, x.EndDate));              // Do not use the public method as we need the reference, not the value copy
+                DateRangeValue.IsDateBetween(checkDate.Date, x.StartDate, x.EndDate));              // Do not use the public method as we need the reference, not the value copy
 
             //UserTrainingPhaseRelation currentPhase = _trainingPhases.SingleOrDefault(x => x.EndDate == null
             //    || DateRangeValue.IsDateBetween(checkDate, x.StartDate, x.EndDate.Value));              // Do not use the public method as we need the reference, not the value copy 
 
             if (currentPhase != null)
             {
-                if (currentPhase.StartDate.Date == checkDate.Date)
+                if (currentPhase.StartDate == checkDate.Date)
                     throw new InvalidOperationException($"Cannot insert two phases starting on the same date. This case should be handled elsewhere.");
                 else 
                     currentPhase.Close(checkDate);  
@@ -572,12 +572,12 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <summary>
         /// Get the User Training Phase starting at the specified date
         /// </summary>
-        /// <param name="startDate">the starting date</param>
+        /// <param name="startDate">the starting datetime - it does not need to be a plain date</param>
         /// <returns>The UserTrainingPhaseRelation reference instance</returns>
         /// <exception cref="InvalidOperationException">If no entity with the specified search key</exception>
         private UserTrainingPhaseRelation FindPhaseStartingFrom(DateTime startDate)
 
-            => _trainingPhases.Single(x => x.StartDate == startDate);
+            => _trainingPhases.Single(x => x.StartDate == startDate.Date);
 
 
         /// <summary>

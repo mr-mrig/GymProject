@@ -18,36 +18,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         public uint ProgressiveNumber { get; private set; } = 0;
 
 
-        ///// <summary>
-        ///// The training volume parameters, as the sum of the params of the single WOs
-        ///// </summary>
-        //public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
-
-
-        ///// <summary>
-        ///// The training effort, as the average of the single WOs efforts
-        ///// </summary>
-        //public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
-
-
-        ///// <summary>
-        ///// The training density parameters, as the sum of the params of the single WOs
-        ///// </summary>
-        //public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
-
-
-        //private List<WorkoutTemplateReferenceEntity> _workouts = new List<WorkoutTemplateReferenceEntity>();
-
-        ///// <summary>
-        ///// The IDs of the Workouts belonging to the TW
-        ///// Provides a value copy: the instance fields must be modified through the instance methods
-        ///// </summary>
-        //public IReadOnlyCollection<WorkoutTemplateReferenceEntity> Workouts
-        //{
-        //    get => _workouts?.Clone().ToList().AsReadOnly() 
-        //        ?? new List<WorkoutTemplateReferenceEntity>().AsReadOnly();
-        //}
-
         private List<uint?> _workoutIds = new List<uint?>();
 
         /// <summary>

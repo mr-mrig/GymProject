@@ -19,23 +19,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         public uint ProgressiveNumber { get; private set; } = 0;
 
 
-        /// <summary>
-        /// The training volume parameters, as the sum of the params of the single WSs
-        /// </summary>
-        public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
-
-
-        /// <summary>
-        /// The training effort, as the average of the single WSs efforts
-        /// </summary>
-        public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
-
-
-        /// <summary>
-        /// The training density parameters, as the sum of the params of the single WSs
-        /// </summary>
-        public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
-
 
         ///// <summary>
         ///// The Work Unit which is linked to this one - If any
@@ -101,10 +84,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             //    ws.AddIntensityTechnique(LinkedWorkUnit.LinkingIntensityTechniqueId.Value);
 
             TestBusinessRules();
-
-            TrainingVolume = TrainingVolumeParametersValue.ComputeFromWorkingSets(workingSets);
-            TrainingDensity = TrainingDensityParametersValue.ComputeFromWorkingSets(workingSets);
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(workingSets, GetMainEffortType());
         }
         #endregion
 
@@ -254,10 +233,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workingSets.Add(copy);
 
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
-            TrainingVolume = TrainingVolume.AddWorkingSet(copy);
-            TrainingDensity = TrainingDensity.AddWorkingSet(copy);
-
             TestBusinessRules();
         }
 
@@ -290,9 +265,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             _workingSets.Add(toAdd);
 
-            TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
-            TrainingVolume = TrainingVolume.AddWorkingSet(toAdd);
-            TrainingDensity = TrainingDensity.AddWorkingSet(toAdd);
             TestBusinessRules();
         }
 
@@ -314,11 +286,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             if (_workingSets.Remove(toRemove))
             {
                 ManageLinkedWorkingSets(toRemove);
-
-                TrainingIntensity = TrainingIntensityParametersValue.ComputeFromWorkingSets(_workingSets, GetMainEffortType());
-                TrainingVolume = TrainingVolume.RemoveWorkingSet(toRemove);
-                TrainingDensity = TrainingDensity.RemoveWorkingSet(toRemove);
-
                 ForceConsecutiveWorkingSetsProgressiveNumbers(progressiveNumber);
                 TestBusinessRules();
             }

@@ -1,7 +1,6 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.TrainingDomain.Common;
 using GymProject.Domain.TrainingDomain.Exceptions;
-using GymProject.Domain.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;

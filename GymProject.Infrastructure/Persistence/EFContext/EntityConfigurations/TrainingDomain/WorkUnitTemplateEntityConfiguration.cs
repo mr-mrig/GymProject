@@ -21,9 +21,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .ValueGeneratedOnAdd();
 
             builder.Ignore(wu => wu.DomainEvents);
-            builder.Ignore(wu => wu.TrainingVolume);
-            builder.Ignore(wu => wu.TrainingIntensity);
-            builder.Ignore(wu => wu.TrainingDensity);
 
             builder.Property(wu => wu.ProgressiveNumber)
                 .HasColumnType("INTEGER")

@@ -15,25 +15,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
 
 
 
-        ///// <summary>
-        ///// The training volume parameters, as the sum of the params of the single Training Weeks
-        ///// </summary>
-        //public TrainingVolumeParametersValue TrainingVolume { get; private set; } = null;
-
-
-        ///// <summary>
-        ///// The training effort, as the average of the single Training Weeks efforts
-        ///// </summary>
-        //public TrainingIntensityParametersValue TrainingIntensity { get; private set; } = null;
-
-
-        ///// <summary>
-        ///// The training density parameters, as the sum of the params of the single Training Weeks
-        ///// </summary>
-        //public TrainingDensityParametersValue TrainingDensity { get; private set; } = null;
-
-
-
         private List<TrainingWeekEntity> _trainingWeeks = new List<TrainingWeekEntity>();
 
         /// <summary>

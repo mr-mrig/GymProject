@@ -25,9 +25,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .IsRequired();
 
             builder.Ignore(wo => wo.DomainEvents);
-            builder.Ignore(wo => wo.TrainingVolume);
-            builder.Ignore(wo => wo.TrainingIntensity);
-            builder.Ignore(wo => wo.TrainingDensity);
 
             builder.Property(wo => wo.Name)
                 .HasColumnType("TEXT")

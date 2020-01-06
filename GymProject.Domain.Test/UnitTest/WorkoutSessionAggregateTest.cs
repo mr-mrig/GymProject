@@ -57,36 +57,6 @@ namespace GymProject.Domain.Test.UnitTest
 
                 uint? workoutTemplateId = (uint?)RandomFieldGenerator.RandomIntNullable(1, 999999);
 
-
-                // NULL WorkUnits
-                wusFirstNull.Add(null);
-
-                for (uint i = 0; i < workUnitsNum; i++)
-                {
-                    wusFirstNull.Add(WorkoutSessionAggregateBuilder.BuildRandomWorkUnit(i + 1, i, isTransient));
-                    wusLastNull.Add(WorkoutSessionAggregateBuilder.BuildRandomWorkUnit(i + 1, i, isTransient));
-                    wusAllNull.Add(null);
-
-                    if (RandomFieldGenerator.RollEventWithProbability(fakeChance))
-                    {
-                        faked = true;
-                        wusMiddleNull.Add(null);
-                    }
-                    else
-                        wusMiddleNull.Add(WorkoutSessionAggregateBuilder.BuildRandomWorkUnit(i + 1, i, isTransient));
-                }
-
-                if (!faked)
-                    wusMiddleNull[2] = null;
-
-                wusLastNull.Add(null);
-
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutSessionRoot.TrackWorkout(id, start, end, planned, workoutTemplateId, wusFirstNull));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutSessionRoot.TrackWorkout(id, start, end, planned, workoutTemplateId, wusMiddleNull));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutSessionRoot.TrackWorkout(id, start, end, planned, workoutTemplateId, wusLastNull));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutSessionRoot.TrackWorkout(id, start, end, planned, workoutTemplateId, wusAllNull));
-
-
                 // WorkUnits with gaps in consecutive numbers
                 IList<WorkUnitEntity> wusPnumStartsFromOne = new List<WorkUnitEntity>();
                 IList<WorkUnitEntity> wusPnumWithGaps = new List<WorkUnitEntity>();
@@ -140,22 +110,6 @@ namespace GymProject.Domain.Test.UnitTest
                         fakeWorkUnits.Add(WorkoutSessionAggregateBuilder.BuildRandomWorkUnit(iwu + 1, iwu, isTransient, excerciseId: null)));
 
 
-                // WorkUnit failures: NULL Working Sets
-                fakeWorkUnits = new List<WorkUnitEntity>();
-
-                for (uint iwu = 0; iwu < workUnitsNum; iwu++)
-                    fakeWorkUnits.Add(WorkoutSessionAggregateBuilder.BuildRandomWorkUnit(iwu + 1, iwu, isTransient));
-
-                WorkUnitEntity fakeWorkUnit = fakeWorkUnits[RandomFieldGenerator.RandomInt(0, fakeWorkUnits.Count - 1)];
-                fakeWorkingSets = fakeWorkUnits[(int)fakeWorkUnit.ProgressiveNumber].WorkingSets.ToList();
-
-                StaticUtils.InsertRandomNullElements(fakeWorkingSets);
-
-                Assert.Throws<TrainingDomainInvariantViolationException>(()
-                    => fakeWorkUnits[(int)fakeWorkUnit.ProgressiveNumber] = WorkUnitEntity
-                        .TrackExcercise(fakeWorkUnit.Id, fakeWorkUnit.ProgressiveNumber, fakeWorkUnit.ExcerciseId, fakeWorkingSets, fakeWorkUnit.UserRating));
-
-
                 //// WorkUnit failures: Empty Working Sets
                 //fakeWorkUnits = new List<WorkUnitEntity>();
                 //fakeWorkingSets = new List<WorkingSetEntity>();
@@ -175,7 +129,7 @@ namespace GymProject.Domain.Test.UnitTest
                 for (uint iwu = 0; iwu < workUnitsNum; iwu++)
                     fakeWorkUnits.Add(WorkoutSessionAggregateBuilder.BuildRandomWorkUnit(iwu + 1, iwu, isTransient));
 
-                fakeWorkUnit = fakeWorkUnits[RandomFieldGenerator.RandomInt(0, fakeWorkUnits.Count - 1)];
+                WorkUnitEntity fakeWorkUnit = fakeWorkUnits[RandomFieldGenerator.RandomInt(0, fakeWorkUnits.Count - 1)];
                 fakeWorkingSets = fakeWorkUnits[(int)fakeWorkUnit.ProgressiveNumber].WorkingSets.ToList();
                 fakeWorkingSets.RemoveAt(RandomFieldGenerator.RandomInt(0, fakeWorkingSets.Count - 2));     // -2 beacause removing the last one won't raise any error
 

@@ -586,14 +586,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         #endregion
 
 
-        #region Business Rules Validation
-
-        /// <summary>
-        /// The Workout must have no NULL Work Units.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullWorkunits() => _workUnits.All(x => x != null);
-        
+        #region Business Rules Validation        
 
         /// <summary>
         /// Work Units of the same Workout must have consecutive progressive numbers.
@@ -632,9 +625,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutSessionAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NoNullWorkunits())
-                throw new TrainingDomainInvariantViolationException($"The Workout must have no NULL Work Units.");
-
             if (!WorkUnitsWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Work Units of the same Workout must have consecutive progressive numbers.");
         }

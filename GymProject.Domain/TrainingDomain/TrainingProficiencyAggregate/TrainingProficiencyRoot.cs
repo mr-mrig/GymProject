@@ -9,6 +9,12 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
 
 
 
+        /// <summary>
+        /// The default entry status that is used if nothing is specified
+        /// </summary>
+        public static readonly EntryStatusTypeEnum DefaultEntryStatus = EntryStatusTypeEnum.Pending;
+
+
 
         /// <summary>
         /// The identifying name
@@ -34,7 +40,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
 
         private TrainingProficiencyRoot() : base(null, null) { }
 
-        private TrainingProficiencyRoot(uint? id, string name, PersonalNoteValue description, EntryStatusTypeEnum entryStatus) : base(id, entryStatus)
+        private TrainingProficiencyRoot(uint? id, string name, PersonalNoteValue description, EntryStatusTypeEnum entryStatus) : base(id, entryStatus ?? DefaultEntryStatus)
         {
             Name = name?.Trim() ?? string.Empty;
             Description = description;
@@ -56,7 +62,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
         /// <param name="name">The identifying name</param>
         /// <param name="description">The description</param>
         /// <param name="ownerId">The User which the phase was created by</param>
-        /// <param name="entryStatus">TThe specified entry status</param>
+        /// <param name="entryStatus">TThe specified entry status - if left null <see cref="DefaultEntryStatus"/> will be used</param>
         /// <returns>A new TrainingProficiency instance</returns>
         public static TrainingProficiencyRoot CreateTrainingProficiency
         (
@@ -136,14 +142,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
         private bool NameIsMandatory() => !string.IsNullOrWhiteSpace(Name);
 
 
-        /// <summary>
-        /// The Training Phase requires the Entry Status to be set.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool ValidEntryStatus() => EntryStatus != null;
-
-
-
 
         /// <summary>
         /// Tests that all the business rules are met and manages invalid states
@@ -153,10 +151,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate
         {
             if (!NameIsMandatory())
                 throw new TrainingDomainInvariantViolationException($"The Training Phase must have a valid name.");
-
-            if (!ValidEntryStatus())
-                throw new TrainingDomainInvariantViolationException($"The Training Phase requires the Entry Status to be set.");
-
         }
         #endregion
 

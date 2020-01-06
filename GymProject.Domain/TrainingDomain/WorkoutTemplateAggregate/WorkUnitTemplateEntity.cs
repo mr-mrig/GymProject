@@ -663,13 +663,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
         #region Business Rules Validation
 
-        /// <summary>
-        /// The Work Unit musthave no NULL working sets.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullWorkingSets() => _workingSets.All(x => x != null);
-
-
         ///// <summary>
         ///// The Work Unit cannot be linked to itself.
         ///// </summary>
@@ -741,9 +734,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NoNullWorkingSets())
-                throw new TrainingDomainInvariantViolationException($"The Work Unit must have no NULL working sets.");
-
             if (!ExcerciseSpecified())
                 throw new TrainingDomainInvariantViolationException($"The Work Unit must be linked to an excercise.");
 

@@ -322,8 +322,8 @@ namespace GymProject.Domain.Test.Util
             commentBody = commentBody ?? PersonalNoteValue.Write(RandomFieldGenerator.RandomTextValue(0, PersonalNoteValue.DefaultMaximumLength));
 
             return isTransient 
-                ? TrainingScheduleFeedbackEntity.ProvideTransientFeedback(userId, rating, commentBody)
-                : TrainingScheduleFeedbackEntity.ProvideFeedback(id, userId, rating, commentBody);
+                ? TrainingScheduleFeedbackEntity.ProvideTransientFeedback(userId.Value, rating, commentBody)
+                : TrainingScheduleFeedbackEntity.ProvideFeedback(id, userId.Value, rating, commentBody);
         }
 
 

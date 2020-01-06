@@ -327,20 +327,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// The Schedule must refer to a non-NULL Training Plan.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NonNullTrainingPlan() => TrainingPlanId != null;
-
-
-        /// <summary>
-        /// The Training Schedule must have no NULL Feedbacks.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NonNullFeedbacks() => _feedbacks.All(x => x != null);
-
-
-        /// <summary>
         /// The Training Schedule cannot have Feebacks with duplicate IDs.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -376,12 +362,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingScheduleAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            //if (!NonNullTrainingPlan())
-            //    throw new TrainingDomainInvariantViolationException($"The Schedule must refer to a non-NULL Training Plan.");
-
-            //if (!NonNullFeedbacks())
-            //    throw new TrainingDomainInvariantViolationException($"The Training Schedule must have no NULL Feedbacks.");
-
             if (!NoDuplicateFeedbacks())
                 throw new TrainingDomainInvariantViolationException($"The Training Schedule cannot have Feebacks with duplicate IDs.");
 

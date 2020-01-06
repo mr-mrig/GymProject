@@ -239,13 +239,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// The Training Week must have no NULL workouts.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullWorkouts() => _workoutIds.All(x => x != null);
-
-
-        /// <summary>
         /// Cannot create a Training Week without any Workout unless it is a Full Rest one.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -296,9 +289,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NoNullWorkouts())
-                throw new TrainingDomainInvariantViolationException($"The Training Week must have no NULL workouts.");
-
             //if (!AtLeastOneWorkout())
             //    throw new TrainingDomainInvariantViolationException($"Cannot create a Training Week without any Workout unless it is a Full Rest one.");
 

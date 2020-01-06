@@ -87,70 +87,6 @@ namespace GymProject.Domain.Test.UnitTest
                     //Assert.Throws<TrainingDomainInvariantViolationException>(()=>
                     //    week.AssignSpecificWeekType(newWeekType));
                 }
-                else
-                {
-                    float testCaseProbability = (float)RandomFieldGenerator.RandomDouble(0, 1);
-                    initialWorkoutsNum = RandomFieldGenerator.RandomInt(1, initialWorkoutMax);
-
-
-                    switch (testCaseProbability)
-                    {
-                        // BUSINESS RULE REMOVED
-                        // Non rest week with no workouts - empty
-                        //case var _ when testCaseProbability < 0.2f:
-
-                        //    if (isTransient)
-                        //        Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                        //        TrainingWeekTemplate.PlanTransientTrainingWeek(0, new List<WorkoutTemplateReferenceValue>(), weekType));
-                        //    else
-                        //        Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                        //        TrainingWeekTemplate.PlanTrainingWeek(weekId, 0, new List<WorkoutTemplateReferenceValue>(), weekType));
-
-                        //    break;
-
-                        // BUSINESS RULE REMOVED
-                        //// Non rest week with no workouts - null
-                        //case var _ when testCaseProbability < 0.4f:
-
-                        //    if (isTransient)
-                        //        Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                        //        TrainingWeekTemplate.PlanTransientTrainingWeek(0, null, weekType));
-                        //    else
-                        //        Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                        //        TrainingWeekTemplate.PlanTrainingWeek(weekId, 0, null, weekType));
-
-                        //    break;
-                        //case var _ when testCaseProbability < 0.6f:
-
-
-                        // Null workouts
-                        default:
-
-                            for (int iwo = 0; iwo < initialWorkoutsNum; iwo++)
-                            {
-                                if (RandomFieldGenerator.RollEventWithProbability(0.2f))
-                                {
-                                    initialWorkoutIds.Add(null);
-                                    faked = true;
-                                }
-                                else
-                                {
-                                    initialWorkoutIds.Add(
-                                        (uint?)RandomFieldGenerator.RandomInt(1, 1354325));
-                                }
-                            }
-                            if (!faked)
-                                initialWorkoutIds[0] = null;
-
-                            if (isTransient)
-                                Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                                    TrainingWeekEntity.PlanTransientTrainingWeek(0, initialWorkoutIds, weekType));
-                            else
-                                Assert.Throws<TrainingDomainInvariantViolationException>(() =>
-                                    TrainingWeekEntity.PlanTrainingWeek(weekId, 0, initialWorkoutIds, weekType));
-                            break;
-                    }
-                }
             }
 
             // Check fail when trying to switch to Full Rest
@@ -319,42 +255,28 @@ namespace GymProject.Domain.Test.UnitTest
 
 
                 #region Check Creation Fails
-                switch (testCaseProbability)
+
+                bool faked = false;
+                weeks = new List<TrainingWeekEntity>();
+
+                for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
                 {
-                    // Null Weeks
-                    case var _ when testCaseProbability < 0.5f:
-
-                        StaticUtils.InsertRandomNullElements(weeks);
-
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingPlanRoot.CreateTrainingPlan(planId, ownerId, weeks));
-                        break;
-
-                    // Non Consecutive Numbers
-                    default:
-
-                        bool faked = false;
-                        weeks = new List<TrainingWeekEntity>();
-
-                        for (int iweek = 0; iweek < trainingWeeksNumber; iweek++)
-                        {
-                            if (RandomFieldGenerator.RollEventWithProbability(0.2f))
-                            {
-                                faked = true;
-                                weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(iweek + 1, (iweek + 1) * trainingWeeksNumber * 3, isTransient));
-                            }
-                            else
-                                weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
-                        }
-
-                        if (weeks.Count == 0)
-                            weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(1, 1, isTransient));
-                        else if (!faked)
-                            weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(1, trainingWeeksNumber * 3, isTransient));
-
-                        Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingPlanRoot.CreateTrainingPlan(planId, ownerId, weeks));
-
-                        break;
+                    if (RandomFieldGenerator.RollEventWithProbability(0.2f))
+                    {
+                        faked = true;
+                        weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(iweek + 1, (iweek + 1) * trainingWeeksNumber * 3, isTransient));
+                    }
+                    else
+                        weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(iweek + 1, iweek, isTransient));
                 }
+
+                if (weeks.Count == 0)
+                    weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(1, 1, isTransient));
+                else if (!faked)
+                    weeks.Add(WorkoutTemplateAggregateBuilder.BuildRandomTrainingWeek(1, trainingWeeksNumber * 3, isTransient));
+
+                Assert.Throws<TrainingDomainInvariantViolationException>(() => TrainingPlanRoot.CreateTrainingPlan(planId, ownerId, weeks));
+
                 #endregion
 
 

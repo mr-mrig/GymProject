@@ -39,24 +39,6 @@ namespace GymProject.Domain.Test.UnitTest
             {
                 isTransient = itest % 2 == 0;
 
-                wusFirstNull.Add(null);
-
-                for (uint i = 0; i < 5; i++)
-                {
-                    wusFirstNull.Add(WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(i + 1, i, isTransient));
-                    wusLastNull.Add(WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(i + 1, i, isTransient));
-                    if (i == 1)
-                        wusMiddleNull.Add(null);
-                    else
-                        wusMiddleNull.Add(WorkoutTemplateAggregateBuilder.BuildRandomWorkUnitTemplate(i + 1, i, isTransient));
-                }
-
-                wusLastNull.Add(null);
-
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validWeekId, validPnum, wusFirstNull, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validWeekId, validPnum, wusMiddleNull, string.Empty));
-                Assert.Throws<TrainingDomainInvariantViolationException>(() => WorkoutTemplateRoot.PlanWorkout(id, validWeekId, validPnum, wusLastNull, string.Empty));
-
                 IList<WorkUnitTemplateEntity> wusPnumStarts1 = new List<WorkUnitTemplateEntity>();
                 IList<WorkUnitTemplateEntity> wusPnumGap = new List<WorkUnitTemplateEntity>();
 

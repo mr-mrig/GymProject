@@ -497,33 +497,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// The Training Plan must have no NULL Training Phases.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullPhases() => _trainingPlanPhases.All(x => x?.TrainingPhaseId != null);
-
-
-        /// <summary>
-        /// The Training Plan must have no NULL Training Hashtags.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullHashtags() => _trainingPlanHashtags.All(x => x?.HashtagId != null);
-
-        /// <summary>
-        /// The Training Plan must have no NULL Training Proficiency.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullProficiencies() => _trainingPlanProficiencies.All(x => x?.TrainingProficiencyId != null);
-
-
-        /// <summary>
-        /// The Training Plan must have no NULL Muscle Focus entries.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullMuscleFocus() => _trainingPlanMuscleFocusIds.All(x => x?.MuscleGroupId != null);
-
-
-        /// <summary>
         /// The Training Plan cannot have itself as the Parent Plan
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -537,23 +510,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// </summary>
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
-        {
-
-            //if (!NoNullSchedules())
-            //    throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Training Schedules.");
-
-            //if (!NoNullPhases())
-            //    throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Training Phases.");
-
-            //if (!NoNullHashtags())
-            //    throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Training Hashtags.");
-
-            //if (!NoNullProficiencies())
-            //    throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Training Proficiency.");
-
-            //if (!NoNullMuscleFocus())
-            //    throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Muscle Focus entries.");
-            
+        {           
             if (!ParentPlanDifferentFromThisOne())
                 throw new TrainingDomainInvariantViolationException($"The Training Plan cannot have itself as the Parent Plan.");
             

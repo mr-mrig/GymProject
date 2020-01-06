@@ -488,20 +488,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// The Training Plan must have no NULL Training Weeks.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullWeeks() => _trainingWeeks.All(x => x != null);
-
-
-        /// <summary>
-        /// The Owner of the Training Plan cannot be NULL.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool OwnerIsNotNull() => OwnerId != default;
-
-
-        /// <summary>
         /// Training Weeks of the same Training Plan must have consecutive progressive numbers.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -539,12 +525,6 @@ namespace GymProject.Domain.TrainingDomain.TrainingPlanAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NoNullWeeks())
-                throw new TrainingDomainInvariantViolationException($"The Training Plan must have no NULL Training Weeks.");
-
-            //if (!OwnerIsNotNull())
-            //    throw new TrainingDomainInvariantViolationException($"The Owner of the Training Plan cannot be NULL.");
-
             if (!TrainingWeeksWithConsecutiveProgressiveNumber())
                 throw new TrainingDomainInvariantViolationException($"Training Weeks of the same Training Plan must have consecutive progressive numbers.");
         }

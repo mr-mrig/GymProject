@@ -507,13 +507,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         #region Business Rules Validation
 
         /// <summary>
-        /// Working Set Intensity Techniques must be non NULL.
-        /// </summary>
-        /// <returns>True if business rule is met</returns>
-        private bool NoNullIntensityTechniqueRelations() => _intensityTechniquesRelations.All(x => x != null);
-
-
-        /// <summary>
         /// The Target Repetitions must be specified.
         /// </summary>
         /// <returns>True if business rule is met</returns>
@@ -557,9 +550,6 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!NoNullIntensityTechniqueRelations())
-                throw new TrainingDomainInvariantViolationException($"Working Set Intensity Techniques must be non NULL.");
-
             if (!ValidRepetitionNumber())
                 throw new TrainingDomainInvariantViolationException($"The Target Repetitions must be specified.");
 

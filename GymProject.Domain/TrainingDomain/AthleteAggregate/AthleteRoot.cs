@@ -627,15 +627,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             //    .Any(y => y.Period.Overlaps(x.Period)));
 
 
-        private bool NoNullTrainingPhases()
-
-            => _trainingPhases.All(x => x != null);
-
-
-        private bool NoNullTrainingProficiencies()
-
-            => _trainingProficiencies.All(x => x != null);
-
 
         private bool AtMostOneTrainingProficiencyAtTheSameTime()
 
@@ -666,18 +657,11 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         private void TestBusinessRules()
         {
-            //if (!NoNullTrainingPhases())
-            //    throw new TrainingDomainInvariantViolationException($"A user cannot have no NULL Training Phases.");
-
             //if (!AtMostOneTrainingPhaseOpen())
             //    throw new TrainingDomainInvariantViolationException($"A user can have no more than one Training Phase open.");
             
             if (!NoOverlappingPhases())
                 throw new TrainingDomainInvariantViolationException($"A user cannot have overlapping phases");
-
-            
-            //if (!NoNullTrainingProficiencies())
-            //    throw new TrainingDomainInvariantViolationException($"A user cannot have no NULL Training Proficiencies.");
 
             if (!AtMostOneTrainingProficiencyAtTheSameTime())
                 throw new TrainingDomainInvariantViolationException($"A user can have no more than one Training Proficiency levels at the same time.");

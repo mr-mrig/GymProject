@@ -285,7 +285,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint? athleteId = 1;
             uint? planId = 12;
-            uint? oldAuthorId = 1;
+            uint oldAuthorId = 1;
             DateTime startDate = new DateTime(2019, 1, 1);
             DateTime endDate = new DateTime(2019, 6, 6);
             TrainingScheduleFeedbackEntity feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(1, oldAuthorId + 1, RatingValue.Rate(1), PersonalNoteValue.Write("note1"));
@@ -309,7 +309,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint? athleteId = 1;
             uint? planId = 12;
-            uint? authorId = 1;
+            uint authorId = 1;
             DateTime startDate = new DateTime(2019, 1, 1);
             DateTime endDate = new DateTime(2019, 6, 6);
             TrainingScheduleFeedbackEntity feedback = TrainingScheduleFeedbackEntity.ProvideFeedback(1, authorId + 1, RatingValue.Rate(1), PersonalNoteValue.Write("note1"));
@@ -332,7 +332,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint? athleteId = 1;
             uint? planId = 12;
-            uint? authorId = 1;
+            uint authorId = 1;
             DateTime startDate = new DateTime(2019, 1, 1);
             DateTime endDate = new DateTime(2019, 6, 6);
 
@@ -352,7 +352,7 @@ namespace GymProject.Domain.Test.UnitTest
         {
             uint? athleteId = 1;
             uint? planId = 12;
-            uint? authorId = 1;
+            uint authorId = 1;
             DateTime startDate = new DateTime(2019, 1, 1);
             DateTime endDate = new DateTime(2019, 6, 6);
 

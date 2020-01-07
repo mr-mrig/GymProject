@@ -1,6 +1,7 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 
@@ -40,9 +41,23 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public AthleteRoot Find(uint athleteId)
+        public AthleteRoot Find(uint id)
         {
-            return _context.Find<AthleteRoot>(athleteId);
+            var res = _context.Find<AthleteRoot>(id);
+
+            if (res != null)
+            {
+                _context.Entry(res).Collection(x => x.TrainingPhases).Load();
+                _context.Entry(res).Collection(x => x.TrainingProficiencies).Load();
+                _context.Entry(res).Collection(x => x.TrainingPlans).Query()
+                    .Include("_trainingPlanPhases")
+                    .Include("_trainingPlanProficiencies")
+                    .Include("_trainingPlanMuscleFocusIds")
+                    .Include("_trainingPlanHashtags")
+                    .Load();
+
+            }
+            return res;
         }
 
 

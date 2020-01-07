@@ -39,13 +39,18 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public TrainingScheduleRoot Find(uint trainingPlanId)
+        public TrainingScheduleRoot Find(uint id)
         {
             //return _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
             //        .Include(wo => wo.TrainingWeeks)
             //        .SingleOrDefault();
 
-            return _context.Find<TrainingScheduleRoot>(trainingPlanId);
+            var res = _context.Find<TrainingScheduleRoot>(id);
+
+            if (res != null)
+                _context.Entry(res).Collection(x => x.Feedbacks).Load();
+
+            return res;
         }
 
 

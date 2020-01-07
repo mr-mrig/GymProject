@@ -1,7 +1,9 @@
 ﻿using GymProject.Domain.Base;
 using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -38,13 +40,23 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public WorkoutTemplateRoot Find(uint trainingPlanId)
+        public WorkoutTemplateRoot Find(uint workoutId)
         {
-            //return _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
-            //        .Include(wo => wo.TrainingWeeks)
+            //var res = _context.WorkoutTemplates.Where(x => x.Id == workoutId)
+            //        .Include(wo => wo.WorkUnits)
+            //            .ThenInclude(wu => wu.WorkingSets)
             //        .SingleOrDefault();
 
-            return _context.Find<WorkoutTemplateRoot>(trainingPlanId);
+            var res = _context.Find<WorkoutTemplateRoot>(workoutId);
+
+            if (res != null)
+            {
+                //_context.Entry(res).Collection(x => x.WorkUnits).Load();
+                _context.Entry(res).Collection(x => x.WorkUnits).Query()
+                    .Include(wu => wu.WorkingSets).Load();
+
+            }
+            return res;
         }
 
 

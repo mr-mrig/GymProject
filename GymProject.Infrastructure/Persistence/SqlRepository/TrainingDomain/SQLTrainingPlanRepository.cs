@@ -2,6 +2,7 @@
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using System;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -38,13 +39,19 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public TrainingPlanRoot Find(uint trainingPlanId)
+        public TrainingPlanRoot Find(uint id)
         {
             //return _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
-            //        .Include(wo => wo.TrainingWeeks)
+            //        .Include(x => x.TrainingWeeks)
+            //        .Include(x => x.WorkoutIds)
             //        .SingleOrDefault();
 
-            return _context.Find<TrainingPlanRoot>(trainingPlanId);
+            var res = _context.Find<TrainingPlanRoot>(id);
+
+            if (res != null)
+                _context.Entry(res).Collection(x => x.TrainingWeeks).Load();
+
+            return res;
         }
 
 
@@ -59,6 +66,8 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
             _context.Remove(trainingPlan);
         }
         #endregion
+
+
 
     }
 }

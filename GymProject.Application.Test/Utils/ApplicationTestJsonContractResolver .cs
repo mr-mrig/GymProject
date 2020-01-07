@@ -26,16 +26,16 @@ namespace GymProject.Application.Test.Utils
 
             => 
             (typeof(TrainingPlanDetailDto).IsAssignableFrom(member.DeclaringType)
-              && (member.Name == nameof(TrainingPlanDetailDto.TrainingPlanId) || member.Name == nameof(TrainingPlanDetailDto.ParentPlanId))) ||
+              && (member.Name == nameof(TrainingPlanDetailDto.PlanUserLibraryId) || member.Name == nameof(TrainingPlanDetailDto.ParentId))) ||
             
             (typeof(WorkoutFullPlanDto).IsAssignableFrom(member.DeclaringType)
-              && (member.Name == nameof(WorkoutFullPlanDto.TrainingWeekId) || member.Name == nameof(WorkoutFullPlanDto.WorkoutId))) ||
+              && (member.Name == nameof(WorkoutFullPlanDto.WeekId) || member.Name == nameof(WorkoutFullPlanDto.WorkoutId))) ||
             
             (typeof(WorkUnitDto).IsAssignableFrom(member.DeclaringType)
-              && (member.Name == nameof(WorkUnitDto.WorkUnitId) || member.Name == nameof(WorkUnitDto.NoteId))) ||
+              && (member.Name == nameof(WorkUnitDto.WuId) || member.Name == nameof(WorkUnitDto.NoteId))) ||
             
             (typeof(WorkingSetDto).IsAssignableFrom(member.DeclaringType)
-              && (member.Name == nameof(WorkingSetDto.WorkingSetId)))
+              && (member.Name == nameof(WorkingSetDto.WsId)))
 
 
             ;

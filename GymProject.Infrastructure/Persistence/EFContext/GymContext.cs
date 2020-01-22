@@ -26,7 +26,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using GymProject.Infrastructure.Mediator;
-using GymProject.Domain.Base.Mediator;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 
@@ -41,19 +40,20 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         private readonly IMediator _mediator;
         private readonly ILogger _logger;
 
-        //public static readonly LoggerFactory MyLoggerFactory
-        //    = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
+        public string ConnectionString => Database.GetDbConnection().ConnectionString;
 
 
+
+        #region Ctors
         public GymContext() { }
 
+        public GymContext(DbContextOptions options) : base(options) { }
 
         public GymContext(IMediator mediator, ILogger logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
 
         public GymContext(DbContextOptions options, IMediator mediator, ILogger logger) 
             : base(options)
@@ -62,8 +62,8 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        #endregion
 
-        public GymContext(DbContextOptions options) : base(options) { }
 
 
         #region Entites
@@ -244,7 +244,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
             // Preliminary operations to ensure consistent operations
             IgnoreStaticEnumTables();
-            EmbeddedValueObjectsAsPartOfParenTtable();
+            EmbeddedValueObjectsAsPartOfParentTable();
 
             // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
             // performed through the DbContext will be committed
@@ -257,10 +257,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         #endregion
 
-        protected void IgnoreStaticEnumTables()
+        protected virtual void IgnoreStaticEnumTables()
         {
             // Avoid double insert for tables that should not be tracked
-            foreach (var entry in ChangeTracker.Entries<Enumeration>())
+            foreach (var entry in ChangeTracker.Entries<Enumeration>().Where(x => x.State != EntityState.Unchanged))
             {
                 try
                 {
@@ -276,22 +276,27 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         /// <summary>
         /// Treat the value objects as part of the parent table, instead than an external one.
-        /// This fixes the exception when trying to add a value object in an akready existant parent entity  - which is in Modified rather than Added state.
+        /// This fixes the exception when trying to add a value object in an akready existant parent entity - which is in Modified rather than Added state.
         /// Many-to-Many relations are not meant to be touched here
         /// </summary>
-        protected void EmbeddedValueObjectsAsPartOfParenTtable()
+        protected virtual void EmbeddedValueObjectsAsPartOfParentTable()
         {
-            // All Value Objects are part of the parent table, but the Many-to-Many relations
-            foreach (var entry in ChangeTracker.Entries<ValueObject>())
+            // All Value Objects are part of the parent table, so they are never really Added but Modified
+            foreach (var entry in ChangeTracker.Entries<ValueObject>().Where(x => x.State == EntityState.Added && x.IsKeySet))
             {
                 try
                 {
-                    if (entry.State == EntityState.Added && entry.IsKeySet)
+                    //var ownerEntity = ChangeTracker.Entries().SingleOrDefault(x => x.Metadata.ClrType == entry.Metadata.DefiningEntityType.ClrType);    // Can we do something more efficient?
+                    //if(ownerEntity?.State != EntityState.Added)
+                    //    entry.State = EntityState.Modified;
+
+                    // The code above is the exhaustive algorithm, however it seems that the one below - which is faster -is correct as well...
+                    // Please watch it out, in order to make sure that ther are no cases handlec incorrectly
+                    if (entry.Metadata.DefiningEntityType == null)
                         entry.State = EntityState.Modified;
                 }
                 catch (InvalidOperationException exc)
                 {
-                    //isError = true;
                     _logger.LogWarning("IgnoreEmbeddedValueObjects - Could not change the Entry State of {@entry} because of {@exc}", entry, exc.Message);
                     Console.WriteLine("Exception: " + exc.Message);
                     System.Diagnostics.Debugger.Break();

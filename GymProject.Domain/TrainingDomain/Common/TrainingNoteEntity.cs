@@ -60,8 +60,10 @@ namespace GymProject.Domain.TrainingDomain.Common
 
         private void TestBusinessRules()
         {
-            if (!IsBodyNonNull())
-                throw new TrainingDomainInvariantViolationException($"The Note Body must be NON-null");
+            // Unluckily EF will always need to laod from parameterless ctor, hence this will always throw when querying the repo
+            // This reponsabilty should be moved to the DB layer - Non Null column
+            //if (!IsBodyNonNull())
+            //    throw new TrainingDomainInvariantViolationException($"The Note Body must be NON-null");
         }
         #endregion
     }

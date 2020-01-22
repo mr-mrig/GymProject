@@ -176,7 +176,8 @@ namespace GymProject.Domain.TrainingDomain.Common
         #endregion
 
 
-        public override string ToString() => Value.ToString() + (WorkType.Equals(WSWorkTypeEnum.TimeBasedSerie) ? WorkType.MeasUnit : "");
+        public override string ToString() => Value.ToString() + 
+            ((WorkType?.Equals(WSWorkTypeEnum.TimeBasedSerie)).HasValue ? WorkType.MeasUnit : "");
 
 
         protected override IEnumerable<object> GetAtomicValues()

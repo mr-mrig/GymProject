@@ -64,6 +64,18 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         public uint? CurrentTrainingWeekId { get; private set; }
 
 
+        /// <summary>
+        /// The current proficiency achieved by the athlete as a value copy
+        /// </summary>
+        public UserTrainingProficiencyRelation CurrentTrainingProficiency => FindCurrentProficiencyOrDefault()?.Clone() as UserTrainingProficiencyRelation;
+
+        /// <summary>
+        /// The current phase the athlete is performing as a value copy
+        /// </summary>
+        public UserTrainingPhaseRelation CurrentTrainingPhase => FindPhaseAtOrDefault(DateTime.UtcNow)?.Clone() as UserTrainingPhaseRelation;
+
+
+
 
         #region Ctors
 
@@ -132,54 +144,26 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
         #region Getters
 
-
-        /// <summary>
-        /// Make a value copy of the Training Phase the user currently is in.
-        /// </summary>
-        /// <returns>A value copy of the UserTrainingPhaseRelation object or null if nothing found</returns>
-        /// <exception cref="InvalidOperationException">If more than one element found</exception>
-        public UserTrainingPhaseRelation CloneCurrentTrainingPhase()
-
-            => CloneTrainingPhaseAt(DateTime.UtcNow.Date);
-
-
-        /// <summary>
-        /// Make a value copy of the Training Phase the user was in at a specific date
-        /// </summary>
-        /// <param name="date">The check date</param>
-        /// <returns>A value copy of the UserTrainingPhaseRelation object or null if nothing found</returns>
-        /// <exception cref="InvalidOperationException">If more than one element found</exception>
-        public UserTrainingPhaseRelation CloneTrainingPhaseAt(DateTime date)
-
-            //=> _trainingPhases.SingleOrDefault(x => x.Period.Includes(date))?.Clone() as UserTrainingPhaseRelation;
-            => _trainingPhases.SingleOrDefault(x => x.StartDate <= date 
-                && (!x.EndDate.HasValue || x.EndDate >= date))
-                ?.Clone() as UserTrainingPhaseRelation;
-
-
-
-        /// <summary>
-        /// Make a value copy of the current Training Proficiency level the user reached
-        /// </summary>
-        /// <returns>A value copy of the UserTrainingPhaseRelation object or null if nothing found</returns>
-        /// <exception cref="InvalidOperationException">If more than one element found</exception>
-        public UserTrainingProficiencyRelation CloneCurrentTrainingProficiency()
-
-            => CloneTrainingProficiencyAt(DateTime.UtcNow.Date);
-
-
         /// <summary>
         /// Make a value copy of the Training Proficiency level reached at a specific date
         /// </summary>
-        /// <param name="date">The check date</param>
+        /// <param name="date">The check datetime - it does not need to be a plain date</param>
         /// <returns>A value copy of the UserTrainingPhaseRelation object or null if nothing found</returns>
-        /// <exception cref="InvalidOperationException">If more than one element found</exception>
         public UserTrainingProficiencyRelation CloneTrainingProficiencyAt(DateTime date)
 
             //=> _trainingProficiencies.SingleOrDefault(x => x.Period.Includes(date))?.Clone() as UserTrainingProficiencyRelation;
-            => _trainingProficiencies.SingleOrDefault(x => x.StartDate <= date
-                && (!x.EndDate.HasValue || x.EndDate >= date))
+            => _trainingProficiencies.SingleOrDefault(x => x.StartDate <= date.Date
+                && (!x.EndDate.HasValue || x.EndDate >= date.Date))
                 ?.Clone() as UserTrainingProficiencyRelation;
+
+        /// <summary>
+        /// Make a value copy of the Training Phase which the athlete is performing at the specified date
+        /// </summary>
+        /// <param name="date">The check datetime - it does not need to be a plain date</param>
+        /// <returns>A value copy of the UserTrainingPhaseRelation object or null if nothing found</returns>
+        public UserTrainingPhaseRelation CloneTrainingPhaseAt(DateTime date)
+
+            => FindPhaseAtOrDefault(date)?.Clone() as UserTrainingPhaseRelation;
 
 
         /// <summary>
@@ -216,6 +200,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         public void StartTrainingPhase(uint phaseId, EntryStatusTypeEnum entryVisibility,  DateTime? startDate = null, DateTime? endDate = null, PersonalNoteValue ownerNote = null)
         {
             UserTrainingPhaseRelation newPhase;
+            UserTrainingPhaseRelation nextPhase = FindNextPhaseOrDefault(startDate ?? DateTime.UtcNow);
+
+            // If a phase has already been planned in a future date, then force the new phase to last until the day before
+            if (nextPhase != null)
+            {
+                if (endDate == null)
+                    endDate = nextPhase.StartDate.AddDays(-1);
+                //else if (endDate > nextPhase.StartDate)
+                //    throw new InvalidOperationException("");      // Letting the Business Rules to handle it
+            }
 
             // If valid period then plan it, otherwise start it from today
             if (startDate != null)
@@ -227,7 +221,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
                 newPhase = UserTrainingPhaseRelation.PlanPhase(this, phaseId, startDate.Value, endDate, entryVisibility, ownerNote);
             }
             else
-                newPhase = UserTrainingPhaseRelation.StartPhase(this, phaseId, DateTime.UtcNow, entryVisibility, ownerNote);
+                newPhase = UserTrainingPhaseRelation.PlanPhase(this, phaseId, DateTime.UtcNow, endDate, entryVisibility, ownerNote);
 
             // Close the previous phase, if any
             CloseOpenPhase(startDate ?? DateTime.UtcNow);
@@ -254,10 +248,12 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="newStartDate">The new start datetime. The time part will be ignored.</param>
         /// <param name="oldStartdate">The datetime which the phase currently stats from. The time part will be ignored.</param>
         /// <exception cref="TrainingDomainInvariantViolationException">If business rule violated</exception>
-        /// <exception cref="InvalidOperationException">If could not find any Training Phase accordint o the start date specified</exception>
+        /// <exception cref="InvalidOperationException">If could not find any Training Phase according o the start date specified</exception>
         public void ShiftTrainingPhaseStartDate(DateTime oldStartdate, DateTime newStartDate)
         {
-            UserTrainingPhaseRelation phase = FindPhaseStartingFrom(oldStartdate);
+            UserTrainingPhaseRelation phase = FindPhaseStartingFromOrDefault(oldStartdate) 
+                ?? throw new InvalidOperationException("Could not find the Phase starting at the specified date");
+
             UserTrainingPhaseRelation prevPhase = FindPhaseBeforeOrDefault(phase);
 
             phase.ShiftStartDate(newStartDate);
@@ -265,7 +261,16 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
             TestBusinessRules();
         }
+        
 
+        /// <summary>
+        /// Get a value copy of the User Training Phase starting at the specified date - if any
+        /// </summary>
+        /// <param name="startDate">The starting datetime - it does not need to be a plain date</param>
+        /// <returns>The UserTrainingPhaseRelation reference instance or null if not found</returns>
+        public UserTrainingPhaseRelation ClonePhaseStartingFrom(DateTime startDate)
+
+            => FindPhaseStartingFromOrDefault(startDate)?.Clone() as UserTrainingPhaseRelation;
 
         /// <summary>
         /// Attach the note of the owner
@@ -292,7 +297,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// The previous level is automatically closed.
         /// </summary>
         /// <param name="proficiencyId">The Phase ID to schedule</param>
-        /// <returns>A value copy of the UserTrainingPhaseRelation object or null if no phthing found</returns>
         /// <exception cref="TrainingDomainInvariantViolationException">If more open phases found</exception>
         /// <exception cref="InvalidOperationException">If try to start a phase over a past period</exception>
         public void AchieveTrainingProficiency(uint proficiencyId)
@@ -306,6 +310,29 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             _trainingProficiencies.Add(proficiency);
 
             TestBusinessRules();
+        }
+
+        /// <summary>
+        /// Remove the ssepcified Training Proficiency from the athlete's list
+        /// </summary>
+        /// <param name="proficiency">The proficiency to be removed</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void RemoveTrainingProficiency(UserTrainingProficiencyRelation proficiency)
+        {
+            _trainingProficiencies.Remove(proficiency);
+            TestBusinessRules();
+        }
+
+        /// <summary>
+        /// <para>Remove the ssepcified Training Phase from the athlete's list</para>
+        /// <para>No consistency operation is performend, thus a gap will be left between the boundary phases</para>
+        /// </summary>
+        /// <param name="phase">The phase to be removed</param>
+        /// <exception cref="TrainingDomainInvariantViolationException">If any business rule violated</exception>
+        public void RemoveTrainingPhase(UserTrainingPhaseRelation phase)
+        {
+            if(_trainingPhases.Remove(phase))
+                TestBusinessRules();
         }
 
 
@@ -543,9 +570,8 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <exception cref="InvalidOperationException">If trying to insert two phases starting on the same date</exception>
         private void CloseOpenPhase(DateTime checkDate)
         {
-            UserTrainingPhaseRelation currentPhase = _trainingPhases.SingleOrDefault(x => 
-                DateRangeValue.IsDateBetween(checkDate.Date, x.StartDate, x.EndDate));              // Do not use the public method as we need the reference, not the value copy
-
+            UserTrainingPhaseRelation currentPhase = FindPhaseAtOrDefault(checkDate);              // Do not use the public method as we need the reference, not the value copy
+            
             //UserTrainingPhaseRelation currentPhase = _trainingPhases.SingleOrDefault(x => x.EndDate == null
             //    || DateRangeValue.IsDateBetween(checkDate, x.StartDate, x.EndDate.Value));              // Do not use the public method as we need the reference, not the value copy 
 
@@ -558,27 +584,47 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             }
         }
 
+        /// <summary>
+        /// Find the phase the athlete is performing at the specified date - or null if there's no - and return its reference.
+        /// </summary>
+        /// <param name="checkDate">The datetime - it does not need to be a plain date</param>
+        /// <returns>The UserTrainingPhaseRelation refrence or default</returns>
+        private UserTrainingPhaseRelation FindPhaseAtOrDefault(DateTime checkDate)
+            => _trainingPhases.SingleOrDefault(x =>
+                DateRangeValue.IsDateBetween(checkDate.Date, x.StartDate, x.EndDate));
+
+        /// <summary>
+        /// Find the phase the first ohase which has been planned after the specified date - if any
+        /// </summary>
+        /// <param name="checkDate">The datetime - it does not need to be a plain date</param>
+        /// <returns>The UserTrainingPhaseRelation reference or default</returns>
+        private UserTrainingPhaseRelation FindNextPhaseOrDefault(DateTime checkDate)
+
+            => _trainingPhases.Where(x => x.StartDate > checkDate.Date)?.OrderBy(x => x.StartDate)?.FirstOrDefault();
+
+
+        /// <summary>
+        /// Get the User Training Phase starting at the specified date - if any
+        /// </summary>
+        /// <param name="startDate">the starting datetime - it does not need to be a plain date</param>
+        /// <returns>The UserTrainingPhaseRelation reference instance or null if not found</returns>
+        private UserTrainingPhaseRelation FindPhaseStartingFromOrDefault(DateTime startDate)
+
+            => _trainingPhases.SingleOrDefault(x => x.StartDate == startDate.Date);
+
+        /// <summary>
+        /// Find the current proficiency - or null if there's no - and return its reference.
+        /// </summary>
+        /// <returns>The current Proficiency or null</returns>
+        private UserTrainingProficiencyRelation FindCurrentProficiencyOrDefault()
+            => _trainingProficiencies.SingleOrDefault(x => x.EndDate == null);
 
         /// <summary>
         /// Close the current User Training Proficiency
         /// </summary>
-
         private void CloseTrainingProficiencyLevel()
-        {
-            _trainingProficiencies.SingleOrDefault(x => x.EndDate == null)?.Close();     // Do not use the public method as we need the reference, not the value copy   
-        }
 
-
-        /// <summary>
-        /// Get the User Training Phase starting at the specified date
-        /// </summary>
-        /// <param name="startDate">the starting datetime - it does not need to be a plain date</param>
-        /// <returns>The UserTrainingPhaseRelation reference instance</returns>
-        /// <exception cref="InvalidOperationException">If no entity with the specified search key</exception>
-        private UserTrainingPhaseRelation FindPhaseStartingFrom(DateTime startDate)
-
-            => _trainingPhases.Single(x => x.StartDate == startDate.Date);
-
+            => FindCurrentProficiencyOrDefault()?.Close();
 
         /// <summary>
         /// Get the User Training Phase right before the specified one, namely the first phase which start date precedes it
@@ -590,7 +636,6 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
 
             => _trainingPhases?.OrderBy(x => x.StartDate)
                 .LastOrDefault(x => x.StartDate < phase.StartDate); 
-
 
         /// <summary>
         /// Get the Training Plan with the specified ID

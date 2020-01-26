@@ -12,9 +12,9 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
 
-        public static WSWorkTypeEnum NotSet = new WSWorkTypeEnum(1, "NotSet", "");
-        public static WSWorkTypeEnum RepetitionBasedSerie = new WSWorkTypeEnum(2, "Repetitions", "reps");
-        public static WSWorkTypeEnum TimeBasedSerie = new WSWorkTypeEnum(3, "TimedSerie", "''");
+        //public static WSWorkTypeEnum NotSet = new WSWorkTypeEnum(0, "NotSet", "");
+        public static WSWorkTypeEnum RepetitionBasedSerie = new WSWorkTypeEnum(1, "Repetitions", "reps");
+        public static WSWorkTypeEnum TimeBasedSerie = new WSWorkTypeEnum(2, "TimedSerie", "''");
 
 
 
@@ -23,6 +23,8 @@ namespace GymProject.Domain.TrainingDomain.Common
 
 
         #region Ctors
+
+        private WSWorkTypeEnum() : base(0, null) { }
 
         public WSWorkTypeEnum(int id, string name, string measUnit) : base(id, name)
         {
@@ -37,7 +39,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// </summary>
         /// <returns>The list storing the enumeration</returns>
         public static IEnumerable<WSWorkTypeEnum> List() =>
-            new[] { NotSet, RepetitionBasedSerie, TimeBasedSerie, };
+            new[] { RepetitionBasedSerie, TimeBasedSerie, };
 
 
         /// <summary>

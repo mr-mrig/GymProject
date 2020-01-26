@@ -90,7 +90,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
             _intensityTechniquesRelations = new List<WorkingSetIntensityTechniqueRelation>();
 
             foreach (uint? techniqueId in intensityTechniqueIds ?? new List<uint?>())
-                _intensityTechniquesRelations.Add(WorkingSetIntensityTechniqueRelation.BuildLink(this, techniqueId));
+                InternalAddIntensityTechnique(techniqueId.Value);
 
             //_intensityTechniquesRelations.Add(WorkingSetIntensityTechniqueRelation.BuildLink(this, linkedWorkingSet.LinkingIntensityTechniqueId, linkedWorkingSet.LinkedWorkId));
 
@@ -218,12 +218,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules not met</exception>
         public void AddIntensityTechnique(uint intensityTechniqueId)
         {
-            if (HasIntensityTechnique(intensityTechniqueId))
-                return;
-
-            _intensityTechniquesRelations.Add(
-                WorkingSetIntensityTechniqueRelation.BuildLink(this, intensityTechniqueId));
-
+            InternalAddIntensityTechnique(intensityTechniqueId);
             TestBusinessRules();
         }
 
@@ -501,6 +496,20 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
 
             => _intensityTechniquesRelations.SingleOrDefault(x => x.LinkedWorkingSetId == null && x.IntensityTechniqueId == intensityTechniqueId);
 
+
+        /// <summary>
+        /// Add an intensity technique - Do nothing if already present in the list.
+        /// This method does not check for business rules
+        /// </summary>
+        /// <param name="intensityTechniqueId">The id to be added</param>
+        private void InternalAddIntensityTechnique(uint intensityTechniqueId)
+        {
+            if (HasIntensityTechnique(intensityTechniqueId))
+                return;
+
+            _intensityTechniquesRelations.Add(
+                WorkingSetIntensityTechniqueRelation.BuildLink(this, intensityTechniqueId));
+        }
         #endregion
 
 
@@ -519,8 +528,7 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <returns>True if business rule is met</returns>
         private bool ValidEffortWhenAMRAP()
 
-            => /*Repetitions == null ||*/
-                !Repetitions.IsAMRAP() ||
+            => Repetitions == null || !Repetitions.IsAMRAP() ||
                 (Effort != null && 
                     (Effort.IsRM() || Effort.IsIntensityPercentage()));
 
@@ -550,14 +558,14 @@ namespace GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate
         /// <exception cref="TrainingDomainInvariantViolationException">Thrown if business rules violation</exception>
         private void TestBusinessRules()
         {
-            if (!ValidRepetitionNumber())
-                throw new TrainingDomainInvariantViolationException($"The Target Repetitions must be specified.");
+            //if (!ValidRepetitionNumber())
+            //    throw new TrainingDomainInvariantViolationException($"The Target Repetitions must be specified.");
 
             if (!ValidEffortWhenAMRAP())
                 throw new TrainingDomainInvariantViolationException($"AMRAP requires the effort to be specified as Intensity Percentage or RM.");
 
-            if (!NoDuplicateIntensityTechniques())
-                throw new TrainingDomainInvariantViolationException($"No duplicate intensity techniques are allowed.");
+            //if (!NoDuplicateIntensityTechniques())
+            //    throw new TrainingDomainInvariantViolationException($"No duplicate intensity techniques are allowed.");
         }
 
         #endregion

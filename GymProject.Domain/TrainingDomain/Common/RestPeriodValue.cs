@@ -16,7 +16,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         /// <summary>
         /// Default meas unit to be used when nothing is specified
         /// </summary>
-        protected readonly TimeMeasureUnitEnum DefaultRestMeasUnit = TimeMeasureUnitEnum.Seconds;
+        public static readonly TimeMeasureUnitEnum DefaultRestMeasUnit = TimeMeasureUnitEnum.Seconds;
 
         /// <summary>
         /// Values that identifies that an input value has not been specified
@@ -124,7 +124,7 @@ namespace GymProject.Domain.TrainingDomain.Common
         public bool IsRestSpecified() => Value != NotSpecifiedInput;
 
 
-        public override string ToString() => Value.ToString() + MeasureUnit.Abbreviation;
+        public override string ToString() => Value.ToString() + MeasureUnit?.Abbreviation ?? "";
         #endregion
 
 

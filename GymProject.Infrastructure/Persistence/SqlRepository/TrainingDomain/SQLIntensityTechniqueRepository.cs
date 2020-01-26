@@ -31,31 +31,32 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         #region IRepository Implementation
 
-        public IntensityTechniqueRoot Add(IntensityTechniqueRoot trainingPlan)
+        public IntensityTechniqueRoot Add(IntensityTechniqueRoot technique)
         {
-            return _context.Add(trainingPlan).Entity;
+            return _context.Add(technique).Entity;
         }
 
 
-        public IntensityTechniqueRoot Find(uint trainingPlanId)
+        public IntensityTechniqueRoot Find(uint id)
         {
-            //return _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
-            //        .Include(wo => wo.TrainingWeeks)
-            //        .SingleOrDefault();
+            var res = _context.Find<IntensityTechniqueRoot>(id);
 
-            return _context.Find<IntensityTechniqueRoot>(trainingPlanId);
+            if (res != null)
+                _context.Entry(res).Reference(x => x.EntryStatus).Load();
+
+            return res;
         }
 
 
-        public IntensityTechniqueRoot Modify(IntensityTechniqueRoot trainingPlan)
+        public IntensityTechniqueRoot Modify(IntensityTechniqueRoot technique)
         {
-            return _context.Update(trainingPlan).Entity;
+            return _context.Update(technique).Entity;
         }
 
 
-        public void Remove(IntensityTechniqueRoot trainingPlan)
+        public void Remove(IntensityTechniqueRoot technique)
         {
-            _context.Remove(trainingPlan);
+            _context.Remove(technique);
         }
         #endregion
 

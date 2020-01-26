@@ -42,13 +42,13 @@ namespace GymProject.Application.Command.TrainingDomain
         public async Task<bool> Handle(TagTrainingPlanAsNewHashtagCommand message, CancellationToken cancellationToken)
         {
             TrainingHashtagRoot hashtag = null;
-
             try
             {
                 hashtag = TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith(message.HashtagBody));
 
                 _logger.LogInformation("----- Creating {@TrainingHashtag}", hashtag);
                 _hashtagRepository.Add(hashtag);
+                await _hashtagRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {

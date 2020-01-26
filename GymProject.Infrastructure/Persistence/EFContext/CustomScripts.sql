@@ -3,17 +3,21 @@
 
 --TrainingHashtag -> Body = UNIQUE
 
---TrainingSchedule -> Index = (Start, TrainingPlanId), StartDate NOT NULL
+-- The following, for all the Entities attched to a PersonalNoteValue, GenericHashtagValue. Such as:
+---- TrainingPlanNote -> Body NOT NULL
+---- WorkUnitTemplateNote -> Body NOT NULL
+---- TrainingPlanMessage -> Body NOT NULL
+---- TrainingHashtag -> Body NOT NULL
+---- WorkingSetNote -> Body NOT NULL
+---- TrainingPlanNote -> Body NOT NULL
+---- ...
+---- The alternative is to remove the VO and simply use a plain string property
 
---TrainingPlanMessage -> Body NOT NULL
+-- TrainingSchedule -> Index = (Start, TrainingPlanId), StartDate NOT NULL
 
 -- UserTrainingPhase -> UQ: (UserId, Start)
 
 -- UserTrainingProficiency -> UQ: (UserId, Start)
-
---TrainingPlanNote -> Body NOT NULL
-
---WorkUnitTemplateNote -> Body NOT NULL
 
 -- TrainingPhase -> Data Seeding
 
@@ -21,13 +25,13 @@
 
 -- IntensityTechnique -> Data Seeding
 
--- WorkingSetTemplate -> Rename column "Effort_EffortTypeId"
+-- WorkingSetTemplate -> Rename column "Effort_EffortTypeId", "Repetitions_WorkTypeId"
 
 --All the Many-to-Many relations -> Redundant indexes, should be removed
 
 -- Training Week -> Redundant index, should be removed
 
 --
---	How to Create the SQL functions?? RmToIntPErc etc....
+--	How to Create the SQL functions?? RmToIntPerc etc....
 --
 

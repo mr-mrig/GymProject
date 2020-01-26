@@ -50,6 +50,7 @@ namespace GymProject.Application.Command.TrainingDomain
                 _logger.LogInformation("----- Creating Workout Template - {@Workout}", workout);
 
                 workout = _workoutRepository.Add(workout);
+                await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);
 
                 try
                 {

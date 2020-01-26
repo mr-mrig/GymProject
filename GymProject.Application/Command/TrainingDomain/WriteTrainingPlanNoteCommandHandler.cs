@@ -34,6 +34,7 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 note = TrainingPlanNoteRoot.WriteTransient(PersonalNoteValue.Write(message.NoteBody));
                 _noteRepository.Add(note);
+                await _noteRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {

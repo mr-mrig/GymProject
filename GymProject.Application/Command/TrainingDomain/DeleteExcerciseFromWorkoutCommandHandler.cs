@@ -38,7 +38,6 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 workout.UnplanExcercise(message.WorkUnitProgressiveNumber);
 
-
                 _logger.LogInformation("----- Deleting Work Unit - {@WorkUnit}", message.WorkUnitProgressiveNumber);
 
                 _workoutRepository.Modify(workout);

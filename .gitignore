@@ -338,3 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/GymProject.Infrastructure/Migrations/GymContextModelSnapshot.cs
+/GymProject.Infrastructure/Migrations/20200106174754_Initial.Designer.cs
+/GymProject.Infrastructure/Migrations/20200106174754_Initial.cs

@@ -36,14 +36,28 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
+                PersonalNoteValue note = null;
+                DateTime startingDate = DateTime.UtcNow.Date;
                 AthleteRoot athlete = _athleteRepository.Find(message.AthleteId);
 
                 _logger.LogInformation("----- Starting Training Phase {@PhaseId} for Athlete {@Athlete}", message.TrainingPhaseId, athlete);
 
-                athlete.StartTrainingPhase(message.TrainingPhaseId, EntryStatusTypeEnum.From((int)message.EntryStatusId), ownerNote: PersonalNoteValue.Write(message.OwnerNote));
+                // If another phase is starting today, the first of the two is a mistake -> remove it
+                // This application logic, not domain
+                var ongoingPhase = athlete.ClonePhaseStartingFrom(startingDate);
+                if (ongoingPhase != null)
+                {
+                    athlete.RemoveTrainingPhase(ongoingPhase);
+                    result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (message.OwnerNote != null)
+                    note = PersonalNoteValue.Write(message.OwnerNote);
+
+                athlete.StartTrainingPhase(message.TrainingPhaseId, EntryStatusTypeEnum.From((int)message.EntryStatusId), ownerNote: note);
                 _athleteRepository.Modify(athlete);
 
-                result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken);
+                result = await _athleteRepository.UnitOfWork.SaveAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception exc)
             {

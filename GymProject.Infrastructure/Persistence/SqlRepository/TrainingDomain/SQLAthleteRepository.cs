@@ -47,7 +47,7 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
             if (res != null)
             {
-                _context.Entry(res).Collection(x => x.TrainingPhases).Load();
+                _context.Entry(res).Collection(x => x.TrainingPhases).Query().Include(x => x.EntryStatus).Load();
                 _context.Entry(res).Collection(x => x.TrainingProficiencies).Load();
                 _context.Entry(res).Collection(x => x.TrainingPlans).Query()
                     .Include("_trainingPlanPhases")

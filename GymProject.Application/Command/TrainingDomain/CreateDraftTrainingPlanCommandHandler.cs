@@ -48,6 +48,7 @@ namespace GymProject.Application.Command.TrainingDomain
                 _logger.LogInformation("----- Creating Training Plan - Plan: {@Plan}", plan);
 
                 _trainingPlanRepository.Add(plan);
+                await _trainingPlanRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             catch (Exception exc)
             {

@@ -35,7 +35,6 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 workout.DraftExcercise(message.ExcerciseId);
 
-
                 _logger.LogInformation("----- Creating Work Unit in - {@Workout}", workout.Id);
 
                 _workoutRepository.Modify(workout);

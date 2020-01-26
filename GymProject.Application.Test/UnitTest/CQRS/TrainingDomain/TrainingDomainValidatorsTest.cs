@@ -204,7 +204,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public void RecheduleTrainingPlanCommandValidator_TodayDate_Success()
         {
             // Test
-            RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(1, DateTime.UtcNow.AddDays(-1).Date);
+            RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(1, DateTime.UtcNow.Date);
 
             var loggerValidator = new Mock<ILogger<RescheduleTrainingPlanCommandValidator>>();
             RescheduleTrainingPlanCommandValidator validator = new RescheduleTrainingPlanCommandValidator(loggerValidator.Object);
@@ -214,13 +214,153 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         [Fact]
         public void RecheduleTrainingPlanCommandValidator_PastDate_Fail()
         {
-            // Test
-            RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(1, DateTime.UtcNow.AddDays(-1).Date);
-
+            var command = new RescheduleTrainingPlanCommand(1, DateTime.UtcNow.AddDays(-1).Date);
             var loggerValidator = new Mock<ILogger<RescheduleTrainingPlanCommandValidator>>();
             RescheduleTrainingPlanCommandValidator validator = new RescheduleTrainingPlanCommandValidator(loggerValidator.Object);
+
             Assert.False(validator.Validate(command).IsValid);
         }
+
+        [Fact]
+        public void PlanWorkingSetCommandValidator_Success()
+        {
+            var command = new PlanWorkingSetCommand(1, 0, 10, 1, 90, 1, 10, 1, null, null);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetCommandValidator>>();
+            var validator = new PlanWorkingSetCommandValidator(loggerValidator.Object);
+
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetCommandValidator_WrongWorkTypeId_Fail()
+        {
+            var command = new PlanWorkingSetCommand(1, 0, 10, 100, 90, 1, 10, 1, null, null);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetCommandValidator>>();
+            var validator = new PlanWorkingSetCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetCommandValidator_WrongEffortTypeId_Fail()
+        {
+            var command = new PlanWorkingSetCommand(1, 0, 10, 1, 90, 1, 10, -1, null, null);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetCommandValidator>>();
+            var validator = new PlanWorkingSetCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetCommandValidator_WrongTimeMeasUnitId_Fail()
+        {
+            var command = new PlanWorkingSetCommand(1, 0, 10, 1, 90, 0, 10, 1, null, null);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetCommandValidator>>();
+            var validator = new PlanWorkingSetCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetEffortCommandValidator_Success()
+        {
+            var command = new PlanWorkingSetEffortCommand(1, 0, 0, 9, 2);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetEffortCommandValidator>>();
+            var validator = new PlanWorkingSetEffortCommandValidator(loggerValidator.Object);
+
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetEffortCommandValidator_WrongEffortTypeId_Fail()
+        {
+            var command = new PlanWorkingSetEffortCommand(1, 0, 0, 9, 12);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetEffortCommandValidator>>();
+            var validator = new PlanWorkingSetEffortCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetRepetitionsCommandValidator_Success()
+        {
+            var command = new PlanWorkingSetRepetitionsCommand(1, 0, 0, 10, 1);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetRepetitionsCommandValidator>>();
+            var validator = new PlanWorkingSetRepetitionsCommandValidator(loggerValidator.Object);
+
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void PlanWorkingSetRepetitionsCommandValidator_WrongEffortTypeId_Fail()
+        {
+            var command = new PlanWorkingSetRepetitionsCommand(1, 0, 0, 10, 100);
+            var loggerValidator = new Mock<ILogger<PlanWorkingSetRepetitionsCommandValidator>>();
+            var validator = new PlanWorkingSetRepetitionsCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandValidator_Success()
+        {
+            var command = new TagTrainingPlanAsNewHashtagCommand(1, 1, "ValidHashtag");
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+            var validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+
+            Assert.True(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandValidator_TooShort_Fail()
+        {
+            var command = new TagTrainingPlanAsNewHashtagCommand(1, 1, "a");
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+            var validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandValidator_TooLong_Fail()
+        {
+            var command = new TagTrainingPlanAsNewHashtagCommand(1, 1, "a".PadRight(GenericHashtagValue.DefaultMaximumLength + 1));
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+            var validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandValidator_WithSpaces_Fail()
+        {
+            var command = new TagTrainingPlanAsNewHashtagCommand(1, 1, "my hashtag with spaces");
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+            var validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandValidator_WithSpecialChars_Fail()
+        {
+            var command = new TagTrainingPlanAsNewHashtagCommand(1, 1, "myhashtagwith#hashtags");
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+            var validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
+        [Fact]
+        public void TagTrainingPlanAsNewHashtagCommandValidator_ManyRulesNotMet_Fail()
+        {
+            var command = new TagTrainingPlanAsNewHashtagCommand(1, 1, "my hashtag with#hashtags");
+            var loggerValidator = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandValidator>>();
+            var validator = new TagTrainingPlanAsNewHashtagCommandValidator(loggerValidator.Object);
+
+            Assert.False(validator.Validate(command).IsValid);
+        }
+
 
     }
 }

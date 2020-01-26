@@ -37,8 +37,6 @@ namespace GymProject.Application.Command.TrainingDomain
 
                 _logger.LogInformation("----- Detaching note from {@WorkUnitProgressiveNumber} in {@workout.Id}", message.WorkUnitProgressiveNumber, workout.Id);
 
-                throw new NotImplementedException("Should note be deleted?");
-
                 _workoutRepository.Modify(workout);
                 result = await _workoutRepository.UnitOfWork.SaveAsync(cancellationToken);
             }

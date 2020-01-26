@@ -60,10 +60,10 @@ namespace GymProject.Application.Command.TrainingDomain
         }
 
 
-        private WSRepetitionsValue ParseRepetitions(int repetitionsValue, int? workTypeId)
+        private WSRepetitionsValue ParseRepetitions(int? repetitionsValue, int? workTypeId)
         {
-            //if (!repetitionsValue.HasValue)
-            //    return null;
+            if (!repetitionsValue.HasValue)
+                return null;
 
             WSWorkTypeEnum workType = workTypeId.HasValue
                 ? WSWorkTypeEnum.From(workTypeId.Value)
@@ -74,7 +74,7 @@ namespace GymProject.Application.Command.TrainingDomain
             if (repetitionsValue == WSRepetitionsValue.AMRAPValue && workType == WSWorkTypeEnum.RepetitionBasedSerie)
                 repetitions = WSRepetitionsValue.TrackAMRAP();
             else
-                repetitions = WSRepetitionsValue.TrackWork(repetitionsValue, workType);
+                repetitions = WSRepetitionsValue.TrackWork(repetitionsValue.Value, workType);
 
             return repetitions;
         }

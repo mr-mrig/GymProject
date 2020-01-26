@@ -38,6 +38,9 @@ namespace GymProject.Application.Command.TrainingDomain
             {
                 note = WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write(message.NoteBody));
                 _noteRepository.Add(note);
+
+                if (!await _noteRepository.UnitOfWork.SaveAsync(cancellationToken))
+                    return await Task.FromResult(false);    // Transaction
             }
             catch (Exception exc)
             {

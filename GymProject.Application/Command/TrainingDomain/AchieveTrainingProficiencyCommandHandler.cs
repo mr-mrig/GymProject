@@ -38,6 +38,12 @@ namespace GymProject.Application.Command.TrainingDomain
 
                 _logger.LogInformation("----- Achieving Training Proficiency {@ProficiencyId} for Athlete {@Athlete}", message.TrainingProficiencyId, athlete);
 
+                // If another proficiency has been started today, the first of the two is a mistake -> remove it
+                // This application logic, not domain
+                var currentProficiency = athlete.CurrentTrainingProficiency;
+                if (currentProficiency != null && currentProficiency.StartDate.Date == DateTime.UtcNow.Date)
+                    athlete.RemoveTrainingProficiency(currentProficiency);
+
                 athlete.AchieveTrainingProficiency(message.TrainingProficiencyId);
                 _athleteRepository.Modify(athlete);
 

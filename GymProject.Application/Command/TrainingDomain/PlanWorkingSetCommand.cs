@@ -10,7 +10,7 @@ namespace GymProject.Application.Command.TrainingDomain
 
         public uint WorkoutTemplateId { get; private set; }
         public uint WorkUnitProgressiveNumber { get; private set; }
-        public int RepetitionsValue { get; private set; }
+        public int? RepetitionsValue { get; private set; }
         public int? WorkTypeId { get; private set; }
         public int? RestValue { get; private set; }
         public int? RestMeasUnitId { get; private set; } = 0;
@@ -30,7 +30,7 @@ namespace GymProject.Application.Command.TrainingDomain
         //    , TrainingEffortValue effort, TUTValue tempo, IEnumerable<uint?> intensityTechniquesIds)
 
         public PlanWorkingSetCommand(uint workoutTemplateId, uint workUnitProgressiveNumber
-            , int repetitionsValue, int? workTypeId, int? restValue, int? restMeasUnitId
+            , int? repetitionsValue, int? workTypeId, int? restValue, int? restMeasUnitId
             , int? effort, int? effortTypeId, string tempo, IEnumerable<uint?> intensityTechniquesIds)
         {
             WorkoutTemplateId = workoutTemplateId;

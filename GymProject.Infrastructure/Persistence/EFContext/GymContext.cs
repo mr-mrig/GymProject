@@ -28,6 +28,8 @@ using MediatR;
 using GymProject.Infrastructure.Mediator;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Collections.Generic;
 
 namespace GymProject.Infrastructure.Persistence.EFContext
 {
@@ -99,6 +101,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
         public virtual DbSet<WorkoutTemplateRoot> WorkoutTemplates { get; set; }
         public virtual DbSet<WorkUnitTemplateEntity> WorkUnitTemplates { get; set; }
         public virtual DbSet<WorkingSetTemplateEntity> WorkingSetTemplates { get; set; }
+        public virtual DbSet<WSWorkTypeEnum> WorkingSetWorkTypes { get; set; }
         public virtual DbSet<TrainingEffortTypeEnum> EffortTypes { get; set; }
 
         public virtual DbSet<WorkingSetIntensityTechniqueRelation> WorkingSetIntensityTechniqueRelations { get; set; }
@@ -197,6 +200,7 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             modelBuilder.ApplyConfiguration(new TrainingMessageEntityConfiguration());
             modelBuilder.ApplyConfiguration(new TrainingProficiencyEntityConfiguration());
             modelBuilder.ApplyConfiguration(new EffortTypeEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkingSetWorkTypeEntityConfiguration());
 
             // Training Phase
             modelBuilder.ApplyConfiguration(new TrainingPhaseEntityConfiguration());
@@ -234,6 +238,10 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         public virtual async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
         {
+            // Preliminary operations to ensure consistent operations
+            IgnoreStaticEnumTables();
+            EmbeddedValueObjectsAsPartOfParentTable();
+
             // Dispatch Domain Events collection. 
             // Choices:
             // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
@@ -241,10 +249,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext
             // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
             // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
             await _mediator.PublishDomainEventsAsync(this, _logger);
-
-            // Preliminary operations to ensure consistent operations
-            IgnoreStaticEnumTables();
-            EmbeddedValueObjectsAsPartOfParentTable();
 
             // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
             // performed through the DbContext will be committed
@@ -259,8 +263,20 @@ namespace GymProject.Infrastructure.Persistence.EFContext
 
         protected virtual void IgnoreStaticEnumTables()
         {
+            //RIGM: workoround
+            IEnumerable<EntityEntry<Enumeration>> enumerations = null;
+            try
+            {
+                enumerations = ChangeTracker.Entries<Enumeration>().Where(x => x.State != EntityState.Unchanged);   //RIGM: this is failing sometimes with apparently no reason...
+            }
+            catch
+            {
+                // Retry, this time the operation will succed
+                enumerations = ChangeTracker.Entries<Enumeration>().Where(x => x.State != EntityState.Unchanged);
+            }
+
             // Avoid double insert for tables that should not be tracked
-            foreach (var entry in ChangeTracker.Entries<Enumeration>().Where(x => x.State != EntityState.Unchanged))
+            foreach (var entry in enumerations)
             {
                 try
                 {

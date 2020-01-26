@@ -33,9 +33,9 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         #region IRepository Implementation
 
-        public WorkoutSessionRoot Add(WorkoutSessionRoot trainingPlan)
+        public WorkoutSessionRoot Add(WorkoutSessionRoot workout)
         {
-            return _context.Add(trainingPlan).Entity;
+            return _context.Add(workout).Entity;
         }
 
 
@@ -59,15 +59,15 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
         }
 
 
-        public WorkoutSessionRoot Modify(WorkoutSessionRoot trainingPlan)
+        public WorkoutSessionRoot Modify(WorkoutSessionRoot workout)
         {
-            return _context.Update(trainingPlan).Entity;
+            return _context.Update(workout).Entity;
         }
 
 
-        public void Remove(WorkoutSessionRoot trainingPlan)
+        public void Remove(WorkoutSessionRoot workout)
         {
-            _context.Remove(trainingPlan);
+            _context.Remove(workout);
         }
         #endregion
 

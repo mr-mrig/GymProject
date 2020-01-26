@@ -26,8 +26,6 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                         .IsRequired(true)
                         .HasMaxLength(PersonalNoteValue.DefaultMaximumLength)
             );
-
-
         }
 
     }

@@ -24,51 +24,52 @@ namespace GymProject.Infrastructure.Persistence.EFContext.EntityConfigurations.T
                 .HasColumnType("INTEGER")
                 .IsRequired();
 
-            builder.OwnsOne(ws => ws.Repetitions,
-                r =>
-                {
-                    r.Property(p => p.Value)
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("TargetRepetitions")
-                        .IsRequired();
+            builder.OwnsOne(ws => ws.Repetitions, r =>
+            {
+                r.Property(p => p.Value)
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("TargetRepetitions")
+                    .IsRequired();
+                r.HasOne(p => p.WorkType)
+                    .WithMany()
+                    .HasForeignKey("WorkTypeId")
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.NoAction);
 
-                    r.Ignore(p => p.WorkType);
-                });
+                //r.Ignore(p => p.WorkType);
+            });
 
-            builder.OwnsOne(ws => ws.Rest,
-                r =>
-                {
-                    r.Property(p => p.Value)
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("Rest");
+            builder.OwnsOne(ws => ws.Rest, r =>
+            {
+                r.Property(p => p.Value)
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("Rest");
 
-                    r.Ignore(p => p.MeasureUnit);
-                });
+                r.Ignore(p => p.MeasureUnit);
+            });
 
-            builder.OwnsOne(ws => ws.Tempo,
-                r =>
-                {
-                    r.Property(p => p.TUT)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("Cadence");
-                });
+            builder.OwnsOne(ws => ws.Tempo, r =>
+            {
+                r.Property(p => p.TUT)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("Cadence");
+            });
 
-            builder.OwnsOne(ws => ws.Effort,
-                e =>
-                {
-                    e.Property(p => p.Value)
-                    .HasColumnName("Effort")
-                    .HasColumnType("INTEGER");
+            builder.OwnsOne(ws => ws.Effort, e =>
+            {
+                e.Property(p => p.Value)
+                .HasColumnName("Effort")
+                .HasColumnType("INTEGER");
 
-                    //e.Property(p => p.EffortType)
-                    //   .HasColumnName("EffortTypeId");
+                //e.Property(p => p.EffortType)
+                //   .HasColumnName("EffortTypeId");
 
-                    e.HasOne(p => p.EffortType)
-                        .WithMany()
-                        .HasForeignKey("EffortTypeId")
-                        .IsRequired(false)
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
+                e.HasOne(p => p.EffortType)
+                    .WithMany()
+                    .HasForeignKey("EffortTypeId")
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Intensity technique is handled in the Connection Class Configuration
 

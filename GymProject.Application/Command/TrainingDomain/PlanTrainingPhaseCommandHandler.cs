@@ -36,9 +36,19 @@ namespace GymProject.Application.Command.TrainingDomain
 
             try
             {
+                PersonalNoteValue note = null;
                 AthleteRoot athlete = _athleteRepository.Find(message.AthleteId);
 
                 _logger.LogInformation("----- Planning Training Phase {@PhaseId} for Athlete {@Athlete} from {@StartDate} to {@EndDate}", message.TrainingPhaseId, athlete, message.StartDate, message.EndDate);
+
+                // If another phase is starting today, the first of the two is a mistake -> remove it
+                // This application logic, not domain
+                var ongoingPhase = athlete.ClonePhaseStartingFrom(message.StartDate);
+                if (ongoingPhase != null)
+                    athlete.RemoveTrainingPhase(ongoingPhase);
+
+                if (message.OwnerNote != null)
+                    note = PersonalNoteValue.Write(message.OwnerNote);
 
                 athlete.StartTrainingPhase(message.TrainingPhaseId, 
                     EntryStatusTypeEnum.From((int)message.EntryStatusId), 

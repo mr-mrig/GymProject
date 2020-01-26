@@ -29,13 +29,10 @@ namespace GymProject.Application.Test.UnitTestEnvironment
     /// <summary>
     /// Way smaller GymContext so it can be seeded on-the-fly without slowing the Unit Test process
     /// </summary>
-    internal class InMemoryDatabaseSeed : IDatabaseSeed
+    internal class InMemoryDatabaseSeed : DatabaseSeed
     {
 
 
-
-        public GymContext Context { get; private set; }
-        public DatabaseSeedService SeedingService { get; private set; }
 
 
         #region Seeding
@@ -49,7 +46,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         public ICollection<WorkoutTemplateRoot> WorkoutTemplates { get; protected set; }
 
 
-        //public IEnumerable<WorkUnitTemplateNoteRoot> WorkUnitTemplateNotes { get; protected set; }
+        public IEnumerable<WorkUnitTemplateNoteRoot> WorkUnitTemplateNotes { get; protected set; }
         public IEnumerable<TrainingPlanNoteRoot> TrainingPlanNotes { get; protected set; }
         public IEnumerable<WorkingSetNoteRoot> WorkingSetNotes { get; protected set; }
         public IEnumerable<TrainingPlanMessageRoot> TrainingPlanMessages { get; protected set; }
@@ -76,11 +73,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         /// The DB is way smaller in order not to delay the tests execution.
         /// </summary>
         /// <param name="context">The In-memory DB Context</param>
-        public InMemoryDatabaseSeed(GymContext context)
-        {
-            Context = context ?? throw new ArgumentNullException(nameof(GymContext));
-            SeedingService = new DatabaseSeedService(Context);
-        }
+        public InMemoryDatabaseSeed(GymContext context) : base(context) { }
 
 
 
@@ -89,35 +82,18 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         /// This method just checks a sample query, hence the developer must ensure that all the queries have been seeded.
         /// </summary>
         /// <returns>Always returns true</returns>
-        public bool IsDbReadyForUnitTesting() => true;
+        public override bool IsDbReadyForUnitTesting() => false;
 
 
 
-        public async Task SeedUser()
-        {
-            Users = new List<UserRoot>()
-            {
-                UserRoot.RegisterUser("admin@gymapp.com", "admin0", "pwd", "salt", DateTime.UtcNow, AccountStatusTypeEnum.Super),
-                UserRoot.RegisterUser("user1@email.com", "user1", "pwd1", "salt1", DateTime.UtcNow, AccountStatusTypeEnum.Active),
-                UserRoot.RegisterUser("user2@email.com", "user2", "pwd2", "salt2", DateTime.UtcNow, AccountStatusTypeEnum.Active),
-                UserRoot.RegisterUser("user3@email.com", "user3", "pwd3", "salt3", DateTime.UtcNow, AccountStatusTypeEnum.Active),
-                UserRoot.RegisterUser("banned@email.com", "banned_user", "pwdbanned", "saltbanned", DateTime.UtcNow, AccountStatusTypeEnum.Banned),
-            };
 
-            Context.Users.AddRange(Users);
-            await Context.SaveAsync().ConfigureAwait(false);
-        }
-
-
-        public async Task SeedMuscle()
+        public override async Task SeedMuscle()
         {
             Muscles = new List<MuscleGroupRoot>()
             {
                 MuscleGroupRoot.AddToMusclesLibrary("Chest", "Chest"),
                 MuscleGroupRoot.AddToMusclesLibrary("Shoulders", "Delts"),
                 MuscleGroupRoot.AddToMusclesLibrary("Legs", "Leg"),
-                MuscleGroupRoot.AddToMusclesLibrary("Back", "Back"),
-                MuscleGroupRoot.AddToMusclesLibrary("Harmstrings", "Hams"),
             };
 
             Context.MuscleGroups.AddRange(Muscles);
@@ -125,15 +101,13 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
 
-        public async Task SeedExcercise()
+        public override async Task SeedExcercise()
         {
             Excercises = new List<ExcerciseRoot>()
             {
                 ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise1", null, 1, null, EntryStatusTypeEnum.Approved),
                 ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise2", null, 1, null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise3", null, 2, null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise4", null, 3, null, EntryStatusTypeEnum.Approved),
-                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise5", null, 3, null, EntryStatusTypeEnum.Banned),
+                ExcerciseRoot.AddToExcerciseLibrary(null, "Excercise3", null, 3, null, EntryStatusTypeEnum.Banned),
             };
 
             Context.Excercises.AddRange(Excercises);
@@ -141,16 +115,13 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
 
-        public async Task SeedIntensityTechnique()
+        public override async Task SeedIntensityTechnique()
         {
             IntensityTechniques = new List<IntensityTechniqueRoot>()
             {
                 IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 1", "IT1", null, false),
                 IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 2", "IT2", null, false),
                 IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 3", "IT3", null, false),
-                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 4", "IT4", null, false),
-                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 5", "IT5", null, false),
-                IntensityTechniqueRoot.CreatePublicIntensityTechnique(null, 1, "Int Tech 6", "IT6", null, false),
             };
 
             Context.IntensityTechniques.AddRange(IntensityTechniques);
@@ -158,20 +129,16 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
 
-        public async Task SeedHashtags()
+        public override async Task SeedHashtagsPhasesProficiencies()
         {
             TrainingHashtags = new List<TrainingHashtagRoot>()
             {
                 TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith("MyHashtag1")),
                 TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith("MyHashtag2")),
                 TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith("MyHashtag3")),
-                TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith("MyHashtag4")),
-                TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith("MyHashtag5")),
-                TrainingHashtagRoot.TagWith(GenericHashtagValue.TagWith("MyHashtag6")),
             };
 
             Context.TrainingHashtags.AddRange(TrainingHashtags);
-            await Context.SaveAsync().ConfigureAwait(false);
 
 
             TrainingPhases = new List<TrainingPhaseRoot>()
@@ -179,15 +146,9 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                 TrainingPhaseRoot.CreateNativeTrainingPhase("Conditioning"),
                 TrainingPhaseRoot.CreateNativeTrainingPhase("Recomp"),
                 TrainingPhaseRoot.CreateNativeTrainingPhase("Cut"),
-                TrainingPhaseRoot.CreateNativeTrainingPhase("Bulk"),
-                TrainingPhaseRoot.CreateNativeTrainingPhase("Strength"),
-                TrainingPhaseRoot.CreateNativeTrainingPhase("Peaking"),
-                TrainingPhaseRoot.CreatePrivateTrainingPhase("My Private"),
-                TrainingPhaseRoot.CreatePublicTrainingPhase("My public"),
             };
 
             Context.TrainingPhases.AddRange(TrainingPhases);
-            await Context.SaveAsync().ConfigureAwait(false);
 
 
             TrainingProficiencies = new List<TrainingProficiencyRoot>()
@@ -195,7 +156,6 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                 TrainingProficiencyRoot.AddNativeTrainingProficiency(null, "Beginner", PersonalNoteValue.Write("A Beginner")),
                 TrainingProficiencyRoot.AddNativeTrainingProficiency(null, "Intermediate", PersonalNoteValue.Write("An Intermediate")),
                 TrainingProficiencyRoot.AddNativeTrainingProficiency(null, "Advanced", PersonalNoteValue.Write("An Advanced")),
-                TrainingProficiencyRoot.CreatePublicTrainingProficiency("Pro", PersonalNoteValue.Write("Big Gainz!")),
             };
 
             Context.TrainingProficiencies.AddRange(TrainingProficiencies);
@@ -203,55 +163,58 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
 
-        public async Task SeedNotes()
+        public override async Task SeedNotes()
         {
-            //WorkUnitTemplateNotes = new List<WorkUnitTemplateNoteRoot>()
-            //{
-            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note1")),
-            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note2")),
-            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note3")),
-            //    WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("note4")),
-            //};
-
-            //Context.worknot.AddRange(WorkUnitTemplateNotes);
-            //Context.SaveAsync();
-
             TrainingPlanNotes = new List<TrainingPlanNoteRoot>()
             {
                 TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note1")),
                 TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note2")),
-                TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note3")),
-                TrainingPlanNoteRoot.Write(null, PersonalNoteValue.Write("plan note4")),
             };
 
             Context.TrainingPlanNotes.AddRange(TrainingPlanNotes);
-            await Context.SaveAsync().ConfigureAwait(false);
 
             WorkingSetNotes = new List<WorkingSetNoteRoot>()
             {
                 WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note1")),
                 WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note2")),
-                WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note3")),
-                WorkingSetNoteRoot.Write(null, PersonalNoteValue.Write("ws note4")),
             };
 
             Context.WorkingSetNotes.AddRange(WorkingSetNotes);
-            await Context.SaveAsync().ConfigureAwait(false);
 
             TrainingPlanMessages = new List<TrainingPlanMessageRoot>()
             {
                 TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 1")),
                 TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 2")),
-                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 3")),
-                TrainingPlanMessageRoot.Write(null, PersonalNoteValue.Write("Message 4")),
             };
 
             Context.TrainingPlanMessages.AddRange(TrainingPlanMessages);
+
+            WorkUnitTemplateNotes = new List<WorkUnitTemplateNoteRoot>()
+            {
+                WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("WU note1")),
+                WorkUnitTemplateNoteRoot.Write(PersonalNoteValue.Write("WU note2")),
+            };
+
+            Context.WorkUnitTemplateNotes.AddRange(WorkUnitTemplateNotes);
             await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
-        public async Task SeedAthlete()
+        public override async Task SeedUser()
+        {
+            Users = new List<UserRoot>()
+            {
+                UserRoot.RegisterUser("admin@gymapp.com", "admin0", "pwd", "salt", DateTime.UtcNow, AccountStatusTypeEnum.Super),
+                UserRoot.RegisterUser("user1@email.com", "user1", "pwd1", "salt1", DateTime.UtcNow, AccountStatusTypeEnum.Active),
+                UserRoot.RegisterUser("user2@email.com", "user2", "pwd2", "salt2", DateTime.UtcNow, AccountStatusTypeEnum.Active),
+            };
+
+            Context.Users.AddRange(Users);
+            await Context.SaveAsync().ConfigureAwait(false);
+        }
+
+
+        public override async Task SeedAthlete()
         {
             try
             {
@@ -260,47 +223,39 @@ namespace GymProject.Application.Test.UnitTestEnvironment
 
                 foreach (UserRoot user in Users)
                 {
-                    UserTrainingProficiencyRelation prof = UserTrainingProficiencyRelation.AchieveTrainingProficiency(1, new DateTime(2019, 1, 1));
-                    UserTrainingPhaseRelation phase = UserTrainingPhaseRelation.StartPhasePublic(4, new DateTime(2019, 6, 6));
-                    athlete = AthleteRoot.RegisterAthlete(user.Id.Value, new List<UserTrainingPhaseRelation> { phase }, new List<UserTrainingProficiencyRelation> { prof });
-                    //athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
+                    uint phaseId = 3;
+                    uint proficiencyId = 3;
+                    AthleteRoot dummyAthlete = AthleteRoot.RegisterAthlete(user.Id);
+
+                    athlete = AthleteRoot.RegisterAthlete(user.Id.Value);
+
                     Athletes.Add(athlete);
-                    Context.Add(athlete);
+                    Context.Update(athlete);
+                    await Context.SaveAsync().ConfigureAwait(false);
+
+                    // User Phases
+                    if(user.Id != 3)
+                    {
+                        athlete = Athletes.Single(x => x.Id == user.Id);
+                        athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, DateTime.UtcNow.AddDays(50));
+
+                        if (user.Id == 1)
+                            athlete.StartTrainingPhase(phaseId - 2, EntryStatusTypeEnum.Approved, DateTime.UtcNow);
+
+                        Context.Update(athlete);
+                    }
+
+                    // User Proficiencies
+                    if(user.Id.Value != 2)
+                    {
+                        athlete = Athletes.Single(x => x.Id == user.Id.Value);
+                        athlete.AchieveTrainingProficiency(proficiencyId);
+                        Context.Update(athlete);
+                    }
+
                     await Context.SaveAsync().ConfigureAwait(false);
                 }
 
-                List<uint> hashtags1 = new List<uint> { 2, 3, 4 };
-                List<uint> phases1 = new List<uint> { 1, 2 };
-                List<uint> proficiencies1 = new List<uint> { 1, 2 };
-                List<uint> focuses1 = new List<uint> { 1, 3 };
-
-                List<uint> hashtags = new List<uint> { 4 };
-                List<uint> proficiencies = new List<uint> { 3 };
-
-                // User Training Plans
-                athlete = Athletes.Single(x => x.Id == 1);
-                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 1, "Plan1 User1", true, null, 1, hashtags1, proficiencies1, phases1, focuses1).ConfigureAwait(false);
-                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan2 User1 Variant of Plan1", false, 1, null, hashtags, proficiencies).ConfigureAwait(false);
-                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 3, "Plan3 User1", false, 1, null, hashtags, proficiencies).ConfigureAwait(false);
-
-                athlete = Athletes.Single(x => x.Id == 2);
-                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 6, "Plan6 User2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
-                //await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan22 User2 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
-
-                athlete = Athletes.Single(x => x.Id == 3);
-                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan32 User3 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
-
-                // User Phases
-                //uint athleteId = 1;
-                //uint phaseId = 3;
-                //athlete = Athletes.Single(x => x.Id == athleteId);
-                ////athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private, 
-                ////    DateRangeValue.RangeStartingFrom(DateTime.Today.AddDays(-100)), 
-                ////    PersonalNoteValue.Write($"Athlete{athleteId.ToString()} - Phase{phaseId.ToString()}"));
-                //athlete.StartTrainingPhase(phaseId, EntryStatusTypeEnum.Private);
-
-                Context.Update(athlete);
-                await Context.SaveAsync().ConfigureAwait(false);
             }
             catch(Exception exc)
             {
@@ -309,51 +264,71 @@ namespace GymProject.Application.Test.UnitTestEnvironment
         }
 
 
-        public async Task SeedTrainingPlan()
+        public override async Task SeedUserTrainingPlanLibrary()
+        {
+            try
+            {
+                AthleteRoot athlete;
+                List<uint> hashtags1 = new List<uint> { 2, 3 };
+                List<uint> phases1 = new List<uint> { 1, 2 };
+                List<uint> proficiencies1 = new List<uint> { 1, 2 };
+                List<uint> focuses1 = new List<uint> { 1, 3 };
+
+                List<uint> hashtags = new List<uint> { 1 };
+                List<uint> proficiencies = new List<uint> { 3 };
+
+                athlete = Athletes.Single(x => x.Id == 1);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 1, "Plan1 User1", true, null, 1, hashtags1, proficiencies1, phases1, focuses1).ConfigureAwait(false);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan2 User1 Variant of Plan1", false, 1, null, hashtags, proficiencies).ConfigureAwait(false);
+
+                athlete = Athletes.Single(x => x.Id == 2);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 6, "Plan6 User2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
+
+                athlete = Athletes.Single(x => x.Id == 3);
+                await SeedingService.AddTrainingPlanToUserLibrary(athlete, 2, "Plan32 User3 Inherited from 2", false, null, null, hashtags, proficiencies).ConfigureAwait(false);
+
+            }
+            catch(Exception exc)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+        }
+
+        public override async Task SeedTrainingPlan()
         {
             // Seed Training Plans
             TrainingPlanRoot plan1 = TrainingPlanRoot.CreateTrainingPlan(1);
             TrainingPlanRoot plan2 = TrainingPlanRoot.CreateTrainingPlan(1);
-            TrainingPlanRoot plan3 = TrainingPlanRoot.CreateTrainingPlan(1);
 
             TrainingPlans = new List<TrainingPlanRoot>()
             {
-                plan1, plan2, plan3
+                plan1, plan2, 
             };
 
 
             // Ad-hoc plan - training weeks
             plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
-            plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
-            plan1.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
 
             // Other training weeks
-            foreach (var plan in TrainingPlans.Skip(1))
-            {
-                plan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
-                plan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
-            }
+            //foreach (var plan in TrainingPlans.Skip(1))
+            //{
+            //    plan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            //    plan.PlanTransientTrainingWeek(TrainingWeekTypeEnum.Generic, null);
+            //}
 
             Context.TrainingPlans.AddRange(TrainingPlans);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
 
             // Seed Workouts
             await SeedAdHocWorkoutTemplate(TrainingPlans.First());   // Make it different from the others
 
             foreach (TrainingPlanRoot plan in TrainingPlans.Skip(1))
-                await SeedWorkoutTemplate(plan);
+                await SeedWorkoutTemplate(plan, 2, 2, 2, 100);
 
             // Save last changes
             Context.TrainingPlans.UpdateRange(TrainingPlans);
             Context.WorkoutTemplates.UpdateRange(WorkoutTemplates);
-            await Context.SaveAsync();
-
-            // Seed Training Plan Relations
-            //plan1.AttachChildPlan(plan3.Id, TrainingPlanTypeEnum.Variant);
-
-            Context.Update(plan1);
-            Context.Update(plan3);
-            await Context.SaveAsync();
+            await Context.SaveAsync().ConfigureAwait(false);
         }
 
 
@@ -375,12 +350,12 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                     Context.WorkoutTemplates.Add(workout);
 
                     // Save now as we need the ID later in this method
-                    await Context.SaveAsync();
+                    await Context.SaveAsync().ConfigureAwait(false);
 
                     // Add to the plan
                     plan.PlanWorkout(week.ProgressiveNumber, workout.Id.Value);
                     Context.Update(plan);
-                    await Context.SaveAsync();
+                    //await Context.SaveAsync().ConfigureAwait(false);
 
                     // Add the same number of WSs and excercises for each workout
                     for (uint iexc = 0; iexc < exercisesNumber; iexc++)
@@ -399,7 +374,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                     }
 
                     Context.Update(workout);
-                    await Context.SaveAsync();
+                    await Context.SaveAsync().ConfigureAwait(false);
                 }
             }
         }
@@ -429,12 +404,12 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                     Context.WorkoutTemplates.Add(workout);
 
                     // Save now as we need the ID later in this method
-                    await Context.SaveAsync();
+                    await Context.SaveAsync().ConfigureAwait(false);
 
                     // Add to the plan
                     plan.PlanWorkout(week.ProgressiveNumber, workout.Id.Value);
                     Context.Update(plan);
-                    await Context.SaveAsync();
+                    await Context.SaveAsync().ConfigureAwait(false);
 
 
                     // Add the same number of WSs and excercises for each workout
@@ -457,7 +432,7 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                                 case 0:
                                     workout.AddWorkingSetIntensityTechnique(iexc, iws, 1);
                                     if (iexc == 0)
-                                        workout.AddWorkingSetIntensityTechnique(iexc, iws, 4);
+                                        workout.AddWorkingSetIntensityTechnique(iexc, iws, 3);
                                     break;
 
                                 case 2:
@@ -485,17 +460,19 @@ namespace GymProject.Application.Test.UnitTestEnvironment
                                     workout.ReviseWorkingSetLiftingTempo(iexc, iws, TUTValue.PlanTUT("3030"));
                                     break;
                             }
+                            Context.Update(workout);
+                            await Context.SaveAsync().ConfigureAwait(false);
                         }
                     }
-                    workout.LinkWorkUnits(0, 5);
+                    workout.LinkWorkUnits(0, 1);
 
                     Context.Update(workout);
-                    await Context.SaveAsync();
+                    await Context.SaveAsync().ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task SeedTrainingSchedule()
+        public override async Task SeedTrainingSchedule()
         {
             TrainingSchedules = new List<TrainingScheduleRoot>();
 
@@ -528,20 +505,6 @@ namespace GymProject.Application.Test.UnitTestEnvironment
             // Other ones: no shcedules
         }
 
-
-
-        public async Task SeedTrainingDomain()
-        {
-            await SeedUser().ConfigureAwait(false);
-            await SeedAthlete().ConfigureAwait(false);
-            //SeedMuscle();
-            await SeedExcercise().ConfigureAwait(false);
-            await SeedNotes().ConfigureAwait(false);
-            await SeedIntensityTechnique().ConfigureAwait(false);
-            await SeedHashtags().ConfigureAwait(false);
-            await SeedTrainingPlan().ConfigureAwait(false);
-            await SeedTrainingSchedule().ConfigureAwait(false);
-        }
 
 
 

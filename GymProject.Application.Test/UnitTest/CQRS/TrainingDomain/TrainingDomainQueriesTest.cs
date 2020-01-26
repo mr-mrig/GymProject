@@ -1,16 +1,7 @@
-using GymProject.Application.Command;
-using GymProject.Application.Command.TrainingDomain;
-using GymProject.Application.MediatorBehavior;
 using GymProject.Application.Queries.TrainingDomain;
 using GymProject.Application.Test.UnitTestEnvironment;
 using GymProject.Application.Test.Utils;
-using GymProject.Domain.SharedKernel;
-using GymProject.Domain.Test.Util;
-using GymProject.Domain.TrainingDomain.Common;
-using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
-using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,20 +15,23 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
 
 
+
         [Fact]
         public async Task GetTraininPlansSummariesTest_NoResults()
         {
-            IEnumerable<TrainingPlanSummaryDto> results;
-            uint id;
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
+            {
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
 
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-            // Dummy case:  No results
-            id = uint.MaxValue;
-            results = await queries.GetTraininPlansSummaries(id);
-            // Check
-            Assert.Empty(results);
+                    // Dummy case:  No results
+                    uint id = uint.MaxValue;
+                    var results = await queries.GetTraininPlansSummariesAsync(id);
+                    // Check
+                    Assert.Empty(results);
+                }
+            }
         }
 
 
@@ -45,147 +39,156 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         [Fact]
         public async Task GetTraininPlansSummariesTest_StandardCase()
         {
-            List<TrainingPlanSummaryDto> results;
-            uint id;
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-            // Arrange
-            id = 1;
-            results = (await queries.GetTraininPlansSummaries(id)).ToList();
-
-            // Check
-            List<TrainingPlanSummaryDto> expectedResult = GetTraininPlansSummariesTest_StandardCaseExpected();
-            Assert.Equal(expectedResult.Count(), results.Count());
-
-            for (int ires = 0; ires < results.Count(); ires++)
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
             {
-                string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
-                string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
-                Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
+
+                    // Arrange
+                    uint id = 1;
+                    var results = (await queries.GetTraininPlansSummariesAsync(id)).ToList();
+
+                    // Check
+                    List<TrainingPlanSummaryDto> expectedResult = GetTraininPlansSummariesTest_StandardCaseExpected();
+                    Assert.Equal(expectedResult.Count(), results.Count());
+
+                    for (int ires = 0; ires < results.Count(); ires++)
+                    {
+                        string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
+                        string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
+                        Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                    }
+                }
             }
         }
 
 
         [Fact]
-        public async Task GetTraininPlanPlannedWorkoutDays_NoReults()
+        public async Task GetTraininPlanPlannedWorkoutAsync_NoResults()
         {
-            IEnumerable<WorkoutFullPlanDto> results;
-            string workoutName;
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-            //List<uint> weekIds = context.TrainingPlans.Find(planId).TrainingWeeks as List<uint>;
-            //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 1).TrainingWeeks.Select(x => x.Id.Value).ToList();
-            List<uint> weekIds = new List<uint>() { 17, 11, 15, 1 };
-
-            // Dummy case1:  Fake weeks -> No results
-            results = await queries.GetTraininPlanPlannedWorkoutDays(new List<uint>() { uint.MaxValue }, "");
-            Assert.Empty(results);
-
-            // Dummy case2:  Fake name -> No results
-            workoutName = "FAKE NAME";
-            results = await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName);
-            Assert.Empty(results);
-        }
-
-
-        [Fact]
-        public async Task GetTraininPlanPlannedWorkoutDays_StandardCase()
-        {
-            List<WorkoutFullPlanDto> results;
-            string workoutName;
-            uint planId = 1;
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-            //List<uint> weekIds = context.TrainingPlans.Find((uint?)1).TrainingWeeks.Select(x => x.Id.Value).ToList();
-            List<uint> weekIds = new List<uint>() { 17, 11, 15, 1 };
-
-
-            // Arrange
-            workoutName = "DAY A";
-            results = (await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName)).ToList();
-
-
-            // Check
-            List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutDays_StandardCaseExpected();
-            Assert.Equal(expectedResult.Count(), results.Count());
-
-            for (int ires = 0; ires < results.Count(); ires++)
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
             {
-                string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
-                string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
-                Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
 
-                //for(int iwunit = 0; iwunit < results[ires].WorkUnits.Count; iwunit++)
-                //{
-                //    string myJson = JsonConvert.SerializeObject(results[ires].WorkUnits.ElementAt(iwunit));
-                //    string expectedJson = JsonConvert.SerializeObject(expectedResult[ires].WorkUnits.ElementAt(iwunit));
-                //    Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
-                //}
+                    //List<uint> weekIds = context.TrainingPlans.Find(planId).TrainingWeeks as List<uint>;
+                    //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 1).TrainingWeeks.Select(x => x.Id.Value).ToList();
+                    List<uint> weekIds = new List<uint>() { 17, 11, 15, 1 };
+
+                    // Dummy case1:  Fake weeks -> No results
+                    var results = await queries.GetTraininPlanPlannedWorkoutAsync(new List<uint>() { uint.MaxValue }, "");
+                    Assert.Empty(results);
+
+                    // Dummy case2:  Fake name -> No results
+                    string workoutName = "FAKE NAME";
+                    results = await queries.GetTraininPlanPlannedWorkoutAsync(weekIds, workoutName);
+                    Assert.Empty(results);
+                }
             }
         }
 
 
         [Fact]
-        public async Task GetTraininPlanPlannedWorkoutDays_DraftPlanCase()
+        public async Task GetTraininPlanPlannedWorkoutAsync_StandardCase()
         {
-            List<WorkoutFullPlanDto> results;
-            string workoutName;
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-
-            // Arrange
-            //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
-            List<uint> weekIds = new List<uint>() { 10 };
-            workoutName = "DAY A";
-            results = (await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName)).ToList();
-
-            // Check
-            List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutDays_DraftPlanCaseExpected();
-            Assert.Equal(expectedResult.Count(), results.Count());
-
-            for (int ires = 0; ires < results.Count(); ires++)
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
             {
-                string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
-                string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
-                Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
+
+                    //List<uint> weekIds = context.TrainingPlans.Find((uint?)1).TrainingWeeks.Select(x => x.Id.Value).ToList();
+                    List<uint> weekIds = new List<uint>() { 17, 11, 15, 1 };
+
+
+                    // Arrange
+                    string workoutName = "DAY A";
+                    var results = (await queries.GetTraininPlanPlannedWorkoutAsync(weekIds, workoutName)).ToList();
+
+
+                    // Check
+                    List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutAsync_StandardCaseExpected();
+                    Assert.Equal(expectedResult.Count(), results.Count());
+
+                    for (int ires = 0; ires < results.Count(); ires++)
+                    {
+                        string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
+                        string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
+                        Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+
+                        //for(int iwunit = 0; iwunit < results[ires].WorkUnits.Count; iwunit++)
+                        //{
+                        //    string myJson = JsonConvert.SerializeObject(results[ires].WorkUnits.ElementAt(iwunit));
+                        //    string expectedJson = JsonConvert.SerializeObject(expectedResult[ires].WorkUnits.ElementAt(iwunit));
+                        //    Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                        //}
+                    }
+                }
+            }
+        }
+
+
+        [Fact]
+        public async Task GetTraininPlanPlannedWorkoutAsync_DraftPlanCase()
+        {
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
+            {
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
+
+
+                    // Arrange
+                    //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
+                    List<uint> weekIds = new List<uint>() { 10 };
+                    string workoutName = "DAY A";
+                    var results = (await queries.GetTraininPlanPlannedWorkoutAsync(weekIds, workoutName)).ToList();
+
+                    // Check
+                    List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutAsync_DraftPlanCaseExpected();
+                    Assert.Equal(expectedResult.Count(), results.Count());
+
+                    for (int ires = 0; ires < results.Count(); ires++)
+                    {
+                        string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
+                        string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
+                        Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                    }
+                }
             }
         }
         
 
 
         [Fact]
-        public async Task GetTraininPlanPlannedWorkoutDays_DraftWorkUnitCase()
+        public async Task GetTraininPlanPlannedWorkoutAsync_DraftWorkUnitCase()
         {
-            List<WorkoutFullPlanDto> results;
-            string workoutName;
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-
-            // Arrange
-            //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
-            List<uint> weekIds = new List<uint>() { 10 };
-            workoutName = "DAY B";
-            results = (await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName)).ToList();
-
-            // Check
-            List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutDays_DraftWorkUnitCaseExpected();
-            Assert.Equal(expectedResult.Count(), results.Count());
-
-            for (int ires = 0; ires < results.Count(); ires++)
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
             {
-                string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
-                string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
-                Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
+
+
+                    // Arrange
+                    //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
+                    List<uint> weekIds = new List<uint>() { 10 };
+                    string workoutName = "DAY B";
+                    var results = (await queries.GetTraininPlanPlannedWorkoutAsync(weekIds, workoutName)).ToList();
+
+                    // Check
+                    List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutAsync_DraftWorkUnitCaseExpected();
+                    Assert.Equal(expectedResult.Count(), results.Count());
+
+                    for (int ires = 0; ires < results.Count(); ires++)
+                    {
+                        string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
+                        string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
+                        Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                    }
+                }
             }
         }
         
@@ -194,30 +197,34 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         [Fact]
         public async Task GetFullFeedbacksDetails_NoResultsCase()
         {
+            throw new NotImplementedException();
             List<WorkoutFullPlanDto> results;
             string workoutName;
 
-            throw new NotImplementedException();
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-
-            // Arrange
-            //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
-            List<uint> weekIds = new List<uint>() { 10 };
-            workoutName = "DAY B";
-            results = (await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName)).ToList();
-
-            // Check
-            List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutDays_DraftWorkUnitCaseExpected();
-            Assert.Equal(expectedResult.Count(), results.Count());
-
-            for (int ires = 0; ires < results.Count(); ires++)
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
             {
-                string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
-                string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
-                Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
+
+
+                    // Arrange
+                    //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
+                    List<uint> weekIds = new List<uint>() { 10 };
+                    workoutName = "DAY B";
+                    results = (await queries.GetTraininPlanPlannedWorkoutAsync(weekIds, workoutName)).ToList();
+
+                    // Check
+                    List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutAsync_DraftWorkUnitCaseExpected();
+                    Assert.Equal(expectedResult.Count(), results.Count());
+
+                    for (int ires = 0; ires < results.Count(); ires++)
+                    {
+                        string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
+                        string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
+                        Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                    }
+                }
             }
         }
         
@@ -226,30 +233,33 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         [Fact]
         public async Task GetFullFeedbacksDetails_StandardCase()
         {
+            throw new NotImplementedException();
             List<WorkoutFullPlanDto> results;
             string workoutName;
 
-            throw new NotImplementedException();
-
-            GymContext context = await ApplicationTestService.InitQueryTest();
-            TrainingQueryWrapper queries = new TrainingQueryWrapper(ApplicationUnitTestContext.SQLiteDbTestConnectionString);
-
-
-            // Arrange
-            //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
-            List<uint> weekIds = new List<uint>() { 10 };
-            workoutName = "DAY B";
-            results = (await queries.GetTraininPlanPlannedWorkoutDays(weekIds, workoutName)).ToList();
-
-            // Check
-            List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutDays_DraftWorkUnitCaseExpected();
-            Assert.Equal(expectedResult.Count(), results.Count());
-
-            for (int ires = 0; ires < results.Count(); ires++)
+            using (SQLDbContextFactory factory = new SQLDbContextFactory())
             {
-                string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
-                string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
-                Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
+
+                    // Arrange
+                    //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
+                    List<uint> weekIds = new List<uint>() { 10 };
+                    workoutName = "DAY B";
+                    results = (await queries.GetTraininPlanPlannedWorkoutAsync(weekIds, workoutName)).ToList();
+
+                    // Check
+                    List<WorkoutFullPlanDto> expectedResult = GetTraininPlanPlannedWorkoutAsync_DraftWorkUnitCaseExpected();
+                    Assert.Equal(expectedResult.Count(), results.Count());
+
+                    for (int ires = 0; ires < results.Count(); ires++)
+                    {
+                        string myJson = ApplicationTestService.JsonUnitTestSafeSerializer(results[ires]);
+                        string expectedJson = ApplicationTestService.JsonUnitTestSafeSerializer(expectedResult[ires]);
+                        Assert.Equal(expectedJson, myJson, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
+                    }
+                }
             }
         }
 
@@ -257,7 +267,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
 
 
-        #region Expected Results Creators
+        #region Expected Results Builders
 
         private List<TrainingPlanSummaryDto> GetTraininPlansSummariesTest_StandardCaseExpected()
         {
@@ -265,8 +275,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new TrainingPlanSummaryDto()
             {
-                TrainingPlanId = 1,
-                TrainingPlanName = "Plan1 User1",
+                PlanId = 1,
+                PlanName = "Plan1 User1",
                 IsBookmarked = true,
                 AvgWorkoutDays = 4.5f,
                 AvgWorkingSets = 36,
@@ -281,20 +291,20 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 },
                 TargetProficiencies = new List<TrainingProficiencyDto>()
                 {
-                    new TrainingProficiencyDto() { TrainingProficiencyId = 1, TrainingProficiency = "Pro", },
-                    new TrainingProficiencyDto() { TrainingProficiencyId = 2, TrainingProficiency = "Advanced", },
+                    new TrainingProficiencyDto() { ProficiencyId = 1, Proficiency = "Pro", },
+                    new TrainingProficiencyDto() { ProficiencyId = 2, Proficiency = "Advanced", },
                 },
                 TargetPhases = new List<TrainingPhaseDto>()
                 {
-                    new TrainingPhaseDto() { TrainingPhaseId = 1, TrainingPhase = "My public", },
-                    new TrainingPhaseDto() { TrainingPhaseId = 2, TrainingPhase = "My Private", },
+                    new TrainingPhaseDto() { PhaseId = 1, Phase = "My public", },
+                    new TrainingPhaseDto() { PhaseId = 2, Phase = "My Private", },
                 }
             });
 
             expectedResults.Add(new TrainingPlanSummaryDto()
             {
-                TrainingPlanId = 4,
-                TrainingPlanName = "Plan4 User1",
+                PlanId = 4,
+                PlanName = "Plan4 User1",
                 IsBookmarked = true,
                 AvgWorkoutDays = 3,
                 AvgWorkingSets = 27,
@@ -307,7 +317,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 },
                 TargetProficiencies = new List<TrainingProficiencyDto>()
                 {
-                    new TrainingProficiencyDto() { TrainingProficiencyId = 3, TrainingProficiency = "Intermediate", },
+                    new TrainingProficiencyDto() { ProficiencyId = 3, Proficiency = "Intermediate", },
                 },
                 TargetPhases = new List<TrainingPhaseDto>()
                 {
@@ -317,8 +327,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new TrainingPlanSummaryDto()
             {
-                TrainingPlanId = 5,
-                TrainingPlanName = "Plan5 User1 Variant of Plan1 - never scheduled",
+                PlanId = 5,
+                PlanName = "Plan5 User1 Variant of Plan1 - never scheduled",
                 IsBookmarked = true,
                 AvgWorkoutDays = 3,
                 AvgWorkingSets = 27,
@@ -331,7 +341,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 },
                 TargetProficiencies = new List<TrainingProficiencyDto>()
                 {
-                    new TrainingProficiencyDto() { TrainingProficiencyId = 3, TrainingProficiency = "Intermediate", },
+                    new TrainingProficiencyDto() { ProficiencyId = 3, Proficiency = "Intermediate", },
                 },
                 TargetPhases = new List<TrainingPhaseDto>()
                 {
@@ -341,8 +351,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new TrainingPlanSummaryDto()
             {
-                TrainingPlanId = 2,
-                TrainingPlanName = "Plan2 User1 Variant of Plan1",
+                PlanId = 2,
+                PlanName = "Plan2 User1 Variant of Plan1",
                 IsBookmarked = false,
                 AvgWorkoutDays = 2,
                 AvgWorkingSets = null,
@@ -355,7 +365,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 },
                 TargetProficiencies = new List<TrainingProficiencyDto>()
                 {
-                    new TrainingProficiencyDto() { TrainingProficiencyId = 3, TrainingProficiency = "Intermediate", },
+                    new TrainingProficiencyDto() { ProficiencyId = 3, Proficiency = "Intermediate", },
                 },
                 TargetPhases = new List<TrainingPhaseDto>()
                 {
@@ -365,8 +375,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new TrainingPlanSummaryDto()
             {
-                TrainingPlanId = 3,
-                TrainingPlanName = "Plan3 User1 Variant of Plan2",
+                PlanId = 3,
+                PlanName = "Plan3 User1 Variant of Plan2",
                 IsBookmarked = false,
                 AvgWorkoutDays = 3,
                 AvgWorkingSets = 27,
@@ -379,7 +389,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 },
                 TargetProficiencies = new List<TrainingProficiencyDto>()
                 {
-                    new TrainingProficiencyDto() { TrainingProficiencyId = 3, TrainingProficiency = "Intermediate", },
+                    new TrainingProficiencyDto() { ProficiencyId = 3, Proficiency = "Intermediate", },
                 },
                 TargetPhases = new List<TrainingPhaseDto>()
                 {
@@ -392,33 +402,33 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         }
 
 
-        private List<WorkoutFullPlanDto> GetTraininPlanPlannedWorkoutDays_StandardCaseExpected()
+        private List<WorkoutFullPlanDto> GetTraininPlanPlannedWorkoutAsync_StandardCaseExpected()
         {
             List<WorkoutFullPlanDto> expectedResults = new List<WorkoutFullPlanDto>();
 
             expectedResults.Add(new WorkoutFullPlanDto()
             {
-                TrainingWeekId = 6,
+                WeekId = 6,
                 WorkoutId = 1,
                 WorkoutName = "DAY A",
-                SpecificWeekdayId = 0,
+                WeekdayId = 0,
                 WorkUnits = new List<WorkUnitDto>()
                 {
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 1,
+                        WuId = 1,
                         NoteId = 1,
-                        NoteBody = "note4",
-                        WorkUnitProgressiveNumber = 0,
+                        Note = "note4",
+                        WuProgressiveNumber = 0,
                         WuIntensityTechniqueId = 5,
                         WuIntensityTechniqueAbbreviation = "IT5",
                         ExcerciseId = 1,
                         ExcerciseName = "Excercise4",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 1,
+                                WsId = 1,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -428,13 +438,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 4, IntensityTechniqueAbbreviation = "IT2" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 4, TechniqueAbbreviation = "IT2" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 2,
+                                WsId = 2,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -450,19 +460,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 2,
-                        WorkUnitProgressiveNumber = 1,
+                        WuId = 2,
+                        WuProgressiveNumber = 1,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 2,
                         ExcerciseName = "Excercise3",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 3,
+                                WsId = 3,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -472,12 +482,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 4,
+                                WsId = 4,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -489,9 +499,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 {
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 5,
+                                WsId = 5,
                                 WsProgressiveNumber = 2,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -501,12 +511,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 2, IntensityTechniqueAbbreviation = "IT3" },
+                                    new IntensityTechniqueDto() { TechniqueId = 2, TechniqueAbbreviation = "IT3" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 6,
+                                WsId = 6,
                                 WsProgressiveNumber = 3,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -522,19 +532,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 3,
-                        WorkUnitProgressiveNumber = 2,
+                        WuId = 3,
+                        WuProgressiveNumber = 2,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 3,
                         ExcerciseName = "Excercise2",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 7,
+                                WsId = 7,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -544,12 +554,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 8,
+                                WsId = 8,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -568,27 +578,27 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new WorkoutFullPlanDto()
             {
-                TrainingWeekId = 3,
+                WeekId = 3,
                 WorkoutId = 6,
                 WorkoutName = "DAY A",
-                SpecificWeekdayId = 0,
+                WeekdayId = 0,
                 WorkUnits = new List<WorkUnitDto>()
                 {
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 16,
+                        WuId = 16,
                         NoteId = 1,
-                        NoteBody = "note4",
-                        WorkUnitProgressiveNumber = 0,
+                        Note = "note4",
+                        WuProgressiveNumber = 0,
                         WuIntensityTechniqueId = 5,
                         WuIntensityTechniqueAbbreviation = "IT5",
                         ExcerciseId = 1,
                         ExcerciseName = "Excercise4",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 41,
+                                WsId = 41,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -598,13 +608,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 4, IntensityTechniqueAbbreviation = "IT2" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 4, TechniqueAbbreviation = "IT2" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 42,
+                                WsId = 42,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -620,19 +630,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 17,
-                        WorkUnitProgressiveNumber = 1,
+                        WuId = 17,
+                        WuProgressiveNumber = 1,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 2,
                         ExcerciseName = "Excercise3",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 43,
+                                WsId = 43,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -642,12 +652,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 44,
+                                WsId = 44,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -659,9 +669,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 {
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 45,
+                                WsId = 45,
                                 WsProgressiveNumber = 2,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -671,12 +681,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 2, IntensityTechniqueAbbreviation = "IT3" },
+                                    new IntensityTechniqueDto() { TechniqueId = 2, TechniqueAbbreviation = "IT3" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 46,
+                                WsId = 46,
                                 WsProgressiveNumber = 3,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -692,19 +702,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 18,
-                        WorkUnitProgressiveNumber = 2,
+                        WuId = 18,
+                        WuProgressiveNumber = 2,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 3,
                         ExcerciseName = "Excercise2",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 47,
+                                WsId = 47,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -714,12 +724,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 48,
+                                WsId = 48,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -738,27 +748,27 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new WorkoutFullPlanDto()
             {
-                TrainingWeekId = 8,
+                WeekId = 8,
                 WorkoutId = 10,
                 WorkoutName = "DAY A",
-                SpecificWeekdayId = 0,
+                WeekdayId = 0,
                 WorkUnits = new List<WorkUnitDto>()
                 {
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 28,
+                        WuId = 28,
                         NoteId = 1,
-                        NoteBody = "note4",
-                        WorkUnitProgressiveNumber = 0,
+                        Note = "note4",
+                        WuProgressiveNumber = 0,
                         WuIntensityTechniqueId = 5,
                         WuIntensityTechniqueAbbreviation = "IT5",
                         ExcerciseId = 1,
                         ExcerciseName = "Excercise4",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 73,
+                                WsId = 73,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -768,13 +778,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 4, IntensityTechniqueAbbreviation = "IT2" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 4, TechniqueAbbreviation = "IT2" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 74,
+                                WsId = 74,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -790,19 +800,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 29,
-                        WorkUnitProgressiveNumber = 1,
+                        WuId = 29,
+                        WuProgressiveNumber = 1,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 2,
                         ExcerciseName = "Excercise3",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 75,
+                                WsId = 75,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -812,12 +822,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 76,
+                                WsId = 76,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -829,9 +839,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 {
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 77,
+                                WsId = 77,
                                 WsProgressiveNumber = 2,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -841,12 +851,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 2, IntensityTechniqueAbbreviation = "IT3" },
+                                    new IntensityTechniqueDto() { TechniqueId = 2, TechniqueAbbreviation = "IT3" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 78,
+                                WsId = 78,
                                 WsProgressiveNumber = 3,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -862,19 +872,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 30,
-                        WorkUnitProgressiveNumber = 2,
+                        WuId = 30,
+                        WuProgressiveNumber = 2,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 3,
                         ExcerciseName = "Excercise2",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 79,
+                                WsId = 79,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -884,12 +894,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 80,
+                                WsId = 80,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -908,27 +918,27 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             expectedResults.Add(new WorkoutFullPlanDto()
             {
-                TrainingWeekId = 12,
+                WeekId = 12,
                 WorkoutId = 15,
                 WorkoutName = "DAY A",
-                SpecificWeekdayId = 0,
+                WeekdayId = 0,
                 WorkUnits = new List<WorkUnitDto>()
                 {
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 43,
+                        WuId = 43,
                         NoteId = 1,
-                        NoteBody = "note4",
-                        WorkUnitProgressiveNumber = 0,
+                        Note = "note4",
+                        WuProgressiveNumber = 0,
                         WuIntensityTechniqueId = 5,
                         WuIntensityTechniqueAbbreviation = "IT5",
                         ExcerciseId = 1,
                         ExcerciseName = "Excercise4",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 113,
+                                WsId = 113,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -938,13 +948,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 4, IntensityTechniqueAbbreviation = "IT2" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 4, TechniqueAbbreviation = "IT2" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 114,
+                                WsId = 114,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 120,
@@ -960,19 +970,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 44,
-                        WorkUnitProgressiveNumber = 1,
+                        WuId = 44,
+                        WuProgressiveNumber = 1,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 2,
                         ExcerciseName = "Excercise3",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 115,
+                                WsId = 115,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -982,12 +992,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 116,
+                                WsId = 116,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -999,9 +1009,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 {
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 117,
+                                WsId = 117,
                                 WsProgressiveNumber = 2,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -1011,12 +1021,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = null,
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 2, IntensityTechniqueAbbreviation = "IT3" },
+                                    new IntensityTechniqueDto() { TechniqueId = 2, TechniqueAbbreviation = "IT3" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 118,
+                                WsId = 118,
                                 WsProgressiveNumber = 3,
                                 TargetRepetitions = 10,
                                 Rest = null,
@@ -1032,19 +1042,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     },
                     new WorkUnitDto()
                     {
-                        WorkUnitId = 45,
-                        WorkUnitProgressiveNumber = 2,
+                        WuId = 45,
+                        WuProgressiveNumber = 2,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 3,
                         ExcerciseName = "Excercise2",
-                        WorkingSets = new List<WorkingSetDto>()
+                        WorkingSets = new List<WorkingSetTemplateDto>()
                         {
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 119,
+                                WsId = 119,
                                 WsProgressiveNumber = 0,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -1054,12 +1064,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                                 EffortName = "RM",
                                 IntensityTechniques = new List<IntensityTechniqueDto>()
                                 {
-                                    new IntensityTechniqueDto() { IntensityTechniqueId = 1, IntensityTechniqueAbbreviation = "IT4" },
+                                    new IntensityTechniqueDto() { TechniqueId = 1, TechniqueAbbreviation = "IT4" },
                                 },
                             },
-                            new WorkingSetDto()
+                            new WorkingSetTemplateDto()
                             {
-                                WorkingSetId = 120,
+                                WsId = 120,
                                 WsProgressiveNumber = 1,
                                 TargetRepetitions = 10,
                                 Rest = 90,
@@ -1080,16 +1090,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         }
 
 
-        private List<WorkoutFullPlanDto> GetTraininPlanPlannedWorkoutDays_DraftPlanCaseExpected()
+        private List<WorkoutFullPlanDto> GetTraininPlanPlannedWorkoutAsync_DraftPlanCaseExpected()
         {
             List<WorkoutFullPlanDto> expectedResults = new List<WorkoutFullPlanDto>();
 
             expectedResults.Add(new WorkoutFullPlanDto()
             {
-                TrainingWeekId = 10,
+                WeekId = 10,
                 WorkoutId = 19,
                 WorkoutName = "DAY A",
-                SpecificWeekdayId = 0,
+                WeekdayId = 0,
                 WorkUnits = new List<WorkUnitDto>()
                 {
                     //new WorkUnitDto(),
@@ -1100,29 +1110,29 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         }
 
 
-        private List<WorkoutFullPlanDto> GetTraininPlanPlannedWorkoutDays_DraftWorkUnitCaseExpected()
+        private List<WorkoutFullPlanDto> GetTraininPlanPlannedWorkoutAsync_DraftWorkUnitCaseExpected()
         {
             List<WorkoutFullPlanDto> expectedResults = new List<WorkoutFullPlanDto>();
 
             expectedResults.Add(new WorkoutFullPlanDto()
             {
-                TrainingWeekId = 10,
+                WeekId = 10,
                 WorkoutId = 19,
                 WorkoutName = "DAY B",
-                SpecificWeekdayId = 0,
+                WeekdayId = 0,
                 WorkUnits = new List<WorkUnitDto>()
                 {
                     new WorkUnitDto
                     {
-                        WorkUnitId = 55,
-                        WorkUnitProgressiveNumber = 0,
+                        WuId = 55,
+                        WuProgressiveNumber = 0,
                         NoteId = null,
-                        NoteBody = null,
+                        Note = null,
                         WuIntensityTechniqueId = null,
                         WuIntensityTechniqueAbbreviation = null,
                         ExcerciseId = 4,
                         ExcerciseName = "Excercise1",
-                        WorkingSets = new List<WorkingSetDto>(),
+                        WorkingSets = new List<WorkingSetTemplateDto>(),
                     },
                 },
             });

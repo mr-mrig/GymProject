@@ -1,5 +1,4 @@
-﻿using GymProject.Application.Command.TrainingDomain;
-using GymProject.Application.DomainEventHandler;
+﻿using GymProject.Application.DomainEventHandler;
 using GymProject.Application.Test.Utils;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
@@ -8,10 +7,8 @@ using GymProject.Infrastructure.Persistence.EFContext;
 using GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,7 +26,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<TrainingPlanRemovedFromLibraryDomainEventHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<TrainingPlanRemovedFromLibraryDomainEventHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<TrainingPlanRemovedFromLibraryDomainEventHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
@@ -63,7 +60,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<TrainingPlanRemovedFromLibraryDomainEventHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<TrainingPlanRemovedFromLibraryDomainEventHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<TrainingPlanRemovedFromLibraryDomainEventHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);

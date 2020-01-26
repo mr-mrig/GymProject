@@ -29,7 +29,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeTagTrainingPlanAsNewHashtagCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeTagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeTagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var athleteRepo = new SQLAthleteRepository(context);
             var hashtagRepo = new SQLTrainingHashtagRepository(context);
@@ -61,7 +61,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeTagTrainingPlanAsNewHashtagCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeTagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeTagTrainingPlanAsNewHashtagCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var athleteRepo = new SQLAthleteRepository(context);
             var hashtagRepo = new SQLTrainingHashtagRepository(context);
@@ -96,7 +96,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeCreateDraftTrainingPlanCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeCreateDraftTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeCreateDraftTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
@@ -126,7 +126,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeDeleteTrainingPlanCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeDeleteTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeDeleteTrainingPlanCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
             ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
@@ -156,7 +156,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeWriteTrainingPlanNoteCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeWriteTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeWriteTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             // Test
             uint userId = 1;
@@ -189,7 +189,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeWriteTrainingPlanNoteCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeWriteTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeWriteTrainingPlanNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             // Test
             uint userId = 1;
@@ -222,7 +222,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeWriteWorkUnitTemplateNoteCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeWriteWorkUnitTemplateNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeWriteWorkUnitTemplateNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var workouts = new SQLWorkoutTemplateRepository(context);
             var notes = new SQLWorkUnitTemplateNoteRepository(context);
@@ -256,7 +256,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<FakeWriteWorkUnitTemplateNoteCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<FakeWriteWorkUnitTemplateNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<FakeWriteWorkUnitTemplateNoteCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var workouts = new SQLWorkoutTemplateRepository(context);
             var notes = new SQLWorkUnitTemplateNoteRepository(context);
@@ -291,7 +291,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             GymContext context;
             ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler> logger;
 
-            (context, _, logger) = ApplicationTestService.InitInMemoryCommandTest<ExcludeTrainingPlanFromUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            (context, _, logger) = await ApplicationTestService.InitInMemoryCommandTest<ExcludeTrainingPlanFromUserLibraryCommandHandler>(MethodBase.GetCurrentMethod().DeclaringType.Name);
 
             var athletes = new SQLAthleteRepository(context);
             var plans = new SQLTrainingPlanRepository(context);

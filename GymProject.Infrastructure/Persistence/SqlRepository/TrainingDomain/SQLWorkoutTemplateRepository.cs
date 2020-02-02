@@ -4,7 +4,6 @@ using GymProject.Domain.TrainingDomain.WorkoutTemplateAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Data.SQLite;
 using System.Linq;
 using System.Data;
 using GymProject.Domain.SharedKernel;
@@ -48,13 +47,8 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public WorkoutTemplateRoot Find(uint workoutId)
         {
-
-            // Perform the query only if the entity is not already loaded into the context
-            if (_context.ChangeTracker.Entries<WorkoutTemplateRoot>().Count(x => x.Entity.Id == workoutId) > 0)
-                return _context.WorkoutTemplates.Find(workoutId);   //RIGM: are we sure this always works?
-
             IDbConnection db = _context.Database.GetDbConnection();
-            Dictionary<uint?, WorkoutTemplateRoot> workoutsDictionary = new Dictionary<uint?, WorkoutTemplateRoot>();
+            Dictionary<uint?, WorkoutTemplateRoot> lookup = new Dictionary<uint?, WorkoutTemplateRoot>();
 
             WorkoutTemplateRoot res = db.Query(
                "SELECT WO.Id, WO.ProgressiveNumber, WO.Name, WO.TrainingWeekId, WO.SpecificWeekday as SpecificWeekdayId," +
@@ -102,23 +96,23 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
                    long? effortTypeId = objects[10] as long?;
                    long? techniqueId = objects[11] as long?;
 
-                   if (!workoutsDictionary.TryGetValue(wo.Id, out workout))
+                   if (!lookup.TryGetValue(wo.Id, out workout))
                    {
-                       workoutsDictionary.Add(wo.Id, workout = wo);
+                       lookup.Add(wo.Id, workout = wo);
 
                        if (weekId.HasValue)
                            workout.ScheduleToSpecificDay(WeekdayEnum.From((int)weekId.Value));
                    }
 
                    // Work Units
-                   if (wu?.Id != null && workout.WorkUnits.Count(x => x.Id == wu.Id) == 0)
+                   if (wu?.Id != null && workout.WorkUnits.All(x => x.Id != wu.Id))
                    {
                        workout.PlanExcercise(wu);
                        workout.AttachWorkUnitNote(wu.ProgressiveNumber, (uint?)wuNoteId); 
                    }
 
                    // Working Sets
-                   if (ws?.Id != null && workout.CloneAllWorkingSets().Count(x => x.Id == ws.Id) == 0)
+                   if (ws?.Id != null && workout.CloneAllWorkingSets().All(x => x.Id != ws.Id))
                    {
                        workout.AddWorkingSet(wu.ProgressiveNumber, ws);
 
@@ -150,7 +144,13 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
                splitOn: "SpecificWeekdayId, Id, WorkUnitNoteId, Id, TUT, Rest, Repetitions, WorkTypeId, Effort, EffortTypeId, IntensityTechniqueId")
            .FirstOrDefault();
 
-            _context.Attach(res);
+            // Do not attach to EF context again if already up-to-date
+            //if (res != null && !_context.ChangeTracker.Entries<WorkoutTemplateRoot>().Any(x => x.Entity.Id == workoutId))
+            //    _context.Attach(res);       // Unfortunately we cannot just _context.Find(id)
+
+            if (res != null)
+                _context.Attach(res);
+
             return res;
         }
 

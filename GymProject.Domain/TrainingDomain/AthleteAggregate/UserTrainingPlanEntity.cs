@@ -288,7 +288,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="hashtagId">The Hashtag ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void TagAs(uint? hashtagId)
+        public void TagAs(uint hashtagId)
         {
             if (hashtagId == null)
                 throw new ArgumentNullException($"Hashtag ID must be valid when tagging the Training Plan", nameof(hashtagId));
@@ -326,7 +326,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="phaseId">The Phase ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void TagPhase(uint? phaseId)
+        public void TagPhase(uint phaseId)
         {
             if (phaseId == null)
                 throw new ArgumentNullException(nameof(phaseId), $"Non-NULL Phase ID is required when tagging to it");
@@ -361,7 +361,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="proficiencyId">The Proficiency ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void LinkTargetProficiency(uint? proficiencyId)
+        public void LinkTargetProficiency(uint proficiencyId)
         {
             if (proficiencyId == null)
                 throw new ArgumentNullException(nameof(proficiencyId), $"Non-NULL Proficiency ID is required when tagging to it");
@@ -396,7 +396,7 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="muscleId">The Muscle ID to be added</param>
         /// <exception cref="ArgumentNullException">If the input ID is null</exception>
         /// <exception cref="TrainingDomainInvariantViolationException">If any business rule is violated</exception>
-        public void FocusOnMuscle(uint? muscleId)
+        public void FocusOnMuscle(uint muscleId)
         {
             if (muscleId == null)
                 throw new ArgumentNullException(nameof(muscleId), $"Non-NULL Muscle ID is required when giving focus to it");
@@ -429,33 +429,30 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// Check whether the Plan is tagged with the specifed Hashtag
         /// </summary>
         /// <param name="hashtagId">The Id of the Hashtag to seek for</param>
-        /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Hashtag/returns>
-        public bool IsTaggedAs(uint? hashtagId)
+        public bool IsTaggedAs(uint hashtagId)
 
-            => _trainingPlanHashtags.SingleOrDefault(x => x.HashtagId == hashtagId) != default;
+            => _trainingPlanHashtags.Any(x => x.HashtagId == hashtagId);
 
 
         /// <summary>
         /// Check whether the Plan focuses on the specified muscle
         /// </summary>
         /// <param name="muscleId">The Id of the Muscle to seek for</param>
-        /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Muscle Focus/returns>
-        public bool DoesFocusOn(uint? muscleId)
+        public bool DoesFocusOn(uint muscleId)
 
-            => _trainingPlanMuscleFocusIds.SingleOrDefault(x => x.MuscleGroupId == muscleId) != default;
+            => _trainingPlanMuscleFocusIds.Any(x => x.MuscleGroupId == muscleId);
 
 
         /// <summary>
         /// Check whether the Plan targets the specified Training Proficiency
         /// </summary>
         /// <param name="proficiencyId">The Id of the Proficiency to seek for</param>
-        /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Training Proficiency/returns>
-        public bool HasTargetProficiency(uint? proficiencyId)
+        public bool HasTargetProficiency(uint proficiencyId)
 
-            => _trainingPlanProficiencies.SingleOrDefault(x => x.TrainingProficiencyId == proficiencyId) != default;
+            => _trainingPlanProficiencies.Any(x => x.TrainingProficiencyId == proficiencyId);
 
 
         /// <summary>
@@ -464,9 +461,9 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         /// <param name="phaseId">The Id of the Phase to seek for</param>
         /// <exception cref="ArgumentException">If ID could not be found</exception>
         /// <returns>True if the the plan is tagged with the Training Phase/returns>
-        public bool HasTargetPhase(uint? phaseId)
+        public bool HasTargetPhase(uint phaseId)
 
-            => _trainingPlanPhases.SingleOrDefault(x => x.TrainingPhaseId == phaseId) != default;
+            => _trainingPlanPhases.Any(x => x.TrainingPhaseId == phaseId);
 
 
         #endregion

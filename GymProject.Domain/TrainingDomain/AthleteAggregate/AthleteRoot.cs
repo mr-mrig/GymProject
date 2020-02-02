@@ -232,6 +232,23 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
             TestBusinessRules();
         }
 
+        /// <summary>
+        /// Simply assign the Training Phase to the user planning without performing any other action.
+        /// <para></para>
+        /// <para>WARNING: this function does not ensure the domain invariance hence it should not be exposed to the user.</para>
+        /// <para>To be used for testing/repositorying purposes only</para>
+        /// </summary>
+        /// <param name="phaseId">The Phase ID to schedule</param>
+        /// <param name="entryVisibility">The visibilty</param>
+        /// <param name="startDate">The start datetime the Phase is scheduled from - if not null it must not be placed in the past. The time part will be ignored.</param>
+        /// <param name="endDate">The end datetime the Phase is scheduled to. The time part will be ignored.</param>
+        /// <param name="ownerNote">The owner note - optional</param>
+        /// <returns>A value copy of the UserTrainingPhaseRelation object or null if no phthing found</returns>
+        public void AssignTrainingPhase(uint phaseId, EntryStatusTypeEnum entryVisibility,  DateTime startDate, DateTime? endDate = null, PersonalNoteValue ownerNote = null)
+
+            => _trainingPhases.Add(
+                UserTrainingPhaseRelation.PlanPhase(this, phaseId, startDate, endDate, entryVisibility, ownerNote));
+
 
         /// <summary>
         /// Close all the phases still not completed
@@ -313,6 +330,33 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         }
 
         /// <summary>
+        /// <para>Assign a new Training Proficiency level to the user.</para>
+        /// <para></para>
+        /// <para>WARNING: this function does not ensure the domain invariance hence it should not be exposed to the user.</para>
+        /// <para>To be used for testing/repositorying purposes only</para>
+        /// </summary>
+        /// <param name="proficiencyId">The Phase ID to schedule</param>
+        /// <param name="fromDate">The achivement Datetime - it will be truncated to the plain date</param>
+        /// <exception cref="InvalidOperationException">If try to start a phase over a past period</exception>
+        public void AssignTrainingProficiency(uint proficiencyId, DateTime fromDate, DateTime toDate)
+        
+            => _trainingProficiencies.Add(UserTrainingProficiencyRelation.AssignTrainingProficiency(proficiencyId, fromDate, toDate));
+
+        /// <summary>
+        /// <para>Assign a new Training Proficiency level to the user.</para>
+        /// <para></para>
+        /// <para>WARNING: this function does not ensure the domain invariance hence it should not be exposed to the user.</para>
+        /// <para>To be used for testing/repositorying purposes only</para>
+        /// </summary>
+        /// <param name="proficiencyId">The Phase ID to schedule</param>
+        /// <param name="fromDate">The achivement Datetime - it will be truncated to the plain date</param>
+        /// <exception cref="InvalidOperationException">If try to start a phase over a past period</exception>
+        public void AssignTrainingProficiency(uint proficiencyId, DateTime fromDate)
+        
+            => _trainingProficiencies.Add(UserTrainingProficiencyRelation.AchieveTrainingProficiency(proficiencyId, fromDate));
+
+
+        /// <summary>
         /// Remove the ssepcified Training Proficiency from the athlete's list
         /// </summary>
         /// <param name="proficiency">The proficiency to be removed</param>
@@ -379,6 +423,15 @@ namespace GymProject.Domain.TrainingDomain.AthleteAggregate
         //    CurrentTrainingPlanId = null;
         //    TestBusinessRules();
         //}
+
+
+        /// <summary>
+        /// Check whether the Athlete has the specified Training Plan in its library
+        /// </summary>
+        /// <param name="trainingPlanId">The ID of the TrainingPlanRoot to be found</param>
+        public void HasTrainingPlan(uint trainingPlanId)
+
+            => _trainingPlans.Any(x => x.TrainingPlanId == trainingPlanId);
 
 
         /// <summary>

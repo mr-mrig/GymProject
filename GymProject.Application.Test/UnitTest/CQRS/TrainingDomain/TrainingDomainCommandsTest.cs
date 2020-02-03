@@ -1,10 +1,9 @@
 using GymProject.Application.Command.TrainingDomain;
 using GymProject.Application.Test.UnitTestEnvironment;
-using GymProject.Application.Test.Utils;
-using GymProject.Application.Validator.TrainingDomain;
 using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.AthleteAggregate;
 using GymProject.Domain.TrainingDomain.Common;
+using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Domain.TrainingDomain.TrainingPlanNoteAggregate;
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
@@ -17,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -40,40 +38,59 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         [Fact]
         public async Task PlanDraftWorkoutCommand_Success()
         {
-            throw new Exception("Workout IDs are not loaded");
             var logger = new Mock<ILogger<PlanDraftWorkoutCommandHandler>>().Object;
+            uint weekPnum, lastWoId;
+            int workoutsNumberBefore;
+            int trainingPlansNumberBefore;
+            ITrainingPlanRepository planRepository;
+            IWorkoutTemplateRepository workoutRepository;
+            IEnumerable<uint?> planWorkouts;
+            WorkoutTemplateRoot added;
+            int destWoCount, destPlansCount;
+
+            // Arrange
+            uint planId = 1;
+            uint weekId = 1;
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
                 using (var context = await factory.CreateContextAsync())
                 {
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
-                    // Test
-                    uint planId = 1;
-                    uint weekId = 1;
-
-                    uint weekPnum = context.TrainingWeeks.Find(weekId).ProgressiveNumber;
-                    int workoutsNumberBefore = context.WorkoutTemplates.Count();
-                    int trainingPlansNumberBefore = context.TrainingPlans.Count();
-
-
-                    IEnumerable<uint?> planWorkouts = planRepository.Find(planId).WorkoutIds;
+                    planWorkouts = planRepository.Find(planId).WorkoutIds;
+                    weekPnum = context.TrainingWeeks.Find(weekId).ProgressiveNumber;
+                    workoutsNumberBefore = context.WorkoutTemplates.Count();
+                    trainingPlansNumberBefore = context.TrainingPlans.Count();
+                }
+                // Test
+                using (var context = await factory.CreateContextAsync())
+                {
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     PlanDraftWorkoutCommand command = new PlanDraftWorkoutCommand(planId, weekId, weekPnum);
                     PlanDraftWorkoutCommandHandler handler = new PlanDraftWorkoutCommandHandler(
                         workoutRepository, planRepository, logger);
 
                     Assert.True(await handler.Handle(command, default));
+                    added = context.WorkoutTemplates.ToList().Last();
+                    destPlansCount = context.TrainingPlans.Count();
+                    destWoCount = context.WorkoutTemplates.Count();
+                    lastWoId = context.TrainingWeeks.Find(weekId).WorkoutIds.Last().Value;
+                }
+                // Check
+                using (var context = await factory.CreateContextAsync())
+                {
+                    planRepository = new SQLTrainingPlanRepository(context); 
+                    var dest = planRepository.Find(planId).WorkoutIds;
 
-                    // Check new workout
-                    WorkoutTemplateRoot added = context.WorkoutTemplates.ToList().Last();
-
-                    Assert.Equal(trainingPlansNumberBefore, context.TrainingPlans.Count());
-                    Assert.Equal(workoutsNumberBefore + 1, context.WorkoutTemplates.Count());
-                    Assert.Equal(planWorkouts.Count() + 1, planRepository.Find(planId).WorkoutIds.Count);
-                    Assert.Contains(context.TrainingWeeks.Find(weekId).WorkoutIds.Last().Value, planRepository.Find(planId).WorkoutIds);
+                    Assert.Equal(trainingPlansNumberBefore, destPlansCount);
+                    Assert.Equal(workoutsNumberBefore + 1, destWoCount);
+                    Assert.Equal(planWorkouts.Count() + 1, dest.Count);
+                    Assert.Contains(lastWoId, dest);
 
                     // Check link with plan
                     TrainingWeekEntity week = context.TrainingWeeks.Find(weekId);
@@ -82,108 +99,142 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task PlanDraftWorkoutCommand_Fail()
         {
-            throw new Exception("Workout IDs are not loaded");
-            //var logger = new Mock<ILogger<PlanDraftWorkoutCommandHandler>>().Object;
+            var logger = new Mock<ILogger<PlanDraftWorkoutCommandHandler>>().Object;
+            int trainingPlansNumberBefore;
+            int workoutsNumberBefore;
+            ITrainingPlanRepository planRepository;
+            IWorkoutTemplateRepository workoutRepository;
+            uint weekId, weekPnum;
+
+            // Arrange
+            uint fakePlanId;
+
+            using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
+            {
+                // State before
+                using (var context = await factory.CreateContextAsync())
+                {
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+
+                    fakePlanId = (uint)context.TrainingPlans.Count() + 1;
+                    weekId = 1;
+                    weekPnum = context.TrainingWeeks.Find(weekId).ProgressiveNumber;
+                }
+
+                // Test 1: Cannot create workout
+                using (var context = await factory.CreateContextAsync())
+                {
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
 
-            //using (UnitTestInMemoryDbContextFactory factory = new UnitTestInMemoryDbContextFactory())
-            //{
-            //    using (var context = await factory.CreateContextAsync())
-            //    {
-            //        ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
-            //        IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutsNumberBefore = context.WorkoutTemplates.Count();
+                    trainingPlansNumberBefore = context.TrainingPlans.Count();
 
-            //        // Test 1: Cannot create workout
-            //        uint fakePlanId = (uint)context.TrainingPlans.Count() + 1;
-            //        uint weekId = 1;
-            //        uint weekPnum = context.TrainingWeeks.Find(weekId).ProgressiveNumber;
+                    PlanDraftWorkoutCommand command = new PlanDraftWorkoutCommand(fakePlanId, weekId, weekPnum);
+                    PlanDraftWorkoutCommandHandler handler = new PlanDraftWorkoutCommandHandler(
+                        workoutRepository, planRepository, logger);
 
-            //        int workoutsNumberBefore = context.WorkoutTemplates.Count();
-            //        int trainingPlansNumberBefore = context.TrainingPlans.Count();
+                    Assert.False(await handler.Handle(command, default));
+                }
+                // Check no changes
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
-            //        PlanDraftWorkoutCommand command = new PlanDraftWorkoutCommand(fakePlanId, weekId, weekPnum);
-            //        PlanDraftWorkoutCommandHandler handler = new PlanDraftWorkoutCommandHandler(
-            //            workoutRepository, planRepository, logger);
+                    Assert.Equal(trainingPlansNumberBefore, context.TrainingPlans.Count());
+                    Assert.Equal(workoutsNumberBefore, context.WorkoutTemplates.Count());
+                }
+                // Test 2: Cannot link to plan
+                using (var context = await factory.CreateContextAsync())
+                {
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
-            //        Assert.False(await handler.Handle(command, default));
+                    uint planId = 1;
+                    weekId = 1;
+                    uint fakeWeekPnum = 100;
 
-            //        // Check no changes
-            //        Assert.Equal(trainingPlansNumberBefore, context.TrainingPlans.Count());
-            //        Assert.Equal(workoutsNumberBefore, context.WorkoutTemplates.Count());
+                    PlanDraftWorkoutCommand command = new PlanDraftWorkoutCommand(planId, weekId, fakeWeekPnum);
+                    PlanDraftWorkoutCommandHandler handler = new PlanDraftWorkoutCommandHandler(
+                        workoutRepository, planRepository, logger);
 
-            //        // Test 2: Cannot link to plan
-            //        uint planId = 1;
-            //        weekId = 1;
-            //        uint fakeWeekPnum = 100;
-
-            //        command = new PlanDraftWorkoutCommand(planId, weekId, fakeWeekPnum);
-            //        handler = new PlanDraftWorkoutCommandHandler(
-            //            workoutRepository, planRepository, logger);
-
-            //        Assert.False(await handler.Handle(command, default));
-
-            //        // Check no changes
-            //        Assert.Equal(workoutsNumberBefore, context.WorkoutTemplates.Count());
-            //    }
-            //}
+                    Assert.False(await handler.Handle(command, default));
+                }
+                // Check no changes
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    Assert.Equal(workoutsNumberBefore, context.WorkoutTemplates.Count());
+                }
+            }
         }
-
 
         [Fact]
         public async Task DraftTrainingPlanCommand_Success()
         {
             var logger = new Mock<ILogger<CreateDraftTrainingPlanCommandHandler>>().Object;
             int workoutsNumberBefore;
+            IAthleteRepository athleteRepo;
+            ITrainingPlanRepository planRepository;
+            uint addedId;
 
             // Arrange
             uint userId = 1;
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athleteRepo = new SQLAthleteRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    workoutsNumberBefore = context.TrainingPlans.Count();
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
-                    workoutsNumberBefore = context.TrainingPlans.Count();
+                    athleteRepo = new SQLAthleteRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
 
                     CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(userId);
                     CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, athleteRepo, logger);
 
                     Assert.True(await handler.Handle(command, default));
+                    addedId = context.TrainingPlans.ToList().Last().Id.Value;
                 }
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
-                    IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
+                    athleteRepo = new SQLAthleteRepository(context);
 
                     // Check new training plan
-                    uint addedId = context.TrainingPlans.ToList().Last().Id.Value;
-                    int workoutsNumberAfter = context.TrainingPlans.Count();
-                    TrainingPlanRoot added = planRepository.Find(addedId);
+                    //int workoutsNumberAfter = context.TrainingPlans.Count();
+                    var added = planRepository.Find(addedId);
+                    var dest = athleteRepo.Find(userId);
 
-                    Assert.Equal(workoutsNumberBefore + 1, workoutsNumberAfter);
+                    //Assert.Equal(workoutsNumberBefore + 1, workoutsNumberAfter);
                     Assert.Equal(userId, added.OwnerId);
                     Assert.Equal(1, added.TrainingWeeks.Count);
                     Assert.Empty(added.TrainingWeeks.SelectMany(x => x.WorkoutIds));
 
                     // Check training plan in user library
-                    Assert.Contains(added.Id.Value, athleteRepo.Find(userId).TrainingPlans.Select(x => x.TrainingPlanId));
+                    Assert.Contains(added.Id.Value, dest.TrainingPlans.Select(x => x.TrainingPlanId));
                 }
             }
         }
-
 
         [Fact]
         public async Task AddWorkingSetIntensityTechniqueCommand_Success()
         {
             var logger = new Mock<ILogger<AddWorkingSetIntensityTechniqueCommandHandler>>().Object;
             IReadOnlyCollection<uint?> srcTechniques;
+            IWorkoutTemplateRepository workoutRepository;
 
             // Arrange 
             uint workoutId = 1;
@@ -193,17 +244,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-
-                    WorkoutTemplateRoot srcWorkout = workoutRepository.Find(workoutId);
-                    srcTechniques = srcWorkout.CloneWorkingSet(workUnitPnum, wsetPnum).IntensityTechniqueIds;
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    srcTechniques = workoutRepository.Find(workoutId).CloneWorkingSet(workUnitPnum, wsetPnum).IntensityTechniqueIds;
 
                     if (srcTechniques.Contains(intensityTechniqueId))
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     AddWorkingSetIntensityTechniqueCommand command = new AddWorkingSetIntensityTechniqueCommand(workoutId, workUnitPnum, wsetPnum, intensityTechniqueId);
                     AddWorkingSetIntensityTechniqueCommandHandler handler = new AddWorkingSetIntensityTechniqueCommandHandler(workoutRepository, logger);
@@ -214,7 +267,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     WorkoutTemplateRoot newWorkout = workoutRepository.Find(workoutId);
                     IReadOnlyCollection<uint?> destTechniques = newWorkout.CloneWorkingSet(workUnitPnum, wsetPnum).IntensityTechniqueIds;
@@ -226,11 +279,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task AttachTrainingPlanNoteCommand_Success()
         {
             ILogger<AttachTrainingPlanNoteCommandHandler> logger = new Mock<ILogger<AttachTrainingPlanNoteCommandHandler>>().Object;
+            UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint planId = 1;
@@ -239,38 +293,41 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
-                    var src = athletes.Find(planId).CloneTrainingPlanOrDefault(planId);
+                    src = athletes.Find(planId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.TrainingPlanNoteId != null && src.TrainingPlanNoteId == noteId)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     AttachTrainingPlanNoteCommand command = new AttachTrainingPlanNoteCommand(userId, planId, noteId);
                     AttachTrainingPlanNoteCommandHandler handler = new AttachTrainingPlanNoteCommandHandler(athletes, logger);
 
                     Assert.True(await handler.Handle(command, default));
                 }
-
+                // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
-                    // Check modifications
-                    var newPlan = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
-
-                    Assert.Equal(noteId, newPlan.TrainingPlanNoteId);
+                    Assert.Equal(noteId, athletes.Find(userId).CloneTrainingPlanOrDefault(planId).TrainingPlanNoteId);
                 }
             }
         }
-
 
         [Fact]
         public async Task AttachTrainingPlanNoteCommand_NoteIdNotFound_Fail()
         {
             ILogger<AttachTrainingPlanNoteCommandHandler> logger = new Mock<ILogger<AttachTrainingPlanNoteCommandHandler>>().Object;
+            IAthleteRepository athletes;
 
             // Arrange
             uint planId = 1;
@@ -280,37 +337,39 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
                     src = athletes.Find(planId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.TrainingPlanNoteId != null && src.TrainingPlanNoteId == noteId)
                         throw new Exception("Invalid test");
-
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
                     AttachTrainingPlanNoteCommand command = new AttachTrainingPlanNoteCommand(userId, planId, noteId);
                     AttachTrainingPlanNoteCommandHandler handler = new AttachTrainingPlanNoteCommandHandler(athletes, logger);
 
                     Assert.False(await handler.Handle(command, default));
                 }
+                // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athletes = new SQLAthleteRepository(context);
-
-                    // Check no updates
-                    var newPlan = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
-
-                    Assert.Equal(src.TrainingPlanNoteId, newPlan.TrainingPlanNoteId);
+                    athletes = new SQLAthleteRepository(context);
+                    Assert.Equal(src.TrainingPlanNoteId, athletes.Find(userId).CloneTrainingPlanOrDefault(planId).TrainingPlanNoteId);
                 }
             }
         }
-
 
         [Fact]
         public async Task AttachWorkUnitTemplateNoteCommand_Success()
         {
             var logger = new Mock<ILogger<AttachWorkUnitTemplateNoteCommandHandler>>().Object;
+            IWorkoutTemplateRepository workoutRepository;
 
             // Arrange
             uint workoutId = 2;
@@ -319,24 +378,30 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+
                     var src = workoutRepository.Find(workoutId);
 
                     if (src.CloneWorkUnit(workUnitPnum).WorkUnitNoteId != null && src.CloneWorkUnit(workUnitPnum).WorkUnitNoteId == noteId)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     AttachWorkUnitTemplateNoteCommand command = new AttachWorkUnitTemplateNoteCommand(workoutId, workUnitPnum, noteId);
                     AttachWorkUnitTemplateNoteCommandHandler handler = new AttachWorkUnitTemplateNoteCommandHandler(workoutRepository, logger);
 
                     Assert.True(await handler.Handle(command, default));
                 }
-                // Check modifications
+                // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
                     WorkoutTemplateRoot newWorkout = workoutRepository.Find(workoutId);
 
                     Assert.Equal(noteId, newWorkout.CloneWorkUnit(workUnitPnum).WorkUnitNoteId);
@@ -344,23 +409,29 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
-
         [Fact]
         public async Task CreateDraftTrainingPlanCommand_Success()
         {
             var logger = new Mock<ILogger<CreateDraftTrainingPlanCommandHandler>>().Object;
+            IAthleteRepository athleteRepo;
+            ITrainingPlanRepository planRepository;
 
             // Arrange
             uint ownerId = 3;
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athleteRepo = new SQLAthleteRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
+                    athleteRepo = new SQLAthleteRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
 
                     CreateDraftTrainingPlanCommand command = new CreateDraftTrainingPlanCommand(ownerId);
                     CreateDraftTrainingPlanCommandHandler handler = new CreateDraftTrainingPlanCommandHandler(planRepository, athleteRepo, logger);
@@ -370,7 +441,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IAthleteRepository athleteRepo = new SQLAthleteRepository(context);
+                    athleteRepo = new SQLAthleteRepository(context);
 
                     // Check Training Plan Created
                     TrainingPlanRoot dest = context.TrainingPlans.ToList().Last();
@@ -393,6 +464,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task DeleteExcerciseFromWorkoutCommand_Success()
         {
             var logger = new Mock<ILogger<DeleteExcerciseFromWorkoutCommandHandler>>().Object;
+            IWorkoutTemplateRepository workoutRepository;
 
             // Arrange
             uint id = 1;
@@ -401,12 +473,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    src = workoutRepository.Find(id).Clone() as WorkoutTemplateRoot;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-
-                    src = workoutRepository.Find(id).Clone() as WorkoutTemplateRoot;
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     DeleteExcerciseFromWorkoutCommand command = new DeleteExcerciseFromWorkoutCommand(id, workUnitPnum);
                     DeleteExcerciseFromWorkoutCommandHandler handler = new DeleteExcerciseFromWorkoutCommandHandler(
@@ -417,7 +493,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
                     WorkoutTemplateRoot dest = workoutRepository.Find(id);
 
                     Assert.Equal(src.WorkUnits.Count, dest.WorkUnits.Count + 1);
@@ -429,12 +505,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task DeleteExcerciseFromWorkoutCommand_WorkUnitNotFound_Fail()
         {
             var logger = new Mock<ILogger<DeleteExcerciseFromWorkoutCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository workoutRepository;
 
             // Arrange
             uint id = 1;
@@ -442,11 +518,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    src = workoutRepository.Find(id).Clone() as WorkoutTemplateRoot;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-                    src = workoutRepository.Find(id).Clone() as WorkoutTemplateRoot;
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     DeleteExcerciseFromWorkoutCommand command = new DeleteExcerciseFromWorkoutCommand(id, workUnitPnum);
                     DeleteExcerciseFromWorkoutCommandHandler handler = new DeleteExcerciseFromWorkoutCommandHandler(
@@ -459,7 +540,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     // No cheanges
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     WorkoutTemplateRoot dest = workoutRepository.Find(id);
                     Assert.Equal(src.WorkUnits.Count, dest.WorkUnits.Count);
@@ -467,12 +548,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task DeleteTrainingPlanCommand_Success()
         {
             var logger = new Mock<ILogger<DeleteTrainingPlanCommandHandler>>().Object;
             TrainingPlanRoot src;
+            IWorkoutTemplateRepository workoutRepository;
+            ITrainingPlanRepository planRepository;
 
             // Arrange
             uint id = 1;
@@ -482,10 +564,15 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
-
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
                     src = planRepository.Find(id).Clone() as TrainingPlanRoot;
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
 
                     DeleteTrainingPlanCommand command = new DeleteTrainingPlanCommand(id);
                     DeleteTrainingPlanCommandHandler handler = new DeleteTrainingPlanCommandHandler(
@@ -496,8 +583,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
 
                     foreach (uint workoutId in src.WorkoutIds.Select(x => x.Value))
                         Assert.Null(workoutRepository.Find(workoutId));
@@ -514,20 +601,28 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             var logger = new Mock<ILogger<DeleteTrainingPlanCommandHandler>>().Object;
             int planNum;
             int woNum;
+            IWorkoutTemplateRepository workoutRepository;
+            ITrainingPlanRepository planRepository;
 
             // Arrange
             uint id = uint.MaxValue;
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-                    ITrainingPlanRepository planRepository = new SQLTrainingPlanRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
 
                     planNum = context.TrainingPlans.Count();
                     woNum = context.WorkoutTemplates.Count();
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    planRepository = new SQLTrainingPlanRepository(context);
 
                     DeleteTrainingPlanCommand command = new DeleteTrainingPlanCommand(id);
                     DeleteTrainingPlanCommandHandler handler = new DeleteTrainingPlanCommandHandler(
@@ -545,12 +640,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task DeleteWorkingSetTemplateCommand_Success()
         {
             var logger = new Mock<ILogger<DeleteWorkingSetTemplateCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository workoutRepository;
 
             // Arrange
             uint id = 1;
@@ -559,11 +654,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    src = workoutRepository.Find(id).Clone() as WorkoutTemplateRoot;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
-                    src = workoutRepository.Find(id).Clone() as WorkoutTemplateRoot;
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     DeleteWorkingSetTemplateCommand command = new DeleteWorkingSetTemplateCommand(id, workUnitPnum, wsPnum);
                     DeleteWorkingSetTemplateCommandHandler handler = new DeleteWorkingSetTemplateCommandHandler(
@@ -574,7 +674,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    IWorkoutTemplateRepository workoutRepository = new SQLWorkoutTemplateRepository(context);
+                    workoutRepository = new SQLWorkoutTemplateRepository(context);
 
                     WorkoutTemplateRoot dest = workoutRepository.Find(id);
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count() + 1);
@@ -582,11 +682,11 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task DetachTrainingPlanNoteCommand_Success()
         {
             var logger = new Mock<ILogger<DetachTrainingPlanNoteCommandHandler>>().Object;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -594,10 +694,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+
+                    if (athletes.Find(userId).CloneTrainingPlanOrDefault(planId).TrainingPlanNoteId == null)
+                        throw new Exception("Invalid test");
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
                     DetachTrainingPlanNoteCommand command = new DetachTrainingPlanNoteCommand(userId, planId);
                     DetachTrainingPlanNoteCommandHandler handler = new DetachTrainingPlanNoteCommandHandler(
@@ -608,19 +716,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
                     Assert.Null(dest.TrainingPlanNoteId);
                 }
             }
         }
 
-
-
         [Fact]
         public async Task DetachWorkUnitTemplateNoteCommand_Success()
         {
             var logger = new Mock<ILogger<DetachWorkUnitTemplateNoteCommandHandler>>().Object;
+            IWorkoutTemplateRepository workoutRepo;
 
             // Arrange
             uint id = 1;
@@ -628,14 +735,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var workoutRepo = new SQLWorkoutTemplateRepository(context);
+                    workoutRepo = new SQLWorkoutTemplateRepository(context);
                     var src = workoutRepo.Find(id).Clone() as WorkoutTemplateRoot;
 
                     if (src.CloneWorkUnit(workUnitPnum).WorkUnitNoteId == null)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workoutRepo = new SQLWorkoutTemplateRepository(context);
 
                     DetachWorkUnitTemplateNoteCommand command = new DetachWorkUnitTemplateNoteCommand(id, workUnitPnum);
                     DetachWorkUnitTemplateNoteCommandHandler handler = new DetachWorkUnitTemplateNoteCommandHandler(
@@ -646,14 +758,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var workoutRepo = new SQLWorkoutTemplateRepository(context);
+                    workoutRepo = new SQLWorkoutTemplateRepository(context);
 
                     var dest = workoutRepo.Find(id);
                     Assert.Null(dest.CloneWorkUnit(workUnitPnum).WorkUnitNoteId);
                 }
             }
         }
-
 
         [Fact]
         public async Task PlanDraftExcerciseCommand_Success()
@@ -667,11 +778,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanDraftExcerciseCommand command = new PlanDraftExcerciseCommand(id, excerciseId);
                     PlanDraftExcerciseCommandHandler handler = new PlanDraftExcerciseCommandHandler(
@@ -683,19 +799,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var repo = new SQLWorkoutTemplateRepository(context);
-
                     var dest = repo.Find(id);
                     Assert.Equal(src.WorkUnits.Count() + 1, dest.WorkUnits.Count());
                 }
             }
         }
 
-
         [Fact]
         public async Task PlanTrainingWeekCommand_Success()
         {
             var logger = new Mock<ILogger<PlanTrainingWeekCommandHandler>>().Object;
             TrainingPlanRoot src;
+            ITrainingPlanRepository repo;
 
             // Arrange
             uint id = 1;
@@ -703,12 +818,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLTrainingPlanRepository(context);
+                    src = repo.Find(id).Clone() as TrainingPlanRoot;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLTrainingPlanRepository(context);
-
-                    src = repo.Find(id).Clone() as TrainingPlanRoot;
+                    repo = new SQLTrainingPlanRepository(context);
 
                     PlanTrainingWeekCommand command = new PlanTrainingWeekCommand(id, weekTypeId);
                     PlanTrainingWeekCommandHandler handler = new PlanTrainingWeekCommandHandler(
@@ -719,7 +838,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLTrainingPlanRepository(context);
+                    repo = new SQLTrainingPlanRepository(context);
                     var dest = repo.Find(id);
 
                     Assert.Equal(src.TrainingWeeks.Count(), dest.TrainingWeeks.Count() - 1);
@@ -727,12 +846,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task PlanWorkingSetCommand_DraftWorkingSet_Success()
         {
             var logger = new Mock<ILogger<PlanWorkingSetCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 1;
@@ -740,11 +859,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
+                    src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
-                    src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetCommand command = new PlanWorkingSetCommand(id, workUnitPnum, null, null, null, null, null, null, null, null);
                     PlanWorkingSetCommandHandler handler = new PlanWorkingSetCommandHandler(repo, logger);
@@ -754,7 +878,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
                     var wsAdded = dest.CloneWorkUnit(workUnitPnum).WorkingSets.Last();
 
@@ -773,6 +897,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<PlanWorkingSetCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 1;
@@ -788,11 +913,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
+                    src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
-                    src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetCommand command = new PlanWorkingSetCommand(id, workUnitPnum, reps,
                         workTypeId, rest, restMeasId, effort, effortTypeId, tempo, techniques);
@@ -804,7 +934,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
                     var wsAdded = dest.CloneWorkUnit(workUnitPnum).WorkingSets.Last();
 
@@ -823,6 +953,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<PlanWorkingSetEffortCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 2;
@@ -833,14 +964,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
 
                     if (src.CloneWorkingSet(workUnitPnum, wsPnum).Effort.EffortType.Id != effortTypeId)
                         throw new Exception("Invalid test");    // This means there's something wrong with the context, as everything is added as Reps!
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetEffortCommand command = new PlanWorkingSetEffortCommand(id, workUnitPnum, wsPnum, effort, effortTypeId);
                     PlanWorkingSetEffortCommandHandler handler = new PlanWorkingSetEffortCommandHandler(repo, logger);
@@ -850,12 +986,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
-
-
-                    // WS effort is modified but the Effort Type Value Object is not saved...
-
 
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
                     Assert.Equal(TrainingEffortValue.FromEffort(effort.Value, TrainingEffortTypeEnum.From(effortTypeId.Value)),
@@ -869,6 +1001,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<PlanWorkingSetEffortCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 2;
@@ -879,14 +1012,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
 
                     if (src.CloneWorkingSet(workUnitPnum, wsPnum).Effort.EffortType.Id == effortTypeId)
                         throw new Exception("Invalid test");    // This means there's something wrong with the context, as everything is added as Reps!
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetEffortCommand command = new PlanWorkingSetEffortCommand(id, workUnitPnum, wsPnum, effort, effortTypeId);
                     PlanWorkingSetEffortCommandHandler handler = new PlanWorkingSetEffortCommandHandler(repo, logger);
@@ -896,7 +1034,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
 
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
@@ -911,6 +1049,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<PlanWorkingSetRepetitionsCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 1;
@@ -921,14 +1060,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
 
                     if (src.CloneWorkingSet(workUnitPnum, wsPnum).Repetitions.WorkType.Id != workTypeId)
                         throw new Exception("Invalid test");    // This means there's something wrong with the context, as everything is added as Reps!
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetRepetitionsCommand command = new PlanWorkingSetRepetitionsCommand(id, workUnitPnum, wsPnum, reps, workTypeId);
                     PlanWorkingSetRepetitionsCommandHandler handler = new PlanWorkingSetRepetitionsCommandHandler(repo, logger);
@@ -938,10 +1082,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
-
-                    // Like test case before
 
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
                     Assert.Equal(WSRepetitionsValue.TrackWork(reps, WSWorkTypeEnum.From(workTypeId.Value)),
@@ -955,6 +1097,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<PlanWorkingSetRepetitionsCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 1;
@@ -965,14 +1108,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
 
                     if (src.CloneWorkingSet(workUnitPnum, wsPnum).Repetitions.WorkType.Id == workTypeId)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetRepetitionsCommand command = new PlanWorkingSetRepetitionsCommand(id, workUnitPnum, wsPnum, reps, workTypeId);
                     PlanWorkingSetRepetitionsCommandHandler handler = new PlanWorkingSetRepetitionsCommandHandler(repo, logger);
@@ -982,10 +1130,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
-
-                    // Like test case before
 
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
                     Assert.Equal(WSRepetitionsValue.TrackWork(reps, WSWorkTypeEnum.From(workTypeId.Value)),
@@ -999,6 +1145,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<PlanWorkingSetTempoCommandHandler>>().Object;
             WorkoutTemplateRoot src;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 1;
@@ -1011,8 +1158,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     PlanWorkingSetTempoCommand command = new PlanWorkingSetTempoCommand(id, workUnitPnum, wsPnum, tempo);
                     PlanWorkingSetTempoCommandHandler handler = new PlanWorkingSetTempoCommandHandler(repo, logger);
@@ -1022,7 +1174,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
 
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
@@ -1037,6 +1189,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             var logger = new Mock<ILogger<RemoveWorkingSetIntensityTechniqueCommandHandler>>().Object;
             WorkoutTemplateRoot src;
             uint? intTechniqueId;
+            IWorkoutTemplateRepository repo;
 
             // Arrange
             uint id = 1;
@@ -1045,15 +1198,20 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     src = repo.Find(id).Clone() as WorkoutTemplateRoot;
                     intTechniqueId = src.CloneWorkingSet(workUnitPnum, wsPnum).IntensityTechniqueIds.FirstOrDefault();
 
                     if (intTechniqueId == null)
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLWorkoutTemplateRepository(context);
 
                     RemoveWorkingSetIntensityTechniqueCommand command = new RemoveWorkingSetIntensityTechniqueCommand(id, workUnitPnum, wsPnum, intTechniqueId.Value);
                     RemoveWorkingSetIntensityTechniqueCommandHandler handler = new RemoveWorkingSetIntensityTechniqueCommandHandler(repo, logger);
@@ -1063,7 +1221,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLWorkoutTemplateRepository(context);
+                    repo = new SQLWorkoutTemplateRepository(context);
                     var dest = repo.Find(id);
 
                     Assert.Equal(src.CloneAllWorkingSets().Count(), dest.CloneAllWorkingSets().Count());
@@ -1079,6 +1237,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<TagTrainingPlanAsHashtagCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1087,14 +1246,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.HashtagIds.Contains(hashtagId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     TagTrainingPlanAsHashtagCommand command = new TagTrainingPlanAsHashtagCommand(userId, planId, hashtagId);
                     TagTrainingPlanAsHashtagCommandHandler handler = new TagTrainingPlanAsHashtagCommandHandler(athletes, logger);
@@ -1104,7 +1268,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     //RIGM: why are they sorted? This is not an issue, though it makes no sense
@@ -1122,6 +1286,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<TagTrainingPlanAsNewHashtagCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            ITrainingHashtagRepository hashtags;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1130,12 +1296,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+                    hashtags = new SQLTrainingHashtagRepository(context);
+                    src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var hashtags = new SQLTrainingHashtagRepository(context);
-                    src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
+                    athletes = new SQLAthleteRepository(context);
+                    hashtags = new SQLTrainingHashtagRepository(context);
 
                     TagTrainingPlanAsNewHashtagCommand command = new TagTrainingPlanAsNewHashtagCommand(userId, planId, hashtagBody);
                     TagTrainingPlanAsNewHashtagCommandHandler handler = new TagTrainingPlanAsNewHashtagCommandHandler(athletes, hashtags, logger);
@@ -1145,8 +1317,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var hashtags = new SQLTrainingHashtagRepository(context);
+                    athletes = new SQLAthleteRepository(context);
+                    hashtags = new SQLTrainingHashtagRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
                     var newHashtag = context.TrainingHashtags.ToList().Last();
 
@@ -1164,6 +1336,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<UntagTrainingPlanAsHashtagCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athleteRepo;
+            ITrainingHashtagRepository hashtagRepo;
 
             // Arrange
             uint userId = 1;
@@ -1172,16 +1346,22 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athleteRepo = new SQLAthleteRepository(context);
-                    var hashtagRepo = new SQLTrainingHashtagRepository(context);
+                    athleteRepo = new SQLAthleteRepository(context);
+                    hashtagRepo = new SQLTrainingHashtagRepository(context);
                     src = athleteRepo.Find(userId).CloneTrainingPlanOrDefault(planId);
                     //uint hashtagId = athleteRepo.Find(userId).TrainingPlans.Single(x => x.TrainingPlanId == planId).HashtagIds.First().Value + 1;
 
-                    if (!athleteRepo.Find(userId).TrainingPlans.Single(x => x.TrainingPlanId == planId).HashtagIds.Contains(hashtagId))
+                    if (!src.HashtagIds.Contains(hashtagId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athleteRepo = new SQLAthleteRepository(context);
+                    hashtagRepo = new SQLTrainingHashtagRepository(context);
 
                     UntagTrainingPlanAsHashtagCommand command = new UntagTrainingPlanAsHashtagCommand(userId, planId, hashtagId);
                     UntagTrainingPlanAsHashtagCommandHandler handler = new UntagTrainingPlanAsHashtagCommandHandler(athleteRepo, logger);
@@ -1191,7 +1371,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athleteRepo = new SQLAthleteRepository(context);
+                    athleteRepo = new SQLAthleteRepository(context);
                     var dest = athleteRepo.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.HashtagIds.Count(), dest.HashtagIds.Count() + 1);
@@ -1210,6 +1390,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task CreateTrainingPhaseCommand_Success()
         {
             var logger = new Mock<ILogger<CreateTrainingPhaseCommandHandler>>().Object;
+            uint idAdded;
 
             // Arrange
             uint entryStatusId = 1;
@@ -1226,11 +1407,11 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     CreateTrainingPhaseCommandHandler handler = new CreateTrainingPhaseCommandHandler(repo, logger);
 
                     Assert.True(await handler.Handle(command, default));
+                    idAdded = context.TrainingPhases.ToList().Last().Id.Value;
                 }
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    uint idAdded = context.TrainingPhases.ToList().Last().Id.Value;
                     var repo = new SQLTrainingPhaseRepository(context);
                     var dest = repo.Find(idAdded);
 
@@ -1239,7 +1420,6 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 }
             }
         }
-
 
         [Fact]
         public async Task CreateTrainingPhaseCommand_DuplicatePhaseName_Fail()
@@ -1265,12 +1445,12 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             }
         }
 
-
         [Fact]
         public async Task TagTrainingPlanWithTrainingPhaseCommand_Success()
         {
             var logger = new Mock<ILogger<TagTrainingPlanWithTrainingPhaseCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1279,14 +1459,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.TrainingPhaseIds.Contains(phaseId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     TagTrainingPlanWithTrainingPhaseCommand command = new TagTrainingPlanWithTrainingPhaseCommand(userId, planId, phaseId);
                     TagTrainingPlanWithTrainingPhaseCommandHandler handler = new TagTrainingPlanWithTrainingPhaseCommandHandler(athletes, logger);
@@ -1296,7 +1481,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.TrainingPhaseIds.Count() + 1, dest.TrainingPhaseIds.Count());
@@ -1310,6 +1495,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<UntagTrainingPlanWithTrainingPhaseCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1318,14 +1504,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (!src.TrainingPhaseIds.Contains(phaseId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     UntagTrainingPlanWithTrainingPhaseCommand command = new UntagTrainingPlanWithTrainingPhaseCommand(userId, planId, phaseId);
                     UntagTrainingPlanWithTrainingPhaseCommandHandler handler = new UntagTrainingPlanWithTrainingPhaseCommandHandler(athletes, logger);
@@ -1335,7 +1526,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.TrainingPhaseIds.Count() - 1, dest.TrainingPhaseIds.Count());
@@ -1349,6 +1540,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<TagTrainingPlanWithProficiencyCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository repo;
 
             // Arrange
             uint userId = 1;
@@ -1357,14 +1549,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLAthleteRepository(context);
+                    repo = new SQLAthleteRepository(context);
                     src = repo.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.TrainingProficiencyIds.Contains(proficiencyId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    repo = new SQLAthleteRepository(context);
 
                     TagTrainingPlanWithProficiencyCommand command = new TagTrainingPlanWithProficiencyCommand(userId, planId, proficiencyId);
                     TagTrainingPlanWithProficiencyCommandHandler handler = new TagTrainingPlanWithProficiencyCommandHandler(repo, logger);
@@ -1375,7 +1572,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 }
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var repo = new SQLAthleteRepository(context);
+                    repo = new SQLAthleteRepository(context);
                     var dest = repo.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.TrainingProficiencyIds.Count() + 1, dest.TrainingProficiencyIds.Count());
@@ -1389,6 +1586,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<UntagTrainingPlanWithProficiencyCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1397,14 +1595,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (!src.TrainingProficiencyIds.Contains(proficiencyId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     UntagTrainingPlanWithProficiencyCommand command = new UntagTrainingPlanWithProficiencyCommand(userId, planId, proficiencyId);
                     UntagTrainingPlanWithProficiencyCommandHandler handler = new UntagTrainingPlanWithProficiencyCommandHandler(athletes, logger);
@@ -1414,7 +1617,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.TrainingProficiencyIds.Count() - 1, dest.TrainingProficiencyIds.Count());
@@ -1428,6 +1631,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<TagTrainingPlanWithMuscleFocusCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1436,14 +1640,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.MuscleFocusIds.Contains(muscleId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     TagTrainingPlanWithMuscleFocusCommand command = new TagTrainingPlanWithMuscleFocusCommand(userId, planId, muscleId);
                     TagTrainingPlanWithMuscleFocusCommandHandler handler = new TagTrainingPlanWithMuscleFocusCommandHandler(athletes, logger);
@@ -1453,7 +1662,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.MuscleFocusIds.Count() + 1, dest.MuscleFocusIds.Count());
@@ -1467,6 +1676,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<UntagTrainingPlanWithMuscleFocusCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 1;
@@ -1475,14 +1685,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (!src.MuscleFocusIds.Contains(muscleId))
                         throw new Exception("Invalid Test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     UntagTrainingPlanWithMuscleFocusCommand command = new UntagTrainingPlanWithMuscleFocusCommand(userId, planId, muscleId);
                     UntagTrainingPlanWithMuscleFocusCommandHandler handler = new UntagTrainingPlanWithMuscleFocusCommandHandler(athletes, logger);
@@ -1492,7 +1707,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var dest = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     Assert.Equal(src.MuscleFocusIds.Count() - 1, dest.MuscleFocusIds.Count());
@@ -1506,6 +1721,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<WriteTrainingPlanNoteCommandHandler>>().Object;
             List<TrainingPlanNoteRoot> notesBefore;
+            IAthleteRepository athletes;
+            ITrainingPlanNoteRepository notes;
 
             // Arrange
             uint userId = 1;
@@ -1514,12 +1731,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+                    notes = new SQLTrainingPlanNoteRepository(context);
+                    notesBefore = context.TrainingPlanNotes.ToList();
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var notes = new SQLTrainingPlanNoteRepository(context);
-                    notesBefore = context.TrainingPlanNotes.ToList();
+                    athletes = new SQLAthleteRepository(context);
+                    notes = new SQLTrainingPlanNoteRepository(context);
 
                     WriteTrainingPlanNoteCommand command = new WriteTrainingPlanNoteCommand(userId, planId, note);
                     WriteTrainingPlanNoteCommandHandler handler = new WriteTrainingPlanNoteCommandHandler(athletes, notes, logger);
@@ -1529,7 +1752,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
                     // Check note added
                     var notesAfter = context.TrainingPlanNotes.ToList();
@@ -1551,6 +1774,9 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
             var logger = new Mock<ILogger<WriteWorkUnitTemplateNoteCommandHandler>>().Object;
             int srcNotesCount;
             uint idAdded;
+            IWorkoutTemplateRepository workouts;
+            IWorkUnitTemplateNoteRepository notes;
+
             // Arrange
             uint workoutId = 1;
             uint workUnitPnum = 1;
@@ -1558,13 +1784,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    workouts = new SQLWorkoutTemplateRepository(context);
+                    notes = new SQLWorkUnitTemplateNoteRepository(context);
+                    srcNotesCount = context.WorkUnitTemplateNotes.Count();
+                    idAdded = context.WorkUnitTemplateNotes.Max(x => x.Id).Value + 1;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var workouts = new SQLWorkoutTemplateRepository(context);
-                    var notes = new SQLWorkUnitTemplateNoteRepository(context);
-                    srcNotesCount = context.WorkUnitTemplateNotes.Count();
-                    idAdded = context.WorkUnitTemplateNotes.Max(x => x.Id).Value + 1;
+                    workouts = new SQLWorkoutTemplateRepository(context);
+                    notes = new SQLWorkUnitTemplateNoteRepository(context);
 
                     WriteWorkUnitTemplateNoteCommand command = new WriteWorkUnitTemplateNoteCommand(workoutId, workUnitPnum, note);
                     WriteWorkUnitTemplateNoteCommandHandler handler = new WriteWorkUnitTemplateNoteCommandHandler(workouts, notes, logger);
@@ -1574,8 +1806,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var workouts = new SQLWorkoutTemplateRepository(context);
-                    var notes = new SQLWorkUnitTemplateNoteRepository(context);
+                    workouts = new SQLWorkoutTemplateRepository(context);
+                    notes = new SQLWorkUnitTemplateNoteRepository(context);
 
                     // Check note added
                     var destNotesCount = context.WorkUnitTemplateNotes.Count();
@@ -1594,7 +1826,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task AchieveTrainingProficiencyCommand_TwoProficienciesStartingTheSameDay_Success()
         {
             var logger = new Mock<ILogger<AchieveTrainingProficiencyCommandHandler>>().Object;
-            int srcProficienciesCount;
+            int srcProficienciesCount = 0;
+            IAthleteRepository athletes;
 
             // Arrange
             uint athleteId = 1;         // It has another proficiency started today -> conflict
@@ -1602,11 +1835,16 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+                    srcProficienciesCount = athletes.Find(athleteId).TrainingProficiencies.Count;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    srcProficienciesCount = athletes.Find(athleteId).TrainingProficiencies.Count;
+                    athletes = new SQLAthleteRepository(context);
 
                     AchieveTrainingProficiencyCommand command = new AchieveTrainingProficiencyCommand(athleteId, proficiencyId);
                     AchieveTrainingProficiencyCommandHandler handler = new AchieveTrainingProficiencyCommandHandler(athletes, logger);
@@ -1616,13 +1854,14 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var added = athletes.Find(athleteId).TrainingProficiencies.Last();
+                    athletes = new SQLAthleteRepository(context);
+                    var dest = athletes.Find(athleteId);
+                    var added = dest.TrainingProficiencies.Last();
 
                     Assert.Equal(proficiencyId, added.ProficiencyId);
                     Assert.Equal(DateTime.UtcNow.Date, added.StartDate, new TimeSpan(0, 0, 0, 0, 500));
                     Assert.Null(added.EndDate);
-                    Assert.Equal(srcProficienciesCount, athletes.Find(athleteId).TrainingProficiencies.Count);
+                    Assert.Equal(srcProficienciesCount, dest.TrainingProficiencies.Count);
                 }
             }
         }
@@ -1665,6 +1904,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task BookmarkTrainingPlanCommand_Success()
         {
             var logger = new Mock<ILogger<BookmarkTrainingPlanCommandHandler>>().Object;
+            IAthleteRepository athletes;
 
             // Arrange
             uint athleteId = 1;
@@ -1673,12 +1913,17 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+                    isBookmarked = !athletes.Find(athleteId)
+                        .CloneTrainingPlanOrDefault(planId).IsBookmarked;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-
-                    isBookmarked = !athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId).IsBookmarked;
+                    athletes = new SQLAthleteRepository(context);
 
                     BookmarkTrainingPlanCommand command = new BookmarkTrainingPlanCommand(athleteId, planId, isBookmarked);
                     BookmarkTrainingPlanCommandHandler handler = new BookmarkTrainingPlanCommandHandler(athletes, logger);
@@ -1688,7 +1933,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId);
                     Assert.Equal(isBookmarked, modified.IsBookmarked);
                 }
@@ -1699,6 +1944,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task ExcludeTrainingPlanFromUserLibraryCommand_NotLastOne_Success()
         {
             var logger = new Mock<ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler>>().Object;
+            ITrainingPlanRepository plans;
+            IAthleteRepository athletes;
 
             // Arrange
             uint athleteId = 1;
@@ -1706,15 +1953,20 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var plans = new SQLTrainingPlanRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId) == default
                         && athletes.CountAthletesWithTrainingPlanInLibrary(planId) < 2)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+                    plans = new SQLTrainingPlanRepository(context);
 
                     ExcludeTrainingPlanFromUserLibraryCommand command = new ExcludeTrainingPlanFromUserLibraryCommand(planId, athleteId);
                     ExcludeTrainingPlanFromUserLibraryCommandHandler handler = new ExcludeTrainingPlanFromUserLibraryCommandHandler(athletes, plans, logger);
@@ -1724,7 +1976,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(athleteId);
 
                     Assert.DoesNotContain(planId, modified.TrainingPlans.Select(x => x.TrainingPlanId));
@@ -1737,6 +1989,8 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task ExcludeTrainingPlanFromUserLibraryCommand_LastOne_Success()
         {
             var logger = new Mock<ILogger<ExcludeTrainingPlanFromUserLibraryCommandHandler>>().Object;
+            IAthleteRepository athletes;
+            ITrainingPlanRepository plans;
 
             // Arrange
             uint athleteId = 1;
@@ -1744,15 +1998,21 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var plans = new SQLTrainingPlanRepository(context);
+                    athletes = new SQLAthleteRepository(context);
+                    plans = new SQLTrainingPlanRepository(context);
 
                     if (athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId) == default
                         && athletes.CountAthletesWithTrainingPlanInLibrary(planId) == 1)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
+                    plans = new SQLTrainingPlanRepository(context);
 
                     ExcludeTrainingPlanFromUserLibraryCommand command = new ExcludeTrainingPlanFromUserLibraryCommand(planId, athleteId);
                     ExcludeTrainingPlanFromUserLibraryCommandHandler handler = new ExcludeTrainingPlanFromUserLibraryCommandHandler(athletes, plans, logger);
@@ -1762,7 +2022,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(athleteId);
 
                     Assert.DoesNotContain(planId, modified.TrainingPlans.Select(x => x.TrainingPlanId));
@@ -1803,6 +2063,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task IncludeTrainingPlanInUserLibraryCommandHandler_Success()
         {
             var logger = new Mock<ILogger<IncludeTrainingPlanInUserLibraryCommandHandler>>().Object;
+            IAthleteRepository athletes;
 
             // Arrange
             uint athleteId = 1;
@@ -1810,13 +2071,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(athleteId).CloneTrainingPlanOrDefault(planId) != default)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     IncludeTrainingPlanInUserLibraryCommand command = new IncludeTrainingPlanInUserLibraryCommand(planId, athleteId);
                     IncludeTrainingPlanInUserLibraryCommandHandler handler = new IncludeTrainingPlanInUserLibraryCommandHandler(athletes, logger);
@@ -1826,7 +2092,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(athleteId);
                     Assert.Contains(planId, modified.TrainingPlans.Select(x => x.TrainingPlanId));
                 }
@@ -1838,6 +2104,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<IncludeTrainingPlanInUserLibraryCommandHandler>>().Object;
             AthleteRoot src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint planId = 1;
@@ -1845,14 +2112,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
-                using (GymContext context = await factory.CreateContextAsync())
+                // State before
+                using(GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).Clone() as AthleteRoot;
 
                     if (src.CloneTrainingPlanOrDefault(planId) == default)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     IncludeTrainingPlanInUserLibraryCommand command = new IncludeTrainingPlanInUserLibraryCommand(planId, userId);
                     IncludeTrainingPlanInUserLibraryCommandHandler handler = new IncludeTrainingPlanInUserLibraryCommandHandler(athletes, logger);
@@ -1863,7 +2135,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     // Check nothing happened
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(userId);
                     Assert.True(src.TrainingPlans.SequenceEqual(modified.TrainingPlans));
                 }
@@ -1875,6 +2147,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<MakeTrainingPlanNotVariantOfAnyCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint planId = 2;
@@ -1882,14 +2155,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.ParentPlanId == null)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     MakeTrainingPlanNotVariantOfAnyCommand command = new MakeTrainingPlanNotVariantOfAnyCommand(planId, userId);
                     MakeTrainingPlanNotVariantOfAnyCommandHandler handler = new MakeTrainingPlanNotVariantOfAnyCommandHandler(athletes, logger);
@@ -1899,7 +2177,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check 
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(userId);
                     Assert.Null(modified.CloneTrainingPlanOrDefault(planId).ParentPlanId);
                 }
@@ -1911,6 +2189,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         {
             var logger = new Mock<ILogger<MakeTrainingPlanVariantOfCommandHandler>>().Object;
             UserTrainingPlanEntity src;
+            IAthleteRepository athletes;
 
             // Arrange
             uint planId = 2;
@@ -1919,14 +2198,19 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     src = athletes.Find(userId).CloneTrainingPlanOrDefault(planId);
 
                     if (src.ParentPlanId == parentId)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     MakeTrainingPlanVariantOfCommand command = new MakeTrainingPlanVariantOfCommand(planId, userId, parentId);
                     MakeTrainingPlanVariantOfCommandHandler handler = new MakeTrainingPlanVariantOfCommandHandler(athletes, logger);
@@ -1936,7 +2220,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check 
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
                     var modified = athletes.Find(userId);
 
                     Assert.Equal(parentId, modified.CloneTrainingPlanOrDefault(planId).ParentPlanId);
@@ -1949,6 +2233,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
         public async Task PlanTrainingPhaseCommand_NoEndDateSuccess()
         {
             var logger = new Mock<ILogger<PlanTrainingPhaseCommandHandler>>().Object;
+            IAthleteRepository athletes;
 
             // Arrange
             uint userId = 2;
@@ -1960,13 +2245,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
+                    athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(userId).TrainingPhases.Count != 1)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    athletes = new SQLAthleteRepository(context);
 
                     PlanTrainingPhaseCommand command = new PlanTrainingPhaseCommand(userId, phaseId, entryStatusId, note, startDate, endDate);
                     PlanTrainingPhaseCommandHandler handler = new PlanTrainingPhaseCommandHandler(athletes, logger);
@@ -1976,15 +2266,13 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 // Check
                 using (GymContext context = await factory.CreateContextAsync())
                 {
-                    var athletes = new SQLAthleteRepository(context);
-                    var newPhase = athletes.Find(userId).TrainingPhases.First();    // Why is this sorted?
+                    athletes = new SQLAthleteRepository(context);
+                    var phases = athletes.Find(userId).TrainingPhases;
 
-                    Assert.Equal(phaseId, newPhase.PhaseId);
-                    Assert.Equal(startDate.Date, newPhase.StartDate);
-                    Assert.Equal(athletes.Find(userId).TrainingPhases.Last().StartDate.AddDays(-1), newPhase.EndDate); // Works only if two phases
-
-                    throw new Exception("The following fails because the repo is not fetching the note... It will be fixed with the Dapper SQL repo");
-                    Assert.Equal(note, newPhase.OwnerNote.Body);
+                    Assert.Equal(phaseId, phases.First().PhaseId);
+                    Assert.Equal(startDate.Date, phases.First().StartDate);
+                    Assert.Equal(phases.Last().StartDate.AddDays(-1), phases.First().EndDate); // Works only if two phases
+                    Assert.Equal(note, phases.First().OwnerNote.Body);
                 }
             }
         }
@@ -2004,13 +2292,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(userId).TrainingPhases.Count != 1)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var athletes = new SQLAthleteRepository(context);
 
                     PlanTrainingPhaseCommand command = new PlanTrainingPhaseCommand(userId, phaseId, entryStatusId, note, startDate, endDate);
                     PlanTrainingPhaseCommandHandler handler = new PlanTrainingPhaseCommandHandler(athletes, logger);
@@ -2074,13 +2367,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(userId).CloneTrainingPlanOrDefault(planId) != default)
                         throw new Exception("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var athletes = new SQLAthleteRepository(context);
 
                     RenameTrainingPlanCommand command = new RenameTrainingPlanCommand(userId, planId, name);
                     RenameTrainingPlanCommandHandler handler = new RenameTrainingPlanCommandHandler(athletes, logger);
@@ -2144,7 +2442,6 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var schedules = new SQLTrainingScheduleRepository(context);
-
                     ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(userId, planId, start, end);
                     ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(schedules, logger);
 
@@ -2178,7 +2475,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var schedules = new SQLTrainingScheduleRepository(context);
@@ -2186,24 +2483,34 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
                     if (currentPlan == null)
                         throw new ArgumentException("Invalid test");
-
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var schedules = new SQLTrainingScheduleRepository(context);
                     ScheduleTrainingPlanCommand command = new ScheduleTrainingPlanCommand(userId, planId, start, end);
                     ScheduleTrainingPlanCommandHandler handler = new ScheduleTrainingPlanCommandHandler(schedules, logger);
 
                     Assert.True(await handler.Handle(command, default));
                 }
-                // Check
+                // Check schedule added
                 using (GymContext context = await factory.CreateContextAsync())
                 {
+                    var schedules = new SQLTrainingScheduleRepository(context);
                     var added = context.TrainingSchedules.ToList().Last();
 
                     Assert.Equal(planId, added.TrainingPlanId);
                     Assert.Equal(start, added.StartDate);
                     Assert.Equal(end, added.EndDate);
                     Assert.Empty(added.Feedbacks);
+                }
+                // Check ongoing plan is now completed
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var schedules = new SQLTrainingScheduleRepository(context);
+                    var prevCurrentPlan = schedules.Find(currentPlan.Id.Value);
 
-                    // Check ongoing plan is now completed
-                    Assert.Equal(DateTime.UtcNow.AddDays(-1).Date, currentPlan.EndDate);
+                    Assert.Equal(DateTime.UtcNow.AddDays(-1).Date, prevCurrentPlan.EndDate);
                 }
             }
         }
@@ -2221,14 +2528,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(userId).TrainingPhases.Count > 0)
                         throw new Exception("Invalid test");
-
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var athletes = new SQLAthleteRepository(context);
                     StartTrainingPhaseCommand command = new StartTrainingPhaseCommand(userId, phaseId, entryStatusId, note);
                     StartTrainingPhaseCommandHandler handler = new StartTrainingPhaseCommandHandler(athletes, logger);
 
@@ -2244,7 +2555,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     Assert.Equal(phaseId, phase.PhaseId);
                     Assert.Equal(DateTime.UtcNow.Date, phase.StartDate);
                     Assert.Null(modified.TrainingPhases.Last().EndDate);
-                    Assert.Equal(phase, athletes.Find(userId).CurrentTrainingPhase);
+                    Assert.Equal(phase, modified.CurrentTrainingPhase);
                 }
             }
         }
@@ -2260,14 +2571,18 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var athletes = new SQLAthleteRepository(context);
 
                     if (athletes.Find(userId).TrainingPhases.Count > 0)
                         throw new Exception("Invalid test");
-
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var athletes = new SQLAthleteRepository(context);
                     StartTrainingPhaseCommand command = new StartTrainingPhaseCommand(userId, phaseId, entryStatusId, null);
                     StartTrainingPhaseCommandHandler handler = new StartTrainingPhaseCommandHandler(athletes, logger);
 
@@ -2284,7 +2599,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     Assert.Equal((int)entryStatusId, phase.EntryStatus.Id);
                     Assert.Equal(DateTime.UtcNow.Date, phase.StartDate);
                     Assert.Null(modified.TrainingPhases.Last().EndDate);
-                    Assert.Equal(phase, athletes.Find(userId).CurrentTrainingPhase);
+                    Assert.Equal(phase, modified.CurrentTrainingPhase);
                 }
             }
         }
@@ -2303,16 +2618,21 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var athletes = new SQLAthleteRepository(context);
+                    var src = athletes.Find(userId).TrainingPhases;
+
+                    if (src.Count != 1 || src.First().StartDate.Date <= DateTime.UtcNow.Date)
+                        throw new Exception("Invalid test");
+
+                    nextPhaseStart = src.FirstOrDefault().StartDate;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var athletes = new SQLAthleteRepository(context);
-
-                    if (athletes.Find(userId).TrainingPhases.Count != 1 || athletes.Find(userId).TrainingPhases.First().StartDate.Date <= DateTime.UtcNow.Date)
-                        throw new Exception("Invalid test");
-
-                    nextPhaseStart = athletes.Find(userId).TrainingPhases.FirstOrDefault().StartDate;
-
                     StartTrainingPhaseCommand command = new StartTrainingPhaseCommand(userId, phaseId, entryStatusId, note);
                     StartTrainingPhaseCommandHandler handler = new StartTrainingPhaseCommandHandler(athletes, logger);
 
@@ -2348,16 +2668,21 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
+                // State before
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var athletes = new SQLAthleteRepository(context);
+                    var src = athletes.Find(userId).TrainingPhases;
+
+                    if (src.All(x => x.StartDate != DateTime.UtcNow.Date))
+                        throw new Exception("Invalid test");
+
+                    srcPhaseId = src.SingleOrDefault(x => x.StartDate == DateTime.UtcNow.Date).PhaseId.Value;
+                }
                 // Test
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var athletes = new SQLAthleteRepository(context);
-
-                    if (athletes.Find(userId).TrainingPhases.All(x => x.StartDate != DateTime.UtcNow.Date))
-                        throw new Exception("Invalid test");
-
-                    srcPhaseId = athletes.Find(userId).TrainingPhases.SingleOrDefault(x => x.StartDate == DateTime.UtcNow.Date).PhaseId.Value;
-
                     StartTrainingPhaseCommand command = new StartTrainingPhaseCommand(userId, phaseId, entryStatusId, note);
                     StartTrainingPhaseCommandHandler handler = new StartTrainingPhaseCommandHandler(athletes, logger);
 
@@ -2374,8 +2699,6 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     Assert.Equal(phaseId, newPhase.PhaseId);
                     Assert.Equal(DateTime.UtcNow.Date, newPhase.StartDate);
                     Assert.Equal(modified.TrainingPhases.Last().StartDate.AddDays(-1), newPhase.EndDate);   // Works only with two phases
-
-                    throw new Exception("The following is failing because the repo is not fetching the note. Will be fixed with the Dapper repo...");
                     Assert.Equal(note, newPhase.OwnerNote.Body);
 
                     Assert.DoesNotContain(srcPhaseId, modified.TrainingPhases.Select(x => x.PhaseId.Value));
@@ -2394,20 +2717,27 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var schedules = new SQLTrainingScheduleRepository(context);
 
                     if (schedules.Find(scheduleId).EndDate == endDate)
                         throw new NotImplementedException("Invalid test");
-
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var schedules = new SQLTrainingScheduleRepository(context);
                     CompleteTrainingScheduleCommand command = new CompleteTrainingScheduleCommand(scheduleId, endDate);
                     CompleteTrainingScheduleCommandHandler handler = new CompleteTrainingScheduleCommandHandler(schedules, logger);
 
                     Assert.True(await handler.Handle(command, default));
-
-                    // Check schedule
+                }
+                // Check
+                using(GymContext context = await factory.CreateContextAsync())
+                {
+                    var schedules = new SQLTrainingScheduleRepository(context);
                     var modified = schedules.Find(scheduleId);
                     Assert.Equal(endDate, modified.EndDate);
                 }
@@ -2425,7 +2755,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
             using (InMemoryDbContextFactory factory = new InMemoryDbContextFactory())
             {
-                // Test
+                // State before
                 using (GymContext context = await factory.CreateContextAsync())
                 {
                     var schedules = new SQLTrainingScheduleRepository(context);
@@ -2433,6 +2763,11 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
 
                     if (sched.StartDate == startDate || sched.EndDate < startDate || sched.IsCompleted())
                         throw new NotImplementedException("Invalid test");
+                }
+                // Test
+                using (GymContext context = await factory.CreateContextAsync())
+                {
+                    var schedules = new SQLTrainingScheduleRepository(context);
 
                     RescheduleTrainingPlanCommand command = new RescheduleTrainingPlanCommand(scheduleId, startDate);
                     RescheduleTrainingPlanCommandHandler handler = new RescheduleTrainingPlanCommandHandler(schedules, logger);
@@ -2449,6 +2784,7 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                 }
             }
         }
+
 
         [Fact]
         public async Task AAA_BenchmarkRepository()

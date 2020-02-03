@@ -172,6 +172,10 @@ namespace GymProject.Application.Test.UnitTest.CQRS.TrainingDomain
                     TrainingQueryWrapper queries = new TrainingQueryWrapper(context.ConnectionString);
 
 
+                    //RIGM: to be removed
+                    var repo = new Infrastructure.Persistence.SqlRepository.TrainingDomain.SQLTrainingPlanRepository(context);
+                    repo.Find(1);
+
                     // Arrange
                     //List<uint> weekIds = context.TrainingPlans.Single(x => x.Id == 2).TrainingWeeks.Select(x => x.Id.Value).ToList();
                     List<uint> weekIds = new List<uint>() { 10 };

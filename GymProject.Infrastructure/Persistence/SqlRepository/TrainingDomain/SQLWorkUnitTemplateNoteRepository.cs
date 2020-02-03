@@ -1,7 +1,12 @@
-﻿using GymProject.Domain.Base;
+﻿using Dapper;
+using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.WorkUnitTemplateNote;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -40,10 +45,22 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public WorkUnitTemplateNoteRoot Find(uint id)
         {
-            var res = _context.Find<WorkUnitTemplateNoteRoot>(id);
+            IDbConnection db = _context.Database.GetDbConnection();
+
+            WorkUnitTemplateNoteRoot res = db.Query<WorkUnitTemplateNoteRoot, string, WorkUnitTemplateNoteRoot>(
+               "SELECT Id, Body" + 
+               " FROM WorkUnitTemplateNote WUN" +
+               " WHERE WUN.Id = @id",
+               (note, body) =>
+               {
+                   return WorkUnitTemplateNoteRoot.Write(note.Id, PersonalNoteValue.Write(body));
+               },
+               param: new { id },
+               splitOn: "Body")
+           .FirstOrDefault();
 
             if (res != null)
-                _context.Entry(res).Reference(x => x.Body).Load();
+                _context.Attach(res);
 
             return res;
         }

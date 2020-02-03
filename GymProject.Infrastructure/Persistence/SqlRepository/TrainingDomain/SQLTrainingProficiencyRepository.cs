@@ -1,7 +1,12 @@
-﻿using GymProject.Domain.Base;
+﻿using Dapper;
+using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.TrainingProficiencyAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -40,10 +45,25 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public TrainingProficiencyRoot Find(uint id)
         {
-            var res = _context.Find<TrainingProficiencyRoot>(id);
+            IDbConnection db = _context.Database.GetDbConnection();
+
+            TrainingProficiencyRoot res = db.Query<TrainingProficiencyRoot, string, long?, TrainingProficiencyRoot>(
+                "SELECT Id, Name, Description, EntryStatusId " +
+                " FROM TrainingProficiency " +
+                " WHERE Id = @id",
+               (prof, descr, entryStatusId) =>
+               {
+                   return TrainingProficiencyRoot.CreateTrainingProficiency(prof.Id,
+                       prof.Name,
+                       descr != null ? PersonalNoteValue.Write(descr) : null,
+                       entryStatusId.HasValue ? EntryStatusTypeEnum.From((int)entryStatusId.Value) : null);
+               },
+               param: new { id },
+               splitOn: "Description, EntryStatusId")
+           .FirstOrDefault();
 
             if (res != null)
-                _context.Entry(res).Reference(x => x.EntryStatus).Load();
+                _context.Attach(res);
 
             return res;
         }

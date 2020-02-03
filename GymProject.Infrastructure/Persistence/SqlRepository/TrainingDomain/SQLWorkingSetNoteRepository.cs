@@ -1,7 +1,12 @@
-﻿using GymProject.Domain.Base;
+﻿using Dapper;
+using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.WorkingSetNote;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -40,10 +45,22 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public WorkingSetNoteRoot Find(uint id)
         {
-            var res = _context.Find<WorkingSetNoteRoot>(id);
+            IDbConnection db = _context.Database.GetDbConnection();
+
+            WorkingSetNoteRoot res = db.Query<WorkingSetNoteRoot, string, WorkingSetNoteRoot>(
+               "SELECT Id, Body" +
+               " FROM WorkingSetNote WSN" +
+               " WHERE WSN.Id = @id",
+               (note, body) =>
+               {
+                   return WorkingSetNoteRoot.Write(note.Id, PersonalNoteValue.Write(body));
+               },
+               param: new { id },
+               splitOn: "Body")
+           .FirstOrDefault();
 
             if (res != null)
-                _context.Entry(res).Reference(x => x.Body).Load();
+                _context.Attach(res);
 
             return res;
         }

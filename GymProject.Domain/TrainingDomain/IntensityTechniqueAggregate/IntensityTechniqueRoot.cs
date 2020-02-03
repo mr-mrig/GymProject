@@ -69,7 +69,7 @@ namespace GymProject.Domain.TrainingDomain.IntensityTechniqueAggregate
         #region Factories
 
         /// <summary>
-        /// Factory method - PROTECTED
+        /// Factory method
         /// </summary>
         /// <param name="name">The Intensity Technique name</param>
         /// <param name="abbreviation">The Intensity Technique abbreviation</param>

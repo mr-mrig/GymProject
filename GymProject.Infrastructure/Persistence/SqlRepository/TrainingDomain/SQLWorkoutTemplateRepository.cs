@@ -129,6 +129,7 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
                        }
                        if (reps.HasValue)
                        {
+                           //RIGM: WSRepetitions work type is missing
                            WSWorkTypeEnum workType = workId.HasValue ? WSWorkTypeEnum.From((int)workId.Value) : null;
                            workout.ReviseWorkingSetRepetitions(wu.ProgressiveNumber, ws.ProgressiveNumber, WSRepetitionsValue.TrackWork((int)reps.Value, workType));
                        }

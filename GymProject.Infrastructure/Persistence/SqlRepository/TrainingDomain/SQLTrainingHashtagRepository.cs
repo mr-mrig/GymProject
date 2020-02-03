@@ -1,7 +1,12 @@
-﻿using GymProject.Domain.Base;
+﻿using Dapper;
+using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.TrainingHashtagAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
+using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 {
@@ -41,10 +46,24 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public TrainingHashtagRoot Find(uint id)
         {
-            var res = _context.Find<TrainingHashtagRoot>(id);
+            IDbConnection db = _context.Database.GetDbConnection();
+
+            TrainingHashtagRoot res = db.Query<TrainingHashtagRoot, string, long?, TrainingHashtagRoot>(
+                "SELECT Id, Body, EntryStatusId " +
+                " FROM TrainingHashtag " +
+                " WHERE Id = @id",
+               (hashtag, body, entryStatusId) =>
+               {
+                   return TrainingHashtagRoot.TagWith(hashtag.Id,
+                       GenericHashtagValue.TagWith(body),
+                       entryStatusId.HasValue ? EntryStatusTypeEnum.From((int)entryStatusId.Value) : null);
+               },
+               param: new { id },
+               splitOn: "Body, EntryStatusId")
+           .FirstOrDefault();
 
             if (res != null)
-                _context.Entry(res).Reference(x => x.EntryStatus).Load();
+                _context.Attach(res);
 
             return res;
         }

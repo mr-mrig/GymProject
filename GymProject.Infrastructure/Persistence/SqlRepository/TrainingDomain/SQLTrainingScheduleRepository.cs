@@ -1,7 +1,12 @@
-﻿using GymProject.Domain.Base;
+﻿using Dapper;
+using GymProject.Domain.Base;
+using GymProject.Domain.SharedKernel;
 using GymProject.Domain.TrainingDomain.TrainingScheduleAggregate;
 using GymProject.Infrastructure.Persistence.EFContext;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
@@ -41,14 +46,40 @@ namespace GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain
 
         public TrainingScheduleRoot Find(uint id)
         {
-            //return _context.TrainingPlans.Where(x => x.Id == trainingPlanId)
-            //        .Include(wo => wo.TrainingWeeks)
-            //        .SingleOrDefault();
+            IDbConnection db = _context.Database.GetDbConnection();
+            Dictionary<uint?, TrainingScheduleRoot> lookup = new Dictionary<uint?, TrainingScheduleRoot>();
 
-            var res = _context.Find<TrainingScheduleRoot>(id);
+            TrainingScheduleRoot res = db.Query<TrainingScheduleRoot, TrainingScheduleFeedbackEntity, double?, string, TrainingScheduleRoot>(
+                "SELECT TS.Id, TS.StartDate, TS.EndDate, TS.TrainingPlanId, TS.AthleteId," +
+                " TF.Id, TF.UserId," +
+                " TF.Rating, TF.Comment" +
+                " FROM TrainingSchedule TS" +
+                " LEFT JOIN TrainingScheduleFeedback TF" +
+                " ON TS.Id = TF.TrainingScheduleId" +
+                " WHERE TS.Id = @id",
+              (sched, fbk, rating, comment) =>
+              {
+                  TrainingScheduleRoot schedule;
+
+                  if (!lookup.TryGetValue(sched.Id, out schedule))
+                      lookup.Add(sched.Id, schedule = sched);
+
+                  // Feebacks
+                  if (fbk?.Id != null)
+                  {
+                      RatingValue ratingValue = rating.HasValue ? RatingValue.Rate((float)rating.Value) : null;
+                      PersonalNoteValue commentValue = comment != null ? PersonalNoteValue.Write(comment) : null;
+
+                      schedule.ProvideFeedback(TrainingScheduleFeedbackEntity.ProvideFeedback(fbk.Id, fbk.UserId, ratingValue, commentValue));
+                  }
+                  return schedule;
+              },
+               param: new { id },
+               splitOn: "Id, Rating, Comment")
+           .FirstOrDefault();
 
             if (res != null)
-                _context.Entry(res).Collection(x => x.Feedbacks).Load();
+                _context.Attach(res);
 
             return res;
         }

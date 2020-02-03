@@ -33,7 +33,7 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
 
         private TrainingPhaseRoot() : base(null, null) { }
 
-        private TrainingPhaseRoot(string name, EntryStatusTypeEnum entryStatus) : base(null, entryStatus ?? DefaultEntryStatus)
+        private TrainingPhaseRoot(uint? id, string name, EntryStatusTypeEnum entryStatus) : base(id, entryStatus ?? DefaultEntryStatus)
         {
             Name = name?.Trim() ?? string.Empty;
             //OwnerId = ownerId;
@@ -51,15 +51,23 @@ namespace GymProject.Domain.TrainingDomain.TrainingPhaseAggregate
         /// Factory method
         /// </summary>
         /// <param name="name">The name of the phase</param>
+        /// <param name="id">The phase ID</param>
         /// <param name="ownerId">The User which the phase was created by</param>
         /// <param name="entryStatus">TThe specified entry status - if left null <see cref="DefaultEntryStatus"/> will be used</param>
         /// <returns>A new TrainingPhase instance</returns>
-        public static TrainingPhaseRoot CreateTrainingPhase
-        (
-            string name,
-            EntryStatusTypeEnum entryStatus
-        )
-            => new TrainingPhaseRoot(name, entryStatus);
+        public static TrainingPhaseRoot CreateTrainingPhase(uint? id, string name,EntryStatusTypeEnum entryStatus)
+            => new TrainingPhaseRoot(id, name, entryStatus);
+
+
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <param name="name">The name of the phase</param>
+        /// <param name="ownerId">The User which the phase was created by</param>
+        /// <param name="entryStatus">TThe specified entry status - if left null <see cref="DefaultEntryStatus"/> will be used</param>
+        /// <returns>A new TrainingPhase instance</returns>
+        public static TrainingPhaseRoot CreateTrainingPhase(string name, EntryStatusTypeEnum entryStatus)
+            => CreateTrainingPhase(null, name, entryStatus);
 
 
         /// <summary>

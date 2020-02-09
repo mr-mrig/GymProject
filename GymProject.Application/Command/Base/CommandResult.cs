@@ -17,6 +17,7 @@ namespace GymProject.Application.Command.Base
         {
             DatabaseFail = 0,
             DomainInvariantViolated,
+            EFCoreFailure,
             GenericException
         }
 

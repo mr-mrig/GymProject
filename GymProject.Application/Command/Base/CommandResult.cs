@@ -53,7 +53,10 @@ namespace GymProject.Application.Command.Base
             {
                 _exceptionThrown = value;
                 if(_exceptionThrown != null)
+                {
                     CommandFailureReason = GetFailureReasonFrom(_exceptionThrown);
+                    CommandResultState = ResultState.KO;
+                }
             }
         }
 

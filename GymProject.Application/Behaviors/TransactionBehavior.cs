@@ -7,21 +7,21 @@ using GymProject.Infrastructure.Persistence.EFContext;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore;
 
-namespace GymProject.Application.MediatorBehavior
+namespace GymProject.Application.Behaviors
 {
 
-    public class TransactionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     {
 
 
-        private readonly ILogger<TransactionBehaviour<TRequest, TResponse>> _logger;
+        private readonly ILogger<TransactionBehavior<TRequest, TResponse>> _logger;
         private readonly GymContext _dbContext;
 
 
 
 
-        public TransactionBehaviour(GymContext dbContext,
-            ILogger<TransactionBehaviour<TRequest, TResponse>> logger)
+        public TransactionBehavior(GymContext dbContext,
+            ILogger<TransactionBehavior<TRequest, TResponse>> logger)
         {
             _dbContext = dbContext ?? throw new ArgumentException(nameof(dbContext));
             _logger = logger ?? throw new ArgumentException(nameof(logger));

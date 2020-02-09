@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using Autofac.Extensions.DependencyInjection;
 using GymProject.Domain.TrainingDomain.TrainingPlanAggregate;
 using GymProject.Infrastructure.Persistence.SqlRepository.TrainingDomain;
-using GymProject.Application.MediatorBehavior;
+using GymProject.Application.MediatorBehavior.Behaviors;
 
 namespace ConsoleTest
 {
